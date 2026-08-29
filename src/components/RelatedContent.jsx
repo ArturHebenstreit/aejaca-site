@@ -33,10 +33,20 @@ const UI = {
   de: { tag: "Vor der Bestellung", posts: "Ratgeber", terms: "Begriffe aus diesem Bereich", all: "Alle Artikel", tools: "Vor der Bestellung prüfen" },
 };
 
-export default function RelatedContent({ category = "studio", limit = 3, terms = 4, className = "" }) {
+export default function RelatedContent({ category = "studio", service = null, limit = 3, terms = 4, className = "" }) {
   const { lang } = useLanguage();
   const u = UI[lang] || UI.en;
-  const posts = getPostsByCategoryMeta(category).slice(0, limit);
+  // Wpis napisany DO TEJ uslugi idzie pierwszy, reszta dziedziny za nim.
+  // Bez tego kolejnosc brala sie z kolejnosci w tablicy, wiec strona
+  // lancuszkow na wymiar potrafila nie linkowac do przewodnika po splotach,
+  // czyli do jedynego tekstu, ktory odpowiada na pytanie zadawane przy niej
+  // najczesciej. Wpis wie, do ktorej uslugi nalezy: pole `service` w jego
+  // metadanych stoi tam od poczatku.
+  const wDziedzinie = getPostsByCategoryMeta(category);
+  const posts = (service
+    ? [...wDziedzinie.filter((p) => p.service === service), ...wDziedzinie.filter((p) => p.service !== service)]
+    : wDziedzinie
+  ).slice(0, limit);
   const slownik = getTermsByCategory(category).slice(0, terms);
   const tools = getToolsByCategory(category);
   if (!posts.length && !slownik.length && !tools.length) return null;

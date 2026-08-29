@@ -818,6 +818,7 @@ When a question matches a topic below, link directly to the article, not just to
 | Odlewy żywiczne, resin casting, epoksyd, UV, dekoracje | https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/ |
 | Prezenty personalizowane, upominki, pomysły na prezent | https://www.aejaca.com/blog/prezenty-personalizowane/ |
 | Plik STL, jak przygotować do druku, format, naprawa mesh | https://www.aejaca.com/blog/jak-przygotowac-plik-stl/ |
+| **Jak przyciac plik STL, jak uproscic siatke, jak przeskalowac model, pod jakim katem drukowac**, podzial modelu wiekszego niz stol, mnoznik skali (1:6 na 1:10 = x0,6, objetosc x0,22), najcienszy element po zmniejszeniu | https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/ |
 | Srebro vs złoto, porównanie metali, który metal wybrać | https://www.aejaca.com/blog/srebro-vs-zloto/ |
 | Obrączki ślubne, wedding bands, profil, cena pary, **rozmiar obraczki i szerokosc a dopasowanie** | https://www.aejaca.com/blog/obraczki-slubne/ |
 | Materiały do cięcia laserowego, co nadaje się pod laser | https://www.aejaca.com/blog/materialy-laser-cutting/ |

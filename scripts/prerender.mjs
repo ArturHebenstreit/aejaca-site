@@ -379,7 +379,19 @@ if (/<Suspense/.test(clientShell)) {
 {
   const MAX_TYTUL = 60;
   const MAX_OPIS = 160;
+  // Dolna granica opisu. Bing zglosil szesc stron z opisem "za krotkim", i mial
+  // racje: strony uslug niosly jako opis jedno zdanie z kafelka, po 39 znakow.
+  // Opis krotszy od stu znakow wyszukiwarka zwykle wyrzuca i sklada wlasny
+  // urywek strony, czesto z menu, wiec wynik przestaje mowic o czym jest strona
+  // i nikt tego nie widzi po naszej stronie.
+  //
+  // Strony z `noindex` pomijamy, bo nie trafiaja do wynikow. Pomijamy tez karty
+  // produktow: ich opisy stoja w bazie, a nie w repozytorium (`products.pull`),
+  // wiec build nie ma czego poprawic i mowilby o tym przy kazdym uruchomieniu.
+  const MIN_OPIS = 100;
   const zaDlugie = [];
+  const zaKrotkie = [];
+  const zPanelu = [];
 
   const wszystkie = [];
   const zbierz = (dir) => {
@@ -393,7 +405,12 @@ if (/<Suspense/.test(clientShell)) {
 
   const odkoduj = (t) => t
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+    .replace(/&quot;/g, '"')
+    // Postac dziesietna i SZESNASTKOWA. React zapisuje apostrof jako `&#x27;`,
+    // wiec bez drugiej galezi jeden znak liczyl sie za piec i opis wygladal na
+    // dluzszy, niz jest naprawde.
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)));
 
   for (const plik of wszystkie) {
     const tresc = fs.readFileSync(plik, "utf8");
@@ -406,8 +423,27 @@ if (/<Suspense/.test(clientShell)) {
     if (opis && odkoduj(opis).length > MAX_OPIS) {
       zaDlugie.push(`${nazwa}: opis ${odkoduj(opis).length} znakow`);
     }
+    const indeksowana = !/name="robots"[^>]*content="[^"]*noindex/.test(tresc);
+    if (opis && indeksowana && odkoduj(opis).length < MIN_OPIS) {
+      // `/shop/<slug>/` to karta produktu, `/shop/service/<id>/` to usluga
+      // z katalogu w repozytorium, wiec ta druga podlega bramce normalnie.
+      const zBazy = /^(en\/|de\/)?shop\/[^/]+\/index\.html$/.test(nazwa.split(path.sep).join("/"))
+        && !nazwa.includes("service");
+      (zBazy ? zPanelu : zaKrotkie).push(`${nazwa}: opis ${odkoduj(opis).length} znakow`);
+    }
   }
 
+  if (zPanelu.length) {
+    console.log(`  i  karty produktow z krotkim opisem: ${zPanelu.length}, do poprawienia w panelu`);
+    for (const z of zPanelu.slice(0, 5)) console.log(`     ${z}`);
+  }
+  if (zaKrotkie.length) {
+    console.error(`\n  ✗ Opisy za krotkie, wyszukiwarka podmieni je na wlasny urywek: ${zaKrotkie.length}`);
+    for (const z of zaKrotkie.slice(0, 10)) console.error(`    ${z}`);
+    if (zaKrotkie.length > 10) console.error(`    ...i ${zaKrotkie.length - 10} wiecej`);
+    console.error(`    Minimum: ${MIN_OPIS} znakow, celuj w 150 do 160.`);
+    failed++;
+  }
   if (zaDlugie.length) {
     console.error(`\n  ✗ Tytuly i opisy do obciecia w wyniku wyszukiwania: ${zaDlugie.length}`);
     for (const z of zaDlugie.slice(0, 10)) console.error(`    ${z}`);
@@ -415,7 +451,7 @@ if (/<Suspense/.test(clientShell)) {
     console.error(`    Limit: tytul ${MAX_TYTUL} znakow, opis ${MAX_OPIS}.`);
     failed++;
   } else {
-    console.log(`  ✓ tytuly do ${MAX_TYTUL} znakow, opisy do ${MAX_OPIS}`);
+    console.log(`  ✓ tytuly do ${MAX_TYTUL} znakow, opisy od ${MIN_OPIS} do ${MAX_OPIS}`);
   }
 }
 

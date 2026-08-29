@@ -33,6 +33,8 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 
 | TASK-021 | Kolejka jako lista jednowierszowa: zegar startuje w "gotowe do pobrania", jednolite ikony w panelu, ostrzezenie przy kasowaniu oplaconego zlecenia | Claude Code | `claude/serwis-development-skills-3vuba9` | `chat-api/productionQueue.js`, `chat-api/quotes.js`, `chat-api/server.js` (migracja `queued`, kolejka, sortowanie, ITN), `admin/server.js` (ikony panelu, sortowanie, termin w edycji), `admin/views/queue.ejs`, `admin/check-views.mjs`, `src/pages/OrderStatus.jsx`, `scripts/orders-schema.sql`, `scripts/test-production-queue.mjs`, `scripts/test-offer-payment.mjs`, `scripts/test-quote-edit.mjs`, `PROJECT_RULES.md`, `CLAUDE.md`, `AGENTS.md`, ADR-0028 | review | ADR-0028 |
 
+| TASK-022 | SEO po zgloszeniu z Bing: wlasne opisy stron uslug z bramka dlugosci, trzy nowe hasla slownika, wpis o przycinaniu, upraszczaniu i skalowaniu STL, dowiazanie przewodnika po splotach do uslugi i do kalkulatora | Claude Code | `claude/serwis-development-skills-3vuba9` | `src/data/serviceCatalog.js`, `src/pages/Service.jsx`, `src/data/glossary.js`, `src/seo/seoData.js`, `src/blog/posts/przyciecie-uproszczenie-skala-stl.*`, `src/blog/posts.js`, `src/blog/postsMeta.js`, `src/components/RelatedContent.jsx`, `src/components/calculators/JewelryCalc.jsx`, `scripts/prerender.mjs`, `public/sitemap.xml`, `public/llms.txt`, `chat-api/context.js` | review | brak ADR, zmiana tresci |
+
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
 ## Kolejka integracji

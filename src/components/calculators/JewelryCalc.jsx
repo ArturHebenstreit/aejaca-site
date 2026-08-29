@@ -3,6 +3,7 @@
 // ============================================================
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { sciezkaJezyka } from "../../routes.js";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
@@ -712,8 +713,22 @@ export default function JewelryCalc({ lang = "pl" }) {
           {/* Weave selection - chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
+              {/* Splot decyduje o cenie mocniej niz cokolwiek innego w tym
+                  formularzu: klasyczny ma wspolczynnik x1,0, bizantyjski x3,2.
+                  Kto tego nie wie, wybiera po obrazku, a potem dziwi sie kwocie.
+                  Nowa karta, bo skonfigurowana wycena zginelaby przy nawigacji
+                  w tej samej. */}
               <p className="text-xs text-neutral-500 mb-2">
                 {{ pl: "Kliknij dwukrotnie na zdjęcie - powiększ podgląd splotu", en: "Double-click an image to preview the weave pattern", de: "Doppelklick auf ein Bild zum Vergrößern" }[lang]}
+                {" "}
+                <a
+                  href={sciezkaJezyka("/blog/rodzaje-splotow-lancuszkow/", lang)}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                >
+                  {{ pl: "Czym różnią się sploty?", en: "How do the weaves differ?", de: "Worin unterscheiden sich die Muster?" }[lang]}
+                </a>
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_WEAVES.map(w => {

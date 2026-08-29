@@ -75,12 +75,36 @@ Pole zaznaczane, ktore jest zaznaczone i nieaktywne, zastapil napis o stanie
 rzeczy. Martwy przelacznik uczy wylacznie tego, ze klikniecia czasem nie
 dzialaja.
 
-### 5. Kasowanie oplaconego zlecenia mowi, co robi
+### 5. Postep jest osia czasu, a przycisk stoi pod przystankiem
+
+Etapy leza na jednej linii, ze stemplami pod nazwami, a przycisk stoi pod tym
+przystankiem, DO KTOREGO prowadzi. Widac wtedy nie tylko, co mozna zrobic, ale
+i dokad to przesunie zlecenie. Termin domyka os, bo jest tym, do czego ona
+zmierza: pojawia sie sam w chwili, gdy zegar rusza.
+
+Przystanek wysylkowy potrzebuje dwoch pol, wiec jest rozwijany. Reszta to
+pojedyncze przyciski, bo rozwijanie czegos, co ma jedna mozliwosc, jest samym
+klikaniem.
+
+Zapis i wycofanie stoja PRZY WIERSZU, a nie na dole rozwinietego panelu: przy
+dlugim zleceniu trzeba bylo do nich przewijac, a wracalo sie do wiersza, ktory
+wyszedl juz poza ekran. Wiaze je z formularzem atrybut `form`, wiec dzialaja bez
+skryptu. Kazda ikona ma dymek, bo znak jest krotki, ale cichy, a jeden z nich
+kasuje zlecenie.
+
+### 6. Kasowanie oplaconego zlecenia mowi, co robi
 
 Krzyzyk otwiera ostrzezenie i pole na przepisanie numeru, a nie kasuje od razu.
 Przy zleceniu oplaconym ostrzezenie nazywa rzecz po imieniu: platnosc zostaje
 bez zamowienia, wiec ksiegowosc i panel przestaja sie zgadzac, a zwykla droga
 jest anulowanie.
+
+### 7. Znacznik ustalen da sie poprawic w kolejce
+
+Zamraza sie przy zaplacie, ale zlecenia sprzed jego wprowadzenia go nie maja,
+a zdarza sie tez, ze rzecz wymagajaca rozmowy przeszla przez oferte bez niego.
+Bez pola w kolejce takie zlecenie na zawsze mowiloby "ustalenia nie byly
+wymagane" i nigdy nie stanelo by na wlasciwym przystanku osi.
 
 ## Alternatywy i powody odrzucenia
 
@@ -119,6 +143,12 @@ jest anulowanie.
   wplaty (decyzja wlasciciela), z "po terminie" jednym kliknieciem obok.
   Sortowanie idzie do `ORDER BY` przez interpolacje, wiec bierze sie z bialej
   listy: `ORDER BY` nie przyjmuje parametru wiazanego.
+
+- **Korekta skladala zapytanie, ktore nie mialo prawa sie wykonac.** Przypisania
+  szly plaska lista, a Postgres odrzuca `SET a = 1, a = 2`, i to dopiero w bazie.
+  Cofniecie etapu z "wyslane" kasuje list przewozowy, a formularz panelu przysyla
+  go przy kazdym zapisie, wiec kazde takie cofniecie konczylo sie bledem 500.
+  Teraz przypisania stoja pod nazwa kolumny i wygrywa pozniejsze.
 
 ## Niezmienniki i testy
 

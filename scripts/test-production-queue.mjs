@@ -346,9 +346,19 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   // Panel przysyla liczbe dni i date przy KAZDYM zapisie, wiec sama obecnosc
   // pola nic nie znaczy. Bez porownania ze stanem w bazie niezmieniona data
   // wygrywalaby zawsze i termin nie ruszylby sie nigdy.
+  // Postgres odrzuca `SET a = 1, a = 2`, i to dopiero w bazie. Korekta etapu
+  // z "wyslane" kasuje list przewozowy, a panel przysyla go przy kazdym
+  // zapisie, wiec plaska lista skladala zapytanie, ktore nie mialo prawa sie
+  // wykonac: kazde takie cofniecie konczylo sie bledem 500.
+  ma(SERWER, /const pola = new Map\(\)[\s\S]{0,3000}?const zmiany = \[\.\.\.pola\.values\(\)\]/,
+     "korekta sklada przypisania pod nazwa kolumny, wiec dwa zapisy sie nie zderzaja");
+  // Parametr dolozony do zapytania i w nim nieuzyty wywala cale zapytanie na
+  // "could not determine data type", wiec sprawdzamy to przed wpisaniem.
+  ma(SERWER, /const zegarWyzerowany = czyszczone\.includes\("deadline_at"\)[\s\S]{0,900}?dataZmieniona && !zegarWyzerowany/,
+     "cofniecie przed etap z zegarem wygrywa z obiema drogami do terminu");
   ma(SERWER, /dataZmieniona = termin !== undefined && termin !== terminWBazie/,
      "korekta wie, ktore pole terminu operator naprawde ruszyl");
-  ma(SERWER, /if \(dni !== null && !dataZmieniona\)[\s\S]{0,400}?COALESCE\(queued_at, production_started_at, paid_at\)/,
+  ma(SERWER, /if \(dni !== null && !dataZmieniona && !zegarWyzerowany\)[\s\S]{0,400}?COALESCE\(queued_at, production_started_at, paid_at\)/,
      "zmiana liczby dni przelicza termin od startu zegara, a nie od dzisiaj");
   // Od ADR-0027 `paid` trwa ulamek sekundy, wiec warunek na nim samym przestal
   // chronic cokolwiek: dziwna ITN wciagalaby do weryfikacji zlecenie w robocie.

@@ -21,9 +21,10 @@ import { meta as m15 } from "./posts/ile-kosztuje-bizuteria.meta.js";
 import { meta as m16 } from "./posts/rodzaje-splotow-lancuszkow.meta.js";
 import { meta as m17 } from "./posts/lost-resin-krok-po-kroku.meta.js";
 import { meta as m18 } from "./posts/druk-miniatur-figurek-16k.meta.js";
+import { meta as m19 } from "./posts/przyciecie-uproszczenie-skala-stl.meta.js";
 
 export const POSTS_META = [
-  m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18,
+  m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19,
 ];
 
 export function getPostMeta(slug) {

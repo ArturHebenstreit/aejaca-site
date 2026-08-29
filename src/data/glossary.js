@@ -65,9 +65,9 @@ export const GLOSSARY = [
     category: "jewelry",
     term: { pl: "Rodowanie", en: "Rhodium Plating", de: "Rhodinierung" },
     definition: {
-      pl: "Galwaniczne pokrycie srebra lub białego złota cienką warstwą rodu - zwiększa połysk i odporność na matowienie.",
-      en: "Electroplating silver or white gold with a thin rhodium layer - increases shine and tarnish resistance.",
-      de: "Galvanische Beschichtung von Silber oder Weißgold mit einer dünnen Rhodiumschicht - erhöht Glanz und Anlaufschutz.",
+      pl: "Galwaniczne pokrycie srebra lub białego złota cienką warstwą rodu. Zwiększa połysk i odporność na matowienie, z czasem ściera się i wymaga powtórzenia.",
+      en: "Electroplating silver or white gold with a thin layer of rhodium. It increases shine and tarnish resistance, wears off in time and then has to be redone.",
+      de: "Galvanische Beschichtung von Silber oder Weißgold mit einer dünnen Rhodiumschicht. Sie erhöht Glanz und Anlaufschutz, nutzt sich ab und wird erneuert.",
     },
     relatedBlog: "jak-dbac-o-bizuterie",
   },
@@ -109,9 +109,9 @@ export const GLOSSARY = [
     category: "jewelry",
     term: { pl: "Biżuteria inwestycyjna", en: "Investment Jewelry", de: "Anlageschmuck" },
     definition: {
-      pl: "Biżuteria ze złota lub platyny z kamieniami szlachetnymi, która zachowuje lub zyskuje na wartości w czasie.",
-      en: "Gold or platinum jewelry with gemstones that retains or appreciates in value over time.",
-      de: "Gold- oder Platinschmuck mit Edelsteinen, der seinen Wert behält oder im Laufe der Zeit steigert.",
+      pl: "Biżuteria ze złota lub platyny z kamieniami szlachetnymi, która zachowuje lub zyskuje na wartości w czasie. O wartości decyduje kruszec, jakość kamienia i wykonanie.",
+      en: "Gold or platinum jewelry with gemstones that retains or appreciates in value over time. What drives that value is the metal, the quality of the stone and the workmanship.",
+      de: "Gold- oder Platinschmuck mit Edelsteinen, der seinen Wert behält oder mit der Zeit steigert. Entscheidend sind das Edelmetall, die Qualität des Steins und die Ausführung.",
     },
     relatedBlog: "bizuteria-inwestycja",
   },
@@ -153,9 +153,9 @@ export const GLOSSARY = [
     category: "studio",
     term: { pl: "PETG", en: "PETG", de: "PETG" },
     definition: {
-      pl: "Wytrzymały filament odporny na uderzenia i chemikalia. Idealny na części mechaniczne i elementy outdoor.",
-      en: "Tough filament resistant to impacts and chemicals. Ideal for mechanical parts and outdoor elements.",
-      de: "Robustes Filament, beständig gegen Schlag und Chemikalien. Ideal für mechanische Teile und Outdoor-Elemente.",
+      pl: "Wytrzymały filament odporny na uderzenia i chemikalia, mniej kruchy od PLA i łatwiejszy w druku od ABS. Do części mechanicznych i elementów pracujących na zewnątrz.",
+      en: "A tough filament resistant to impact and chemicals, less brittle than PLA and easier to print than ABS. For mechanical parts and components that work outdoors.",
+      de: "Robustes Filament, beständig gegen Schlag und Chemikalien, weniger spröde als PLA und leichter zu drucken als ABS. Für mechanische Teile und Bauteile im Freien.",
     },
     relatedBlog: "druk-3d-krok-po-kroku",
   },
@@ -323,6 +323,39 @@ export const GLOSSARY = [
       de: "Vergrößerung eines CAD-Modells vor dem Druck um einen Faktor, der dem Schwund der Legierung beim Erstarren entspricht, damit der fertige Guss die Zielgröße erreicht. AEJaCA verwendet: Au 585 x1,0196, Ag 925 x1,016, Au 9K x1,021, Au 18K x1,018. Ohne diese Korrektur fällt der Guss kleiner aus als das entworfene Modell.",
     },
     relatedBlog: "druk-3d-krok-po-kroku",
+  },
+  {
+    id: "splot-lancuszka",
+    category: "jewelry",
+    term: { pl: "Splot łańcuszka", en: "Chain Weave", de: "Kettenmuster" },
+    definition: {
+      pl: "Sposób łączenia ogniw, który decyduje o wyglądzie, trwałości i cenie łańcuszka. Opisuje go współczynnik splotu: ile drutu potrzeba na centymetr gotowego wyrobu. Splot klasyczny ma x1,0, bizantyjski x3,2, więc ten sam metr łańcuszka kosztuje trzy razy więcej.",
+      en: "The way links are joined, which decides how a chain looks, how it lasts and what it costs. It is described by the weave factor: how much wire goes into one centimetre of finished chain. A classic weave is x1.0, a Byzantine x3.2, so the same length costs three times more.",
+      de: "Die Art, wie Glieder verbunden werden, bestimmt Aussehen, Haltbarkeit und Preis einer Kette. Beschrieben wird sie durch den Flechtfaktor: wie viel Draht auf einen Zentimeter fertige Kette entfällt. Klassisch x1,0, Byzantiner x3,2, dieselbe Länge kostet also dreimal mehr.",
+    },
+    relatedBlog: "rodzaje-splotow-lancuszkow",
+  },
+  {
+    id: "skurcz-odlewniczy",
+    category: "studio",
+    term: { pl: "Skurcz odlewniczy", en: "Casting Shrinkage", de: "Gussschwund" },
+    definition: {
+      pl: "Zmniejszenie wymiaru odlewu względem wzorca, bo stop krzepnąc zajmuje mniej miejsca niż w stanie ciekłym. Wielkość skurczu zależy od stopu: srebro 925 kurczy się około 1,6 procent, złoto 9K około 2,1. Dlatego model powiększa się przed drukiem, a nie po odlaniu.",
+      en: "The casting comes out smaller than the pattern, because an alloy takes up less room solid than liquid. How much depends on the alloy: silver 925 shrinks about 1.6 percent, 9K gold about 2.1. That is why the model is enlarged before printing, not corrected after casting.",
+      de: "Der Guss fällt kleiner aus als das Modell, weil eine Legierung fest weniger Raum einnimmt als flüssig. Das Maß hängt von der Legierung ab: Silber 925 schwindet etwa 1,6 Prozent, Gold 9K etwa 2,1. Deshalb wird das Modell vor dem Druck vergrößert, nicht nach dem Guss.",
+    },
+    relatedBlog: "lost-resin-krok-po-kroku",
+  },
+  {
+    id: "stopy-jubilerskie",
+    category: "jewelry",
+    term: { pl: "Stopy jubilerskie", en: "Jewelry Alloys", de: "Schmucklegierungen" },
+    definition: {
+      pl: "Czyste złoto i srebro są zbyt miękkie na biżuterię, więc łączy się je z miedzią, cynkiem, srebrem lub palladem. Dodatki decydują o twardości, barwie i temperaturze topnienia: miedź daje odcień czerwony, pallad biały, cynk poprawia lejność przy odlewaniu.",
+      en: "Pure gold and silver are too soft for jewelry, so they are alloyed with copper, zinc, silver or palladium. The additions set hardness, colour and melting point: copper pulls the tone red, palladium white, zinc improves how the metal fills a mould when cast.",
+      de: "Reines Gold und Silber sind für Schmuck zu weich, daher legiert man sie mit Kupfer, Zink, Silber oder Palladium. Die Zusätze bestimmen Härte, Farbe und Schmelzpunkt: Kupfer färbt rötlich, Palladium weiß, Zink verbessert das Formfüllvermögen beim Guss.",
+    },
+    relatedBlog: "srebro-vs-zloto",
   },
 ];
 

@@ -11,7 +11,7 @@
 
   <url>
     <loc>https://www.aejaca.com/</loc>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
 
@@ -369,7 +369,7 @@
 
   <url>
     <loc>https://www.aejaca.com/reviews/</loc>
-    <lastmod>2026-08-18</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
 
@@ -705,6 +705,18 @@
       <image:loc>https://www.aejaca.com/img/blog/druk-miniatur-figurek-16k.webp</image:loc>
       <image:title>Custom miniature and figurine printing, 16K resin</image:title>
     </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
   </url>
 
   <url>
@@ -1056,6 +1068,42 @@
   </url>
 
   <url>
+    <loc>https://www.aejaca.com/glossary/splot-lancuszka/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/skurcz-odlewniczy/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/stopy-jubilerskie/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
+  </url>
+
+  <url>
     <loc>https://www.aejaca.com/shop/pierscionek-granat-zloto-585/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1225,7 +1273,7 @@
 
   <url>
     <loc>https://www.aejaca.com/en/</loc>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
 
@@ -1561,7 +1609,7 @@
 
   <url>
     <loc>https://www.aejaca.com/en/reviews/</loc>
-    <lastmod>2026-08-18</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
 
@@ -1821,6 +1869,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/przyciecie-uproszczenie-skala-stl/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
   </url>
 
   <url>
@@ -2172,6 +2232,42 @@
   </url>
 
   <url>
+    <loc>https://www.aejaca.com/en/glossary/splot-lancuszka/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/skurcz-odlewniczy/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/stopy-jubilerskie/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
+  </url>
+
+  <url>
     <loc>https://www.aejaca.com/en/shop/pierscionek-granat-zloto-585/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -2341,7 +2437,7 @@
 
   <url>
     <loc>https://www.aejaca.com/de/</loc>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
 
@@ -2677,7 +2773,7 @@
 
   <url>
     <loc>https://www.aejaca.com/de/reviews/</loc>
-    <lastmod>2026-08-18</lastmod>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
 
@@ -2937,6 +3033,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/przyciecie-uproszczenie-skala-stl/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/przyciecie-uproszczenie-skala-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/przyciecie-uproszczenie-skala-stl/" />
   </url>
 
   <url>
@@ -3285,6 +3393,42 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kompensacja-skurczu/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kompensacja-skurczu/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/splot-lancuszka/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/splot-lancuszka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/splot-lancuszka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/skurcz-odlewniczy/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/skurcz-odlewniczy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/skurcz-odlewniczy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/stopy-jubilerskie/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/stopy-jubilerskie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/stopy-jubilerskie/" />
   </url>
 
   <url>

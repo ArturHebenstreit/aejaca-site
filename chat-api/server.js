@@ -4293,14 +4293,30 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     termin = surowa || null;
   }
 
+  // Znacznik ustalen zamraza sie przy zaplacie, ale zamowienia sprzed jego
+  // wprowadzenia go nie maja, a zdarza sie tez, ze rzecz wymagajaca rozmowy
+  // przeszla przez oferte bez znacznika. Bez mozliwosci poprawienia go tutaj
+  // takie zlecenie na zawsze mowiloby "ustalenia nie byly wymagane".
+  const ustalenia = req.body?.requiresDetails === undefined
+    ? undefined
+    : req.body.requiresDetails === true || req.body.requiresDetails === "true" || req.body.requiresDetails === "on";
+
   // Ktore z dwoch pol terminu operator naprawde ruszyl. Panel przysyla oba
   // przy kazdym zapisie, wiec sama ich obecnosc niczego nie znaczy.
   const terminWBazie = order.deadline_at ? String(order.deadline_at).slice(0, 10) : null;
   const dataZmieniona = termin !== undefined && termin !== terminWBazie;
   const dniZmienione = dni !== undefined && dni !== (order.lead_days == null ? null : Number(order.lead_days));
 
-  const zmiany = [];
+  // Przypisania trzymamy POD NAZWA KOLUMNY, a nie w plaskiej liscie. Postgres
+  // odrzuca `SET a = 1, a = 2` bledem i to dopiero w bazie, wiec lista
+  // pozwalala zlozyc zapytanie, ktore nie ma prawa sie wykonac: korekta etapu
+  // z "wyslane" kasuje list przewozowy, a formularz panelu przysyla go przy
+  // kazdym zapisie, wiec kazde takie cofniecie konczylo sie bledem 500.
+  // Przy dwoch zapisach do tej samej kolumny wygrywa PoZNIEJSZY.
+  const pola = new Map();
   const wartosci = [order.id];
+  const ustaw = (kolumna, wyrazenie) => pola.set(kolumna, `${kolumna} = ${wyrazenie}`);
+  const parametr = (v) => { wartosci.push(v); return `$${wartosci.length}`; };
   let czyszczone = [];
 
   if (etap) {
@@ -4313,58 +4329,55 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
         code: regula.powod,
       });
     }
-    wartosci.push(etap);
-    zmiany.push(`status = $${wartosci.length}`);
+    ustaw("status", parametr(etap));
     const pole = ETAPY_PRACY[etap]?.pole;
-    if (pole) zmiany.push(`${pole} = COALESCE(${pole}, NOW())`);
+    if (pole) ustaw(pole, `COALESCE(${pole}, NOW())`);
     czyszczone = regula.doWyczyszczenia;
     for (const kolumna of czyszczone) {
       // `reminders_sent` jest NOT NULL i trzyma liste, wiec czysci sie do
       // listy pustej, a nie do NULL. Wpisanie NULL wywalilo by cala korekte
       // na ograniczeniu kolumny, i to dopiero w bazie.
-      zmiany.push(kolumna === "reminders_sent" ? `${kolumna} = '[]'::jsonb` : `${kolumna} = NULL`);
+      ustaw(kolumna, kolumna === "reminders_sent" ? "'[]'::jsonb" : "NULL");
     }
     // Cofniecie sprzed wysylki zabiera tez list przewozowy, bo nie ma czego
     // sledzic. Jawny numer w tym samym zadaniu i tak wygra, bo idzie nizej.
-    if (czyszczone.includes("shipped_at")) zmiany.push("tracking_number = NULL");
+    if (czyszczone.includes("shipped_at")) ustaw("tracking_number", "NULL");
   }
 
-  if (numer !== undefined) {
-    wartosci.push(numer);
-    zmiany.push(`tracking_number = $${wartosci.length}`);
-  }
-  if (notatka !== undefined) {
-    wartosci.push(notatka);
-    zmiany.push(`production_note = $${wartosci.length}`);
-  }
+  if (numer !== undefined) ustaw("tracking_number", parametr(numer));
+  if (notatka !== undefined) ustaw("production_note", parametr(notatka));
+  if (ustalenia !== undefined) ustaw("requires_details", parametr(ustalenia));
+  // Cofniecie zlecenia przed etap z zegarem wygrywa z obiema droga do terminu.
+  // Termin zostawiony przy zleceniu, ktore wrocilo do ustalen, bylby data
+  // policzona z pracy, ktora sie jeszcze nie zaczela. Sprawdzamy to PRZED
+  // wpisaniem czegokolwiek, bo parametr dolozony do zapytania i nieuzyty
+  // w nim wywala cale zapytanie na "could not determine data type".
+  const zegarWyzerowany = czyszczone.includes("deadline_at");
+
   if (dniZmienione) {
-    wartosci.push(dni);
-    zmiany.push(`lead_days = $${wartosci.length}`);
+    const n = parametr(dni);
+    ustaw("lead_days", n);
     // Zmiana liczby dni przelicza termin OD CHWILI STARTU ZEGARA, a nie od
     // dzisiaj: inaczej poprawienie literowki w liczbie dni przesuwaloby date,
     // ktora klient juz dostal, o tyle, ile zlecenie zdazylo przelezec.
     // Zlecenie bez startu zegara terminu jeszcze nie ma i nie dostaje go tedy.
-    //
-    // Data podana wprost wygrywa i wtedy przeliczenia nie ma. Dwa przypisania
-    // do jednej kolumny odrzuca zreszta Postgres, i to dopiero w bazie.
-    if (dni !== null && !dataZmieniona) {
-      zmiany.push(`deadline_at = CASE
+    if (dni !== null && !dataZmieniona && !zegarWyzerowany) {
+      ustaw("deadline_at", `CASE
                      WHEN COALESCE(queued_at, production_started_at, paid_at) IS NULL THEN deadline_at
-                     ELSE (COALESCE(queued_at, production_started_at, paid_at) + ($${wartosci.length} || ' days')::interval)::date
+                     ELSE (COALESCE(queued_at, production_started_at, paid_at) + (${n} || ' days')::interval)::date
                    END`);
     }
   }
   // Data wpisana wprost wygrywa z przeliczona, bo jest decyzja, a nie wynikiem.
-  if (dataZmieniona) {
-    wartosci.push(termin);
-    zmiany.push(`deadline_at = $${wartosci.length}::date`);
-  }
+  if (dataZmieniona && !zegarWyzerowany) ustaw("deadline_at", `${parametr(termin)}::date`);
+
+  const zmiany = [...pola.values()];
   if (!zmiany.length) return res.status(400).json({ error: "Nie ma czego zmienic", code: "no_change" });
 
   const zapis = await pool.query(
     `UPDATE orders SET ${zmiany.join(", ")}, updated_at = NOW()
       WHERE id = $1 AND status = $${wartosci.length + 1}
-      RETURNING status, tracking_number, production_note, lead_days, deadline_at`,
+      RETURNING status, tracking_number, production_note, lead_days, deadline_at, requires_details`,
     [...wartosci, order.status]
   );
   if (!zapis.rowCount) {
@@ -4379,6 +4392,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     trackingNumber: zapis.rows[0].tracking_number,
     productionNote: zapis.rows[0].production_note,
     leadDays: zapis.rows[0].lead_days,
+    requiresDetails: zapis.rows[0].requires_details === true,
     deadlineAt: zapis.rows[0].deadline_at ? String(zapis.rows[0].deadline_at).slice(0, 10) : null,
     cleared: czyszczone,
   });

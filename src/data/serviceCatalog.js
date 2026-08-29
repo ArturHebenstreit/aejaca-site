@@ -34,6 +34,14 @@ export const SERVICES_FULL = [
       "Upload an STL file and get a binding price immediately.",
       "STL-Datei hochladen, verbindlichen Preis sofort erhalten."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Druk 3D z filamentu na Bambu Lab H2D, pole 300 × 320 × 325 mm. Wgraj plik STL i poznaj wiążącą cenę liczoną z geometrii modelu. Ponad dwadzieścia filamentów.",
+      "FDM 3D printing on a Bambu Lab H2D, 300 × 320 × 325 mm build volume. Upload an STL and get a binding price computed from your model geometry. Over 20 filaments.",
+      "FDM-3D-Druck auf einer Bambu Lab H2D, Bauraum 300 × 320 × 325 mm. STL hochladen und verbindlichen Preis aus der Modellgeometrie erhalten. Über 20 Filamente."
+    ),
     description: L(
       "Drukujemy na Bambu Lab H2D, maszynie z dwiema głowicami i przestrzenią roboczą 300 × 320 × 325 mm. To pozwala wykonać zarówno pojedynczy prototyp, jak i serię kilkudziesięciu sztuk bez przerywania pracy na wymianę materiału.\n\nCenę liczymy z geometrii Twojego modelu: objętości, wymiarów i wysokości, bo to one decydują o zużyciu filamentu i czasie druku. Dlatego po wgraniu pliku widzisz konkretną kwotę, a nie widełki.\n\nDysponujemy ponad dwudziestoma filamentami, od standardowego PLA po materiały inżynieryjne z włóknem węglowym, takie jak PA6-CF czy PPS-CF, które wytrzymują temperaturę i obciążenia mechaniczne.",
       "We print on a Bambu Lab H2D, a dual-nozzle machine with a 300 × 320 × 325 mm build volume. That covers both a single prototype and a run of several dozen pieces without stopping to swap material.\n\nThe price comes from your model geometry: volume, dimensions and height, because those determine filament use and print time. That is why you see a specific figure after uploading the file, not a range.\n\nWe stock over twenty filaments, from standard PLA to carbon-filled engineering materials such as PA6-CF and PPS-CF, which withstand heat and mechanical load.",
@@ -78,6 +86,14 @@ export const SERVICES_FULL = [
       "14 µm micro-detail: figurines, miniatures, casting patterns.",
       "14-µm-Mikrodetail: Figuren, Miniaturen, Gussmodelle."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Druk żywiczny Elegoo Saturn 4 Ultra 16K, detal 14 µm: figurki, miniatury i wzorce odlewnicze. Cenę liczymy z geometrii wgranego modelu, a nie z widełek.",
+      "MSLA resin printing on an Elegoo Saturn 4 Ultra 16K, 14 µm detail: figurines, miniatures and casting patterns. Priced from your model, not from a range.",
+      "MSLA-Harzdruck auf Elegoo Saturn 4 Ultra 16K, Detail 14 µm: Figuren, Miniaturen und Gussmodelle. Preis aus der hochgeladenen Geometrie, nicht aus einer Spanne."
+    ),
     description: L(
       "Elegoo Saturn 4 Ultra 16K odwzorowuje detal o wielkości 14 mikrometrów, czyli mniejszy niż grubość ludzkiego włosa. To technologia do rzeczy, w których liczy się faktura powierzchni, a nie wytrzymałość: miniatur, figurek kolekcjonerskich i wzorców jubilerskich.\n\nDla odlewnictwa mamy osobne żywice odlewnicze, które wypalają się bez pozostałości. Wzorzec z takiej żywicy trafia prosto do masy formierskiej, a po wypaleniu zostaje po nim pusta forma gotowa na metal. Tę ścieżkę kontrolujemy wnikliwiej niż zwykły wydruk, bo błąd na wzorcu ujawnia się dopiero po odlaniu, gdy kruszec jest już zużyty.\n\nW cenie jest mycie w alkoholu izopropylowym i doświetlanie, czyli pełne przygotowanie modelu do użycia.",
       "The Elegoo Saturn 4 Ultra 16K resolves detail down to 14 micrometres, finer than a human hair. This is the technology for pieces where surface texture matters more than strength: miniatures, collectible figurines and jewelry casting patterns.\n\nFor casting we keep separate castable resins that burn out without residue. A pattern printed in such resin goes straight into investment, and after burnout it leaves a clean cavity ready for metal. We inspect this route more carefully than an ordinary print, because a fault in the pattern only shows after casting, when the metal is already spent.\n\nWashing in isopropyl alcohol and post-curing are included, so the model arrives ready to use.",
@@ -120,6 +136,14 @@ export const SERVICES_FULL = [
       "Wood, plywood, acrylic, leather, glass.",
       "Holz, Sperrholz, Acryl, Leder, Glas."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Grawerowanie laserem CO2 55 W w drewnie, sklejce, akrylu, skórze i szkle. Pole 600 × 288 mm, a z podnośnikiem także butelki, deski i przedmioty wyższe.",
+      "CO2 laser engraving at 55 W in wood, plywood, acrylic, leather and glass. A 600 × 288 mm bed, and with the riser also bottles, boards and taller objects.",
+      "CO2-Lasergravur mit 55 W in Holz, Sperrholz, Acryl, Leder und Glas. Arbeitsfeld 600 × 288 mm, mit Hubtisch auch Flaschen, Bretter und höhere Objekte."
+    ),
     description: L(
       "Laser CO2 xTool P2 o mocy 55 W grawerem wypala rysunek w materiale, więc efekt jest trwały i nie schodzi z powierzchni. Pole robocze ma 600 × 288 mm, a z podnośnikiem obsługujemy przedmioty dłuższe i wyższe, na przykład butelki czy deski.\n\nGrawerujemy zarówno wektory, czyli logotypy, napisy i wzory, jak i fotografie, gdzie odcienie szarości oddajemy gęstością punktów. Ten drugi tryb wymaga więcej czasu maszyny, dlatego kalkulator pyta o szczegółowość.\n\nPersonalizacja pojedynczej sztuki kosztuje tyle samo za obsługę co seria, więc przy większych nakładach cena za sztukę wyraźnie spada.\n\nPowyższa cena obejmuje wyłącznie robociznę. Materiał możesz powierzyć albo zamówić u nas, wybierzesz to w konfiguratorze poniżej.",
       "The 55 W xTool P2 CO2 laser burns the design into the material, so the result is permanent and does not sit on the surface. The work area is 600 × 288 mm, and with a riser we handle longer and taller objects such as bottles or boards.\n\nWe engrave both vectors, meaning logos, lettering and patterns, and photographs, where greyscale is rendered through dot density. The second mode takes considerably more machine time, which is why the calculator asks about detail level.\n\nPersonalising a single piece carries the same setup cost as a series, so the price per piece drops noticeably on larger runs.\n\nThe price above covers labour only. You can supply your own material or order it from us, choose it in the configurator below.",
@@ -160,6 +184,14 @@ export const SERVICES_FULL = [
       "Kształty z pliku wektorowego, sklejka, akryl, skóra, filc.",
       "Shapes from a vector file: plywood, acrylic, leather, felt.",
       "Formen aus einer Vektordatei: Sperrholz, Acryl, Leder, Filz."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Cięcie laserem CO2 ze sklejki, akrylu, skóry i filcu. Krawędź bez wyrwań i bez szlifowania, rysunek odwzorowany co do dziesiątej części milimetra. Cena z pliku.",
+      "CO2 laser cutting in plywood, acrylic, leather and felt. An edge with no tear-out and no sanding, the drawing reproduced to a tenth of a millimetre.",
+      "CO2-Laserschnitt in Sperrholz, Acryl, Leder und Filz. Kante ohne Ausrisse und ohne Schleifen, Zeichnung auf ein Zehntelmillimeter genau. Preis aus Ihrer Datei."
     ),
     description: L(
       "Cięcie laserem daje krawędź, której nie uzyskasz piłą ani frezem: bez wyrwań, bez konieczności szlifowania, z dokładnością odwzorowania rysunku co do dziesiątej części milimetra. Dlatego sprawdza się przy elementach ażurowych, szablonach i opakowaniach.\n\nCenę wyznacza łączna długość ścieżki cięcia oraz złożoność wzoru, bo to one przekładają się na czas pracy maszyny. Kształt prosty przetniemy szybciej niż koronkowy o tej samej powierzchni.\n\nW akrylu bezbarwnym krawędź po cięciu wychodzi przezroczysta i polerowana, co często wykorzystujemy przy podświetlanych elementach.\n\nPowyższa cena obejmuje wyłącznie robociznę. Materiał możesz powierzyć albo zamówić u nas, wybierzesz to w konfiguratorze poniżej.",
@@ -203,6 +235,14 @@ export const SERVICES_FULL = [
       "Permanent metal marking that does not rub off.",
       "Dauerhafte Metallmarkierung, die sich nicht abreibt."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Znakowanie metalu laserem światłowodowym: znak nie ściera się i nie blaknie, bo zmienia strukturę metalu, a nie leży na niej. Stal, tytan, srebro, złoto.",
+      "Fiber laser marking on metal: the mark does not rub off or fade, because it changes the metal structure instead of sitting on it. Steel, titanium, silver, gold.",
+      "Faserlaser-Beschriftung auf Metall: die Markierung reibt sich nicht ab und verblasst nicht, denn sie verändert die Metallstruktur. Stahl, Titan, Silber, Gold."
+    ),
     description: L(
       "Laser fiber nie nakłada niczego na powierzchnię, tylko zmienia strukturę metalu. Znak nie ściera się w kieszeni, nie blaknie od słońca i przetrwa mycie w myjce ultradźwiękowej, w przeciwieństwie do nadruku czy farby.\n\nMamy trzy tryby: znakowanie powierzchniowe do numerów i logotypów, głębokie do oznaczeń narzędzi oraz barwne, gdzie sterując parametrami uzyskujemy kolor na stali nierdzewnej bez żadnego barwnika.\n\nZnakujemy stal, aluminium, mosiądz, tytan, a także srebro i złoto, dlatego ta usługa łączy się z biżuterią: grawer wewnątrz obrączki wykonujemy tym samym laserem.\n\nPowyższa cena obejmuje wyłącznie robociznę. Przedmiot do znakowania zwykle przysyłasz Ty, ale możesz też zamówić u nas gotowy blank, wybierzesz to w konfiguratorze poniżej.",
       "A fiber laser does not add anything to the surface, it changes the structure of the metal. The mark does not rub off in a pocket, does not fade in sunlight and survives an ultrasonic cleaner, unlike print or paint.\n\nWe work in three modes: surface marking for numbers and logos, deep marking for tool identification, and color marking, where controlling the parameters produces color on stainless steel without any dye.\n\nWe mark steel, aluminium, brass, titanium, and also silver and gold, which is why this service connects to jewelry: the engraving inside a wedding band is done with the same laser.\n\nThe price above covers labour only. You usually send us the item to mark, but you can also order a ready blank from us, choose it in the configurator below.",
@@ -243,6 +283,14 @@ export const SERVICES_FULL = [
       "Żywica UV i epoksydowa, barwienia i zatopienia.",
       "UV and epoxy resin, pigments and inclusions.",
       "UV- und Epoxidharz, Pigmente und Einschlüsse."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Odlewy z żywicy UV i epoksydowej: zatopienia kwiatów, pamiątek i elektroniki, barwienia, formy silikonowe. Przedmiot, którego nie da się wykonać inną techniką.",
+      "UV and epoxy resin casting: flowers, keepsakes and electronics embedded in clear resin, tints, silicone moulds. An object no other technique can produce.",
+      "Guss aus UV- und Epoxidharz: Blüten, Andenken und Elektronik eingeschlossen, Einfärbungen, Silikonformen. Ein Objekt, das keine andere Technik hervorbringt."
     ),
     description: L(
       "Odlew żywiczny pozwala zamknąć coś na stałe: kwiaty ze ślubnego bukietu, pamiątkę, element elektroniczny albo źródło światła. Powstaje przedmiot, którego nie da się wykonać żadną inną techniką, bo zatopienie jest widoczne przez materiał.\n\nPracujemy na żywicy UV, która utwardza się w minuty i nadaje się do małych form, oraz na epoksydowej, która wymaga doby, ale pozwala odlewać większe bryły bez pęcherzy i bez nadmiernego grzania.\n\nMożesz skorzystać z naszych form silikonowych, zamówić wykonanie nowej albo przysłać własną. Wykończenie ustalamy osobno: od surowego, przez szlifowane, po polerowane na lustro.",
@@ -288,6 +336,14 @@ export const SERVICES_FULL = [
       "We restore the shine without changing the character.",
       "Wir bringen den Glanz zurück, ohne den Charakter zu verändern."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Renowacja biżuterii bez odbierania jej charakteru: czyszczenie, przywrócenie blasku i zachowanie patyny tam, gdzie należy do wyrobu. Wycena po obejrzeniu zdjęć.",
+      "Jewelry renovation that keeps the character of the piece: cleaning, restored shine and patina left where it belongs. Quoted after we have seen the photos.",
+      "Schmuckrestaurierung, die den Charakter des Stücks bewahrt: Reinigung, wiederhergestellter Glanz und Patina dort, wo sie zum Objekt gehört. Angebot nach Fotos."
+    ),
     description: L(
       "Renowacja to nie polerowanie do połysku za wszelką cenę. Przy starej biżuterii patyna w zagłębieniach jest częścią jej wyglądu, a zdarcie jej sprawia, że wyrób traci głębię i wygląda na nowy w złym znaczeniu. Dlatego zaczynamy od rozmowy o tym, jak daleko chcesz pójść.\n\nStandardowo wykonujemy mycie ultradźwiękowe, usunięcie zaczernień i polerowanie powierzchni zewnętrznych. Osobno wyceniamy rodowanie białego złota, które z czasem żółknie, oraz złocenie srebra.\n\nKażdą sztukę z kamieniami sprawdzamy przed oddaniem: mycie ultradźwiękowe potrafi obluzować kamień osadzony w zmęczonych krapach, a lepiej dowiedzieć się o tym u nas niż po zgubieniu kamienia.",
       "Renovation is not polishing to a shine at any cost. On older jewelry the patina in the recesses is part of how the piece looks, and stripping it makes the work lose depth and look new in the wrong sense. So we start with a conversation about how far you want to go.\n\nAs standard we do ultrasonic cleaning, removal of tarnish and polishing of the outer surfaces. Rhodium plating of white gold, which yellows over time, and gilding of silver are quoted separately.\n\nEvery piece with stones is checked before handover: ultrasonic cleaning can loosen a stone held by tired prongs, and it is better to learn that here than after losing the stone.",
@@ -330,6 +386,14 @@ export const SERVICES_FULL = [
       "Zmiana rozmiaru, krapy, zapięcia, lutowanie.",
       "Resizing, prongs, clasps, soldering.",
       "Weitenänderung, Krappen, Verschlüsse, Löten."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Naprawa biżuterii: zmiana rozmiaru, wymiana krap, zapięcia, lutowanie i uzupełnienia. Mówimy wprost, kiedy taniej wyjdzie wykonanie nowego egzemplarza.",
+      "Jewelry repair: resizing, prong replacement, clasps, soldering and fills. We say plainly when a repair makes no sense and a new piece would cost you less.",
+      "Schmuckreparatur: Größenänderung, Krappen, Verschlüsse, Löten und Ergänzungen. Wir sagen offen, wann ein neues Stück günstiger wird als die Reparatur."
     ),
     description: L(
       "Naprawiamy to, co da się naprawić, i mówimy wprost, kiedy się nie da. Przy wyrobach mocno zużytych albo z cienką, przetartą obrączką naprawa bywa droższa od wykonania nowego egzemplarza, a jej trwałość i tak jest ograniczona. Wtedy powiemy to od razu, zamiast brać pieniądze za coś, co pęknie za pół roku.\n\nNajczęstsze zlecenia to zmiana rozmiaru pierścionka, odbudowa zużytych krapów trzymających kamień, wymiana zapięcia i lutowanie przerwanego łańcuszka.\n\nPrzy zmianie rozmiaru pamiętaj, że pierścionek z kamieniami osadzonymi wokół całej obwodu zwykle nie da się zmienić bez ingerencji w osadzenie. Napisz przed wysłaniem, ocenimy na zdjęciu.",
@@ -388,6 +452,14 @@ export const SERVICES_FULL = [
       "Pattern, 3D model or idea. Silver and gold, our metal or yours.",
       "Modell, 3D-Datei oder Idee. Silber und Gold, eigenes oder beigestelltes Metall."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Odlew ze srebra i złota z wzorca, modelu 3D albo samego pomysłu. Kruszec nasz lub powierzony, kolba 80 mm, wykończenie w pięciu stopniach. Cena z modelu.",
+      "Silver and gold casting from a pattern, a 3D model or just an idea. Our metal or yours, an 80 mm flask, five levels of finishing. Priced from your model.",
+      "Silber- und Goldguss aus Modell, 3D-Datei oder bloßer Idee. Unser oder Ihr Edelmetall, Küvette 80 mm, fünf Finish-Stufen. Verbindlicher Preis aus Ihrem Modell."
+    ),
     description: L(
       "Jedna usługa obejmuje trzy punkty startowe. Możesz dostarczyć gotowy wzorzec z wosku lub żywicy odlewniczej, przesłać model 3D do wydruku albo opisać sam pomysł, a AEJaCA sTuDiO przygotuje model, wzorzec i odlew. Każda ścieżka kończy się odlewem ze srebra albo złota w wybranej próbie.\n\nWiążącą cenę podajemy automatycznie wtedy, gdy przesłany model 3D pozwala policzyć objętość, mieści się w ograniczeniach kolby i wybierasz kruszec AEJaCA. Gotowy wzorzec trzeba najpierw obejrzeć, a przedmiot wykonywany od pomysłu najpierw zaprojektować. Te dwa warianty przechodzą do wyceny indywidualnej.\n\nMożemy pracować na kruszcu AEJaCA albo na materiale powierzonym. Materiał powierzony badamy przed przyjęciem. Dla czystego, jednorodnego stopu trzeba zwykle zapewnić 5 do 8 procent zapasu na ubytek technologiczny, a dla stopu mieszanego lub nieznanego 10 do 15 procent. Materiał platerowany lub wypełniany może nie nadawać się do przetopu.",
       "One service supports three starting points. Supply a ready wax or castable-resin pattern, upload a 3D model for us to print, or describe the idea and AEJaCA sTuDiO will design, print and cast it. Each route ends with a silver or gold casting in the selected purity.\n\nWe provide a binding automatic price when an uploaded 3D model gives a measurable volume, fits our flask limits and uses AEJaCA metal. A physical pattern must be inspected first, while an idea must be designed before its mass is known. Those two routes receive an individual quote.\n\nWe can use AEJaCA metal or customer-supplied metal. Supplied metal is assessed before acceptance. A clean single alloy typically needs 5 to 8 percent extra for technological loss; mixed or unknown material needs 10 to 15 percent. Plated or filled material may be unsuitable for remelting.",
@@ -429,6 +501,14 @@ export const SERVICES_FULL = [
       "Obrączki, sygnety i zawieszki z samego kruszcu.",
       "Bands, signet rings and pendants in plain metal.",
       "Ringe, Siegelringe und Anhänger aus reinem Metall."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Obrączki, sygnety i zawieszki z samego kruszcu, wyceniane od ręki: masa metalu po aktualnym kursie plus praca. Srebro 925 oraz złoto 9k, 14k, 18k i 24k.",
+      "Wedding bands, signet rings and pendants in plain metal, priced on the spot: metal mass at the current rate plus labour. Silver 925 and gold 9k, 14k, 18k, 24k.",
+      "Trauringe, Siegelringe und Anhänger aus reinem Edelmetall, sofort kalkuliert: Metallmasse zum Tageskurs plus Arbeit. Silber 925 sowie Gold 9k, 14k, 18k und 24k."
     ),
     description: L(
       "Wyrób z samego kruszcu da się wycenić od ręki, bo cena składa się z dwóch znanych rzeczy: masy metalu przeliczonej po aktualnym kursie oraz pracy zależnej od metody wykonania. Dlatego ta kategoria jest w sklepie, a wyroby z kamieniami nie.\n\nOdlew sprawdza się przy formach pełnych i powtarzalnych, a wykonanie ręczne przy prostych obrączkach i wszędzie tam, gdzie chcesz uzyskać fakturę kutego metalu.\n\nKurs kruszcu pobieramy z NBP i aktualizujemy co godzinę, więc cena, którą widzisz, odpowiada rynkowi z tego dnia. Przy zamówieniu jest wiążąca przez 7 dni niezależnie od tego, co zrobi złoto.",
@@ -472,6 +552,14 @@ export const SERVICES_FULL = [
       "Pierścionki zaręczynowe i wyroby z kamieniem powierzonym.",
       "Engagement rings and pieces using a stone you provide.",
       "Verlobungsringe und Stücke mit von Ihnen gestelltem Stein."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Pierścionki zaręczynowe i wyroby z kamieniem, także powierzonym. Zaczynamy od rozmowy i projektu, a nie od formularza. Odpowiadamy zwykle w 24 godziny.",
+      "Engagement rings and pieces with stones, including a stone you bring us. We start from a conversation and a design, not a form. We reply within 24 hours.",
+      "Verlobungsringe und Stücke mit Steinen, auch mit Ihrem Stein. Wir beginnen mit einem Gespräch und einem Entwurf, nicht mit einem Formular. Antwort in 24 h."
     ),
     description: L(
       "To jest ta część naszej pracy, której nie da się zamknąć w kalkulatorze, i dobrze. Pierścionek zaręczynowy albo wyrób z kamieniem po babci to rozmowa, nie formularz.\n\nZaczynamy od tego, co ma powstać i z jakim kamieniem. Możesz kupić kamień u nas albo powierzyć własny, także z rozbieranego starego wyrobu. Potem przygotowujemy projekt CAD z wizualizacją, żebyś zobaczył efekt przed wykonaniem, a nie po.\n\nOsadzanie kamieni to najbardziej pracochłonna część i to ona decyduje o cenie. Kamień w oprawie krapowej osadza się inaczej niż w bezel, a mikropavé z kilkudziesięcioma kamieniami to praca na wiele godzin pod mikroskopem.",
@@ -520,6 +608,14 @@ export const SERVICES_FULL = [
       "Thirteen weaves, any length and thickness.",
       "Dreizehn Geflechte, beliebige Länge und Stärke."
     ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Łańcuszki na wymiar w trzynastu splotach: pancerka, figaro, lisi ogon, kostka i inne. Dowolna długość i grubość, srebro lub złoto. Wycena w 24 godziny.",
+      "Made-to-measure chains in thirteen weaves: curb, figaro, foxtail, box and more. Any length and thickness, silver or gold. Individually quoted within 24 hours.",
+      "Maßgefertigte Ketten in dreizehn Geflechten: Panzer, Figaro, Fuchsschwanz, Venezianer und mehr. Beliebige Länge und Stärke, Silber oder Gold. Angebot in 24 h."
+    ),
     description: L(
       "Łańcuszek to wyrób, w którym masa kruszcu rośnie szybciej, niż podpowiada intuicja. Podwojenie grubości drutu przy tej samej długości oznacza mniej więcej czterokrotnie więcej metalu, a więc czterokrotnie wyższy koszt materiału.\n\nSplot decyduje o tym samym: pancerka zużywa inaczej metal niż bizantyjski o tej samej szerokości, bo inaczej upakowane są ogniwa. Dlatego zamiast podawać cennik, liczymy masę dla konkretnej konfiguracji.\n\nMożesz też powierzyć nam własny kruszec, na przykład ze starych, zerwanych łańcuszków. Wtedy płacisz wyłącznie za pracę, a metal odzyskujemy z tego, co przyniesiesz.",
       "A chain is a piece where the mass of metal grows faster than intuition suggests. Doubling the wire thickness at the same length means roughly four times more metal, and so four times the material cost.\n\nThe weave decides the same thing: a curb chain uses metal differently from a byzantine one of the same width, because the links pack differently. So instead of publishing a price list, we compute the mass for the specific configuration.\n\nYou can also entrust us with your own metal, for example from old broken chains. Then you pay only for the labour and we recover the metal from what you bring.",
@@ -564,6 +660,14 @@ export const SERVICES_FULL = [
       "Nie masz pliku? Zaprojektujemy od zera.",
       "No file yet? We will design it from scratch.",
       "Noch keine Datei? Wir entwerfen von Grund auf."
+    ),
+    // Opis do wyniku wyszukiwania. Osobny od `lead`, bo `lead` jest
+    // jednym zdaniem na kafelku, a Bing i Google chca 150 do 160 znakow:
+    // krotszy opis zostaje zastapiony wlasnym urywkiem strony.
+    seoOpis: L(
+      "Projekt 3D od zera: ze zdjęcia, szkicu albo zepsutej części, której nikt już nie produkuje. Dostajesz plik STL gotowy do druku i prawo do korzystania z niego.",
+      "3D design from scratch: from a photo, a sketch or a broken part nobody makes any more. You get an STL file ready to print and the right to use it.",
+      "3D-Konstruktion von Grund auf: aus einem Foto, einer Skizze oder einem Bruchstück, das niemand mehr herstellt. Sie erhalten eine druckfertige STL-Datei."
     ),
     description: L(
       "Większość osób, które trafiają do nas z pomysłem, nie ma pliku. Mają zdjęcie, szkic na serwetce albo zepsutą część, której nikt już nie produkuje. Od tego zaczynamy.\n\nModel przekazujemy w dwóch formatach: STL do druku oraz STEP, czyli postać parametryczną, którą da się dalej edytować w dowolnym programie CAD. To istotne, bo sam STL jest siatką i późniejsza zmiana wymiaru oznacza modelowanie od nowa.\n\nPrawa do wyniku przechodzą na Ciebie bez ograniczeń. Możesz go drukować gdzie indziej, sprzedawać albo zlecić produkcję komu chcesz. Nie zatrzymujemy plików klientów jako zakładnika kolejnych zamówień.",
