@@ -153,7 +153,9 @@ const ikona = (sciezki, klasa = "w-4 h-4") =>
 app.locals.IKONY = {
   olowek: ikona('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
   fistaszek: ikona('<path d="M20 6 9 17l-5-5"/>'),
-  cofnij: ikona('<path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.6-6.4L3 9"/>'),
+  // Strzalka powrotu, ta sama co na klawiszu Enter: leci w prawo, zawija sie
+  // i wraca. Znaczy "zostaw, jak bylo", a nie "cofnij ostatnia zmiane".
+  cofnij: ikona('<path d="M20 5v6a4 4 0 0 1-4 4H4"/><path d="M9 10l-5 5 5 5"/>'),
   krzyzyk: ikona('<path d="M18 6 6 18"/><path d="M6 6l12 12"/>'),
 };
 
@@ -1628,6 +1630,11 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
         // dwie rzeczy trzeba rozroznic, bo termin da sie skasowac.
         leadDays: req.body.leadDays ?? undefined,
         deadlineAt: req.body.deadlineAt ?? undefined,
+        // Pole zaznaczane nie przysyla niczego, gdy jest puste, wiec brak
+        // klucza znaczylby "nie ruszaj" i znacznika nie dalo by sie ZDJAC.
+        // Formularz niesie obok ukryte pole-swiadka, wiec wiemy, ze pytanie
+        // w ogole padlo.
+        requiresDetails: req.body.ustaleniaPytane ? Boolean(req.body.requiresDetails) : undefined,
       },
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
