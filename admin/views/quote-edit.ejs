@@ -391,16 +391,18 @@
                 </label>
                 <label class="block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Termin, dni</span>
-                  <input data-pole="leadDays" type="number" min="1" max="365" placeholder="np. 14"
-                         value="<%= it.leadDays != null ? it.leadDays : '' %>"
+                  <%# Pole nie bywa puste: pozycja bez terminu nie podnosi terminu
+                      zamowienia, wiec pusto znaczylo po cichu "od reki". Czternascie
+                      dni jest domyslne, bo lepiej poprawic liczbe niz zapomniec, ze
+                      jej nie ma. %>
+                  <input data-pole="leadDays" type="number" min="1" max="365" required
+                         value="<%= it.leadDays != null ? it.leadDays : 14 %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
-                <label class="block">
-                  <span class="text-neutral-500 text-[10px] block mb-1">Wymaga ustalenia szczegółów</span>
-                  <select data-pole="requiresDetails" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
-                    <option value="" <%= it.requiresDetails ? "" : "selected" %>>nie, po zapłacie rusza termin</option>
-                    <option value="1" <%= it.requiresDetails ? "selected" : "" %>>tak, najpierw ustalenia</option>
-                  </select>
+                <label class="flex items-center gap-2 self-end pb-2">
+                  <input type="checkbox" data-pole="requiresDetails" value="1" data-zaznaczane
+                         <%= it.requiresDetails ? "checked" : "" %> class="accent-amber-400" />
+                  <span class="text-neutral-300 text-[11px]">Wymaga ustalenia szczegółów</span>
                 </label>
                 <p class="sm:col-span-6 text-neutral-600 text-[10px] leading-relaxed">
                   <span class="text-neutral-400">Termin liczymy w dniach kalendarzowych.</span>
@@ -449,11 +451,58 @@
         a tytułem przelewu jest numer wyceny.
       </p>
 
+      <%# Przycisk kopiowania, a nie samo zaznaczanie: adres z zetonem ma
+          osiemdziesiat znakow i przepisanie go recznie albo zaznaczenie o jeden
+          znak za krotko konczy sie linkiem, ktory nie dziala, a wyglada dobrze. %>
       <label class="block mb-4">
         <span class="text-neutral-400 text-xs">Link dla klienta</span>
-        <input readonly value="<%= offerUrl %>" onclick="this.select()"
-               class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-neutral-300 font-mono" />
+        <div class="mt-1 flex gap-2">
+          <input readonly value="<%= offerUrl %>" onclick="this.select()"
+                 class="flex-1 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-neutral-300 font-mono" />
+          <button type="button" data-kopiuj="<%= offerUrl %>"
+                  class="shrink-0 px-3 py-2 rounded-lg border border-white/15 text-neutral-200 text-xs hover:border-white/35 transition-colors">
+            Kopiuj
+          </button>
+        </div>
       </label>
+
+      <%# Numer zamowienia i jego wlasny link. To jest odpowiedz na pytanie
+          "skad wziac link", ktore inaczej konczy sie szukaniem starego maila:
+          zamowienie powstalo z tej oferty, wiec stoi tam, gdzie sie go szuka. %>
+      <% if (zamowienia && zamowienia.length) { %>
+        <div class="rounded-lg border border-white/10 bg-neutral-950 p-4 mb-4">
+          <div class="text-neutral-300 text-xs font-medium mb-3">Zamówienia z tej oferty</div>
+          <% zamowienia.forEach(function (z) { %>
+            <div class="mb-3">
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <span class="font-mono text-sm text-white"><%= z.orderRef %></span>
+                <button type="button" data-kopiuj="<%= z.orderRef %>"
+                        class="px-2 py-1 rounded border border-white/15 text-neutral-300 text-[10px] hover:border-white/35 transition-colors">
+                  Kopiuj numer
+                </button>
+                <span class="text-[10px] <%= z.paid ? 'text-emerald-300' : 'text-amber-300' %>">
+                  <%= z.paid ? "zapłacone" : "czeka na zapłatę" %>
+                </span>
+              </div>
+              <% if (z.url) { %>
+                <div class="flex gap-2">
+                  <input readonly value="<%= z.url %>" onclick="this.select()"
+                         class="flex-1 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-neutral-300 font-mono" />
+                  <button type="button" data-kopiuj="<%= z.url %>"
+                          class="shrink-0 px-3 py-2 rounded-lg border border-white/15 text-neutral-200 text-xs hover:border-white/35 transition-colors">
+                    Kopiuj link
+                  </button>
+                </div>
+              <% } %>
+            </div>
+          <% }); %>
+          <p class="text-neutral-600 text-[10px] leading-relaxed mt-3">
+            Ten link otwiera klientowi stan realizacji bez pytania o cokolwiek. Sam numer też wystarczy:
+            klient wpisze go na <span class="font-mono text-neutral-400">aejaca.com/order/status</span>
+            albo w koszyku i potwierdzi adresem e-mail, na który poszło potwierdzenie.
+          </p>
+        </div>
+      <% } %>
 
       <% if (quote.pickupCode) { %>
         <div class="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-4">
@@ -577,14 +626,22 @@
       }
     }
 
+    // Pole zaznaczane trzyma stan w `checked`, a nie w `value`, wiec zapamietane
+    // i przywrocone przez `value` odrzucaloby zmiany wszedzie POZA nim: krzyzyk
+    // "odrzuc zmiany" zostawialby zaznaczenie takie, jakie wlasnie klikniete.
     function zapamietaj(rekord) {
-      rekord.dataset.zapisane = JSON.stringify(pola(rekord).map(function (p) { return p.value; }));
+      rekord.dataset.zapisane = JSON.stringify(pola(rekord).map(function (p) {
+        return p.type === "checkbox" ? p.checked : p.value;
+      }));
     }
 
     function przywroc(rekord) {
       var stare = rekord.dataset.zapisane ? JSON.parse(rekord.dataset.zapisane) : null;
       if (!stare) return;
-      pola(rekord).forEach(function (p, i) { p.value = stare[i]; });
+      pola(rekord).forEach(function (p, i) {
+        if (p.type === "checkbox") p.checked = Boolean(stare[i]);
+        else p.value = stare[i];
+      });
     }
 
     var ETYKIETA = { fixed: "składnik", variant: "wariant", option: "dodatek" };
@@ -783,7 +840,12 @@
       rekord.dataset.zapisywanie = "1";
       var naglowek = rekord.dataset.rekord === "naglowek";
       var tresc = {};
-      pola(rekord).forEach(function (p) { tresc[p.dataset.pole] = p.value; });
+      pola(rekord).forEach(function (p) {
+        // Pole zaznaczane ma `value` ZAWSZE, niezaleznie od zaznaczenia, wiec
+        // czytane tak samo jak reszta wysylaloby "1" takze wtedy, gdy nikt go
+        // nie zaznaczyl. Pusty napis znaczy tu "nie".
+        tresc[p.dataset.pole] = p.type === "checkbox" ? (p.checked ? "1" : "") : p.value;
+      });
       if (!naglowek && rekord.dataset.id) tresc.id = rekord.dataset.id;
 
       stan(rekord, "zapisuję...", "text-neutral-400");
@@ -877,6 +939,34 @@
         if (e.key === "Escape") { przywroc(rekord); tryb(rekord, false); }
       });
     }
+
+    // Kopiowanie do schowka. `navigator.clipboard` wymaga polaczenia
+    // zabezpieczonego, wiec przy panelu otwartym po http zostaje stara droga
+    // przez ukryte pole: bez niej przycisk milczalby i wygladal na zepsuty.
+    document.addEventListener("click", function (e) {
+      var przycisk = e.target.closest("[data-kopiuj]");
+      if (!przycisk) return;
+      var tekst = przycisk.dataset.kopiuj;
+      var poprzedni = przycisk.textContent;
+      var udalo = function () {
+        przycisk.textContent = "skopiowane";
+        setTimeout(function () { przycisk.textContent = poprzedni; }, 1500);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(tekst).then(udalo, function () { przycisk.textContent = "nie udało się"; });
+        return;
+      }
+      var pomocnicze = document.createElement("textarea");
+      pomocnicze.value = tekst;
+      pomocnicze.setAttribute("readonly", "");
+      pomocnicze.style.position = "fixed";
+      pomocnicze.style.opacity = "0";
+      document.body.appendChild(pomocnicze);
+      pomocnicze.select();
+      try { document.execCommand("copy"); udalo(); }
+      catch (err) { przycisk.textContent = "nie udało się"; }
+      document.body.removeChild(pomocnicze);
+    });
 
     document.querySelectorAll("[data-rekord]").forEach(podepnij);
 

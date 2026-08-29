@@ -81,6 +81,8 @@ console.log("\n2. Zaplata zamyka pozycje, a nie cala oferte\n");
   rowne(stanPozycji(poz(1, { order_id: 7, order_status: "awaiting_transfer" })), "zajeta", "pozycja czekajaca na przelew jest zajeta");
   rowne(stanPozycji(poz(1, { order_id: 7, order_status: "paid" })), "zamknieta", "pozycja oplacona jest zamknieta");
   rowne(stanPozycji(poz(1, { order_id: 7, order_status: "in_production" })), "zamknieta", "pozycja w produkcji jest zamknieta");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "queued" })), "zamknieta", "pozycja czekajaca w kolejce jest zamknieta");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "details" })), "zamknieta", "pozycja w ustalaniu szczegolow jest zamknieta");
   // To jest cala korzysc z wyprowadzania stanu, a nie zapisywania go: porzucona
   // platnosc oddaje pozycje do oferty sama, bez naszego udzialu.
   rowne(stanPozycji(poz(1, { order_id: 7, order_status: "expired" })), "wolna", "porzucona platnosc oddaje pozycje do oferty");

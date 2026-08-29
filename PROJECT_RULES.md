@@ -44,6 +44,39 @@ Przed implementacją zmiany wysokiego ryzyka trzeba zapisać:
 Zmiana wysokiego ryzyka obejmuje płatności, ceny, zamówienia, dane osobowe,
 geometrię wyrobu, prawo konsumenckie, routing i publiczne fakty o ofercie.
 
+### Sprzeczność w zleceniu nazywa się przed kodem, nie po (od 2026-08-29)
+
+Polecenie właściciela: model ma czytać zlecenie jak recenzent, a nie jak
+wykonawca. Zanim cokolwiek powstanie, wskazuje miejsca nielogiczne, sprzeczne
+z tym, co już stoi w systemie, albo po prostu niedokończone, i proponuje, jak
+je rozstrzygnąć. Wskazanie jest materiałem do rozmowy, a nie odmową pracy.
+
+Szukamy pięciu rzeczy, bo tych pięć wraca najczęściej:
+
+1. **Dwie nazwy na jeden stan.** Osobne nazwy sugerują osobne stany, więc kod
+   dostaje dwa, a użytkownik do końca życia zgaduje, czym się różnią.
+2. **Sprzeczność z decyzją już zapisaną.** Nowe zlecenie bywa cofnięciem
+   wcześniejszego, tylko nikt tego tak nie nazwał. Wtedy trzeba to nazwać
+   i zmienić ADR, a nie zostawiać w kodzie dwóch reguł naraz.
+3. **Obietnica dana klientowi, która przestaje być prawdą.** Data, kwota
+   i termin raz wysłane mailem są zobowiązaniem. Zmiana mechaniki, która je
+   po cichu przesuwa, jest zmianą umowy, a nie zmianą panelu.
+4. **Stan wyliczalny zapisany jako osobne pole.** Znacznik trzymany obok
+   statusu rozjeżdża się ze statusem w pierwszym tygodniu. Patrz ADR-0013.
+5. **Brakujące zakończenie ścieżki.** Kto zamyka, kto anuluje, co widzi klient,
+   co się dzieje przy dwóch kartach otwartych naraz.
+
+Forma jest krótka: co jest nie tak, dlaczego to zaboli, jedna rekomendacja
+i alternatywa. Nie robimy z tego audytu i nie blokujemy prostych zadań.
+Gdy uwaga dotyczy rzeczy odwracalnej i taniej, model podaje ją jednym zdaniem
+i robi swoje. Gdy dotyczy pieniędzy, terminu albo tego, co klient już dostał
+na piśmie, czeka na decyzję.
+
+Rozstrzygnięcie właściciela wchodzi do `MDs/decisions/` razem z odrzuconą
+alternatywą. Uwaga zgłoszona i odrzucona też jest wynikiem: zapisuje się ją
+jako świadomie przyjętą konsekwencję, żeby za pół roku nikt jej nie odkrywał
+drugi raz jako błędu.
+
 ## 4. Twarde niezmienniki
 
 **NEVER use long em-dashes (" - ") anywhere** - not in chat replies, emails, code comments, content, or commits. Use a short hyphen, a comma, parentheses, or a full stop instead. This is a standing, non-negotiable rule.
@@ -130,8 +163,14 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   i inna u klienta, więc React wyrzuca całe poddrzewo (ADR-0022). Panel i
   strona klienta czytają tę samą liczbę, bo dwa miejsca licząc to samo
   pokazałyby dwie różne.
-- **Zegar biegnie wyłącznie w „Zlecenie w realizacji”.** W ustalaniu
-  szczegółów czekamy na klienta, a nie on na nas.
+- **Zegar startuje w „Gotowe do pobrania”, a nie przy wzięciu zlecenia do
+  ręki.** Termin stemplowany dopiero przy pobraniu przesuwałby się o każdy
+  dzień leżenia w kolejce, a klient ma datę w mailu. Zwłoka w kolejce zjada
+  nasz zapas, nie termin klienta. W ustalaniu szczegółów zegar stoi, bo
+  czekamy wtedy na klienta, a nie on na nas. Decyzja: ADR-0028.
+- **Zegar biegnie w trzech etapach: gotowe do pobrania, w realizacji,
+  gotowe do wysyłki.** Rzecz zrobiona i niewysłana ma przed sobą ten termin,
+  o który chodzi najbardziej: dzień nadania.
 - **Próg przypomnienia zapisuje się dopiero po udanej wysyłce maila.** Zapis
   przed nią zamyka próg na zawsze przy pierwszej awarii poczty, po cichu.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.

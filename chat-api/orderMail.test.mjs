@@ -119,4 +119,53 @@ assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierd
   delete process.env.API_URL;
 }
 
+// ============================================================
+// MAIL DO NAS NIE JEST ZRZUTEM BAZY, I TERMIN W NIM STOI
+// ============================================================
+// 2026-08-29 wlasciciel pokazal, co dostaje po zaplacie: przy kazdej pozycji
+// "kalkulator: null" i surowy JSON, w ktorym jedynym niepustym polem byl numer
+// oferty. Zamowienie z oferty nie ma kalkulatora i nie ma parametrow, wiec
+// caly ten zrzut byl informacja o tym, ze pola istnieja, a nie o zamowieniu.
+{
+  const zOferty = [{
+    title: "wydruk zywiczny - klucz 56 mm", qty: 1, unit_grosze: 2000, line_grosze: 2000,
+    calculator: null, params: { fromQuote: "WY20260825-F84D7EEB", description: null },
+  }];
+  const doNas = (o = {}) => buildOrderMessages({ ...order, ...o }, zOferty)
+    .find((m) => m.to !== order.customer_email).text;
+
+  const goly = doNas();
+  assert.doesNotMatch(goly, /kalkulator: null/, "pusty kalkulator nie ma o czym mowic");
+  assert.doesNotMatch(goly, /parametry: \{"fromQuote"/, "numer oferty nie jest zrzutem JSON");
+  assert.doesNotMatch(goly, /"description":null/, "pusty opis nie jest trescia");
+  assert.match(goly, /z oferty: WY20260825-F84D7EEB/, "numer oferty ma wlasny wiersz");
+
+  // Parametry, ktore naprawde cos znacza, zostaja: czyszczenie nie moze
+  // zjadac tresci razem z pustymi polami.
+  const zParametrami = buildOrderMessages(order, [{
+    ...zOferty[0], calculator: "print_3d",
+    params: { fromQuote: "WY1", description: "zielony", warstwa: "0.1 mm" },
+  }]).find((m) => m.to !== order.customer_email).text;
+  assert.match(zParametrami, /kalkulator: print_3d/);
+  assert.match(zParametrami, /parametry: \{"warstwa":"0.1 mm"\}/, "parametr o tresci zostaje");
+  assert.match(zParametrami, /OPIS OD KLIENTA: zielony/, "opis ma wlasny akapit, a nie JSON");
+
+  // Termin: po zaplacie to jedyna rzecz, ktora naprawde zmienia prace pracowni.
+  assert.match(doNas({ lead_days: 14, deadline_at: "2026-09-12" }),
+    /TERMIN: 14 dni, planowana wysylka 2026-09-12/);
+  assert.match(doNas({ lead_days: 14, requires_details: true }),
+    /TERMIN: zegar STOI/, "zlecenie czekajace na ustalenia mowi to wprost");
+  assert.match(goly, /TERMIN: nie ustalony/, "brak terminu tez jest informacja");
+
+  // Klient dostaje to samo, ale zdaniem, i tylko wtedy, gdy jest co powiedziec.
+  const doKlienta = (o = {}) => buildOrderMessages({ ...order, ...o }, zOferty)
+    .find((m) => m.to === order.customer_email);
+  assert.match(doKlienta({ lead_days: 14, deadline_at: "2026-09-12" }).text,
+    /Termin realizacji: 14 dni\. Planowana wysyłka: 2026-09-12\./);
+  assert.match(doKlienta({ lead_days: 14, requires_details: true }).html,
+    /liczymy dopiero od ustaleń/, "klient wie, ze zegar rusza po ustaleniach");
+  assert.doesNotMatch(doKlienta().text, /Termin realizacji/,
+    "puste zdanie o terminie jest gorsze niz jego brak");
+}
+
 console.log("Mail po zakupie: wszystkie sprawdzenia przeszly");

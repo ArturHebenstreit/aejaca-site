@@ -27,27 +27,46 @@ export const ETAPY_PRACY = {
   // z klientem, a nie na warsztat, wiec liczenie mu terminu byloby liczeniem
   // czasu, ktory zuzywa on, a nie my.
   details: { z: ["paid"], pole: "details_at" },
-  in_production: { z: ["paid", "details"], pole: "production_started_at" },
+  // Gotowe do pobrania: ustalenia domkniete, praca jeszcze nie ruszyla.
+  // TUTAJ startuje zegar, i to jest cala roznica wobec ADR-0027. Termin
+  // obiecany klientowi w mailu nie moze czekac na to, az ktos w pracowni
+  // klinkie "biore do roboty": kazdy dzien lezenia w kolejce przesuwalby
+  // po cichu date, ktora klient ma na pismie (ADR-0028).
+  queued: { z: ["paid", "details"], pole: "queued_at" },
+  in_production: { z: ["paid", "details", "queued"], pole: "production_started_at" },
   // Zrobione, czeka na wysylke albo na odbior. Osobny etap, bo miedzy
   // skonczeniem pracy a wydaniem paczki potrafi minac kilka dni i to wlasnie
   // tam gubily sie zlecenia.
   ready: { z: ["in_production"], pole: "ready_at" },
-  shipped: { z: ["paid", "details", "in_production", "ready"], pole: "shipped_at" },
+  shipped: { z: ["paid", "details", "queued", "in_production", "ready"], pole: "shipped_at" },
   completed: { z: ["in_production", "ready", "shipped"], pole: "completed_at" },
 };
-
 /**
- * Etap, w ktorym biegnie termin realizacji.
+ * Etap, w ktorym termin realizacji zostaje POLICZONY I ZAPISANY.
  *
  * Jedno miejsce, bo pytaja o to trzy strony naraz: przypomnienia (kogo
  * pilnowac), panel (ile dni zostalo) i strona klienta (ile dni do wysylki).
  * Trzy odpowiedzi na to samo pytanie znaczylyby klienta, ktory widzi inny
  * termin niz my.
+ *
+ * Do ADR-0028 stemplowal termin `in_production`, czyli chwila, w ktorej ktos
+ * w pracowni bral zlecenie do reki. Zwloka w kolejce przesuwala wtedy termin
+ * razem z soba, a klient mial w mailu date sprzed tego przesuniecia.
  */
-export const ETAP_Z_ZEGAREM = "in_production";
+export const ETAP_STARTU_ZEGARA = "queued";
 
 /** Etapy PO zaplacie: zamowienie jest nasze do zrobienia. */
-export const ETAPY_PO_ZAPLACIE = ["paid", "details", "in_production", "ready", "shipped", "completed"];
+export const ETAPY_PO_ZAPLACIE = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"];
+
+/**
+ * Etapy, w ktorych termin JUZ biegnie i jeszcze nie zostal domkniety.
+ *
+ * Przypomnienia czytaja te liste, a nie jeden etap. Zlecenie zrobione, ale
+ * niewyslane, ma przed soba dokladnie ten termin, o ktory chodzi najbardziej:
+ * dzien nadania. Pytane wylacznie o `in_production` milczaloby wtedy, kiedy
+ * paczka lezy spakowana i nie jedzie.
+ */
+export const ETAPY_Z_ZEGAREM = ["queued", "in_production", "ready"];
 
 /**
  * Czy taki etap w ogole istnieje.
@@ -88,12 +107,13 @@ export function przejscie(obecny, etap) {
  * byc prawda po cofnieciu. Zamowienie cofniete z "wyslane" do "w robocie" nie
  * moze dalej niesc daty wysylki, bo nic nie wyjechalo.
  */
-export const ETAPY_KOLEJNO = ["paid", "details", "in_production", "ready", "shipped", "completed"];
+export const ETAPY_KOLEJNO = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"];
 
 /** Kolumna ze stemplem dla etapu, albo null dla `paid` (stempluje go platnosc). */
 const STEMPEL = {
   paid: null,
   details: "details_at",
+  queued: "queued_at",
   in_production: "production_started_at",
   ready: "ready_at",
   shipped: "shipped_at",
@@ -129,7 +149,7 @@ export function korekta(obecny, etap) {
   // przypomnieniach. Zostawiony termin byloby data policzona z pracy, ktora
   // jeszcze sie nie zaczela, a zostawione przypomnienia zamknelyby drugie
   // podejscie: progi juz raz wyslane nie odezwalyby sie ponownie.
-  if (odIndeksu < ETAPY_KOLEJNO.indexOf(ETAP_Z_ZEGAREM)) {
+  if (odIndeksu < ETAPY_KOLEJNO.indexOf(ETAP_STARTU_ZEGARA)) {
     doWyczyszczenia.push("deadline_at");
     doWyczyszczenia.push("reminders_sent");
   }
@@ -141,16 +161,29 @@ export function korekta(obecny, etap) {
  *
  * Do ADR-0027 kazde zamowienie zostawalo w `paid` az ktos kliknal w panelu.
  * Teraz zaplata od razu pcha je dalej, bo to ona jest momentem, w ktorym
- * praca sie zaczyna. Zlecenie ze znacznikiem "wymaga ustalenia szczegolow"
- * idzie najpierw do rozmowy i wtedy zegar czeka.
+ * zobowiazanie sie zaczyna. Zlecenie ze znacznikiem "wymaga ustalenia
+ * szczegolow" idzie najpierw do rozmowy i wtedy zegar czeka.
+ *
+ * Bez znacznika zlecenie ladu je w `queued`, czyli "gotowe do pobrania":
+ * termin biegnie, choc nikt jeszcze nic nie robi. Tak wlasnie ma byc, bo
+ * to my obiecalismy date, a nie klient.
  *
  * @param {boolean} wymagaSzczegolow znacznik zamrozony na zamowieniu
- * @returns {"details"|"in_production"}
+ * @returns {"details"|"queued"}
  */
 export function etapPoZaplacie(wymagaSzczegolow) {
-  return wymagaSzczegolow ? "details" : ETAP_Z_ZEGAREM;
+  return wymagaSzczegolow ? "details" : ETAP_STARTU_ZEGARA;
 }
 
+/**
+ * Czy w tym etapie termin realizacji juz biegnie.
+ *
+ * @param {string} status status zamowienia
+ * @returns {boolean}
+ */
+export function zegarBiegnie(status) {
+  return ETAPY_Z_ZEGAREM.includes(String(status));
+}
 /**
  * Termin realizacji: dzien, na ktory umowilismy sie z klientem.
  *

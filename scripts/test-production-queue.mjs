@@ -28,8 +28,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta,
-         etapPoZaplacie, terminRealizacji, dniDoTerminu, ETAP_Z_ZEGAREM } from "../chat-api/productionQueue.js";
+import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta, etapPoZaplacie, terminRealizacji,
+         dniDoTerminu, zegarBiegnie, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM } from "../chat-api/productionQueue.js";
 import { PROGI, progDoWyslania, szturchnacSzczegoly, nazwaProgu } from "../chat-api/deadlineReminders.js";
 import { terminGrupy, quoteLeadDays, quoteRequiresDetails } from "../chat-api/quotes.js";
 
@@ -239,9 +239,25 @@ console.log("\n7. Termin realizacji: najdluzszy, i tylko z tego, co wybrane\n");
         "znacznik przy pozycji odznaczonej nie zatrzymuje zegara");
 
   // Zaplata pcha zlecenie dalej, ale zegar czeka na ustalenia.
-  rowne(etapPoZaplacie(false), ETAP_Z_ZEGAREM, "bez znacznika zaplata od razu startuje termin");
+  rowne(etapPoZaplacie(false), ETAP_STARTU_ZEGARA, "bez znacznika zaplata od razu startuje termin");
   rowne(etapPoZaplacie(true), "details", "ze znacznikiem zaplata zatrzymuje sie na ustaleniach");
-  ok("etap z zegarem to " + ETAP_Z_ZEGAREM);
+  ok("zegar startuje w etapie " + ETAP_STARTU_ZEGARA);
+
+  // SEDNO ADR-0028. Termin obiecany klientowi nie moze czekac na to, az ktos
+  // w pracowni wezmie zlecenie do reki: kazdy dzien lezenia w kolejce
+  // przesuwalby po cichu date, ktora klient ma na pismie. Dlatego zegar
+  // startuje w "gotowe do pobrania", a nie w "w realizacji".
+  rowne(ETAP_STARTU_ZEGARA, "queued", "zegar startuje w chwili, od ktorej klient liczy dni");
+  rowne(zegarBiegnie("queued"), true, "w kolejce termin biegnie, choc nikt jeszcze nic nie robi");
+  rowne(zegarBiegnie("in_production"), true, "w robocie termin biegnie dalej");
+  rowne(zegarBiegnie("ready"), true, "zrobione i niewyslane tez ma przed soba dzien nadania");
+  rowne(zegarBiegnie("details"), false, "w ustalaniu szczegolow zegar stoi, bo czekamy na klienta");
+  rowne(zegarBiegnie("shipped"), false, "po wysylce nie ma czego pilnowac");
+  // Pobranie do pracy jest znacznikiem pracy, a nie zdarzeniem terminowym.
+  // Gdyby stemplowalo termin, panel i mail klienta mowilyby dwie rozne daty.
+  rowne(ETAPY_PRACY.in_production.pole, "production_started_at", "pobranie stempluje wlasna kolumne");
+  rowne(ETAPY_PRACY.queued.pole, "queued_at", "wejscie do kolejki ma wlasny stempel");
+  rowne(ETAPY_Z_ZEGAREM.includes("paid"), false, "stan przelotowy po ITN nie liczy sie do zegara");
 
   rowne(terminRealizacji("2026-09-01T10:00:00Z", 14), "2026-09-15", "termin to data, a nie liczba dni");
   rowne(terminRealizacji("2026-09-01T10:00:00Z", null), null, "bez liczby dni nie ma terminu");
@@ -292,21 +308,54 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   const KOLEJKA = readFileSync(join(ROOT, "admin", "views", "queue.ejs"), "utf8");
   const ma = (tekst, wzor, opis) => (wzor.test(tekst) ? ok(opis) : zle(`NIE ${opis}`));
 
-  for (const etap of ["details", "ready"]) {
+  for (const etap of ["details", "queued", "ready"]) {
     ma(SCHEMAT, new RegExp(`'${etap}'`), `schemat zamowien zna etap ${etap}`);
     ma(SERWER, new RegExp(`'${etap}'`), `migracja statusow zna etap ${etap}`);
     ma(KOLEJKA, new RegExp(`\\b${etap}\\b`), `kolejka w panelu pokazuje etap ${etap}`);
   }
-  // Etap bez miejsca w kolejce jest etapem, do ktorego zlecenie wpada i z
-  // ktorego nikt go nie wyciaga, bo nikt go nie widzi.
-  ma(KOLEJKA, /const GRUPY = \["details"/, "ustalanie szczegolow stoi na gorze kolejki");
-  ma(SERWER, /DOZWOLONE_STANY = \["paid", "details", "in_production", "ready"/, "kolejka wpuszcza nowe etapy");
-  ma(SERWER, /: \["paid", "details", "in_production", "ready", "shipped"\]/, "domyslny widok kolejki pokazuje nowe etapy");
+  // Etap bez nazwy w panelu jest etapem, do ktorego zlecenie wpada i z ktorego
+  // nikt go nie wyciaga, bo nikt go nie widzi. Kazdy etap pracy musi miec
+  // wiersz w mapie `STAN`, inaczej widok wywala sie na `STAN[o.status].label`.
+  for (const etap of ETAPY_KOLEJNO) {
+    ma(KOLEJKA, new RegExp(`\\n\\s*${etap}: \\{ label:`), `kolejka umie nazwac etap ${etap}`);
+  }
+  ma(SERWER, /DOZWOLONE_STANY = \["paid", "details", "queued", "in_production", "ready"/, "kolejka wpuszcza nowe etapy");
+  ma(SERWER, /: \["paid", "details", "queued", "in_production", "ready"\]/, "domyslny widok kolejki pokazuje nowe etapy");
+  // Sortowanie idzie do `ORDER BY` przez interpolacje, bo Postgres nie
+  // przyjmuje tam parametru. Bez bialej listy panel bylby droga wstrzykniecia.
+  ma(SERWER, /SORTOWANIA = \{[\s\S]{0,400}?\};[\s\S]{0,300}?Object\.hasOwn\(SORTOWANIA/,
+     "kolejnosc listy bierze sie z bialej listy, a nie z parametru");
   // Odliczenie za projekt czytalo sam stan "paid". Od chwili, w ktorej zaplata
   // pcha zamowienie dalej, taki warunek nie znajduje juz niczego.
-  ma(readFileSync(join(ROOT, "chat-api", "quotes.js"), "utf8"),
-     /o\.status IN \('paid','details','in_production','ready','shipped','completed'\)/,
+  const QUOTES = readFileSync(join(ROOT, "chat-api", "quotes.js"), "utf8");
+  ma(QUOTES, /o\.status IN \('paid','details','queued','in_production','ready','shipped','completed'\)/,
      "odliczenie za projekt widzi zamowienia po zaplacie");
+  // Pozycja oferty zamknieta zaplata nie moze wrocic do sprzedazy dlatego,
+  // ze zlecenie poszlo etap dalej. Etap pominiety w tej liscie spada na
+  // "zajeta", czyli na zdanie "ktos wlasnie za to placi".
+  for (const etap of ETAPY_KOLEJNO) {
+    ma(QUOTES, new RegExp(`ZAMOWIENIE_DOSZLO = new Set\\(\\[[\\s\\S]{0,200}?"${etap}"`),
+       `pozycja w etapie ${etap} zostaje zamknieta`);
+  }
+  ma(SCHEMAT, /queued_at\s+TIMESTAMPTZ/, "schemat ma kolumne na chwile wejscia do kolejki");
+  ma(SERWER, /ADD COLUMN IF NOT EXISTS queued_at TIMESTAMPTZ/, "migracja doklada kolumne queued_at");
+  // Zamowienia stojace w `paid` to wlasnie "gotowe do pobrania". Zostawione
+  // tam wisialyby w panelu jako osobna grupa znaczaca to samo, co grupa obok.
+  ma(SERWER, /UPDATE orders SET status = 'queued', queued_at = COALESCE\(queued_at, paid_at\)/,
+     "stare zamowienia w paid trafiaja do kolejki");
+  // Panel przysyla liczbe dni i date przy KAZDYM zapisie, wiec sama obecnosc
+  // pola nic nie znaczy. Bez porownania ze stanem w bazie niezmieniona data
+  // wygrywalaby zawsze i termin nie ruszylby sie nigdy.
+  ma(SERWER, /dataZmieniona = termin !== undefined && termin !== terminWBazie/,
+     "korekta wie, ktore pole terminu operator naprawde ruszyl");
+  ma(SERWER, /if \(dni !== null && !dataZmieniona\)[\s\S]{0,400}?COALESCE\(queued_at, production_started_at, paid_at\)/,
+     "zmiana liczby dni przelicza termin od startu zegara, a nie od dzisiaj");
+  // Od ADR-0027 `paid` trwa ulamek sekundy, wiec warunek na nim samym przestal
+  // chronic cokolwiek: dziwna ITN wciagalaby do weryfikacji zlecenie w robocie.
+  ma(SERWER, /status <> 'payment_review' AND status <> ALL\(\$5::text\[\]\)/,
+     "weryfikacja platnosci nie siega zlecenia, ktore juz jest w pracy");
+  ma(SERWER, /WHERE id = \$1 AND fulfilled_at IS NULL AND status <> ALL\(\$4::text\[\]\)/,
+     "FAILURE po udanej platnosci nie dopisuje sie do zlecenia w pracy");
   ma(SERWER, /async function ruszZlecenie/, "zaplata ma czym ruszyc zlecenie");
   ma(SERWER, /AND status = 'paid' RETURNING id/, "start zlecenia da sie powtorzyc bez szkody");
   ma(SERWER, /cron\.schedule\("0 7 \* \* \*", przypomnijOTerminach/, "przeglad terminow jedzie raz na dobe");
