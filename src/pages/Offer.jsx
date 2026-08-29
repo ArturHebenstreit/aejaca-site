@@ -93,6 +93,7 @@ const UI = {
     leadNone: "Termin ustalimy przy potwierdzeniu.",
     note: "Zakres oferty: co wchodzi w kwotę",
     validUntil: "Oferta obowiązuje do",
+    validUntilPast: "Oferta obowiązywała do",
     expiredTitle: "Ta oferta straciła ważność",
     expiredDesc: "Kwota przestała obowiązywać, więc nie możemy jej teraz przyjąć. Napisz do nas, wystawimy nową.",
     doneTitle: "Oferta opłacona i zlecona",
@@ -184,6 +185,7 @@ const UI = {
     leadNone: "We will agree the lead time when we confirm the order.",
     note: "What this offer covers",
     validUntil: "The offer is valid until",
+    validUntilPast: "The offer was valid until",
     expiredTitle: "This offer has expired",
     expiredDesc: "The amount no longer stands, so we cannot accept it now. Write to us and we will issue a new one.",
     doneTitle: "Offer paid and in progress",
@@ -275,6 +277,7 @@ const UI = {
     leadNone: "Die Lieferzeit stimmen wir bei der Bestätigung ab.",
     note: "Umfang des Angebots",
     validUntil: "Das Angebot gilt bis",
+    validUntilPast: "Das Angebot galt bis",
     expiredTitle: "Dieses Angebot ist abgelaufen",
     expiredDesc: "Der Betrag gilt nicht mehr, wir können ihn jetzt nicht annehmen. Schreiben Sie uns, wir stellen ein neues aus.",
     doneTitle: "Angebot bezahlt und beauftragt",
@@ -891,9 +894,15 @@ export default function Offer() {
                   </div>
                 )}
 
+                {/* Termin w czasie przeszlym, gdy nie ma juz czego brac.
+                    "Obowiazuje do" jest informacja dla kogos, kto ma jeszcze
+                    wybor; przy ofercie zleconej w calosci albo wygaslej to samo
+                    zdanie jest obietnica bez adresata. */}
                 {offer.validUntil && (
                   <div className="mt-3 text-neutral-500 text-xs">
-                    {u.validUntil} {String(offer.validUntil).slice(0, 10)}
+                    {domkniete || offer.expired ? u.validUntilPast : u.validUntil}
+                    {" "}
+                    {String(offer.validUntil).slice(0, 10)}
                   </div>
                 )}
               </section>

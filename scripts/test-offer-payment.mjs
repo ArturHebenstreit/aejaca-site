@@ -331,6 +331,16 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
   // Backend i strona wdrazaja sie osobno, wiec kwota musi miec swoje miejsce
   // takze wtedy, gdy API jeszcze nie przysyla pozycji.
   ma(STATUS, /!order\.items \|\| !order\.items\.length/, "kwota ma zapas na starsze API bez pozycji");
+
+  // Ta sama rodzina bledu, co wyzej: zdanie prawdziwe w jednym stanie i
+  // nieprawdziwe w drugim. "Oferta obowiazuje do" przy ofercie zleconej
+  // w calosci albo wygaslej jest obietnica bez adresata.
+  ma(OFERTA, /domkniete \|\| offer\.expired \? u\.validUntilPast : u\.validUntil/,
+     "termin waznosci mowi w czasie przeszlym, gdy nie ma juz czego brac");
+  for (const jezyk of ["pl", "en", "de"]) {
+    const slownik = OFERTA.slice(OFERTA.indexOf(`\n  ${jezyk}: {`));
+    ma(slownik.slice(0, 6000), /validUntilPast:/, `czas przeszly terminu jest po ${jezyk}`);
+  }
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nZaplata za oferte: wszystko sie zgadza\n");
