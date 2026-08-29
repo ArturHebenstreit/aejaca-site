@@ -123,7 +123,7 @@ export default function Service() {
     "@context": "https://schema.org",
     "@type": "Service",
     name: t(card.title, lang),
-    description: t(card.lead, lang),
+    description: t(card.seoOpis || card.lead, lang),
     image: `${SITE.url}${card.image}`,
     provider: { "@type": "Organization", name: "AEJaCA", url: SITE.url },
     areaServed: "PL",
@@ -139,13 +139,16 @@ export default function Service() {
       : {}),
   };
 
+  // Opis do wyszukiwarki jest osobny od `lead`. `lead` to jedno zdanie na
+  // kafelku, a wynik wyszukiwania chce 150 do 160 znakow: przy krotszym Bing
+  // i Google podmieniaja go na wlasny urywek strony, czesto zlozony z menu.
   return (
     <>
       <SEOHead
         pageKey="service"
         path={`/shop/service/${card.id}`}
         title={`${t(card.title, lang)}, AEJaCA`}
-        description={t(card.lead, lang)}
+        description={t(card.seoOpis || card.lead, lang)}
         image={card.image}
         schemas={[
           serviceSchema,
