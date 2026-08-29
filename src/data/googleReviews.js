@@ -21,11 +21,11 @@
 //   translations - { en, pl, de } - opcjonalne tłumaczenia (fallback: oryginał)
 //
 // SCHEMA.ORG:
-// - aggregateRating pokazuje 5.0 / 26 w SERP (gwiazdki)
+// - aggregateRating pokazuje 5.0 / 27 w SERP (gwiazdki)
 // - Review[] z publisher:Google = jawna atrybucja (SEO-safe)
 // - W JSON-LD trafiają TYLKO opinie z treścią (Google guidelines wymagają reviewBody)
 // - Na stronie cytujemy tylko opinie z komentarzem (od najnowszej); rating-only
-//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 26)
+//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 27)
 // ============================================================
 
 export const GOOGLE_BUSINESS = {
@@ -41,7 +41,7 @@ export const GOOGLE_BUSINESS = {
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
-  totalReviews: 26,
+  totalReviews: 27,
 };
 
 // ============================================================
@@ -62,17 +62,34 @@ export const TRUSTPILOT_BUSINESS = {
   profileUrl: "https://www.trustpilot.com/review/aejaca.com",
   writeReviewUrl: "https://www.trustpilot.com/evaluate/aejaca.com",
   // TrustScore, nie średnia arytmetyczna. Trustpilot waży ocenę wolumenem i
-  // świeżością, więc przy dwóch opiniach na 5 gwiazdek wskaźnik wynosi 3,8 i
-  // będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej liczby jako
+  // świeżością, więc przy trzech opiniach na 5 gwiazdek wskaźnik wynosi 4,0
+  // i będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej liczby jako
   // nagłówka: zaniża ona to, co klienci faktycznie ocenili, i stoi obok
   // Google 5,0. Prezentujemy fakt rozkładu gwiazdek, patrz Reviews.jsx.
-  rating: 3.8,
-  totalReviews: 2,
+  rating: 4.0,
+  totalReviews: 3,
   // Udział ocen 5-gwiazdkowych. 1 = wszystkie.
   fiveStarShare: 1,
 };
 
 export const TRUSTPILOT_REVIEWS = [
+  {
+    id: "tp3",
+    author: "Dorota Wysocka",
+    rating: 5,
+    date: "2026-08-29",
+    originalLang: "pl",
+    title: "Bardzo polecam",
+    text: "Bardzo polecam. Oddałam srebrną biżuterię do naprawy i jestem naprawdę bardzo zadowolona z efektu. Naprawa została wykonana szybko i przede wszystkim bardzo dokładnie, z dbałością o każdy szczegół. Duży plus za indywidualne podejście i bardzo miły kontakt. Od początku czułam, że moja biżuteria jest w dobrych rękach. Wszystko zostało zrobione tak, jak oczekiwałam. Zdecydowanie polecam i na pewno jeszcze skorzystam z usług aejaca.com",
+    translations: {
+      en: "I highly recommend them. I brought in silver jewelry for repair and I am really very happy with the result. The repair was done quickly and, above all, very precisely, with care for every detail. A big plus for the individual approach and the very friendly contact. From the very beginning I felt my jewelry was in good hands. Everything was done exactly as I expected. I definitely recommend them and will certainly use aejaca.com again.",
+      de: "Ich kann sie sehr empfehlen. Ich habe Silberschmuck zur Reparatur gebracht und bin mit dem Ergebnis wirklich sehr zufrieden. Die Reparatur wurde schnell und vor allem sehr sorgfältig ausgeführt, mit Liebe zu jedem Detail. Ein großes Plus für die individuelle Betreuung und den sehr freundlichen Kontakt. Von Anfang an hatte ich das Gefühl, mein Schmuck sei in guten Händen. Alles wurde genau so gemacht, wie ich es erwartet hatte. Ich empfehle sie uneingeschränkt und werde die Dienste von aejaca.com bestimmt wieder in Anspruch nehmen.",
+    },
+    // Ta sama klientka zostawiła tę opinię także na Google (r27), tam z jedną
+    // różnicą w treści: "ekspresowy kontakt" zamiast "miły kontakt".
+    // Nie cytować obu naraz na jednej liście.
+    alsoOnGoogle: "r27",
+  },
   {
     id: "tp2",
     author: "Aleksandra Kwaśnica",
@@ -108,14 +125,28 @@ export const TRUSTPILOT_REVIEWS = [
 ];
 
 // -------------------------------------------------------------------
-// 26 rzeczywistych opinii z Google Maps (stan: sierpień 2026)
-// 12 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
+// 27 rzeczywistych opinii z Google Maps (stan: sierpień 2026)
+// 13 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
 // Daty szacunkowe "miesiąc temu" - wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
 
 export const REVIEWS = [
-  // --- Z TREŚCIĄ (12) ---
+  // --- Z TREŚCIĄ (13) ---
+  {
+    id: "r27",
+    author: "Dorota Wysocka",
+    rating: 5,
+    date: "2026-08-29",
+    originalLang: "pl",
+    text: "Bardzo polecam skorzystać z usług aejaca.com. Oddałam srebrną biżuterię do naprawy i jestem naprawdę bardzo zadowolona z efektu. Naprawa została wykonana szybko i przede wszystkim bardzo dokładnie, z dbałością o każdy szczegół. Duży plus za indywidualne podejście i bardzo ekspresowy kontakt. Od początku czułam, że moja biżuteria jest w dobrych rękach. Wszystko zostało zrobione tak, jak oczekiwałam. Zdecydowanie polecam i na pewno jeszcze skorzystam z usług.",
+    translations: {
+      en: "I highly recommend using the services of aejaca.com. I brought in silver jewelry for repair and I am really very happy with the result. The repair was done quickly and, above all, very precisely, with care for every detail. A big plus for the individual approach and the very prompt contact. From the very beginning I felt my jewelry was in good hands. Everything was done exactly as I expected. I definitely recommend them and will certainly use their services again.",
+      de: "Ich kann die Dienste von aejaca.com sehr empfehlen. Ich habe Silberschmuck zur Reparatur gebracht und bin mit dem Ergebnis wirklich sehr zufrieden. Die Reparatur wurde schnell und vor allem sehr sorgfältig ausgeführt, mit Liebe zu jedem Detail. Ein großes Plus für die individuelle Betreuung und den ausgesprochen schnellen Kontakt. Von Anfang an hatte ich das Gefühl, mein Schmuck sei in guten Händen. Alles wurde genau so gemacht, wie ich es erwartet hatte. Ich empfehle sie uneingeschränkt und werde ihre Dienste bestimmt wieder in Anspruch nehmen.",
+    },
+    // Ta sama klientka zostawiła tę opinię także na Trustpilocie (tp3).
+    alsoOnTrustpilot: "tp3",
+  },
   {
     id: "r26",
     author: "N",

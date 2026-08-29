@@ -31,13 +31,13 @@ Współrzędne GPS: 52.0736, 21.0724
 ### Języki serwisu
 Polski (pl), English (en), Deutsch (de)
 
-### Oceny (dane z 2026-07-30)
+### Oceny (dane z 2026-08-29)
 
-**Google: 5,0 / 5,0 przy 26 opiniach.** To jest ocena eksponowana w interfejsie i jedyna wpisana do `aggregateRating` w JSON-LD.
+**Google: 5,0 / 5,0 przy 27 opiniach.** To jest ocena eksponowana w interfejsie i jedyna wpisana do `aggregateRating` w JSON-LD.
 
-**Trustpilot: 2 opinie, obie na 5 gwiazdek, TrustScore 3,8.** TrustScore nie jest średnią arytmetyczną, Trustpilot waży go wolumenem i świeżością, więc przy dwóch opiniach wypada 3,8 i będzie rósł.
+**Trustpilot: 3 opinie, wszystkie na 5 gwiazdek, TrustScore 4,0.** TrustScore nie jest średnią arytmetyczną, Trustpilot waży go wolumenem i świeżością, więc przy trzech opiniach wypada 4,0 i będzie rósł.
 
-**Zasada prezentacji: liczby 3,8 nie pokazujemy nigdzie w interfejsie.** Zaniża to, co faktycznie ocenili klienci, a postawiona obok Google 5,0 działa przeciw nam. Pokazujemy sprawdzalny fakt: liczbę opinii i informację, że wszystkie są na 5 gwiazdek. Nie rysujemy też rzędu pięciu gwiazdek Trustpilot, bo to czytałoby się jako TrustScore 5,0, czyli błąd w drugą stronę. Wartość `rating: 3.8` żyje w `TRUSTPILOT_BUSINESS` wyłącznie jako zapis stanu faktycznego.
+**Zasada prezentacji: TrustScore nie pokazujemy nigdzie w interfejsie, dopóki nie sięgnie 4,5.** Zaniża to, co faktycznie ocenili klienci, a postawiona obok Google 5,0 działa przeciw nam. Pokazujemy sprawdzalny fakt: liczbę opinii i informację, że wszystkie są na 5 gwiazdek. Nie rysujemy też rzędu pięciu gwiazdek Trustpilot, bo to czytałoby się jako TrustScore 5,0, czyli błąd w drugą stronę. Wartość `rating` żyje w `TRUSTPILOT_BUSINESS` wyłącznie jako zapis stanu faktycznego.
 
 Rewizja tej zasady, gdy TrustScore osiągnie 4,5 lub więcej. Wtedy warto pokazywać liczbę, bo zacznie pracować na naszą korzyść.
 
@@ -1413,7 +1413,7 @@ tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 |---------|-------|
 | Organization | Strona główna, Studio, Jewelry |
 | LocalBusiness | Strona główna (geo: Józefosław) |
-| Product + aggregateRating (5.0 / 26) | Studio (3x SKU), Jewelry (3x SKU) |
+| Product + aggregateRating (5.0 / 27) | Studio (3x SKU), Jewelry (3x SKU) |
 | Service + priceRange | Studio, Jewelry |
 | BreadcrumbList | Wszystkie podstrony |
 | FAQPage | B2B, narzędzia, blog |
