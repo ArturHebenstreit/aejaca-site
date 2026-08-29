@@ -1,26 +1,45 @@
 <%- include('partials/header', { user: user, title: 'Kolejka', active: 'queue' }) %>
 
 <%
+  // Etap pracy JEST statusem zamowienia (ADR-0013), wiec ta mapa jest jedynym
+  // miejscem, w ktorym stan z bazy dostaje nazwe po polsku. Kolor niesie
+  // informacje: bursztyn znaczy "czeka na nas", blekit "robimy", zielen
+  // "zrobione", szarosc "juz nie nasze".
   const STAN = {
-    paid: { label: "Do zrobienia", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
+    paid: { label: "Zapłacone", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
     // Zaplacone, ale zegar STOI: czekamy na ustalenia z klientem. Ten etap
     // nie ma terminu, wiec bez wlasnego miejsca w kolejce nie odezwalby sie
     // znikad i to on gubilby zlecenia najlatwiej.
-    details: { label: "Ustalanie szczegółów", klasa: "text-purple-300 border-white/15 bg-white/5" },
-    in_production: { label: "W robocie", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
-    ready: { label: "Zrealizowane", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
-    shipped: { label: "Wysłane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
-    completed: { label: "Zakończone", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
+    details: { label: "Ustalanie szczegółów", klasa: "text-purple-300 border-purple-400/30 bg-purple-400/10" },
+    // Ustalenia domkniete, praca jeszcze nie ruszyla, ZEGAR JUZ BIEGNIE.
+    queued: { label: "Gotowe do pobrania", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
+    in_production: { label: "W realizacji", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
+    ready: { label: "Gotowe do wysyłki", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
+    shipped: { label: "Wysłane / przekazane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
+    completed: { label: "Zamknięte", klasa: "text-neutral-300 border-white/15 bg-white/5" },
     cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
   };
   // Adres powrotu niosa wszystkie formularze, zeby po zapisie nie wypasc
-  // z filtra na domyslna liste i nie szukac wiersza od nowa.
-  const POWROT = stan ? "/queue?status=" + encodeURIComponent(stan) : "/queue";
+  // z filtra i z sortowania na domyslna liste i nie szukac wiersza od nowa.
+  const PYTANIE = [stan ? "status=" + encodeURIComponent(stan) : "", sort && sort !== "newest" ? "sort=" + encodeURIComponent(sort) : ""].filter(Boolean).join("&");
+  const POWROT = PYTANIE ? "/queue?" + PYTANIE : "/queue";
+  const adres = (nowyStan, nowySort) => {
+    const p = [nowyStan ? "status=" + encodeURIComponent(nowyStan) : "", nowySort && nowySort !== "newest" ? "sort=" + encodeURIComponent(nowySort) : ""].filter(Boolean).join("&");
+    return p ? "/queue?" + p : "/queue";
+  };
   const FILTRY = [
     { stan: "", label: "W toku" },
-    { stan: "completed", label: "Zakończone" },
+    { stan: "shipped", label: "Wysłane" },
+    { stan: "completed", label: "Zamknięte" },
     { stan: "cancelled", label: "Anulowane" },
-    { stan: "paid,details,in_production,ready,shipped,completed,cancelled", label: "Wszystko" },
+    { stan: "paid,details,queued,in_production,ready,shipped,completed,cancelled", label: "Wszystko" },
+  ];
+  const SORTY = [
+    { id: "newest", label: "Najnowsze" },
+    { id: "deadline", label: "Po terminie" },
+    { id: "oldest", label: "Najstarsze" },
+    { id: "amount", label: "Kwota" },
+    { id: "name", label: "Nazwisko" },
   ];
   const DOSTAWA = {
     pickup: "Odbiór osobisty",
@@ -28,30 +47,54 @@
     courier: "Kurier",
     digital: "Plik do pobrania",
   };
-  // Kolejnosc grup od pracy do zamkniecia. Wewnatrz kazdej kolejnosc daje
-  // serwer, po dacie zaplaty, i widok jej nie rusza.
-  const GRUPY = ["details", "paid", "in_production", "ready", "shipped", "completed", "cancelled"];
+  // W wierszu krocej, bo dziewiec kolumn i tak nie miesci sie na laptopie,
+  // a przypieta kolumna akcji przykrywa wtedy ostatnia z nich.
+  const DOSTAWA_KROTKO = { pickup: "Odbiór", inpost_locker: "Paczkomat", courier: "Kurier", digital: "Plik" };
+  // Etapy, w ktorych termin juz biegnie. Ta sama lista co w `productionQueue.js`,
+  // bo panel i przypomnienia musza uwazac za spozniona te sama robote.
+  const Z_ZEGAREM = ["queued", "in_production", "ready"];
+  const zostalo = (o) => {
+    if (o.daysLeft == null || !Z_ZEGAREM.includes(o.status)) return null;
+    if (o.daysLeft < 0) return { tekst: Math.abs(o.daysLeft) + " dni po terminie", klasa: "text-red-300" };
+    if (o.daysLeft === 0) return { tekst: "dzisiaj", klasa: "text-amber-300" };
+    return { tekst: "za " + o.daysLeft + " dni", klasa: o.daysLeft <= 3 ? "text-amber-300" : "text-neutral-400" };
+  };
 %>
 
-  <main class="max-w-5xl mx-auto px-6 py-8">
+  <main class="max-w-7xl mx-auto px-6 py-8">
 
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-white mb-2">Kolejka pracowni</h1>
       <p class="text-neutral-500 text-xs leading-relaxed max-w-3xl">
-        Wszystko, co opłacone i jeszcze nieskończone, w kolejności wpłat: kto pierwszy zapłacił, ten pierwszy
-        dostaje. Zamówienia ze sklepu i z ofert ustalonych mailem albo telefonicznie stoją tu razem, bo dla
-        warsztatu niczym się nie różnią. Etap zmienia się tylko do przodu i tylko z dozwolonego stanu.
-        Pomyłkę poprawia się osobno, w sekcji „Popraw wiersz", która potrafi też cofnąć etap.
+        Wszystko, co opłacone i jeszcze niezamknięte, jeden wiersz na zlecenie. Ołówek rozwija wiersz do edycji,
+        zielony znak zatwierdza, zawinięta strzałka wycofuje bez zmian, krzyżyk usuwa. Termin realizacji zaczyna
+        biec w chwili, w której zlecenie staje się „gotowe do pobrania”: zaraz po zapłacie albo po domknięciu
+        ustaleń. Wzięcie zlecenia do ręki terminu już nie przesuwa, bo klient dostał datę wcześniej.
       </p>
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-5">
+    <div class="flex flex-wrap items-center gap-2 mb-3">
       <% FILTRY.forEach(function (f) { %>
-        <a href="<%= f.stan ? '/queue?status=' + encodeURIComponent(f.stan) : '/queue' %>"
+        <a href="<%= adres(f.stan, sort) %>"
            class="px-3 py-1.5 rounded-lg border text-xs transition-colors <%= stan === f.stan ? 'border-white/35 text-white bg-white/5' : 'border-white/10 text-neutral-400 hover:border-white/25' %>">
           <%= f.label %>
         </a>
       <% }); %>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 mb-5">
+      <span class="text-neutral-600 text-[10px] uppercase tracking-wide">Kolejność</span>
+      <% SORTY.forEach(function (s) { %>
+        <a href="<%= adres(stan, s.id) %>"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors <%= sort === s.id ? 'border-amber-400/40 text-amber-300 bg-amber-400/10' : 'border-white/10 text-neutral-500 hover:border-white/25' %>">
+          <%= s.label %>
+        </a>
+      <% }); %>
+      <label class="ml-auto block">
+        <span class="sr-only">Szukaj w kolejce</span>
+        <input id="szukaj" type="search" placeholder="numer, nazwisko, email"
+               class="w-56 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+      </label>
     </div>
 
     <% if (err) { %>
@@ -65,234 +108,365 @@
       <div class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center text-neutral-500 text-sm">
         Nic nie czeka. Wszystko opłacone jest zrobione i zamknięte.
       </div>
-    <% } %>
+    <% } else { %>
 
-    <% GRUPY.forEach(function (grupa) { %>
-      <% const wGrupie = orders.filter(function (o) { return o.status === grupa; }); %>
-      <% if (wGrupie.length) { %>
-        <section class="mb-8">
-          <h2 class="text-sm font-semibold text-white mb-3">
-            <%= STAN[grupa].label %> <span class="text-neutral-600 font-normal">(<%= wGrupie.length %>)</span>
-          </h2>
-
-          <div class="space-y-3">
-            <% wGrupie.forEach(function (o) { %>
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="font-mono text-sm text-white"><%= o.orderRef %></span>
-                      <% if (o.quoteRef) { %>
-                        <a href="/quotes/<%= encodeURIComponent(o.quoteRef) %>" class="font-mono text-[11px] text-amber-300 hover:text-amber-200"><%= o.quoteRef %></a>
-                      <% } %>
-                      <span class="px-2 py-0.5 rounded border text-[10px] <%= STAN[o.status].klasa %>"><%= STAN[o.status].label %></span>
-                    </div>
-                    <div class="text-neutral-500 text-xs mt-1">
-                      <%= o.name || "(brak nazwiska)" %> &middot; <%= o.email || "brak adresu" %><% if (o.phone) { %> &middot; <%= o.phone %><% } %>
-                    </div>
-                  </div>
-                  <div class="text-right shrink-0">
-                    <div class="text-white font-semibold text-sm"><%= o.totalPLN %> PLN</div>
-                    <div class="text-neutral-600 text-[10px]">
-                      opłacone <%= fmtDateShort(o.paidAt) %><% if (o.waitingDays != null) { %>, czeka <%= o.waitingDays %> dni<% } %>
-                    </div>
-                  </div>
+    <div class="overflow-x-auto rounded-xl border border-white/10">
+      <table class="w-full text-sm tabela-akcje">
+        <thead>
+          <tr class="text-neutral-500 text-[10px] uppercase tracking-wide border-b border-white/10">
+            <th class="text-left font-medium px-3 py-2.5">Numer</th>
+            <th class="text-left font-medium px-3 py-2.5">Klient</th>
+            <th class="text-left font-medium px-3 py-2.5">Status</th>
+            <th class="text-left font-medium px-3 py-2.5">Wysyłka</th>
+            <th class="text-left font-medium px-3 py-2.5">Termin</th>
+            <th class="text-left font-medium px-3 py-2.5">Na kiedy</th>
+            <th class="text-left font-medium px-3 py-2.5">Zostało</th>
+            <th class="text-right font-medium px-3 py-2.5">Kwota</th>
+            <th class="text-right font-medium px-3 py-2.5">Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(function (o) { %>
+            <% const kiedy = zostalo(o); const bieg = Z_ZEGAREM.includes(o.status); %>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"
+                data-wiersz="<%= o.orderRef %>"
+                data-szukaj="<%= [o.orderRef, o.quoteRef, o.name, o.email].filter(Boolean).join(' ').toLowerCase() %>">
+              <td class="px-3 py-2.5 whitespace-nowrap">
+                <span class="font-mono text-xs text-white"><%= o.orderRef %></span>
+                <% if (o.quoteRef) { %>
+                  <a href="/quotes/<%= encodeURIComponent(o.quoteRef) %>" class="ml-2 font-mono text-[10px] text-amber-300 hover:text-amber-200" title="Oferta <%= o.quoteRef %>">oferta</a>
+                <% } %>
+              </td>
+              <td class="px-3 py-2.5 text-neutral-300 text-xs max-w-[11rem] truncate" title="<%= o.email || '' %>">
+                <%= o.name || "(brak nazwiska)" %>
+              </td>
+              <td class="px-3 py-2.5 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded border text-[10px] <%= STAN[o.status].klasa %>"><%= STAN[o.status].label %></span>
+              </td>
+              <td class="px-3 py-2.5 text-neutral-400 text-xs whitespace-nowrap">
+                <%= DOSTAWA_KROTKO[o.delivery.method] || o.delivery.method || "-" %>
+              </td>
+              <td class="px-3 py-2.5 text-neutral-400 text-xs whitespace-nowrap">
+                <%= o.leadDays ? o.leadDays + " dni" : "-" %>
+              </td>
+              <td class="px-3 py-2.5 text-xs whitespace-nowrap font-mono <%= o.deadlineAt ? 'text-neutral-300' : 'text-neutral-600' %>">
+                <%# Zlecenie w ustalaniu nie ma daty i nie ma jej skad wziac:
+                    zegar stoi, bo czekamy na klienta. %>
+                <%= o.deadlineAt || (o.status === "details" ? "po ustaleniach" : "-") %>
+              </td>
+              <td class="px-3 py-2.5 text-xs whitespace-nowrap <%= kiedy ? kiedy.klasa : 'text-neutral-600' %>">
+                <%= kiedy ? kiedy.tekst : (o.status === "details" ? "zegar stoi" : "-") %>
+              </td>
+              <td class="px-3 py-2.5 text-right text-white text-xs whitespace-nowrap"><%= o.totalPLN %> PLN</td>
+              <td class="px-3 py-2.5">
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" data-otworz="<%= o.orderRef %>" title="Edytuj wiersz"
+                          aria-label="Edytuj <%= o.orderRef %>"
+                          class="p-1.5 rounded-lg border border-white/10 text-neutral-300 hover:border-white/35 hover:text-white transition-colors">
+                    <%- IKONY.olowek %>
+                  </button>
+                  <button type="button" data-usun="<%= o.orderRef %>" title="Usuń zlecenie"
+                          aria-label="Usuń <%= o.orderRef %>"
+                          class="p-1.5 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors">
+                    <%- IKONY.krzyzyk %>
+                  </button>
                 </div>
+              </td>
+            </tr>
 
-                <ul class="mt-4 space-y-2">
-                  <% o.items.forEach(function (it) { %>
-                    <li class="rounded-lg border border-white/10 bg-neutral-950 px-4 py-3">
-                      <div class="text-sm text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
-                      <div class="text-neutral-600 text-[10px] mt-0.5">
-                        <%= it.calculator || "pozycja bez kalkulatora" %>
-                        <% if (it.fileName) { %>
-                          &middot;
-                          <% if (it.fileUrl) { %>
-                            <a href="<%= it.fileUrl %>" target="_blank" rel="noopener" class="text-amber-300 hover:text-amber-200"><%= it.fileName %></a>
-                          <% } else { %><%= it.fileName %><% } %>
+            <%# WIERSZ ROZWINIETY. Stoi w drzewie od poczatku, a nie doklada sie
+                skryptem: panel ma dzialac tak samo przy wolnym laczu, a formularz
+                dorysowany po fakcie gubi wpisana tresc przy kazdym odswiezeniu. %>
+            <tr class="hidden border-b border-white/10 bg-neutral-950" data-edycja="<%= o.orderRef %>">
+              <td colspan="9" class="px-4 py-5">
+
+                <div class="grid gap-5 lg:grid-cols-2">
+
+                  <div>
+                    <h3 class="text-white text-xs font-semibold mb-2">Zlecenie</h3>
+                    <ul class="space-y-2">
+                      <% o.items.forEach(function (it) { %>
+                        <li class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                          <div class="text-xs text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                          <div class="text-neutral-600 text-[10px] mt-0.5">
+                            <%= it.calculator || "pozycja bez kalkulatora" %>
+                            <% if (it.fileName) { %>
+                              &middot;
+                              <% if (it.fileUrl) { %>
+                                <a href="<%= it.fileUrl %>" target="_blank" rel="noopener" class="text-amber-300 hover:text-amber-200"><%= it.fileName %></a>
+                              <% } else { %><%= it.fileName %><% } %>
+                            <% } %>
+                          </div>
+                          <% if (it.description) { %>
+                            <p class="text-neutral-400 text-[11px] mt-1.5 whitespace-pre-wrap"><%= it.description %></p>
+                          <% } %>
+                        </li>
+                      <% }); %>
+                    </ul>
+                    <p class="text-neutral-500 text-[11px] mt-3 leading-relaxed">
+                      <span class="text-neutral-600">Kontakt:</span> <%= o.email || "brak adresu" %><% if (o.phone) { %> &middot; <%= o.phone %><% } %><br />
+                      <span class="text-neutral-600">Dostawa:</span>
+                      <%= DOSTAWA[o.delivery.method] || o.delivery.method || "nie wybrano" %><% if (o.delivery.point) { %> &middot; <span class="font-mono"><%= o.delivery.point %></span><% } %>
+                      <% if (o.delivery.addressLine1) { %>
+                        <br /><%= o.delivery.addressLine1 %><% if (o.delivery.addressLine2) { %>, <%= o.delivery.addressLine2 %><% } %>,
+                        <%= o.delivery.postalCode %> <%= o.delivery.city %>, <%= o.delivery.country %>
+                      <% } %>
+                      <br /><span class="text-neutral-600">Opłacone:</span> <%= fmtDateShort(o.paidAt) %><% if (o.waitingDays != null) { %>, czeka <%= o.waitingDays %> dni<% } %>
+                      <% if (o.trackingNumber) { %><br /><span class="text-neutral-600">List przewozowy:</span> <span class="font-mono text-neutral-300"><%= o.trackingNumber %></span><% } %>
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 class="text-white text-xs font-semibold mb-2">Postęp</h3>
+
+                    <%# USTALENIA. Zamiast pola zaznaczanego, ktore i tak nie
+                        daje sie kliknac, stoi tu zdanie o stanie rzeczy albo
+                        przycisk domykajacy ustalenia. Martwy przelacznik uczy
+                        wylacznie tego, ze klikniecia czasem nie dzialaja. %>
+                    <div class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2.5 mb-2">
+                      <% if (o.status === "details") { %>
+                        <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex flex-wrap items-end gap-2">
+                          <input type="hidden" name="back" value="<%= POWROT %>" />
+                          <input type="hidden" name="stage" value="queued" />
+                          <label class="block flex-1 min-w-[10rem]">
+                            <span class="text-neutral-500 text-[10px] block mb-1">Co ustalone (opcjonalnie)</span>
+                            <input name="note" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                          </label>
+                          <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-xs hover:bg-emerald-400/10 transition-colors">
+                            <%- IKONY.fistaszek %> Wszystkie ustalenia domknięte
+                          </button>
+                        </form>
+                        <p class="text-neutral-600 text-[10px] mt-2">Domknięcie ustaleń startuje termin realizacji.</p>
+                      <% } else if (o.requiresDetails) { %>
+                        <p class="flex items-center gap-2 text-emerald-300 text-xs">
+                          <%- IKONY.fistaszek %> Ustalenia domknięte<% if (o.detailsAt) { %> <span class="text-neutral-600"><%= fmtDateShort(o.detailsAt) %></span><% } %>
+                        </p>
+                      <% } else { %>
+                        <p class="flex items-center gap-2 text-emerald-300 text-xs">
+                          <%- IKONY.fistaszek %> Ustalenia nie były wymagane
+                        </p>
+                      <% } %>
+                    </div>
+
+                    <% if (o.status === "queued" || o.status === "paid") { %>
+                      <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="mb-2 flex flex-wrap items-end gap-2">
+                        <input type="hidden" name="back" value="<%= POWROT %>" />
+                        <input type="hidden" name="stage" value="in_production" />
+                        <label class="block flex-1 min-w-[10rem]">
+                          <span class="text-neutral-500 text-[10px] block mb-1">Notatka do pracowni (opcjonalnie)</span>
+                          <input name="note" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                        </label>
+                        <button class="px-3 py-1.5 rounded-lg bg-amber-400 text-neutral-950 text-xs font-medium hover:bg-amber-300 transition-colors">
+                          Biorę do realizacji
+                        </button>
+                      </form>
+                    <% } %>
+
+                    <% if (o.status === "in_production") { %>
+                      <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="mb-2">
+                        <input type="hidden" name="back" value="<%= POWROT %>" />
+                        <input type="hidden" name="stage" value="ready" />
+                        <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-xs hover:bg-emerald-400/10 transition-colors">
+                          <%- IKONY.fistaszek %> Zakończone, gotowe do wysyłki
+                        </button>
+                      </form>
+                    <% } %>
+
+                    <% if (["paid", "details", "queued", "in_production", "ready"].includes(o.status)) { %>
+                      <%# Odbior osobisty konczy sie przekazaniem, a nie wysylka:
+                          wtedy nie ma listu przewozowego i nie ma go czego pytac. %>
+                      <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage"
+                            class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2.5 flex flex-wrap items-end gap-2">
+                        <input type="hidden" name="back" value="<%= POWROT %>" />
+                        <input type="hidden" name="stage" value="shipped" />
+                        <% if (o.delivery.method !== "pickup") { %>
+                          <label class="block">
+                            <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                            <input name="trackingNumber" placeholder="numer przesyłki"
+                                   class="w-44 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white font-mono" />
+                          </label>
                         <% } %>
-                      </div>
-                      <% if (it.description) { %>
-                        <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
-                      <% } %>
-                    </li>
-                  <% }); %>
-                </ul>
+                        <label class="block">
+                          <span class="text-neutral-500 text-[10px] block mb-1">Data<%= o.delivery.method === "pickup" ? " przekazania" : " nadania" %></span>
+                          <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
+                              a zaznaczona dzisiaj, i wtedy termin wygladalby na
+                              przekroczony o dzien. %>
+                          <input name="shippedOn" type="date"
+                                 class="w-40 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                        </label>
+                        <button class="px-3 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-xs hover:border-white/35 transition-colors">
+                          <%= o.delivery.method === "pickup" ? "Przekazane" : "Wysłane" %>
+                        </button>
+                      </form>
+                    <% } %>
 
-                <div class="mt-4 text-xs text-neutral-400">
-                  <span class="text-neutral-600">Dostawa:</span>
-                  <%= DOSTAWA[o.delivery.method] || o.delivery.method || "nie wybrano" %>
-                  <% if (o.delivery.point) { %> &middot; <span class="font-mono"><%= o.delivery.point %></span><% } %>
-                  <% if (o.delivery.addressLine1) { %>
-                    &middot; <%= o.delivery.addressLine1 %><% if (o.delivery.addressLine2) { %>, <%= o.delivery.addressLine2 %><% } %>,
-                    <%= o.delivery.postalCode %> <%= o.delivery.city %>, <%= o.delivery.country %>
-                  <% } %>
-                  <% if (o.trackingNumber) { %>
-                    <span class="block mt-1"><span class="text-neutral-600">List przewozowy:</span> <span class="font-mono text-neutral-300"><%= o.trackingNumber %></span></span>
-                  <% } %>
-                  <% if (o.productionNote) { %>
-                    <span class="block mt-1 text-neutral-500">Notatka: <%= o.productionNote %></span>
-                  <% } %>
-                </div>
-
-                <%# TERMIN REALIZACJI. Zegar biegnie WYLACZNIE w etapie
-                    "Zlecenie w realizacji": w ustalaniu szczegolow czekamy na
-                    klienta, a nie on na nas. %>
-                <% if (o.deadlineAt || o.leadDays) { %>
-                  <div class="mt-3 text-xs">
-                    <% if (o.status === "details") { %>
-                      <span class="text-sky-300">Ustalanie szczegółów</span>
-                      <span class="text-neutral-500">
-                        &middot; zegar stoi<% if (o.leadDays) { %>, po ustaleniach ruszy <%= o.leadDays %> dni<% } %>
-                      </span>
-                    <% } else if (o.deadlineAt) { %>
-                      <span class="text-neutral-600">Termin:</span>
-                      <span class="font-mono text-neutral-300"><%= String(o.deadlineAt).slice(0, 10) %></span>
-                      <% if (o.daysLeft != null && o.status !== "shipped" && o.status !== "completed") { %>
-                        <span class="<%= o.daysLeft < 0 ? 'text-red-300' : o.daysLeft <= 3 ? 'text-amber-300' : 'text-neutral-500' %>">
-                          &middot; <%= o.daysLeft < 0 ? Math.abs(o.daysLeft) + " dni po terminie"
-                                    : o.daysLeft === 0 ? "dzisiaj" : "za " + o.daysLeft + " dni" %>
-                        </span>
-                      <% } %>
+                    <% if (o.status === "shipped") { %>
+                      <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="mt-2">
+                        <input type="hidden" name="back" value="<%= POWROT %>" />
+                        <input type="hidden" name="stage" value="completed" />
+                        <button class="px-3 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-xs hover:border-white/35 transition-colors">
+                          Zamknij i schowaj z kolejki
+                        </button>
+                      </form>
                     <% } %>
                   </div>
-                <% } %>
-
-                <div class="mt-4 flex flex-wrap items-end gap-3">
-                  <% if (o.status === "details") { %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
-                      <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="in_production" />
-                      <input name="note" placeholder="co ustalone (opcjonalnie)"
-                             class="w-64 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-                      <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
-                        Szczegóły ustalone, startuj termin
-                      </button>
-                    </form>
-                  <% } %>
-
-                  <% if (o.status === "paid") { %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
-                      <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="in_production" />
-                      <input name="note" placeholder="notatka do pracowni (opcjonalnie)"
-                             class="w-64 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-                      <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
-                        Biorę do roboty
-                      </button>
-                    </form>
-                  <% } %>
-
-                  <% if (o.status === "in_production") { %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
-                      <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="ready" />
-                      <button class="px-4 py-2 rounded-lg border border-emerald-400/30 text-emerald-300 text-sm hover:border-emerald-400/60 transition-colors">
-                        Zrealizowane
-                      </button>
-                    </form>
-                  <% } %>
-
-                  <% if (["paid", "details", "in_production", "ready"].includes(o.status)) { %>
-                    <%# Odbior osobisty konczy sie przekazaniem, a nie wysylka:
-                        wtedy nie ma listu przewozowego i nie ma go czego pytac. %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
-                      <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="shipped" />
-                      <% if (o.delivery.method !== "pickup") { %>
-                        <label class="block">
-                          <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
-                          <input name="trackingNumber" placeholder="numer przesyłki"
-                                 class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
-                        </label>
-                      <% } %>
-                      <label class="block">
-                        <span class="text-neutral-500 text-[10px] block mb-1">Data<%= o.delivery.method === "pickup" ? " przekazania" : " nadania" %></span>
-                        <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
-                            a zaznaczona dzisiaj, i wtedy termin wygladalby na
-                            przekroczony o dzien. %>
-                        <input name="shippedOn" type="date"
-                               class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-                      </label>
-                      <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
-                        <%= o.delivery.method === "pickup" ? "Przekazane" : "Wysłane" %>
-                      </button>
-                    </form>
-                  <% } %>
-
-                  <% if (o.status === "in_production" || o.status === "ready" || o.status === "shipped") { %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
-                      <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="completed" />
-                      <button class="px-4 py-2 rounded-lg border border-emerald-400/30 text-emerald-300 text-sm hover:border-emerald-400/60 transition-colors">
-                        Zamknij
-                      </button>
-                    </form>
-                  <% } %>
                 </div>
 
-                <details class="mt-4 border-t border-white/10 pt-3">
-                  <summary class="text-neutral-500 text-xs cursor-pointer hover:text-neutral-300">Popraw wiersz</summary>
-
-                  <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit"
-                        class="mt-3 flex flex-wrap items-end gap-3">
-                    <input type="hidden" name="back" value="<%= POWROT %>" />
-                    <label class="block">
-                      <span class="text-neutral-500 text-[10px] block mb-1">Etap</span>
-                      <select name="stage" class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
-                        <option value="">bez zmiany</option>
-                        <% ["paid", "details", "in_production", "ready", "shipped", "completed"].forEach(function (e) { %>
-                          <% if (e !== o.status) { %><option value="<%= e %>"><%= STAN[e].label %></option><% } %>
-                        <% }); %>
-                      </select>
-                    </label>
-                    <label class="block">
-                      <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
-                      <input name="trackingNumber" value="<%= o.trackingNumber || '' %>" placeholder="puste pole kasuje"
-                             class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
-                    </label>
-                    <label class="block flex-1 min-w-[16rem]">
-                      <span class="text-neutral-500 text-[10px] block mb-1">Notatka do pracowni</span>
-                      <input name="note" value="<%= o.productionNote || '' %>" placeholder="puste pole kasuje"
-                             class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-                    </label>
-                    <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
-                      Zapisz
+                <%# EDYCJA WIERSZA. Osobno od postepu, bo tamto PCHA zlecenie
+                    naprzod wedlug wypisanych przejsc, a to poprawia pomylke. %>
+                <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit"
+                      class="mt-5 border-t border-white/10 pt-4 flex flex-wrap items-end gap-3">
+                  <input type="hidden" name="back" value="<%= POWROT %>" />
+                  <label class="block">
+                    <span class="text-neutral-500 text-[10px] block mb-1">Etap</span>
+                    <select name="stage" class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white">
+                      <option value="">bez zmiany</option>
+                      <% ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"].forEach(function (e) { %>
+                        <% if (e !== o.status) { %><option value="<%= e %>"><%= STAN[e].label %></option><% } %>
+                      <% }); %>
+                    </select>
+                  </label>
+                  <label class="block">
+                    <span class="text-neutral-500 text-[10px] block mb-1">Termin w dniach</span>
+                    <input name="leadDays" type="number" min="1" max="365" value="<%= o.leadDays || '' %>"
+                           class="w-28 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                  </label>
+                  <label class="block">
+                    <span class="text-neutral-500 text-[10px] block mb-1">Na kiedy</span>
+                    <input name="deadlineAt" type="date" value="<%= o.deadlineAt || '' %>"
+                           class="w-40 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                  </label>
+                  <label class="block">
+                    <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                    <input name="trackingNumber" value="<%= o.trackingNumber || '' %>" placeholder="puste pole kasuje"
+                           class="w-44 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white font-mono" />
+                  </label>
+                  <label class="block flex-1 min-w-[14rem]">
+                    <span class="text-neutral-500 text-[10px] block mb-1">Notatka do pracowni</span>
+                    <input name="note" value="<%= o.productionNote || '' %>" placeholder="puste pole kasuje"
+                           class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
+                  </label>
+                  <div class="flex items-center gap-1.5">
+                    <button title="Zapisz zmiany" aria-label="Zapisz zmiany w <%= o.orderRef %>"
+                            class="p-2 rounded-lg border border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/10 transition-colors">
+                      <%- IKONY.fistaszek %>
                     </button>
-                  </form>
-
-                  <p class="text-neutral-600 text-[10px] leading-relaxed mt-2">
-                    Cofnięcie etapu kasuje stemple tego, co się nie wydarzyło: zamówienie wycofane z „Wysłane"
-                    traci datę wysyłki i list przewozowy, bo nic nie wyjechało. Data rozpoczęcia pracy zostaje.
+                    <button type="reset" data-zamknij="<%= o.orderRef %>" title="Wycofaj się bez zmian"
+                            aria-label="Zamknij edycję <%= o.orderRef %> bez zmian"
+                            class="p-2 rounded-lg border border-white/15 text-neutral-400 hover:border-white/35 hover:text-neutral-200 transition-colors">
+                      <%- IKONY.cofnij %>
+                    </button>
+                  </div>
+                  <p class="text-neutral-600 text-[10px] leading-relaxed w-full">
+                    Zmiana liczby dni przelicza termin od chwili startu zegara, a nie od dzisiaj. Data wpisana wprost
+                    wygrywa z przeliczoną. Cofnięcie etapu kasuje stemple tego, co się nie wydarzyło: zlecenie
+                    wycofane z „Wysłane” traci datę wysyłki i list przewozowy, bo nic nie wyjechało.
                   </p>
+                </form>
 
+                <%# USUWANIE. Osobny blok, domyslnie schowany, otwierany
+                    krzyzykiem z wiersza. Przepisanie numeru sprawdza takze
+                    backend, wiec ominiecie formularza nic nie daje. %>
+                <div class="hidden mt-4 border-t border-red-400/15 pt-3" data-kasowanie="<%= o.orderRef %>">
+                  <p class="text-red-300/90 text-[11px] leading-relaxed mb-2">
+                    <% if (o.paidAt) { %>
+                      To zlecenie jest <strong>opłacone</strong> (<%= o.totalPLN %> PLN, <%= fmtDateShort(o.paidAt) %>).
+                      Usunięcie wiersza zostawia płatność bez zamówienia, więc księgowość i panel przestają się zgadzać.
+                      Zwykłą drogą jest anulowanie: numer zostaje rozwiązywalny, klient wchodzący po nim dostaje
+                      odpowiedź, a pozycje oferty wracają do puli świadomie.
+                    <% } else { %>
+                      Usunięcie jest bez cofnięcia.
+                    <% } %>
+                    Znikają pozycje, pliki do pobrania i rezerwacje, wycena wraca do stanu sprzed konwersji,
+                    a jednorazowy kod rabatowy wraca do puli. Podpisane komunikaty płatnicze zostają, bo wiążą się
+                    z numerem, nie z wierszem. Towar nie wraca na stan.
+                  </p>
                   <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/delete"
-                        class="mt-4 flex flex-wrap items-end gap-3 border-t border-red-400/15 pt-3">
+                        class="flex flex-wrap items-end gap-3">
                     <input type="hidden" name="back" value="<%= POWROT %>" />
                     <label class="block">
-                      <span class="text-red-300/80 text-[10px] block mb-1">Usuń trwale: przepisz numer</span>
+                      <span class="text-red-300/80 text-[10px] block mb-1">Przepisz numer, żeby potwierdzić</span>
                       <input name="confirmRef" placeholder="<%= o.orderRef %>" autocomplete="off"
-                             class="w-56 rounded-lg bg-neutral-900 border border-red-400/25 px-3 py-2 text-xs text-white font-mono" />
+                             class="w-56 rounded-lg bg-neutral-900 border border-red-400/25 px-3 py-1.5 text-xs text-white font-mono" />
                     </label>
-                    <button class="px-4 py-2 rounded-lg border border-red-400/30 text-red-300 text-sm hover:border-red-400/60 transition-colors">
-                      Usuń zamówienie
+                    <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-400/30 text-red-300 text-xs hover:border-red-400/60 transition-colors">
+                      <%- IKONY.krzyzyk %> Usuń trwale
                     </button>
-                    <p class="text-neutral-600 text-[10px] leading-relaxed w-full">
-                      Bez cofnięcia. Znikają pozycje, pliki do pobrania i rezerwacje, wycena wraca do stanu sprzed
-                      konwersji, a jednorazowy kod rabatowy wraca do puli. Podpisane komunikaty płatnicze zostają,
-                      bo wiążą się z numerem, nie z wierszem. Towar nie wraca na stan.
-                    </p>
+                    <button type="button" data-zamknij-kasowanie="<%= o.orderRef %>"
+                            class="p-2 rounded-lg border border-white/15 text-neutral-400 hover:border-white/35 transition-colors"
+                            title="Zostaw bez zmian" aria-label="Zamknij usuwanie <%= o.orderRef %>">
+                      <%- IKONY.cofnij %>
+                    </button>
                   </form>
-                </details>
+                </div>
 
-              </div>
-            <% }); %>
-          </div>
-        </section>
-      <% } %>
-    <% }); %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
 
   </main>
+
+<script>
+  // Rozwijanie wiersza i szukanie. Wszystko na gotowym drzewie: kazdy panel
+  // edycji stoi w HTML od poczatku, wiec przy wylaczonym skrypcie widac cala
+  // liste, a nie pusta strone.
+  (function () {
+    var pokaz = function (ref, czy) {
+      var wiersz = document.querySelector('[data-edycja="' + ref + '"]');
+      if (wiersz) wiersz.classList.toggle("hidden", !czy);
+      return wiersz;
+    };
+    var kasowanie = function (ref, czy) {
+      var blok = document.querySelector('[data-kasowanie="' + ref + '"]');
+      if (blok) blok.classList.toggle("hidden", !czy);
+    };
+
+    document.addEventListener("click", function (e) {
+      var otworz = e.target.closest("[data-otworz]");
+      if (otworz) {
+        var ref = otworz.getAttribute("data-otworz");
+        var wiersz = document.querySelector('[data-edycja="' + ref + '"]');
+        pokaz(ref, wiersz && wiersz.classList.contains("hidden"));
+        return;
+      }
+      var usun = e.target.closest("[data-usun]");
+      if (usun) {
+        // Krzyzyk otwiera wiersz razem z ostrzezeniem, a nie kasuje od razu.
+        // Kasowanie jest jedyna akcja bez cofniecia, a wiersze wygladaja
+        // identycznie, wiec musi kosztowac wiecej niz jedno klikniecie.
+        var refU = usun.getAttribute("data-usun");
+        pokaz(refU, true);
+        kasowanie(refU, true);
+        return;
+      }
+      var zamknijK = e.target.closest("[data-zamknij-kasowanie]");
+      if (zamknijK) { kasowanie(zamknijK.getAttribute("data-zamknij-kasowanie"), false); return; }
+      var zamknij = e.target.closest("[data-zamknij]");
+      if (zamknij) {
+        // `type="reset"` przywraca pola, a my domykamy wiersz. Kolejnosc ma
+        // znaczenie: schowanie przed resetem zostawiloby w polach zmiany,
+        // ktore wroca przy nastepnym otwarciu i beda wygladac na zapisane.
+        var refZ = zamknij.getAttribute("data-zamknij");
+        setTimeout(function () { kasowanie(refZ, false); pokaz(refZ, false); }, 0);
+      }
+    });
+
+    var pole = document.getElementById("szukaj");
+    if (pole) {
+      pole.addEventListener("input", function () {
+        var szukane = pole.value.trim().toLowerCase();
+        document.querySelectorAll("[data-wiersz]").forEach(function (w) {
+          var pasuje = !szukane || (w.getAttribute("data-szukaj") || "").indexOf(szukane) >= 0;
+          w.classList.toggle("hidden", !pasuje);
+          if (!pasuje) pokaz(w.getAttribute("data-wiersz"), false);
+        });
+      });
+    }
+  })();
+</script>
 </body>
 </html>

@@ -133,6 +133,30 @@ app.use((req, res, next) => {
 app.set("view engine", "ejs");
 app.set("views", join(__dirname, "views"));
 
+// ------------------------------------------------------------
+// IKONY PANELU
+// ------------------------------------------------------------
+// Jeden zestaw dla calego panelu, bo ten sam znak ma wszedzie znaczyc to samo:
+// olowek otwiera wiersz do edycji, fistaszek zatwierdza, zawinieta strzalka
+// wycofuje sie bez zmian, krzyzyk usuwa. Krzyzyk NIE sluzy do zamykania
+// formularza: gdyby raz zamykal, a raz kasowal, roznica miedzy pomylka a
+// utrata danych bylaby kwestia tego, gdzie akurat stoi kursor.
+//
+// Rysunek stoi w SVG w tym pliku, a nie w foncie ikon ani w bibliotece, bo
+// panel nie ciagnie niczego z sieci. `currentColor` bierze kolor z klasy
+// przycisku, wiec ten sam znak jest zielony przy zapisie i czerwony przy
+// kasowaniu, bez drugiego rysunku.
+const ikona = (sciezki, klasa = "w-4 h-4") =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ` +
+  `stroke-linecap="round" stroke-linejoin="round" class="${klasa}" aria-hidden="true">${sciezki}</svg>`;
+
+app.locals.IKONY = {
+  olowek: ikona('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  fistaszek: ikona('<path d="M20 6 9 17l-5-5"/>'),
+  cofnij: ikona('<path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.6-6.4L3 9"/>'),
+  krzyzyk: ikona('<path d="M18 6 6 18"/><path d="M6 6l12 12"/>'),
+};
+
 // Arkusz stylow podajemy z wlasnego katalogu. Wczesniej kazda strona ciagnela
 // Tailwind ze zdalnego serwera, bez przypietej wersji i bez sumy kontrolnej,
 // czyli panel z dostepem do leadow, kodow i potwierdzania przelewow wykonywal
@@ -1568,11 +1592,22 @@ app.get("/queue", requireAuth, async (req, res) => {
   // i anulowane, bo omylkowe "zrobione" inaczej znika z ekranu razem
   // z jedynym miejscem, w ktorym dalo by sie je poprawic.
   const stan = String(req.query.status || "");
+  // Sortowanie sprawdza API wedlug bialej listy. Panel przekazuje je dalej
+  // i tylko pamieta w adresie, zeby zapis wracal do tak samo ulozonej listy.
+  const sort = String(req.query.sort || "");
+  const pytanie = [stan ? `status=${encodeURIComponent(stan)}` : "", sort ? `sort=${encodeURIComponent(sort)}` : ""]
+    .filter(Boolean).join("&");
   try {
-    const { orders, counts } = await shopApi(`/api/orders/queue${stan ? `?status=${encodeURIComponent(stan)}` : ""}`);
-    res.render("queue", { user: req.user, orders, counts, stan, msg: req.query.msg, err: req.query.err });
+    const dane = await shopApi(`/api/orders/queue${pytanie ? `?${pytanie}` : ""}`);
+    res.render("queue", {
+      user: req.user, orders: dane.orders, counts: dane.counts,
+      stan, sort: dane.sort || "newest", msg: req.query.msg, err: req.query.err,
+    });
   } catch (err) {
-    res.render("queue", { user: req.user, orders: [], counts: {}, stan, msg: null, err: err.message });
+    res.render("queue", {
+      user: req.user, orders: [], counts: {}, stan, sort: sort || "newest",
+      msg: null, err: err.message,
+    });
   }
 });
 
@@ -1588,6 +1623,11 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
         stage: req.body.stage || undefined,
         trackingNumber: req.body.trackingNumber ?? undefined,
         note: req.body.note ?? undefined,
+        // Liczba dni i data terminu ida tylko wtedy, gdy formularz je przyslal.
+        // `undefined` znaczy "nie ruszaj", pusty napis znaczy "wyczysc", i te
+        // dwie rzeczy trzeba rozroznic, bo termin da sie skasowac.
+        leadDays: req.body.leadDays ?? undefined,
+        deadlineAt: req.body.deadlineAt ?? undefined,
       },
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";

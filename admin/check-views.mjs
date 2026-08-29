@@ -122,14 +122,16 @@ const ZESTAWY = {
   queue: {
     user: uzytkownik,
     orders: [{
-      orderRef: "ZAM-TEST", quoteRef: "WY20260825-A1B2C3D4", status: "paid", kind: "quoted", lang: "pl",
+      orderRef: "ZAM-TEST", quoteRef: "WY20260825-A1B2C3D4", status: "queued", kind: "quoted", lang: "pl",
       name: "Test", email: "test@aejaca.com", phone: null, totalPLN: "500.00",
       paidAt: new Date("2026-08-20"), waitingDays: 5,
+      leadDays: 14, deadlineAt: "2026-09-03", daysLeft: 5, requiresDetails: false,
+      detailsAt: null, queuedAt: new Date("2026-08-20"), readyAt: null,
       productionStartedAt: null, shippedAt: null, trackingNumber: null, productionNote: null,
       delivery: { method: "inpost_locker", point: "WAW01A", addressLine1: null, addressLine2: null, postalCode: null, city: null, country: "PL" },
       items: [{ title: "Odlew sygnetu", qty: 1, calculator: null, fileName: null, fileUrl: null, description: "srebro 925" }],
     }],
-    counts: { paid: 1 }, stan: "", msg: null, err: null,
+    counts: { queued: 1 }, stan: "", sort: "newest", msg: null, err: null,
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
@@ -197,6 +199,22 @@ for (const f of pliki) {
   const komorekPo = (ogon.match(/<td/g) || []).length;
   if (komorekPo > 0) {
     zle(`views/${f}: za akcjami stoi jeszcze ${komorekPo} kolumn, wiec przypiecie zlapie nie te komorke`);
+  }
+}
+
+// --- 5. Ikony panelu: nazwa uzyta w widoku musi istniec w zestawie ------
+// `IKONY` jest obiektem, wiec atrapa podstawiana wyzej oddaje `undefined`
+// zamiast wywalic render. Literowka w nazwie znaku przechodzilaby przez
+// kontrole i znikala z panelu po cichu: przycisk zostaje, tylko jest pusty.
+const zestawIkon = new Set(
+  [...(server.match(/app\.locals\.IKONY\s*=\s*\{([\s\S]*?)\n\};/) || ["", ""])[1]
+    .matchAll(/^\s*(\w+):/gm)].map((m) => m[1])
+);
+if (!zestawIkon.size) zle("nie znalazlem w server.js zestawu app.locals.IKONY");
+for (const f of pliki) {
+  const tresc = readFileSync(join(VIEWS, f), "utf8");
+  for (const uzycie of tresc.matchAll(/IKONY\.(\w+)/g)) {
+    if (!zestawIkon.has(uzycie[1])) zle(`views/${f} uzywa IKONY.${uzycie[1]}, a takiej ikony nie ma`);
   }
 }
 

@@ -335,7 +335,7 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
   // Lista musi obejmowac KAZDY etap po zaplacie, razem z ustalaniem szczegolow
   // i "zrealizowane" (ADR-0027). Pominiecie ktoregokolwiek znaczy podsumowanie
   // mowiace "do zaplaty" komus, kto juz zaplacil.
-  ma(STATUS, /\["paid", "details", "in_production", "ready", "shipped", "completed"\]\.includes/,
+  ma(STATUS, /\["paid", "details", "queued", "in_production", "ready", "shipped", "completed"\]\.includes/,
      "kazdy etap po zaplacie liczy sie jako zaplacony");
   // Backend i strona wdrazaja sie osobno, wiec kwota musi miec swoje miejsce
   // takze wtedy, gdy API jeszcze nie przysyla pozycji.

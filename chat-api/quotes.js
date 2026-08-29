@@ -141,8 +141,17 @@ export const DEFAULT_GROUP = "wybor";
  */
 const ZAMOWIENIE_W_TOKU = new Set(["draft", "awaiting_payment", "awaiting_transfer", "payment_review"]);
 
-/** Zamowienie doszlo do skutku: pozycja jest ZAMKNIETA i znika z oferty. */
-const ZAMOWIENIE_DOSZLO = new Set(["paid", "in_production", "shipped", "completed", "refunded"]);
+/**
+ * Zamowienie doszlo do skutku: pozycja jest ZAMKNIETA i znika z oferty.
+ *
+ * Lista obejmuje WSZYSTKIE etapy pracy, lacznie z ustalaniem szczegolow
+ * i czekaniem w kolejce. Etap pominiety tutaj spada nizej na "zajeta", czyli
+ * na zdanie "ktos wlasnie za to placi", i oferta obiecywalaby zwolnienie
+ * pozycji, ktora jest juz zaplacona i zrobiona.
+ */
+const ZAMOWIENIE_DOSZLO = new Set([
+  "paid", "details", "queued", "in_production", "ready", "shipped", "completed", "refunded",
+]);
 
 /**
  * Stan pozycji oferty: `wolna`, `zajeta` albo `zamknieta`.
@@ -548,7 +557,7 @@ export async function availableDesignCredit(pool, email) {
         -- pcha zamowienie od razu w etap pracy, wiec warunek na sam ten jeden
         -- stan przestalby znajdowac cokolwiek i odliczenie za projekt po cichu
         -- znikneloby z kasy.
-        AND o.status IN ('paid','details','in_production','ready','shipped','completed')
+        AND o.status IN ('paid','details','queued','in_production','ready','shipped','completed')
         AND o.credit_consumed_by IS NULL
         AND o.paid_at > NOW() - ($2 || ' days')::interval
         -- Doplaty za poprawki wisza przy projekcie i nie tworza wlasnego odliczenia.

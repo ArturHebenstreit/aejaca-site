@@ -163,8 +163,14 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   i inna u klienta, więc React wyrzuca całe poddrzewo (ADR-0022). Panel i
   strona klienta czytają tę samą liczbę, bo dwa miejsca licząc to samo
   pokazałyby dwie różne.
-- **Zegar biegnie wyłącznie w „Zlecenie w realizacji”.** W ustalaniu
-  szczegółów czekamy na klienta, a nie on na nas.
+- **Zegar startuje w „Gotowe do pobrania”, a nie przy wzięciu zlecenia do
+  ręki.** Termin stemplowany dopiero przy pobraniu przesuwałby się o każdy
+  dzień leżenia w kolejce, a klient ma datę w mailu. Zwłoka w kolejce zjada
+  nasz zapas, nie termin klienta. W ustalaniu szczegółów zegar stoi, bo
+  czekamy wtedy na klienta, a nie on na nas. Decyzja: ADR-0028.
+- **Zegar biegnie w trzech etapach: gotowe do pobrania, w realizacji,
+  gotowe do wysyłki.** Rzecz zrobiona i niewysłana ma przed sobą ten termin,
+  o który chodzi najbardziej: dzień nadania.
 - **Próg przypomnienia zapisuje się dopiero po udanej wysyłce maila.** Zapis
   przed nią zamyka próg na zawsze przy pierwszej awarii poczty, po cichu.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.

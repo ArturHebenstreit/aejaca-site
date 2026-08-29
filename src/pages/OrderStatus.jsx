@@ -30,7 +30,10 @@ const STANY_USTALONE = [
   "paid",
   "awaiting_transfer",
   "payment_review",
+  "details",
+  "queued",
   "in_production",
+  "ready",
   "shipped",
   "completed",
 ];
@@ -423,7 +426,10 @@ export default function OrderStatus() {
   // spadalo na galaz domyslna i mowilo oplaconemu klientowi, ze czekamy na
   // jego platnosc. Stoja w lancuchu PRZED `failed`, bo pozniejsza nieudana
   // proba platnosci nie cofa zamowienia, ktore juz jest w robocie.
-  const inProduction = order?.status === "in_production";
+  // "Gotowe do pobrania" i "w robocie" to dla klienta jedno i to samo zdanie:
+  // zaplacil, przyjelismy, termin biegnie. Roznica miedzy nimi jest wewnetrzna
+  // i dotyczy tego, czy ktos w pracowni wzial juz zlecenie do reki.
+  const inProduction = order?.status === "queued" || order?.status === "in_production";
   const shipped = order?.status === "shipped";
   const completed = order?.status === "completed";
   const failed = order?.paymentStatus === "FAILURE";
@@ -438,7 +444,7 @@ export default function OrderStatus() {
   // Kazdy etap PO zaplacie. Pominiecie ktoregokolwiek znaczy podsumowanie
   // mowiace "do zaplaty" komus, kto zaplacil, i to jest dokladnie ten sam
   // blad, ktory strona popelniala przy adresie bez numeru.
-  const zaplacone = ["paid", "details", "in_production", "ready", "shipped", "completed"].includes(order?.status);
+  const zaplacone = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"].includes(order?.status);
   const etapSzczegolow = order?.status === "details";
   const etapGotowe = order?.status === "ready";
   // Odbior osobisty konczy sie przekazaniem, a nie wysylka. To samo pole
