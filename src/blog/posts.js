@@ -16,6 +16,7 @@ import * as p15 from "./posts/ile-kosztuje-bizuteria.jsx";
 import * as p16 from "./posts/rodzaje-splotow-lancuszkow.jsx";
 import * as p17 from "./posts/lost-resin-krok-po-kroku.jsx";
 import * as p18 from "./posts/druk-miniatur-figurek-16k.jsx";
+import * as p19 from "./posts/przyciecie-uproszczenie-skala-stl.jsx";
 
 export const POSTS = [
   { ...p1.meta, Body: p1.Body },
@@ -36,6 +37,7 @@ export const POSTS = [
   { ...p16.meta, Body: p16.Body },
   { ...p17.meta, Body: p17.Body },
   { ...p18.meta, Body: p18.Body },
+  { ...p19.meta, Body: p19.Body },
 ];
 
 export function getPost(slug) {

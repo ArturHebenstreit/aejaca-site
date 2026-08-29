@@ -365,7 +365,7 @@ export default function Service() {
         {/* Wiedza z tej dziedziny. Szesnascie stron sklepu mialo 499 linkow
             przychodzacych i nie oddawalo z nich nic do bloga ani slownika,
             ktore dostawaly odpowiednio 5,6 i 8,7 linku na strone. */}
-        <RelatedContent category={card.category} />
+        <RelatedContent category={card.category} service={card.id} />
       </div>
     </>
   );
