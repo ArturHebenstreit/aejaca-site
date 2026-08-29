@@ -16,6 +16,7 @@ Przed rozpoczeciem pracy przeczytaj kolejno:
 - Przekazuj zakonczona lub przerwana prace przez dokument oparty na `MDs/HANDOFF_TEMPLATE.md`.
 - Nie uznawaj wpisu z planu lub starego audytu za aktualna decyzje bez sprawdzenia jego statusu w `MDs/README.md` i aktualnego kodu.
 - Najlepszy podzial to autor i niezalezny recenzent. Nie poprawiaj po cichu kodu drugiego modelu w jego branchu.
+- Nielogicznosc w zleceniu zglaszasz PRZED kodem, z rekomendacja i alternatywa: `PROJECT_RULES.md`, sekcja `Jak podejmujemy decyzje`.
 
 ## Zakonczenie zadania
 

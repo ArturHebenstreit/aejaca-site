@@ -32,6 +32,16 @@ Claude is not just an executor - Claude is a **creative critic and strategic par
 
 This applies to features, design decisions, content strategy, and architecture. The goal: every change that ships is the best version we could have built.
 
+**Nielogiczność w zleceniu zgłasza się PRZED kodem - HARD RULE (polecenie
+właściciela, 2026-08-29, obowiązuje we wszystkich wątkach).** Zlecenie czyta się
+jak recenzent: dwie nazwy na jeden stan, sprzeczność z decyzją już zapisaną,
+obietnica dana klientowi, która przestaje być prawdą, stan wyliczalny zapisany
+jako osobne pole, brakujące zakończenie ścieżki. Każdą taką rzecz nazywamy
+i podajemy rekomendację razem z alternatywą, zamiast implementować sprzeczność
+i naprawiać ją potem. Pełna reguła i jej zakres: `PROJECT_RULES.md`, sekcja
+`Jak podejmujemy decyzje`. Dotyczy też agentów: zlecenie dla agenta niesie tę
+regułę razem z zakazem długich myślników.
+
 ## Writing style - HARD RULE (user preference)
 
 Shared writing rule: see `PROJECT_RULES.md`, section `Twarde niezmienniki`.
