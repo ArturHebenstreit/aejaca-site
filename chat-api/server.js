@@ -37,7 +37,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
-  sendDeadlineReminder, sendDetailsNudge,
+  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
 } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import {
@@ -4279,6 +4279,17 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   }
 
   console.log(`[kolejka] ${ref}: ${order.status} -> ${etap}${numer ? `, list przewozowy ${numer}` : ""}`);
+  // Powiadomienie idzie WYLACZNIE na zyczenie pracowni. Automat przy kazdej
+  // zmianie zamienilby skrzynke klienta w dziennik naszej pracy, a przy
+  // cofnieciu omylkowego klikniecia wysylalby sprostowanie czegos, o czym
+  // klient nie zdazyl sie dowiedziec. Nie czekamy na wysylke: etap jest juz
+  // zapisany i nieudany mail nie ma prawa cofnac pracy.
+  const powiadom = req.body?.notify === true || req.body?.notify === "1";
+  if (powiadom) {
+    sendStatusUpdate(pool, order.id)
+      .then((poszlo) => console.log(`[etap] ${ref}: powiadomienie klienta ${poszlo ? "wyslane" : "NIE poszlo"}`))
+      .catch((e) => console.error("[etap] powiadomienie:", e.message));
+  }
   res.json({
     ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel,
     deadlineAt: zmiana.rows[0].deadline_at || null,
@@ -4415,10 +4426,13 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   const zegarWyzerowany = czyszczone.includes("deadline_at");
 
   if (dniZmienione) {
-    // Zmiana terminu bez daty ustalenia zostawia w bazie liczbe, ktorej nikt
-    // nie umie uzasadnic. Odmawiamy tutaj, a nie w panelu, bo panel jest
-    // jednym z kilku wejsc.
-    if (dni !== null && !ustalonoDnia && !order.lead_days_agreed_at) {
+    // Daty ustalenia zadamy tylko wtedy, gdy ZMIENIAMY termin, ktory juz
+    // istnial: to jest zmiana obietnicy danej klientowi i musi dac sie
+    // uzasadnic. Wpisanie terminu tam, gdzie go nie bylo, jest uzupelnieniem
+    // braku, a nie zmiana umowy: zamowienia sprzed wprowadzenia terminow maja
+    // `lead_days` puste i pierwsza wersja tej reguly nie pozwalala ich wypelnic
+    // wcale, bo zadala daty ustalenia czegos, czego nikt nie ustalal.
+    if (dni !== null && order.lead_days != null && !ustalonoDnia && !order.lead_days_agreed_at) {
       return res.status(400).json({
         error: "Zmiana terminu wymaga daty ustalenia z klientem",
         code: "agreement_date_required",
@@ -4454,6 +4468,11 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   }
 
   console.log(`[kolejka] ${ref}: poprawka${etap ? ` ${order.status} -> ${etap}` : ""}${czyszczone.length ? `, wyczyszczone ${czyszczone.join(", ")}` : ""}`);
+  if (etap && (req.body?.notify === true || req.body?.notify === "1")) {
+    sendStatusUpdate(pool, order.id)
+      .then((poszlo) => console.log(`[etap] ${ref}: powiadomienie klienta ${poszlo ? "wyslane" : "NIE poszlo"}`))
+      .catch((e) => console.error("[etap] powiadomienie:", e.message));
+  }
   res.json({
     ok: true,
     orderRef: ref,
@@ -4569,6 +4588,13 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
 
     await client.query("COMMIT");
     console.log(`[ustalenia] ${ref}: pozycja ${itemId} ${domykamy ? "domknieta" : "otwarta"}, zostalo ${zostalo}, status ${status}`);
+    // O ustaleniach piszemy klientowi tylko wtedy, gdy zmienily ETAP: samo
+    // odhaczenie jednej z trzech pozycji jest nasza notatka, a nie nowina.
+    if (status !== order.status && (req.body?.notify === true || req.body?.notify === "1")) {
+      sendStatusUpdate(pool, order.id)
+        .then((poszlo) => console.log(`[etap] ${ref}: powiadomienie klienta ${poszlo ? "wyslane" : "NIE poszlo"}`))
+        .catch((e) => console.error("[etap] powiadomienie:", e.message));
+    }
     res.json({ ok: true, orderRef: ref, itemId, settled: domykamy, remaining: zostalo, status, deadlineAt: termin });
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});
