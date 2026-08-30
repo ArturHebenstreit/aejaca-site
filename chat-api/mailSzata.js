@@ -121,35 +121,43 @@ export function stopkaText(lang) {
 const WIECEJ = { pl: "Gdzie poczytać więcej", en: "Where to read more", de: "Wo Sie mehr erfahren" };
 
 /**
- * Blok odnosnikow "co warto wiedziec przy tym mailu".
+ * Blok "co warto wiedziec przy tym mailu".
+ *
+ * Kazda pozycja jest ZDANIEM zlozonym z kawalkow: napis albo odnosnik
+ * `{ href, pokaz }`. Ten sam uklad rysuje wersje HTML i tekstowa, wiec nie da
+ * sie ich rozjechac, a klient czyta polecenie, a nie etykiete z przypisem.
+ *
+ * ADRES JEST WIDOCZNY, a nie schowany pod slowem (polecenie wlasciciela,
+ * 2026-08-30). Mail bywa drukowany, przeklejany i czytany bez HTML-a, a wtedy
+ * odnosnik pod slowem "tutaj" nie prowadzi juz nigdzie.
  *
  * @param {string} lang jezyk maila
- * @param {Array<{href: string, label: string, opis?: string}>} pozycje
+ * @param {Array<Array<string|{href: string, pokaz: string}>>} zdania
  */
-export function odnosnikiHtml(lang, pozycje) {
-  const lista = (pozycje || []).filter(Boolean);
+export function odnosnikiHtml(lang, zdania) {
+  const lista = (zdania || []).filter((z) => z && z.length);
   if (!lista.length) return "";
+  const kawalek = (k) =>
+    typeof k === "string"
+      ? esc(k)
+      : `<a href="${esc(k.href)}" style="color:#b58a3c;font-weight:700;text-decoration:none;word-break:break-word">${esc(k.pokaz)}</a>`;
   return `
     <div style="margin-top:24px;background:#faf9f7;border:1px solid #efece6;border-radius:10px;padding:16px 18px">
       <p style="margin:0 0 10px;font-size:12px;letter-spacing:0.6px;text-transform:uppercase;color:#8a7a5c">${esc(WIECEJ[lang] || WIECEJ.pl)}</p>
-      ${lista.map((p) => `
-        <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
-          <a href="${esc(p.href)}" style="color:#b58a3c;font-weight:700;text-decoration:none">${esc(p.label)}</a>
-          ${p.opis ? `<br /><span style="color:#777">${esc(p.opis)}</span>` : ""}
-        </p>`).join("")}
+      ${lista.map((z) => `
+        <p style="margin:0 0 12px;font-size:13px;line-height:1.7;color:#444">${z.map(kawalek).join("")}</p>`).join("")}
     </div>`;
 }
 
-/** Ten sam blok w wersji tekstowej. */
-export function odnosnikiText(lang, pozycje) {
-  const lista = (pozycje || []).filter(Boolean);
+/** Ten sam blok w wersji tekstowej: odnosnik zamienia sie w pelny adres. */
+export function odnosnikiText(lang, zdania) {
+  const lista = (zdania || []).filter((z) => z && z.length);
   if (!lista.length) return "";
   const linie = [`${WIECEJ[lang] || WIECEJ.pl}:`];
-  for (const p of lista) {
-    linie.push(`- ${p.label}: ${p.href}`);
-    if (p.opis) linie.push(`  ${p.opis}`);
+  for (const z of lista) {
+    linie.push(z.map((k) => (typeof k === "string" ? k : k.href)).join(""));
   }
-  return linie.join("\n");
+  return linie.join("\n\n");
 }
 
 /**

@@ -87,14 +87,12 @@ const T = {
     questions: "Pytania",
     questionsBody: "Odpisz na tę wiadomość albo zadzwoń.",
     terms: "Regulamin",
-    linkTermsOpis: "Zasady sprzedaży, reklamacji i odstąpienia od umowy.",
-    linkStatus: "Sprawdź stan swojego zlecenia",
-    linkStatusOpis: (ref) =>
-      `Oś czasu, termin i numer przesyłki po nadaniu. Gdyby ten e-mail się zawieruszył: otwórz ${SELLER.site}/order/status/, wpisz numer ${ref} i adres e-mail, na który przyszła ta wiadomość.`,
-    linkProces: "Proces realizacji",
-    linkProcesOpis: "Co się dzieje po zapłacie: etapy pracy, jak liczymy termin i jak odbierzesz gotową rzecz.",
-    linkPlatnosci: "Proces płatności",
-    linkPlatnosciOpis: "Metody, waluty, ważność kwoty i kody rabatowe.",
+    zdanieStatus: "Sprawdź status swojego zamówienia pod adresem ",
+    zdanieStatusAlbo: " lub odwiedź ",
+    zdanieStatusPodaj: (ref) => ` i podaj numer ${ref} oraz adres e-mail, na który przyszła ta wiadomość.`,
+    zdanieProces: "Dowiedz się, jak wygląda proces realizacji zamówienia: ",
+    zdanieRegulamin: "Regulamin serwisu znajdziesz pod adresem ",
+    zdaniePlatnosci: "Jak przebiega płatność, przeczytasz pod adresem ",
     bye: "Pozdrawiamy",
     deliveryNames: { pickup: "Odbiór osobisty", inpost_locker: "Paczkomat InPost", courier: "Kurier", digital: "Dostawa cyfrowa" },
     thanksTransfer: "potwierdzamy wpływ Twojej wpłaty. Poniżej podsumowanie zamówienia. Zabieramy się do pracy.",
@@ -162,14 +160,12 @@ const T = {
     questions: "Questions",
     questionsBody: "Just reply to this message or call us.",
     terms: "Terms of Service",
-    linkTermsOpis: "Rules of sale, complaints and withdrawal from the contract.",
-    linkStatus: "Check your order",
-    linkStatusOpis: (ref) =>
-      `The timeline, the delivery date and the tracking number once posted. If this e-mail goes missing: open ${SELLER.site}/en/order/status/, enter the number ${ref} and the e-mail address this message arrived at.`,
-    linkProces: "How we make your order",
-    linkProcesOpis: "What happens after payment: the stages of work, how the date is counted and how you collect the finished piece.",
-    linkPlatnosci: "How payment works",
-    linkPlatnosciOpis: "Methods, currencies, how long an amount holds and discount codes.",
+    zdanieStatus: "Check the status of your order at ",
+    zdanieStatusAlbo: " or go to ",
+    zdanieStatusPodaj: (ref) => ` and enter the number ${ref} together with the e-mail address this message arrived at.`,
+    zdanieProces: "Read how an order is made: ",
+    zdanieRegulamin: "The terms of service are at ",
+    zdaniePlatnosci: "How payment works is described at ",
     bye: "Best regards",
     deliveryNames: { pickup: "Personal pickup", inpost_locker: "InPost locker", courier: "Courier", digital: "Digital delivery" },
     thanksTransfer: "we confirm that your payment has arrived. Here is the summary of your order. We are starting work.",
@@ -237,14 +233,12 @@ const T = {
     questions: "Fragen",
     questionsBody: "Antworten Sie einfach auf diese Nachricht oder rufen Sie uns an.",
     terms: "AGB",
-    linkTermsOpis: "Verkaufsbedingungen, Reklamationen und Widerruf.",
-    linkStatus: "Ihren Auftrag prüfen",
-    linkStatusOpis: (ref) =>
-      `Zeitstrahl, Liefertermin und nach dem Versand die Sendungsnummer. Falls diese E-Mail verloren geht: öffnen Sie ${SELLER.site}/de/order/status/, geben Sie die Nummer ${ref} und die E-Mail-Adresse ein, an die diese Nachricht ging.`,
-    linkProces: "Ablauf der Fertigung",
-    linkProcesOpis: "Was nach der Zahlung passiert: Arbeitsetappen, wie der Termin gezählt wird und wie Sie das fertige Stück erhalten.",
-    linkPlatnosci: "Zahlungsablauf",
-    linkPlatnosciOpis: "Methoden, Währungen, Gültigkeit des Betrags und Rabattcodes.",
+    zdanieStatus: "Den Status Ihrer Bestellung prüfen Sie unter ",
+    zdanieStatusAlbo: " oder besuchen Sie ",
+    zdanieStatusPodaj: (ref) => ` und geben Sie die Nummer ${ref} sowie die E-Mail-Adresse an, an die diese Nachricht ging.`,
+    zdanieProces: "So läuft die Fertigung einer Bestellung ab: ",
+    zdanieRegulamin: "Die AGB finden Sie unter ",
+    zdaniePlatnosci: "Wie die Zahlung abläuft, lesen Sie unter ",
     bye: "Mit freundlichen Grüßen",
     deliveryNames: { pickup: "Selbstabholung", inpost_locker: "InPost-Paketstation", courier: "Kurier", digital: "Digitale Lieferung" },
     thanksTransfer: "wir bestätigen den Eingang Ihrer Zahlung. Nachfolgend die Zusammenfassung Ihrer Bestellung. Wir beginnen mit der Arbeit.",
@@ -421,18 +415,38 @@ function linkZlecenia(order, lang) {
   return `${baza}?ref=${encodeURIComponent(order.order_ref)}${zeton}`;
 }
 
+/** Adres do pokazania: bez protokolu, bo to on zajmuje pol wiersza. */
+const doPokazania = (url) => url.replace(/^https?:\/\//, "");
+
+/** Zdanie z widocznym adresem: "Tresc ... https://www.aejaca.com/cos/". */
+function zdanieZAdresem(tresc, url) {
+  return [tresc, { href: url, pokaz: doPokazania(url) }];
+}
+
+/** Zdanie o procesie realizacji, to samo w kazdym mailu o zamowieniu. */
+const zdanieProces = (l, lang) => zdanieZAdresem(l.zdanieProces, adres(lang, "/order-process/"));
+
+/** Zdanie o regulaminie, to samo w kazdym mailu. */
+const zdanieRegulamin = (l, lang) => zdanieZAdresem(l.zdanieRegulamin, adres(lang, "/terms/"));
+
 /**
- * Odnosniki pod mailem o zamowieniu.
+ * Zdania pod mailem o zamowieniu.
  *
- * Opis przy pierwszym z nich mowi, co zrobic BEZ odnosnika. Odnosnik z maila
- * ginie razem z mailem, a wtedy klient zostaje z numerem w reku i bez pomyslu,
- * gdzie go wpisac (zgloszenie wlasciciela, 2026-08-30).
+ * Pierwsze podaje DWIE drogi do tej samej strony: prywatny odnosnik z tego
+ * maila i zwykly adres, pod ktory klient wejdzie z numerem i adresem e-mail.
+ * Odnosnik ginie razem z mailem, numer zostaje.
  */
 function odnosnikiZamowienia(order, l, lang) {
+  const prywatny = linkZlecenia(order, lang);
+  const ogolny = adres(lang, "/order/status/");
   return [
-    { href: linkZlecenia(order, lang), label: l.linkStatus, opis: l.linkStatusOpis(order.order_ref) },
-    { href: adres(lang, "/order-process/"), label: l.linkProces, opis: l.linkProcesOpis },
-    { href: adres(lang, "/terms/"), label: l.terms, opis: l.linkTermsOpis },
+    [
+      l.zdanieStatus, { href: prywatny, pokaz: doPokazania(prywatny) },
+      l.zdanieStatusAlbo, { href: ogolny, pokaz: doPokazania(ogolny) },
+      l.zdanieStatusPodaj(order.order_ref),
+    ],
+    zdanieProces(l, lang),
+    zdanieRegulamin(l, lang),
   ];
 }
 
@@ -742,9 +756,9 @@ export function buildTransferMessage(order, tr) {
   const l = T[lang];
   const rows = transferRows(l, tr);
   const odnosniki = [
-    { href: adres(lang, "/payments/"), label: l.linkPlatnosci, opis: l.linkPlatnosciOpis },
-    { href: adres(lang, "/order-process/"), label: l.linkProces, opis: l.linkProcesOpis },
-    { href: adres(lang, "/terms/"), label: l.terms, opis: l.linkTermsOpis },
+    zdanieZAdresem(l.zdaniePlatnosci, adres(lang, "/payments/")),
+    zdanieProces(l, lang),
+    zdanieRegulamin(l, lang),
   ];
 
   const html = koperta({ lang, odnosniki, srodek: `
@@ -1135,10 +1149,7 @@ export function buildStatusUpdate(order) {
   // Odnosniki te same co w potwierdzeniu, bez powtarzania odnosnika do
   // zlecenia: ten stoi wyzej jako przycisk i drugi raz byloby go za duzo.
   const t = T[lang] || T.pl;
-  const odnosniki = [
-    { href: adres(lang, "/order-process/"), label: t.linkProces, opis: t.linkProcesOpis },
-    { href: adres(lang, "/terms/"), label: t.terms, opis: t.linkTermsOpis },
-  ];
+  const odnosniki = [zdanieProces(t, lang), zdanieRegulamin(t, lang)];
 
   // Wersja tekstowa zostaje: czesc klientow pocztowych i czytniki ekranu biora
   // wlasnie ja, a mail bez niej ladu je czesciej w spamie.
@@ -1349,7 +1360,7 @@ const QUOTE_T = {
     validUntil: (d) => `Wycena obowiązuje do ${d}.`,
     validLabel: "Wycena ważna do",
     numer: "Numer wyceny",
-    numerOpis: "Metody, waluty i kody rabatowe. Ten numer wpiszesz też sam, na stronie oferty, w sklepie albo w koszyku, gdyby ten e-mail się zawieruszył.",
+    numerZdanie: (ref) => `Numer ${ref} wpiszesz też sam, na stronie oferty, w sklepie albo w koszyku.`,
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
     noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
@@ -1370,7 +1381,7 @@ const QUOTE_T = {
     validUntil: (d) => `The quote is valid until ${d}.`,
     validLabel: "Quote valid until",
     numer: "Quote number",
-    numerOpis: "Methods, currencies and discount codes. You can also type this number yourself, on the offer page, in the shop or in the cart, if this e-mail goes missing.",
+    numerZdanie: (ref) => `You can also type the number ${ref} yourself, on the offer page, in the shop or in the cart.`,
     metalNote:
       "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
     noObligation: "Saving a quote is not an order and commits you to nothing.",
@@ -1391,7 +1402,7 @@ const QUOTE_T = {
     validUntil: (d) => `Das Angebot gilt bis ${d}.`,
     validLabel: "Angebot gültig bis",
     numer: "Angebotsnummer",
-    numerOpis: "Methoden, Währungen und Rabattcodes. Diese Nummer können Sie auch selbst eingeben, auf der Angebotsseite, im Shop oder im Warenkorb, falls diese E-Mail verloren geht.",
+    numerZdanie: (ref) => `Die Nummer ${ref} können Sie auch selbst eingeben, auf der Angebotsseite, im Shop oder im Warenkorb.`,
     metalNote:
       "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
     noObligation: "Das Speichern eines Angebots ist keine Bestellung und verpflichtet zu nichts.",
@@ -1429,9 +1440,10 @@ export function buildQuoteMessage(quote, items, url) {
   // serwisu, ktorej i tak nie otworzy z maila.
   const t = T[lang] || T.pl;
   const odnosniki = [
-    { href: adres(lang, "/payments/"), label: t.linkPlatnosci, opis: l.numerOpis },
-    { href: adres(lang, "/order-process/"), label: t.linkProces, opis: t.linkProcesOpis },
-    { href: adres(lang, "/terms/"), label: t.terms, opis: t.linkTermsOpis },
+    zdanieZAdresem(t.zdaniePlatnosci, adres(lang, "/payments/")),
+    [l.numerZdanie(quote.quote_ref)],
+    zdanieProces(t, lang),
+    zdanieRegulamin(t, lang),
   ];
   const wazneDo = quote.valid_until ? dzien(quote.valid_until) : null;
 

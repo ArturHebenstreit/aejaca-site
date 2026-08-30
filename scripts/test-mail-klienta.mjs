@@ -99,6 +99,20 @@ for (const lang of ["pl", "en", "de"]) {
      `${lang}: opis, co otworzyc i co wpisac bez odnosnika`);
 }
 
+console.log("\n3b. Adres jest WIDOCZNY, a nie schowany pod slowem\n");
+
+// Mail bywa drukowany, przeklejany i czytany bez HTML-a. Odnosnik ukryty pod
+// slowem "tutaj" nie prowadzi wtedy nigdzie, a wersja tekstowa i tak niesie
+// pelny adres, wiec sprawdzian na niej samej przepuscilby taka zmiane.
+for (const lang of ["pl", "en", "de"]) {
+  const [, mail] = doKlienta(lang)[0];
+  const prefiks = lang === "pl" ? "" : `/${lang}`;
+  for (const sciezka of ["/order-process/", "/terms/"]) {
+    const widoczny = `>www.aejaca.com${prefiks}${sciezka}</a>`;
+    ok(mail.html.includes(widoczny), `${lang}: adres ${prefiks}${sciezka} widac w tresci, nie tylko w href`);
+  }
+}
+
 console.log("\n4. Mail o wycenie prowadzi do platnosci i do procesu\n");
 
 for (const lang of ["pl", "en", "de"]) {
