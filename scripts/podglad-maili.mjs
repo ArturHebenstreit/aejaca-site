@@ -55,24 +55,109 @@ const USLUGA = (title, grosze) => ({
   item_type: "service", calculator: "laser_cut", params: {},
 });
 
+/** Produkt z polki: to on daje pouczenie o 14 dniach na odstapienie. */
+const PRODUKT = (title, grosze) => ({
+  title, qty: 1, unit_grosze: grosze, line_grosze: grosze,
+  item_type: "product", product_kind: "physical", product_offer: "stock",
+});
+
+/** Pozycja z plikiem do pobrania: tresc cyfrowa, wlasne pouczenie. */
+const PLIK = (title, grosze) => ({
+  title, qty: 1, unit_grosze: grosze, line_grosze: grosze,
+  item_type: "service", calculator: "jewelry_ring_config", params: { output: "mesh" },
+  download_token: "d0wnl0adt0ken", download_max: 5,
+});
+
+const doKlienta = (zam, pozycje) =>
+  buildOrderMessages(zam, pozycje, []).find((m) => m.to === zam.customer_email);
+
+/** Zlecenie na danym etapie, do maila o zmianie etapu. */
+const naEtapie = (status, dodatki = {}) =>
+  buildStatusUpdate({ ...ZAMOWIENIE, status, delivery_method: "inpost_locker", ...dodatki });
+
+const WYCENA = {
+  quote_ref: "WY20260825-A1B2C3D4",
+  customer_email: ZAMOWIENIE.customer_email,
+  lang: "pl",
+  total_grosze: 145000,
+  valid_until: new Date(2026, 8, 1),
+  access_token: "7b3e91c2",
+};
+const ADRES_WYCENY = "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4&token=7b3e91c2";
+
 const EKRANY = {
   "01": {
-    nazwa: "Potwierdzenie zamowienia: usluga na zamowienie, odbior osobisty",
-    zbuduj: () => buildOrderMessages(
-      ZAMOWIENIE,
-      [USLUGA("Klucz Modern, wyższa jakość", 4000), USLUGA("Klucz Antic, wyższa jakość", 4000)],
-      []
-    ).find((m) => m.to === ZAMOWIENIE.customer_email),
+    nazwa: "Potwierdzenie: usluga na zamowienie, odbior osobisty",
+    zbuduj: () => doKlienta(ZAMOWIENIE, [USLUGA("Klucz Modern, wyższa jakość", 4000), USLUGA("Klucz Antic, wyższa jakość", 4000)]),
+  },
+  "02": {
+    nazwa: "Potwierdzenie: produkt z polki, paczkomat, 14 dni na odstapienie",
+    zbuduj: () => doKlienta(
+      { ...ZAMOWIENIE, delivery_method: "inpost_locker", shipping_grosze: 1649,
+        items_total_grosze: 32000, total_grosze: 33649, paid_grosze: 33649, lead_days: 2,
+        deadline_at: new Date(2026, 8, 1) },
+      [PRODUKT("Pierścionek z granatem, złoto 585", 32000)]
+    ),
+  },
+  "03": {
+    nazwa: "Potwierdzenie: zlecenie czeka na ustalenia, z plikami do pobrania",
+    zbuduj: () => doKlienta(
+      { ...ZAMOWIENIE, status: "details", requires_details: true, deadline_at: null,
+        delivery_method: "digital", shipping_grosze: 0,
+        items_total_grosze: 19000, total_grosze: 19000, paid_grosze: 19000, lead_days: 5 },
+      [PLIK("Pierścionek z kreatora, plik STL", 19000)]
+    ),
+  },
+  "04": {
+    nazwa: "Dane do przelewu SEPA, zamowienie w euro",
+    zbuduj: () => buildTransferMessage(
+      { ...ZAMOWIENIE, lang: "de", status: "pending", payment_method: "bank_transfer" },
+      { amountEur: "78.00", iban: "PL61 1090 1014 0000 0712 1981 2874", bic: "WBKPPLPP",
+        holder: "AEJaCA Artur Hebenstreit", bank: "Santander Bank Polska",
+        reference: "AE20260830-BEDBA9E9", dueAt: "2026-09-02T00:00:00Z" }
+    ),
+  },
+  "05": { nazwa: "Etap: wracamy do ustalania szczegolow", zbuduj: () => naEtapie("details", { requires_details: true, deadline_at: null, details_at: "2026-08-30T11:00:00Z" }) },
+  "06": { nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce", zbuduj: () => naEtapie("queued") },
+  "07": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
+  "08": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
+  "09": {
+    nazwa: "Etap: wyslane, z numerem przesylki",
+    zbuduj: () => naEtapie("shipped", {
+      production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+      shipped_at: "2026-09-02T09:00:00Z", tracking_number: "620012345678901234567890",
+    }),
+  },
+  "10": {
+    nazwa: "Etap: zamowienie zamkniete",
+    zbuduj: () => naEtapie("completed", {
+      production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+      shipped_at: "2026-09-02T09:00:00Z",
+    }),
+  },
+  "11": {
+    nazwa: "Wycena zapisana z kalkulatora",
+    zbuduj: () => buildQuoteMessage(WYCENA,
+      [{ title: "Pierścionek z granatem, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "item", selected: true }],
+      ADRES_WYCENY),
+  },
+  "12": {
+    nazwa: "Oferta z wariantami do wyboru i dodatkiem",
+    zbuduj: () => buildQuoteMessage({ ...WYCENA, total_grosze: 168000 }, [
+      { title: "Pierścionek, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "variant", selected: true },
+      { title: "Pierścionek, złoto 750", qty: 1, unit_grosze: 198000, line_grosze: 198000, kind: "variant", selected: false },
+      { title: "Grawer wewnątrz obrączki", qty: 1, unit_grosze: 23000, line_grosze: 23000, kind: "option", selected: true },
+    ], ADRES_WYCENY),
   },
 };
 
 // ------------------------------------------------------------
 
 const wybrane = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-const klucze = wybrane.length ? wybrane : Object.keys(EKRANY);
+const klucze = wybrane.length ? wybrane : Object.keys(EKRANY).sort();
 
 if (process.argv.includes("--lista")) {
-  for (const [k, e] of Object.entries(EKRANY)) console.log(`  ${k}  ${e.nazwa}`);
+  for (const k of Object.keys(EKRANY).sort()) console.log(`  ${k}  ${EKRANY[k].nazwa}`);
   process.exit(0);
 }
 
