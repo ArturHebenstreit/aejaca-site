@@ -20,9 +20,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import {
-  buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
-} from "../chat-api/orderMail.js";
+// Adres API musi stac w srodowisku PRZED wczytaniem modulu maili, bo ten czyta
+// go raz, przy starcie. Zwykly `import` wykonuje sie przed instrukcjami tego
+// pliku, wiec przypisanie wyzej bylo za pozne i sekcja z plikami do pobrania
+// nie rysowala sie w ogole. Stad wczytanie dynamiczne.
+process.env.API_URL ||= "https://api.aejaca.com";
+const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage } =
+  await import("../chat-api/orderMail.js");
 
 const KORZEN = join(dirname(fileURLToPath(import.meta.url)), "..");
 const WYJSCIE = join(KORZEN, "podglad-maili");
