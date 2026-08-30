@@ -276,7 +276,7 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0locked: "Rodzaj pliku wynika z tego, co wgrałeś. Żeby wgrać inny, usuń obecny plik krzyżykiem.", filamentLbl: "Filament", resinLbl: "Żywica", q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
+    q0locked: "Rodzaj pliku wynika z tego, co zostało wgrane. Żeby wgrać inny, usuń obecny plik krzyżykiem.", filamentLbl: "Filament", resinLbl: "Żywica", q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",

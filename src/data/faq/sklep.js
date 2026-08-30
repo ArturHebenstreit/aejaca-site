@@ -205,7 +205,7 @@ export default [
       de: "Wie erhalte ich das fertige Stück?",
     },
     a: {
-      pl: "Tak, jak wybrałeś przy zamówieniu: paczkomat InPost, kurier albo odbiór osobisty w Józefosławiu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy się na godzinę.",
+      pl: "Tak, zgodnie z wyborem przy zamówieniu: paczkomat InPost, kurier albo odbiór osobisty w Józefosławiu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy się na godzinę.",
       en: "However you chose when ordering: an InPost locker, a courier or personal pickup in Józefosław. Once posted, the tracking number appears on your order page and in the message. For a personal pickup we agree a time.",
       de: "So, wie Sie es bei der Bestellung gewählt haben: InPost-Paketstation, Kurier oder Selbstabholung in Józefosław. Nach dem Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht. Für die Selbstabholung stimmen wir eine Uhrzeit ab.",
     },

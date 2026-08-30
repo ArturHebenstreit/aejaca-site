@@ -7,7 +7,7 @@ const LABELS = {
   pl: {
     tag: "Powiedz nam szczerze",
     headline: "Jak nam poszło? Jak nas oceniasz?",
-    sub: "Czy byłeś zadowolony? Jak nas oceniasz? Twoja opinia - dobra lub zła - pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
+    sub: "Jak nam poszło? Jak nas oceniasz? Twoja opinia - dobra lub zła - pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
     google: "Oceń na Google",
     trustpilot: "Oceń na Trustpilot",
     thanks: "Dziękujemy z całego serca 🙏",

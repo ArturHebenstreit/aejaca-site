@@ -521,7 +521,7 @@ export const SERVICES_FULL = [
       { title: L("Model i przymiarka", "Model and fitting", "Modell und Anprobe"),
         body: L("Przy nietypowych rozmiarach wysyłamy wydruk próbny do przymiarki.", "For unusual sizes we send a test print to try on.", "Bei ungewöhnlichen Größen senden wir einen Probedruck zur Anprobe.") },
       { title: L("Odlew albo wykonanie ręczne", "Casting or handmaking", "Guss oder Handarbeit"),
-        body: L("Metoda zgodna z tym, co wybrałeś przy wycenie.", "The method matches what you chose when quoting.", "Die Methode entspricht Ihrer Wahl bei der Kalkulation.") },
+        body: L("Metoda zgodna z wyborem przy wycenie.", "The method matches what you chose when quoting.", "Die Methode entspricht Ihrer Wahl bei der Kalkulation.") },
       { title: L("Wykończenie i grawer", "Finishing and engraving", "Finish und Gravur"),
         body: L("Polerowanie, opcjonalna powłoka i grawer wewnętrzny.", "Polishing, optional plating and inside engraving.", "Politur, optionale Beschichtung und Innengravur.") },
     ],

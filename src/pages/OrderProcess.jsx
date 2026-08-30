@@ -69,7 +69,7 @@ const L = {
     ],
     checkTitle: "Sprawdź swoje zlecenie",
     checkBody: "Prywatny odnośnik do strony zlecenia dostajesz mailem zaraz po zapłacie. Widać na nim oś czasu, termin, ustalenia i numer przesyłki.",
-    checkLost: "Zgubiłeś link? Wejdź na stronę zamówienia i podaj numer zaczynający się od AE razem z adresem e-mail, na który poszło potwierdzenie. Sam numer nie wystarcza, bo strona pokazuje Twój adres i zawartość zamówienia.",
+    checkLost: "Nie ma linku? Wejdź na stronę zamówienia i podaj numer zaczynający się od AE razem z adresem e-mail, na który poszło potwierdzenie. Sam numer nie wystarcza, bo strona pokazuje Twój adres i zawartość zamówienia.",
     checkCta: "Otwórz stronę zamówienia",
     checkOffer: "Ofertę przed zapłatą sprawdzisz tak samo, numerem zaczynającym się od WY.",
     checkOfferCta: "Strona oferty",

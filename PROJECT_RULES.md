@@ -191,6 +191,23 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.
   Decyzja: ADR-0027.
 
+### Polski tekst do klienta nie zgaduje płci (od 2026-08-30)
+
+Klientka dostała maila ze zdaniem „wycena, którą zapisałeś", i to nie była
+literówka, tylko wzorzec: 23 miejsca w serwisie mówiły do czytającego
+w rodzaju męskim. Biżuteria nie jest branżą, w której można założyć, że po
+drugiej stronie stoi mężczyzna.
+
+- **Nie piszemy „zapisałeś/zapisałaś".** Tak pisze urząd, nie pracownia.
+- **Zdanie przestawiamy tak, żeby czasownik nie miał rodzaju**: „wycena
+  zapisana na aejaca.com", „od dnia odebrania przesyłki", „zgodnie z wyborem
+  przy zamówieniu", „Nie ma linku?", „Grawer jest wybrany, więc...".
+- **Dotyczy też przymiotników**: „Nie jestem pewien" to „Jeszcze nie wiem",
+  „Czy byłeś zadowolony" to „Jak nam poszło".
+- Pilnuje `scripts/check-rodzaj-meski.mjs`, w `npm run build`. Bramka patrzy
+  tylko na treść napisów, komentarze wycina. Angielski i niemiecki tego
+  problemu nie mają.
+
 ## 5. Waluta
 
 **Prices and amounts must follow the active language:**

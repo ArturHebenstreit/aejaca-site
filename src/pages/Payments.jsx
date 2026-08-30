@@ -73,7 +73,7 @@ const L = {
     offerSteps: [
       ["Dostajesz numer", "Każde zapytanie dostaje numer w postaci WY20260826-A1B2C3D4 od razu, jeszcze zanim wpiszemy kwoty. Tym numerem nazywamy wątek w korespondencji."],
       ["Otwierasz ofertę", "Dwie możliwości. Klikasz link z naszego maila, albo wpisujesz sam numer: na stronie oferty, na stronie sklepu, albo w koszyku."],
-      ["Potwierdzasz, że to Ty", "Link z maila o nic nie pyta. Wchodząc z samego numeru, podajesz jeszcze adres e-mail, na który poszła oferta. Jeżeli rozmawialiśmy przez telefon i nie zostawiłeś adresu, podajesz krótki kod odbioru, który od nas usłyszałeś."],
+      ["Potwierdzasz, że to Ty", "Link z maila o nic nie pyta. Wchodząc z samego numeru, podajesz jeszcze adres e-mail, na który poszła oferta. Jeżeli rozmawialiśmy przez telefon i adres nie padł, podajesz krótki kod odbioru, który podaliśmy w rozmowie."],
       ["Widzisz ofertę", "Pozycje, kwoty jednostkowe, nasza notatka co wchodzi w zakres, i termin ważności. Jeżeli przygotowaliśmy kilka wariantów do wyboru, zaznaczasz jeden, a kwota do zapłaty dopasowuje się do niego. Wybór możesz zmienić aż do zapłaty i tylko wybrany wariant trafia do zamówienia."],
       ["Kod rabatowy", "Wpisujesz go tutaj, przed zapłatą. Kwota schodzi od razu, nie zwracamy różnicy po fakcie."],
       ["Dane wysyłki", "Adres albo paczkomat. Koszt dostawy dolicza serwer, tak samo jak w sklepie."],
@@ -87,7 +87,7 @@ const L = {
     sumRows: [
       ["Pozycje zlecenia", "To, co robimy albo wysyłamy."],
       ["Dostawa", "Według wybranej metody. Odbiór osobisty kosztuje zero."],
-      ["Rabat", "Odejmowany, jeżeli podałeś ważny kod."],
+      ["Rabat", "Odejmowany, jeżeli kod rabatowy jest ważny."],
       ["Do zapłaty", "Pozycje plus dostawa, minus rabat."],
     ],
     sumRules: [

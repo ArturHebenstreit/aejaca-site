@@ -157,6 +157,12 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
   `localeCompare`: dane ICU w Node i w przeglądarce bywają z różnych wersji
   (nazwy krajów: `src/data/countryNames.js`). Decyzja: ADR-0022.
 
+- **Polski tekst do klienta nie zgaduje płci.** „Wycena, którą zapisałeś"
+  poszła do klientki, a takich miejsc było 23. Nie piszemy „zapisałeś/zapisałaś",
+  tylko przestawiamy zdanie tak, żeby czasownik nie miał rodzaju: „wycena
+  zapisana", „od dnia odebrania przesyłki", „zgodnie z wyborem przy zamówieniu".
+  Pilnuje `scripts/check-rodzaj-meski.mjs`. Pełna reguła: `PROJECT_RULES.md`.
+
 - **Najmniejsze pismo w serwisie to 12 px** (`text-xs`). Bez wyjątków, pilnuje
   `scripts/check-drobny-tekst.mjs`. Nie mieści się? Poszerz kratkę albo skróć
   napis.

@@ -53,7 +53,7 @@ const T = {
       : "Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji liczymy dopiero od ustaleń.",
     next: "Co dalej",
     printTitle: "Uwagi do modelu, potwierdzone przy zamówieniu",
-    printIntro: "Przed dodaniem pozycji do koszyka pokazaliśmy poniższe uwagi do przesłanego pliku, a Ty potwierdziłeś polecenie wykonania wydruku mimo nich. Powtarzamy je tutaj, żeby zostały udokumentowane po obu stronach.",
+    printIntro: "Przed dodaniem pozycji do koszyka pokazaliśmy poniższe uwagi do przesłanego pliku, a mimo nich zostało zaznaczone potwierdzenie polecenia wykonania wydruku. Powtarzamy je tutaj, żeby zostały udokumentowane po obu stronach.",
     printAccepted: "Potwierdzenie zaznaczone przy dodawaniu pozycji do koszyka.",
     printRights: "To nie ogranicza Twoich uprawnień konsumenta. Oznacza tylko, że wydruk wykonujemy według Twojej specyfikacji, mimo ujawnionej właściwości pliku, więc jej skutek nie będzie traktowany jako nasza wada wykonania.",
     printSettings: (tech, nozzle) => nozzle ? `Ustawienia: ${tech}, dysza ${nozzle} mm.` : `Ustawienia: ${tech}.`,
@@ -74,7 +74,7 @@ const T = {
     filesNominal: "Model jest nominalny, w wymiarach gotowego pierścionka, bez kompensacji skurczu odlewniczego. Jeśli odlewasz u siebie, powiększ go najpierw naszym kalkulatorem skurczu.",
     withdrawal: "Prawo odstąpienia",
     wdStandard:
-      "Masz 14 dni na odstąpienie od umowy bez podania przyczyny, licząc od dnia, w którym odebrałeś przesyłkę. Wystarczy wiadomość na contact@aejaca.com, nie trzeba podawać powodu ani używać żadnego formularza. Zwracamy wszystkie otrzymane płatności, w tym koszt najtańszej oferowanej dostawy, w ciągu 14 dni od otrzymania oświadczenia. Bezpośredni koszt odesłania rzeczy ponosisz Ty.",
+      "Masz 14 dni na odstąpienie od umowy bez podania przyczyny, licząc od dnia odebrania przesyłki. Wystarczy wiadomość na contact@aejaca.com, nie trzeba podawać powodu ani używać żadnego formularza. Zwracamy wszystkie otrzymane płatności, w tym koszt najtańszej oferowanej dostawy, w ciągu 14 dni od otrzymania oświadczenia. Bezpośredni koszt odesłania rzeczy ponosisz Ty.",
     wdMadeToOrder:
       "Zamówienie dotyczy rzeczy wykonywanej według Twojej specyfikacji, więc zgodnie z art. 38 pkt 3 ustawy o prawach konsumenta i złożonym przez Ciebie oświadczeniem prawo odstąpienia od umowy nie przysługuje po rozpoczęciu wykonania.",
     wdDigital:
@@ -1555,14 +1555,14 @@ const QUOTE_T = {
   pl: {
     subject: (ref) => `Twoja wycena ${ref}, AEJaCA`,
     hi: "Dzień dobry,",
-    intro: "poniżej wycena, którą zapisałeś na aejaca.com. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
+    intro: "poniżej wycena zapisana na aejaca.com. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
     items: "Wyceniane pozycje",
     total: "Razem",
     open: "Otwórz wycenę",
     validUntil: (d) => `Wycena obowiązuje do ${d}.`,
     validLabel: "Wycena ważna do",
     numer: "Numer wyceny",
-    numerZdanie: (ref) => `Numer ${ref} wpiszesz też sam, na stronie oferty, w sklepie albo w koszyku.`,
+    numerZdanie: (ref) => `Numer ${ref} wpiszesz też ręcznie, na stronie oferty, w sklepie albo w koszyku.`,
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
     noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",

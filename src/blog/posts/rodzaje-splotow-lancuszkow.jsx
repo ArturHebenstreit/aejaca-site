@@ -285,7 +285,7 @@ export function Body({ lang }) {
         <LI><Strong>{t("Jako prezent, gdy nie znasz gustu:", "As a gift when unsure of taste:", "Als Geschenk bei unbekanntem Geschmack:")}</Strong> {t("ankier lub klasyczny w srebrze 925 - bezpieczny, ponadczasowy wybór.", "anchor or classic in silver 925 - a safe, timeless choice.", "Anker oder klassisch in Silber 925 - eine sichere, zeitlose Wahl.")}</LI>
       </UL>
       <Callout accent="amber">{t(
-        "Nie jesteś pewien, który splot wybrać? W AEJaCA oferujemy bezpłatną konsultację - opisz okazję, budżet i styl, a dobierzemy splot, metal i wymiary idealnie pod Twoje potrzeby.",
+        "Nie wiesz, który splot wybrać? W AEJaCA oferujemy bezpłatną konsultację - opisz okazję, budżet i styl, a dobierzemy splot, metal i wymiary idealnie pod Twoje potrzeby.",
         "Not sure which weave to choose? At AEJaCA we offer a free consultation - describe the occasion, budget, and style, and we'll match the weave, metal, and dimensions perfectly to your needs.",
         "Nicht sicher, welches Muster Sie wählen sollen? Bei AEJaCA bieten wir eine kostenlose Beratung an - beschreiben Sie den Anlass, das Budget und den Stil, und wir stimmen Muster, Metall und Maße perfekt auf Ihre Bedürfnisse ab."
       )}</Callout>

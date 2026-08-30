@@ -30,7 +30,7 @@ const PRZYKLAD = "WY20260825-A1B2C3D4";
 const UI = {
   pl: {
     title: "Masz numer oferty albo zamówienia?",
-    desc: "Jeżeli dostałeś od nas wycenę mailem albo w rozmowie, wpisz jej numer: pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność. Numer z potwierdzenia zamówienia też tu zadziała i pokaże stan realizacji.",
+    desc: "Jeżeli jest od nas wycena, mailem albo z rozmowy, wpisz jej numer: pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność. Numer z potwierdzenia zamówienia też tu zadziała i pokaże stan realizacji.",
     label: "Numer oferty lub zamówienia",
     button: "Sprawdź",
     hint: "Na następnym ekranie potwierdzisz adres e-mail, na który poszła oferta, albo kod odbioru z rozmowy.",
