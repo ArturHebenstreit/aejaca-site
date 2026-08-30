@@ -108,8 +108,11 @@
       </label>
     </div>
 
+    <%# Komunikat przykleja sie do gory ekranu. Wiersz kolejki rozwija sie na
+        kilkaset pikseli, wiec bledu wypisanego nad tabela nie widac stamtad,
+        gdzie sie kliknelo: wyglada to jak cisza, a nie jak odmowa. %>
     <% if (err) { %>
-      <div class="rounded-lg border border-red-400/30 bg-red-400/10 p-3 mb-5 text-red-300 text-xs leading-relaxed"><%= err %></div>
+      <div class="sticky top-2 z-30 rounded-lg border border-red-400/40 bg-red-950 p-3 mb-5 text-red-200 text-xs leading-relaxed shadow-lg"><%= err %></div>
     <% } %>
     <% if (msg) { %>
       <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs"><%= msg %></div>

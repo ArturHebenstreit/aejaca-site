@@ -1645,7 +1645,9 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
     back(res, powrot, { msg: `${req.params.ref}: ${r.status}${wyczyszczone}` });
-  } catch (err) { back(res, powrot, { err: err.message }); }
+    // Numer w komunikacie o bledzie, bo w kolejce stoi kilkanascie wierszy
+    // i "nie da sie zapisac" bez numeru nie mowi, ktorego dotyczy.
+  } catch (err) { back(res, powrot, { err: `${req.params.ref}: ${err.message}` }); }
 });
 
 /**
