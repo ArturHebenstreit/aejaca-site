@@ -38,3 +38,6 @@ dist-ssr
 
 # Podglad generatora, sklejany z Three.js, 3,8 MB
 MDs/kreator-podglad.html
+
+# Podglad maili: wynik `npm run mail:podglad`, do ogladania, nie do repozytorium.
+podglad-maili/
