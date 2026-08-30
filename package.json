@@ -38,7 +38,8 @@
     "sitemap": "node scripts/build-sitemap.mjs",
     "img:cards": "node scripts/build-card-images.mjs",
     "check:jezyk": "node scripts/check-menu-jezyka.mjs",
-    "check:faq": "node scripts/check-faq.mjs"
+    "check:faq": "node scripts/check-faq.mjs",
+    "img:mail": "node scripts/znak-do-maila.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

@@ -20,15 +20,20 @@ import { SELLER } from "./pricing/sellerInfo.js";
 export const SITE = (process.env.SITE_URL || "https://www.aejaca.com").replace(/\/$/, "");
 
 /**
- * Znak firmowy. PNG, a nie WEBP z serwisu: starsze klienty pocztowe WEBP-a
- * nie rysuja i zostaje pusta ramka.
+ * Znak firmowy w wersji do maili: zloty krazek ze splotem wycietym na bialo,
+ * robiony przez `npm run img:mail`. Znak z serwisu to cienki kontur rysowany
+ * na ciemnym tle filtrem CSS, ktorego w mailu nie ma: przy 36 px zostawala
+ * po nim szara plamka albo nic.
+ *
+ * PNG, a nie WEBP z serwisu: starsze klienty pocztowe WEBP-a nie rysuja
+ * i zostaje pusta ramka.
  *
  * `alt` jest PUSTE, bo nazwa firmy stoi obok w tekscie, w naglowku i w
  * podpisie. Klienty pocztowe blokuja obrazy z sieci i wtedy opis wchodzi
  * w ciasna komorke tabeli, ucinajac sie w polowie slowa. Ozdoba, ktora nie
  * niesie tresci, ma zniknac po cichu, a nie zostawic smiec.
  */
-const LOGO = `${SITE}/logo.png`;
+const LOGO = `${SITE}/logo-mail.png`;
 
 export function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

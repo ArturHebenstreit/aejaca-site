@@ -72,7 +72,8 @@ for (const lang of ["pl", "en", "de"]) {
     const wHtml = komplet.every((cz) => mail.html.includes(cz));
     const wText = komplet.every((cz) => mail.text.includes(cz));
     ok(wHtml && wText, `${lang}/${nazwa}: pelny podpis w HTML i w tekscie`);
-    ok(mail.html.includes("/logo.png"), `${lang}/${nazwa}: znak firmowy w naglowku i w podpisie`);
+    // Wersja z wypelnieniem, nie kontur z serwisu: ten drugi w mailu znika.
+    ok(mail.html.includes("/logo-mail.png"), `${lang}/${nazwa}: znak firmowy w naglowku i w podpisie`);
   }
 }
 
