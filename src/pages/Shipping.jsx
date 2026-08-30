@@ -10,6 +10,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import { ZONES, HANDLING_GROSZE, MAX_PARCEL_G, leadDaysLabel } from "../pricing/shipping.js";
 import { kwotyWysylki, DARMOWA_OD, UE_OD } from "../data/kwotyWysylki.js";
+import TERMIN from "../data/faq/termin.js";
 import PYTANIA from "../data/faq/wysylka.js";
 import { odpowiedz } from "../data/faq/pomoc.js";
 
@@ -190,7 +191,7 @@ export default function Shipping() {
   // FAQPage JSON-LD, so the structured data always matches what users see.
   // Pytania stoja we wspolnym zbiorze, wiec `/faq/` pokazuje te SAME
   // odpowiedzi, razem z kwotami policzonymi z tego samego cennika.
-  const faqItems = PYTANIA.map((f) => ({
+  const faqItems = [...PYTANIA, ...TERMIN].map((f) => ({
     q: f.q[lang] || f.q.pl,
     a: odpowiedz(f, lang, faqValues),
     id: f.id,

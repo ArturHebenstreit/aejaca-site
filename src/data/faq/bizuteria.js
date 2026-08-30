@@ -101,21 +101,6 @@ export default [
     },
   },
   {
-    id: "ile-trwa-realizacja-zamowienia",
-    temat: "bizuteria",
-    strona: "/jewelry/",
-    q: {
-      pl: "Ile trwa realizacja zamówienia?",
-      en: "How long does order fulfillment take?",
-      de: "Wie lange dauert die Auftragsabwicklung?",
-    },
-    a: {
-      pl: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych.",
-      en: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces, up to 14 days. You'll receive a tracking number as soon as the order ships.",
-      de: "Bei vorhandenen Materialien (Metall + Steine) bis zu 7 Werktage. Individuell gefertigte oder gravierte Stücke, bis zu 14 Tage. Sie erhalten eine Sendungsverfolgungsnummer, sobald die Bestellung versandt wird.",
-    },
-  },
-  {
     id: "czy-moge-zwrocic-bizuterie",
     temat: "bizuteria",
     strona: "/jewelry/",

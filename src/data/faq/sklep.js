@@ -136,21 +136,6 @@ export default [
     },
   },
   {
-    id: "ile-trwa",
-    temat: "realizacja",
-    strona: "/order-process/",
-    q: {
-      pl: "Ile trwa realizacja i skąd wiem, na kiedy?",
-      en: "How long does it take and how do I know the date?",
-      de: "Wie lange dauert es und woher kenne ich den Termin?",
-    },
-    a: {
-      pl: "Termin liczymy w dniach kalendarzowych. Przy zleceniu, które nie wymaga ustaleń, biegnie od zapłaty; przy takim, które ich wymaga, dopiero od chwili, gdy wszystko jest ustalone. Konkretną datę widzisz na stronie zlecenia, razem z liczbą dni, które zostały. Gdy w zamówieniu jest kilka rzeczy, obowiązuje najdłuższy z terminów, bo paczka wychodzi jedna.",
-      en: "We count in calendar days. For an order that needs no agreeing, the clock starts at payment; for one that does, only once everything is agreed. The exact date is on your order page together with the days remaining. With several items in one order, the longest of their times applies, because one parcel goes out.",
-      de: "Wir rechnen in Kalendertagen. Bei einem Auftrag ohne Absprachen läuft die Zeit ab der Zahlung, bei einem mit Absprachen erst, wenn alles geklärt ist. Das genaue Datum steht auf Ihrer Auftragsseite, samt der verbleibenden Tage. Bei mehreren Positionen gilt die längste Zeit, denn es geht ein Paket raus.",
-    },
-  },
-  {
     id: "ustalanie-szczegolow",
     temat: "realizacja",
     strona: "/order-process/",

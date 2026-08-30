@@ -85,19 +85,4 @@ export default [
       de: () => `Sendungen außerhalb der EU (inkl. Großbritannien, USA, Asien) können Zöllen und Einfuhrsteuern unterliegen, die vom Bestimmungsland erhoben werden. Diese trägt der Empfänger und sind nicht im Versandpreis enthalten.`,
     },
   },
-  {
-    id: "jak-dlugo-trwa-realizacja-zamowienia",
-    temat: "dostawa",
-    strona: "/shipping/",
-    q: {
-      pl: "Jak długo trwa realizacja zamówienia?",
-      en: "How long does an order take to make?",
-      de: "Wie lange dauert die Anfertigung einer Bestellung?",
-    },
-    a: {
-      pl: () => `Biżuteria: do 7 dni roboczych przy materiałach na stanie, 10–14 dni przy zamawianiu materiałów. Studio (druk 3D, laser): 3–5 dni na stanie, 6–12 dni przy zamawianiu materiałów. Czas realizacji jest niezależny od czasu transportu i potwierdzamy go indywidualnie.`,
-      en: () => `Jewelry: up to 7 business days when materials are in stock, 10–14 days if materials must be ordered. Studio (3D printing, laser): 3–5 days in stock, 6–12 days if materials must be ordered. Fulfillment time is separate from shipping transit time and is confirmed individually.`,
-      de: () => `Schmuck: bis zu 7 Werktage bei Material auf Lager, 10–14 Tage bei Materialbestellung. Studio (3D-Druck, Laser): 3–5 Tage auf Lager, 6–12 Tage bei Materialbestellung. Die Bearbeitungszeit ist unabhängig von der Transportzeit und wird individuell bestätigt.`,
-    },
-  },
 ];

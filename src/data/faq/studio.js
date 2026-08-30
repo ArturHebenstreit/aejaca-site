@@ -100,19 +100,4 @@ export default [
       de: "Basierend auf Technologie, Material, Größe, Komplexität und Menge. Wir erstellen immer vorab ein detailliertes Angebot.",
     },
   },
-  {
-    id: "ile-trwa-realizacja-projektu",
-    temat: "studio",
-    strona: "/studio/",
-    q: {
-      pl: "Ile trwa realizacja projektu?",
-      en: "How long does project fulfillment take?",
-      de: "Wie lange dauert die Projektabwicklung?",
-    },
-    a: {
-      pl: "Jeśli materiał jest na stanie, realizacja trwa 3–5 dni roboczych (w zależności od ilości). Zamówienie materiałów wydłuża czas o 3–7 dni. W przypadku, gdy realizacja zamówienia wymaga sprowadzenia specjalistycznych komponentów zgodnych ze specyfikacją (np. konkretne kamienie, nietypowe filamenty, komponenty elektroniczne), czas realizacji może wydłużyć się o dodatkowe 7–14 dni roboczych.",
-      en: "If material is in stock, fulfillment takes 3–5 business days (depending on quantity). Ordering materials extends the timeline by 3–7 days. If the order requires sourcing specialized components to match the specification (e.g., specific gemstones, specialty filaments, electronic components), fulfillment may take an additional 7–14 business days.",
-      de: "Bei vorhandenem Material 3–5 Werktage (je nach Menge). Materialbestellung verlängert die Zeit um 3–7 Tage. Wenn die Auftragsausführung die Beschaffung spezialisierter Komponenten gemäß der Spezifikation erfordert (z. B. bestimmte Edelsteine, Spezialfilamente, elektronische Bauteile), kann sich die Lieferzeit um weitere 7–14 Werktage verlängern.",
-    },
-  },
 ];

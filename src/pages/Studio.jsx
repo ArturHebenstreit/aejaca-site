@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import TERMIN from "../data/faq/termin.js";
 import pytania from "../data/faq/studio.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
@@ -75,7 +76,7 @@ const B2B_TEASER = {
 
 export default function Studio() {
   const { t, lang } = useLanguage();
-  const pozycjeFaq = pytania.map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
+  const pozycjeFaq = [...pytania, ...TERMIN].map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
   const s = t.studio;
 
   const aboutRef = useScrollReveal();

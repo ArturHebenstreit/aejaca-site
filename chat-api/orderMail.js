@@ -17,6 +17,7 @@
 // w pouczeniu o odstapieniu, wiec musza byc jedne.
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
+import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
 import { describeFinding, distortionLine } from "./pricing/quoteSummary.js";
 
@@ -45,9 +46,9 @@ const T = {
     delivery: "Dostawa",
     total: "Zapłacono",
     leadTitle: "Termin realizacji",
-    leadPlanned: (dni, data) => `${dni} dni. Planowana wysyłka: ${data}.`,
-    leadDetails: (dni) => dni
-      ? `Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji, ${dni} dni, liczymy dopiero od ustaleń, więc nic Ci przez to nie ucieka.`
+    leadPlanned: (ile, data) => `${ile}. Planowana wysyłka: ${data}.`,
+    leadDetails: (ile) => ile
+      ? `Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji, ${ile}, liczymy dopiero od ustaleń.`
       : "Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji liczymy dopiero od ustaleń.",
     next: "Co dalej",
     printTitle: "Uwagi do modelu, potwierdzone przy zamówieniu",
@@ -86,6 +87,14 @@ const T = {
     questions: "Pytania",
     questionsBody: "Odpisz na tę wiadomość albo zadzwoń.",
     terms: "Regulamin",
+    linkTermsOpis: "Zasady sprzedaży, reklamacji i odstąpienia od umowy.",
+    linkStatus: "Sprawdź stan swojego zlecenia",
+    linkStatusOpis: (ref) =>
+      `Oś czasu, termin i numer przesyłki po nadaniu. Gdyby ten e-mail się zawieruszył: otwórz ${SELLER.site}/order/status/, wpisz numer ${ref} i adres e-mail, na który przyszła ta wiadomość.`,
+    linkProces: "Proces realizacji",
+    linkProcesOpis: "Co się dzieje po zapłacie: etapy pracy, jak liczymy termin i jak odbierzesz gotową rzecz.",
+    linkPlatnosci: "Proces płatności",
+    linkPlatnosciOpis: "Metody, waluty, ważność kwoty i kody rabatowe.",
     bye: "Pozdrawiamy",
     deliveryNames: { pickup: "Odbiór osobisty", inpost_locker: "Paczkomat InPost", courier: "Kurier", digital: "Dostawa cyfrowa" },
     thanksTransfer: "potwierdzamy wpływ Twojej wpłaty. Poniżej podsumowanie zamówienia. Zabieramy się do pracy.",
@@ -112,9 +121,9 @@ const T = {
     delivery: "Delivery",
     total: "Paid",
     leadTitle: "Lead time",
-    leadPlanned: (dni, data) => `${dni} days. Planned dispatch: ${data}.`,
-    leadDetails: (dni) => dni
-      ? `We will agree the details with you first and will be in touch about it. The lead time of ${dni} days starts only after that, so nothing is running out for you.`
+    leadPlanned: (ile, data) => `${ile}. Planned dispatch: ${data}.`,
+    leadDetails: (ile) => ile
+      ? `We will agree the details with you first and will be in touch about it. The lead time of ${ile} starts only after that.`
       : "We will agree the details with you first and will be in touch about it. The lead time starts only after that.",
     next: "What happens next",
     printTitle: "Notes on the model, confirmed with the order",
@@ -153,6 +162,14 @@ const T = {
     questions: "Questions",
     questionsBody: "Just reply to this message or call us.",
     terms: "Terms of Service",
+    linkTermsOpis: "Rules of sale, complaints and withdrawal from the contract.",
+    linkStatus: "Check your order",
+    linkStatusOpis: (ref) =>
+      `The timeline, the delivery date and the tracking number once posted. If this e-mail goes missing: open ${SELLER.site}/en/order/status/, enter the number ${ref} and the e-mail address this message arrived at.`,
+    linkProces: "How we make your order",
+    linkProcesOpis: "What happens after payment: the stages of work, how the date is counted and how you collect the finished piece.",
+    linkPlatnosci: "How payment works",
+    linkPlatnosciOpis: "Methods, currencies, how long an amount holds and discount codes.",
     bye: "Best regards",
     deliveryNames: { pickup: "Personal pickup", inpost_locker: "InPost locker", courier: "Courier", digital: "Digital delivery" },
     thanksTransfer: "we confirm that your payment has arrived. Here is the summary of your order. We are starting work.",
@@ -179,9 +196,9 @@ const T = {
     delivery: "Lieferung",
     total: "Bezahlt",
     leadTitle: "Lieferzeit",
-    leadPlanned: (dni, data) => `${dni} Tage. Geplanter Versand: ${data}.`,
-    leadDetails: (dni) => dni
-      ? `Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit von ${dni} Tagen beginnt erst danach, es geht Ihnen also nichts verloren.`
+    leadPlanned: (ile, data) => `${ile}. Geplanter Versand: ${data}.`,
+    leadDetails: (ile) => ile
+      ? `Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit von ${ile} beginnt erst danach.`
       : "Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit beginnt erst danach.",
     next: "Wie es weitergeht",
     printTitle: "Hinweise zum Modell, mit der Bestellung bestätigt",
@@ -220,6 +237,14 @@ const T = {
     questions: "Fragen",
     questionsBody: "Antworten Sie einfach auf diese Nachricht oder rufen Sie uns an.",
     terms: "AGB",
+    linkTermsOpis: "Verkaufsbedingungen, Reklamationen und Widerruf.",
+    linkStatus: "Ihren Auftrag prüfen",
+    linkStatusOpis: (ref) =>
+      `Zeitstrahl, Liefertermin und nach dem Versand die Sendungsnummer. Falls diese E-Mail verloren geht: öffnen Sie ${SELLER.site}/de/order/status/, geben Sie die Nummer ${ref} und die E-Mail-Adresse ein, an die diese Nachricht ging.`,
+    linkProces: "Ablauf der Fertigung",
+    linkProcesOpis: "Was nach der Zahlung passiert: Arbeitsetappen, wie der Termin gezählt wird und wie Sie das fertige Stück erhalten.",
+    linkPlatnosci: "Zahlungsablauf",
+    linkPlatnosciOpis: "Methoden, Währungen, Gültigkeit des Betrags und Rabattcodes.",
     bye: "Mit freundlichen Grüßen",
     deliveryNames: { pickup: "Selbstabholung", inpost_locker: "InPost-Paketstation", courier: "Kurier", digital: "Digitale Lieferung" },
     thanksTransfer: "wir bestätigen den Eingang Ihrer Zahlung. Nachfolgend die Zusammenfassung Ihrer Bestellung. Wir beginnen mit der Arbeit.",
@@ -371,13 +396,44 @@ function downloadLinks(items) {
  * jest gorsze niz jego brak, bo wyglada jak obietnica, ktorej nikt nie zlozyl.
  * Ta sama tresc idzie do wersji tekstowej i do HTML, wiec obie mowia to samo.
  */
-function terminKlienta(order, l) {
-  if (order.requires_details) return l.leadDetails(order.lead_days || null);
-  if (order.deadline_at && order.lead_days) {
-    return l.leadPlanned(order.lead_days, String(order.deadline_at).slice(0, 10));
-  }
-  if (order.lead_days) return l.leadPlanned(order.lead_days, "-").replace(/\.[^.]*$/, ".");
+function terminKlienta(order, l, lang) {
+  // `lead_days` idzie przez `dniSlownie`, bo "1 dni" w potwierdzeniu wyglada
+  // jak usterka. Data przez `dzien`, bo sterownik bazy oddaje kolumne DATE
+  // jako obiekt Date i samo `String(...).slice(0, 10)` dawalo "Mon Aug 31",
+  // czyli angielska date w polskim mailu.
+  const ile = order.lead_days ? dniSlownie(order.lead_days, lang) : null;
+  if (order.requires_details) return l.leadDetails(ile);
+  if (order.deadline_at && ile) return l.leadPlanned(ile, dzien(order.deadline_at));
+  if (ile) return l.leadPlanned(ile, "-").replace(/\.[^.]*$/, ".");
   return null;
+}
+
+/** Adres strony w jezyku maila. Polski stoi bez prefiksu, reszta pod swoim. */
+function adres(lang, sciezka) {
+  return lang === "pl" ? `${SELLER.site}${sciezka}` : `${SELLER.site}/${lang}${sciezka}`;
+}
+
+/** Prywatny odnosnik do zlecenia. Bez zetonu strona i tak wpusci po numerze
+ *  i adresie e-mail, wiec odnosnik ma sens takze wtedy. */
+function linkZlecenia(order, lang) {
+  const baza = adres(lang, "/order/status/");
+  const zeton = order.access_token ? `&token=${encodeURIComponent(order.access_token)}` : "";
+  return `${baza}?ref=${encodeURIComponent(order.order_ref)}${zeton}`;
+}
+
+/**
+ * Odnosniki pod mailem o zamowieniu.
+ *
+ * Opis przy pierwszym z nich mowi, co zrobic BEZ odnosnika. Odnosnik z maila
+ * ginie razem z mailem, a wtedy klient zostaje z numerem w reku i bez pomyslu,
+ * gdzie go wpisac (zgloszenie wlasciciela, 2026-08-30).
+ */
+function odnosnikiZamowienia(order, l, lang) {
+  return [
+    { href: linkZlecenia(order, lang), label: l.linkStatus, opis: l.linkStatusOpis(order.order_ref) },
+    { href: adres(lang, "/order-process/"), label: l.linkProces, opis: l.linkProcesOpis },
+    { href: adres(lang, "/terms/"), label: l.terms, opis: l.linkTermsOpis },
+  ];
 }
 
 function customerHtml(order, items, lang) {
@@ -397,9 +453,7 @@ function customerHtml(order, items, lang) {
   const zmienioneWymiary = distortedItems(items, lang);
   const pliki = downloadLinks(items);
 
-  return `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
-    <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
+  return koperta({ lang, odnosniki: odnosnikiZamowienia(order, l, lang), srodek: `
     <p style="margin:0 0 6px">${l.hi}</p>
     <p style="margin:0 0 20px;line-height:1.6">${order.payment_method === "bank_transfer" ? l.thanksTransfer : l.thanks}</p>
 
@@ -418,9 +472,9 @@ function customerHtml(order, items, lang) {
       </tr>
     </table>
 
-    ${terminKlienta(order, l) ? `
+    ${terminKlienta(order, l, lang) ? `
       <p style="margin:18px 0 4px;font-size:12px;color:#777">${l.leadTitle}</p>
-      <p style="margin:0;line-height:1.6;font-size:13px;color:#444">${esc(terminKlienta(order, l))}</p>
+      <p style="margin:0;line-height:1.6;font-size:13px;color:#444">${esc(terminKlienta(order, l, lang))}</p>
     ` : ""}
 
     ${pliki.length ? `
@@ -471,14 +525,9 @@ function customerHtml(order, items, lang) {
       </div>` : ""}
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.questions}</h3>
-    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}<br>
-      ${SELLER.email} &middot; ${SELLER.phone}</p>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}</p>
 
-    <p style="margin:24px 0 0;font-size:12px;color:#999">
-      ${l.bye},<br>${SELLER.brand}<br>
-      <a href="${SELLER.site}/terms/" style="color:#b58a3c">${l.terms}</a>
-    </p>
-  </div></body></html>`;
+  ` });
 }
 
 function customerText(order, items, lang) {
@@ -501,7 +550,7 @@ function customerText(order, items, lang) {
     `${l.total}: ${paidAmount(order)}`,
     // Ta sama tresc, co w wersji HTML: dwie rozne odpowiedzi na pytanie "kiedy"
     // w jednym mailu bylyby gorsze niz jedna, nawet gdyby obie byly prawdziwe.
-    ...(terminKlienta(order, l) ? ["", `${l.leadTitle}: ${terminKlienta(order, l)}`] : []),
+    ...(terminKlienta(order, l, lang) ? ["", `${l.leadTitle}: ${terminKlienta(order, l, lang)}`] : []),
     // Link MUSI byc takze tutaj. Wersja tekstowa jest tym, co zostaje przy
     // wylaczonym HTML i w czytniku ekranu, a bez linku klient nie ma jak
     // dojsc do tego, za co zaplacil.
@@ -540,10 +589,11 @@ function customerText(order, items, lang) {
     `${l.withdrawal}: ${wd.paras.join(" ")}`,
     ...(wd.form ? ["", `${wd.title}:`, ...wd.form] : []),
     "",
-    `${l.questions}: ${SELLER.email}, ${SELLER.phone}`,
+    `${l.questions}: ${l.questionsBody}`,
     "",
-    `${l.bye}, ${SELLER.brand}`,
-    `${SELLER.site}/terms/`,
+    odnosnikiText(lang, odnosnikiZamowienia(order, l, lang)),
+    "",
+    stopkaText(lang),
   ].join("\n");
 }
 
@@ -683,7 +733,7 @@ function transferRows(l, tr) {
     [l.trHolder, tr.holder],
     [l.trBank, tr.bank],
     [l.trRef, tr.reference],
-    [l.trDue, tr.dueAt ? new Date(tr.dueAt).toISOString().slice(0, 10) : null],
+    [l.trDue, tr.dueAt ? dzien(new Date(tr.dueAt)) : null],
   ].filter(([, v]) => v);
 }
 
@@ -691,10 +741,13 @@ export function buildTransferMessage(order, tr) {
   const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
   const l = T[lang];
   const rows = transferRows(l, tr);
+  const odnosniki = [
+    { href: adres(lang, "/payments/"), label: l.linkPlatnosci, opis: l.linkPlatnosciOpis },
+    { href: adres(lang, "/order-process/"), label: l.linkProces, opis: l.linkProcesOpis },
+    { href: adres(lang, "/terms/"), label: l.terms, opis: l.linkTermsOpis },
+  ];
 
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
-    <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
+  const html = koperta({ lang, odnosniki, srodek: `
     <p style="margin:0 0 6px">${l.hi}</p>
     <p style="margin:0 0 20px;line-height:1.6">${l.trIntro}</p>
 
@@ -713,22 +766,17 @@ export function buildTransferMessage(order, tr) {
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.trStepsBody}</p>
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.questions}</h3>
-    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}<br>
-      ${SELLER.email} &middot; ${SELLER.phone}</p>
-
-    <p style="margin:24px 0 0;font-size:12px;color:#999">
-      ${l.bye},<br>${SELLER.brand}<br>
-      <a href="${SELLER.site}/terms/" style="color:#b58a3c">${l.terms}</a>
-    </p>
-  </div></body></html>`;
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}</p>
+  ` });
 
   const text = [
     l.hi, "", l.trIntro, "",
     `${l.trAmount}: ${tr.amountEur} EUR`,
     ...rows.map(([k, v]) => `${k}: ${v}`),
     "", `${l.trSteps}: ${l.trStepsBody}`,
-    "", `${l.questions}: ${SELLER.email}, ${SELLER.phone}`,
-    "", `${l.bye}, ${SELLER.brand}`,
+    "", `${l.questions}: ${l.questionsBody}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
   ].join("\n");
 
   return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.trSubject(order.order_ref), text, html };
@@ -1082,24 +1130,26 @@ export function buildStatusUpdate(order) {
     : zdanie;
   const tytul = (ETAP_TYTUL[lang] || ETAP_TYTUL.pl)[order.status] || l.subject(order.order_ref);
 
-  const link = order.access_token
-    ? `${SITE}/order/status/?ref=${encodeURIComponent(order.order_ref)}&token=${encodeURIComponent(order.access_token)}`
-    : `${SITE}/order/status/`;
+  const link = linkZlecenia(order, lang);
   const zTerminem = order.deadline_at && ["queued", "in_production", "ready"].includes(order.status);
-  const dzien = (d) => String(d).slice(0, 10).split("-").reverse().join(".");
+  // Odnosniki te same co w potwierdzeniu, bez powtarzania odnosnika do
+  // zlecenia: ten stoi wyzej jako przycisk i drugi raz byloby go za duzo.
+  const t = T[lang] || T.pl;
+  const odnosniki = [
+    { href: adres(lang, "/order-process/"), label: t.linkProces, opis: t.linkProcesOpis },
+    { href: adres(lang, "/terms/"), label: t.terms, opis: t.linkTermsOpis },
+  ];
 
   // Wersja tekstowa zostaje: czesc klientow pocztowych i czytniki ekranu biora
   // wlasnie ja, a mail bez niej ladu je czesciej w spamie.
   const linie = [l.hi, "", tresc.charAt(0).toUpperCase() + tresc.slice(1)];
   if (zTerminem) linie.push("", l.termin(dzien(order.deadline_at)));
   if (order.status === "shipped" && order.tracking_number) linie.push("", l.przesylka(order.tracking_number));
-  linie.push("", `${l.podglad}: ${link}`, "", l.zamkniecie);
+  linie.push("", `${l.podglad}: ${link}`);
+  linie.push("", odnosnikiText(lang, odnosniki), "", stopkaText(lang));
   const text = linie.join("\n");
 
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
-    <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
-
+  const html = koperta({ lang, odnosniki, srodek: `
     <h1 style="margin:0 0 6px;font-size:20px;line-height:1.3;font-weight:700">${esc(tytul)}</h1>
     <p style="margin:0 0 4px;font-size:12px;color:#777">${l.orderNo}</p>
     <p style="margin:0 0 20px;font-size:15px;font-weight:700;font-family:ui-monospace,monospace">${esc(order.order_ref)}</p>
@@ -1129,10 +1179,7 @@ export function buildStatusUpdate(order) {
       <a href="${esc(link)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700">${esc(l.podglad)}</a>
     </p>
 
-    <p style="margin:26px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.zamkniecie).replace(/\n/g, "<br/>")}</p>
-  </div>
-  <p style="max-width:560px;margin:14px auto 0;font-size:11px;color:#999;text-align:center">${esc(l.stopka)}</p>
-</body></html>`;
+  ` });
 
   return { to: order.customer_email, from: FROM, subject: `${tytul}, ${order.order_ref}`, text, html };
 }
@@ -1300,6 +1347,9 @@ const QUOTE_T = {
     total: "Razem",
     open: "Otwórz wycenę",
     validUntil: (d) => `Wycena obowiązuje do ${d}.`,
+    validLabel: "Wycena ważna do",
+    numer: "Numer wyceny",
+    numerOpis: "Metody, waluty i kody rabatowe. Ten numer wpiszesz też sam, na stronie oferty, w sklepie albo w koszyku, gdyby ten e-mail się zawieruszył.",
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
     noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
@@ -1318,6 +1368,9 @@ const QUOTE_T = {
     total: "Total",
     open: "Open the quote",
     validUntil: (d) => `The quote is valid until ${d}.`,
+    validLabel: "Quote valid until",
+    numer: "Quote number",
+    numerOpis: "Methods, currencies and discount codes. You can also type this number yourself, on the offer page, in the shop or in the cart, if this e-mail goes missing.",
     metalNote:
       "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
     noObligation: "Saving a quote is not an order and commits you to nothing.",
@@ -1336,6 +1389,9 @@ const QUOTE_T = {
     total: "Gesamt",
     open: "Angebot öffnen",
     validUntil: (d) => `Das Angebot gilt bis ${d}.`,
+    validLabel: "Angebot gültig bis",
+    numer: "Angebotsnummer",
+    numerOpis: "Methoden, Währungen und Rabattcodes. Diese Nummer können Sie auch selbst eingeben, auf der Angebotsseite, im Shop oder im Warenkorb, falls diese E-Mail verloren geht.",
     metalNote:
       "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
     noObligation: "Das Speichern eines Angebots ist keine Bestellung und verpflichtet zu nichts.",
@@ -1348,8 +1404,13 @@ const QUOTE_T = {
   },
 };
 
-function quoteMessage(quote, items, url) {
-  const l = QUOTE_T[quote.lang] || QUOTE_T.pl;
+/**
+ * Mail z wycena. Wystawiony na zewnatrz, zeby dalo sie go sprawdzic bez bazy:
+ * wyglad maila jest tym, co widzi klient, i ma byc pod kontrola sprawdzianu.
+ */
+export function buildQuoteMessage(quote, items, url) {
+  const lang = ["pl", "en", "de"].includes(quote.lang) ? quote.lang : "pl";
+  const l = QUOTE_T[lang];
   // Wiersz musi mowic, czym pozycja JEST. Bez tego oferta z wariantami
   // pokazuje trzy kwoty i sume nizsza od ich sumy, co wyglada jak blad
   // rachunkowy, a jest po prostu wyborem jednej rzeczy z trzech.
@@ -1363,34 +1424,65 @@ function quoteMessage(quote, items, url) {
     };
   });
 
-  const html = [
-    `<p>${esc(l.hi)}</p>`,
-    `<p>${esc(l.intro)}</p>`,
-    `<h3>${esc(l.items)}</h3>`,
-    "<table cellpadding=\"6\" style=\"border-collapse:collapse\">",
-    ...rows.map((r) => `<tr><td>${esc(r.label)}</td><td align="right"><strong>${esc(r.value)}</strong></td></tr>`),
-    `<tr><td style="border-top:1px solid #ddd">${esc(l.total)}</td><td align="right" style="border-top:1px solid #ddd"><strong>${esc(money(quote.total_grosze))}</strong></td></tr>`,
-    "</table>",
-    wybor ? `<p style="color:#555">${esc(l.configNote)}</p>` : "",
-    `<p><a href="${esc(url)}">${esc(l.open)}</a></p>`,
-    quote.valid_until ? `<p>${esc(l.validUntil(String(quote.valid_until).slice(0, 10)))}</p>` : "",
-    `<p style="color:#555">${esc(l.metalNote)}</p>`,
-    `<p style="color:#555">${esc(l.noObligation)}</p>`,
-    `<p>${esc(l.questions)}: ${esc(SELLER.email)}<br>${esc(l.bye)}, ${esc(SELLER.brand)}</p>`,
-  ].filter(Boolean).join("\n");
+  // Wycena to moment, w ktorym klient decyduje, wiec pyta o dwie rzeczy:
+  // jak zaplacic i co bedzie potem. Oba odnosniki stoja tu, a nie w stopce
+  // serwisu, ktorej i tak nie otworzy z maila.
+  const t = T[lang] || T.pl;
+  const odnosniki = [
+    { href: adres(lang, "/payments/"), label: t.linkPlatnosci, opis: l.numerOpis },
+    { href: adres(lang, "/order-process/"), label: t.linkProces, opis: t.linkProcesOpis },
+    { href: adres(lang, "/terms/"), label: t.terms, opis: t.linkTermsOpis },
+  ];
+  const wazneDo = quote.valid_until ? dzien(quote.valid_until) : null;
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${esc(l.intro)}</p>
+
+    <p style="margin:0 0 4px;font-size:12px;color:#777">${esc(l.numer)}</p>
+    <p style="margin:0 0 20px;font-size:18px;font-weight:700;font-family:ui-monospace,monospace">${esc(quote.quote_ref)}</p>
+
+    <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(l.items)}</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      ${rows.map((r) => `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(r.label)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">${esc(r.value)}</td>
+      </tr>`).join("")}
+      <tr>
+        <td style="padding:12px 0;font-weight:700">${esc(l.total)}</td>
+        <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${esc(money(quote.total_grosze))}</td>
+      </tr>
+    </table>
+
+    ${wybor ? `<p style="margin:12px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.configNote)}</p>` : ""}
+
+    <p style="margin:24px 0 0">
+      <a href="${esc(url)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700">${esc(l.open)}</a>
+    </p>
+
+    ${wazneDo ? `
+      <div style="margin-top:20px;background:#faf6ee;border-radius:8px;padding:14px 16px">
+        <span style="font-size:12px;color:#8a7a5c">${esc(l.validLabel)}</span>
+        <div style="font-size:18px;font-weight:700;color:#7a5f22;margin-top:2px">${esc(wazneDo)}</div>
+      </div>` : ""}
+
+    <p style="margin:18px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.metalNote)}</p>
+    <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.noObligation)}</p>
+  ` });
 
   const text = [
     l.hi, "", l.intro, "",
+    `${l.numer}: ${quote.quote_ref}`, "",
     l.items + ":",
     ...rows.map((r) => `- ${r.label}: ${r.value}`),
     `${l.total}: ${money(quote.total_grosze)}`,
     wybor ? `\n${l.configNote}` : null,
     "", `${l.open}: ${url}`,
-    quote.valid_until ? `\n${l.validUntil(String(quote.valid_until).slice(0, 10))}` : "",
+    wazneDo ? `\n${l.validUntil(wazneDo)}` : "",
     "", l.metalNote,
     "", l.noObligation,
-    "", `${l.questions}: ${SELLER.email}`,
-    "", `${l.bye}, ${SELLER.brand}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
   ].filter((line) => line !== null).join("\n");
 
   return { to: quote.customer_email, from: FROM, replyTo: SELLER.email, subject: l.subject(quote.quote_ref), text, html };
@@ -1413,7 +1505,7 @@ export async function sendQuoteLink(pool, quoteRef, url) {
     );
 
     try {
-      if (await sendViaGmail([quoteMessage(quote, items, url)])) {
+      if (await sendViaGmail([buildQuoteMessage(quote, items, url)])) {
         console.log(`[wycena-mail] wyslano link do ${quote.quote_ref}`);
         return true;
       }
