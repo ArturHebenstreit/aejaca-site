@@ -37,6 +37,8 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 
 | TASK-023 | Ustalenia przy pozycji zamowienia, akcje pod biezacym przystankiem, os czasu dla klienta, link do zamowienia w kolejce, ikony na liscie wycen | Claude Code | `claude/serwis-development-skills-3vuba9` | `chat-api/productionQueue.js`, `chat-api/quotes.js`, `chat-api/server.js` (migracja pozycji, trasa ustalen, kolejka), `admin/server.js`, `admin/views/queue.ejs`, `admin/views/quotes.ejs`, `admin/check-views.mjs`, `src/pages/OrderStatus.jsx`, `scripts/orders-schema.sql`, `scripts/napraw-ustalenia-zamowienia.mjs`, `scripts/test-production-queue.mjs`, ADR-0028 | review | ADR-0028 |
 
+| TASK-024 | Opis procesu dla klienta: etapy po zaplacie na stronie platnosci, FAQ o terminie i ustaleniach, odnosniki do dokumentow przy przycisku zaplaty, wiedza o procesie dla asystenta | Claude Code | `claude/serwis-development-skills-3vuba9` | `src/pages/Payments.jsx`, `src/pages/Checkout.jsx`, `src/pages/Offer.jsx`, `chat-api/context.js`, `public/llms.txt` | review | brak ADR, zmiana tresci |
+
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
 ## Kolejka integracji

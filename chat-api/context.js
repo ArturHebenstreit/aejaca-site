@@ -886,6 +886,58 @@ Contact for custom shipping quotes: contact@aejaca.com
 
 ## Terms, payment and consumer rights
 
+### Co sie dzieje po zaplacie, caly proces (od 2026-08-30)
+
+Klient pyta o to czesciej niz o cokolwiek innego po zakupie. Odpowiadaj konkretnie
+i odsylaj do https://www.aejaca.com/payments/ , gdzie stoi to samo w calosci.
+
+**Droga zamowienia, etap po etapie:**
+
+1. **Zaplacone.** Status zmienia wylacznie podpisany komunikat operatora platnosci.
+   Powrot do przegladarki niczego nie zmienia, nasze klikniecie tez nie. Przy
+   przelewie w euro liczy sie chwila zaksiegowania, nie klikniecia.
+2. **Ustalanie szczegolow**, tylko przy zleceniach, ktore tego wymagaja: rozmiar,
+   wzor, litera na sygnecie, material. ZEGAR TU STOI. Czekanie na odpowiedz klienta
+   nie zjada jego terminu. Na stronie zamowienia widzi, KTOREJ pozycji dotyczy
+   pytanie, a po ustaleniach zapisujemy jednym zdaniem, na czym stanelo, i klient
+   widzi to samo zdanie.
+3. **Gotowe do pobrania**, dla klienta "przyjete do realizacji". Wszystkie ustalenia
+   domkniete, zlecenie stoi w kolejce, TERMIN JUZ BIEGNIE.
+4. **W realizacji.** Ktos wzial zlecenie do reki. Dla klienta to ten sam stan co
+   wyzej: zaplacil, przyjelismy, termin biegnie.
+5. **Gotowe do wysylki.** Praca skonczona, pakujemy.
+6. **Wyslane albo przekazane.** Przy wysylce numer przesylki pojawia sie na stronie
+   zamowienia i w wiadomosci. Przy odbiorze osobistym umawiamy godzine.
+
+**Termin realizacji:**
+- liczymy w dniach KALENDARZOWYCH, nie roboczych
+- biegnie od zaplaty, a przy zleceniu z ustaleniami dopiero od ich domkniecia
+- przy kilku pozycjach obowiazuje NAJDLUZSZY z terminow, bo paczka wychodzi jedna
+- konkretna data i liczba pozostalych dni stoja na stronie zamowienia
+- zmiana terminu po zaplacie zapisuje sie razem z data, w ktorej ustalilismy ja
+  z klientem
+
+**Powiadomienia:** klient dostaje maila przy istotnych etapach (wejscie do
+realizacji, gotowe, wyslane). Nie piszemy przy kazdym ruchu w warsztacie.
+Aktualny stan zawsze jest na stronie zamowienia.
+
+**Strona zamowienia:** https://www.aejaca.com/order/status/ . Prywatny odnosnik
+przychodzi mailem po zaplacie. Kto go zgubil, wchodzi tam numerem zamowienia
+(zaczyna sie od AE) RAZEM z adresem e-mail, na ktory poszlo potwierdzenie. Sam
+numer nie wystarcza, bo strona pokazuje adres i zawartosc zamowienia.
+
+**Kolejnosc pracy:** w kolejnosci wplat. Kto pierwszy zaplacil, ten pierwszy dostaje.
+
+**Dokumenty, do ktorych odsylasz:**
+- proces platnosci i FAQ: https://www.aejaca.com/payments/
+- wysylka i dostawa: https://www.aejaca.com/shipping/
+- gwarancja: https://www.aejaca.com/warranty/
+- zwroty i wymiany: https://www.aejaca.com/returns/
+- regulamin: https://www.aejaca.com/terms/
+
+Odnosniki do tych stron stoja takze przy przycisku zaplaty, w kasie i na stronie
+oferty, wiec klient nie musi ich szukac w stopce.
+
 
 ## Order wizard (https://www.aejaca.com/order/)
 
