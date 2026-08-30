@@ -75,11 +75,14 @@ export default {
       // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
       // kupic, najczesciej pyta wtedy, jak sie za to placi.
       { label: "How payment works", to: "/payments/" },
+      { label: "How we make your order", to: "/order-process/" },
+      { label: "Check your order", to: "/order/status/" },
       { label: "Terms of Service", to: "/terms/" },
       { label: "Warranty", to: "/warranty/" },
       { label: "Returns Policy", to: "/returns/" },
       { label: "Shipping", to: "/shipping/" },
       { label: "Privacy Policy", to: "/privacy/" },
+      { label: "FAQ", to: "/faq/" },
     ],
     gallery: "Gallery",
     gallerySections: [

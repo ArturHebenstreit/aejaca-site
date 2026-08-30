@@ -212,6 +212,30 @@
   </url>
 
   <url>
+    <loc>https://www.aejaca.com/order-process/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/order-process/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/order-process/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/order-process/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/order-process/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/faq/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/faq/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/faq/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/faq/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/faq/" />
+  </url>
+
+  <url>
     <loc>https://www.aejaca.com/toolsjewelry/</loc>
     <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -1452,6 +1476,30 @@
   </url>
 
   <url>
+    <loc>https://www.aejaca.com/en/order-process/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/order-process/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/order-process/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/order-process/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/order-process/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/faq/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/faq/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/faq/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/faq/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/faq/" />
+  </url>
+
+  <url>
     <loc>https://www.aejaca.com/en/toolsjewelry/</loc>
     <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -2613,6 +2661,30 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/payments/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/payments/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/payments/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/order-process/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/order-process/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/order-process/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/order-process/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/order-process/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/faq/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/faq/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/faq/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/faq/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/faq/" />
   </url>
 
   <url>

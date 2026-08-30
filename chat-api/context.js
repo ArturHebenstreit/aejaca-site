@@ -769,6 +769,32 @@ liczby dni: odeślij do daty wpisanej w konkretnej ofercie.
 Odsyłaj tam ZAMIAST tłumaczyć proces własnymi słowami: strona jest zsynchronizowana
 z kodem, a odpowiedź złożona z pamięci bywa nieaktualna.
 
+### Proces realizacji, czyli co dzieje się PO zapłacie: https://www.aejaca.com/order-process/
+
+**To jest adres dla każdego, kto pyta "zapłaciłem i co dalej", "na kiedy to będzie",
+"co znaczy ustalanie szczegółów", "kiedy dostanę wiadomość" albo "jak odbiorę".**
+Płatność i realizacja mają OSOBNE strony (od 2026-08-30), bo to dwie różne sprawy i szukanie
+terminu nie ma oznaczać przewijania opisu przelewów. Na stronie realizacji stoją: etapy pracy
+(zapłacone, ustalanie szczegółów, przyjęte do realizacji, w realizacji, gotowe, wysłane albo
+przekazane), reguły terminu, kiedy piszemy, sposoby odbioru i wejście na własne zlecenie.
+
+Reguły, które musisz znać na pamięć, bo pytają o nie najczęściej:
+- **Termin liczymy w dniach KALENDARZOWYCH**, nie roboczych.
+- **Zegar rusza od zapłaty, a przy zleceniu wymagającym ustaleń dopiero od ich domknięcia.**
+  Czekanie na odpowiedź klienta nie zjada jego terminu.
+- **Kilka rzeczy w jednym zamówieniu bierze najdłuższy z terminów**, bo paczka wychodzi jedna.
+- **Zmiana terminu po zapłacie zapisuje się razem z datą ustalenia jej z klientem.**
+- Zlecenia robimy w kolejności wpłat.
+- Konkretnej daty ani liczby dni NIE zgaduj: klient widzi je na swojej stronie zlecenia.
+
+### Najczęściej zadawane pytania, jedno miejsce: https://www.aejaca.com/faq/
+
+Wszystkie pytania i odpowiedzi o płatność, oferty, realizację i dostawę, z wyszukiwarką treści
+i filtrami po tematach. Każda odpowiedź ma własną kotwicę, więc da się podać odnośnik do
+KONKRETNEJ odpowiedzi, a nie do strony, na której trzeba jej szukać. Gdy pytanie jest krótkie
+i typowe, odpowiedz i dorzuć ten adres; gdy dotyczy szczegółu jednej ze stron procesu,
+odeślij na tamtą stronę.
+
 ### Oferta ustalona z człowiekiem i zapłata za nią: https://www.aejaca.com/oferta/
 
 **TO JEST ADRES, KTÓRY PODAJESZ.** Każdemu, kto ma od nas ofertę i pyta, gdzie zapłacić,
@@ -889,7 +915,8 @@ Contact for custom shipping quotes: contact@aejaca.com
 ### Co sie dzieje po zaplacie, caly proces (od 2026-08-30)
 
 Klient pyta o to czesciej niz o cokolwiek innego po zakupie. Odpowiadaj konkretnie
-i odsylaj do https://www.aejaca.com/payments/ , gdzie stoi to samo w calosci.
+i odsylaj do https://www.aejaca.com/payments/ (zaplata) albo
+https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
 
 **Droga zamowienia, etap po etapie:**
 
@@ -929,7 +956,9 @@ numer nie wystarcza, bo strona pokazuje adres i zawartosc zamowienia.
 **Kolejnosc pracy:** w kolejnosci wplat. Kto pierwszy zaplacil, ten pierwszy dostaje.
 
 **Dokumenty, do ktorych odsylasz:**
-- proces platnosci i FAQ: https://www.aejaca.com/payments/
+- proces platnosci: https://www.aejaca.com/payments/
+- proces realizacji po zaplacie: https://www.aejaca.com/order-process/
+- najczesciej zadawane pytania: https://www.aejaca.com/faq/
 - wysylka i dostawa: https://www.aejaca.com/shipping/
 - gwarancja: https://www.aejaca.com/warranty/
 - zwroty i wymiany: https://www.aejaca.com/returns/

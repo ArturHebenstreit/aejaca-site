@@ -233,6 +233,38 @@ for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discount-ed
   }
 }
 
+// --- Adres powrotu po zapisie ---------------------------------------------
+// Formularze kolejki niosa w adresie powrotu filtr i sortowanie, wiec `back`
+// dostaje sciezke, ktora JUZ MA pytanie. Doklejenie drugiego znaku zapytania
+// gubilo komunikat: `/queue?status=details?err=...` daje jeden parametr
+// `status` i zadnego `err`, wiec odrzucony zapis wracal na strone bez slowa,
+// z niezmieniona wartoscia w polu. Sprawdzamy sam skutek, a nie zapis kodu.
+{
+  const zrodlo = server.match(/const back = \(res, path, params = \{\}\) => \{[\s\S]*?\n\};/)?.[0];
+  if (!zrodlo) {
+    zle("server.js nie ma funkcji back, a to ona odsyla po zapisie");
+  } else {
+    const back = eval(`(${zrodlo.replace(/^const back = /, "").replace(/;$/, "")})`);
+    const gdzie = (sciezka, params) => {
+      let cel = null;
+      back({ redirect: (u) => { cel = u; } }, sciezka, params);
+      return cel;
+    };
+    const przypadki = [
+      ["/queue", { err: "nie" }, "/queue?err=nie"],
+      ["/queue?status=details", { err: "nie" }, "/queue?status=details&err=nie"],
+      ["/queue?status=details&sort=deadline", { msg: "ok" }, "/queue?status=details&sort=deadline&msg=ok"],
+      // Zielone "zapisano" z poprzedniego kroku nie ma przezyc nastepnego.
+      ["/queue?msg=poprzednie", { err: "nie" }, "/queue?err=nie"],
+      ["/queue?status=details", {}, "/queue?status=details"],
+    ];
+    for (const [sciezka, params, oczekiwane] of przypadki) {
+      const wynik = gdzie(sciezka, params);
+      if (wynik !== oczekiwane) zle(`back("${sciezka}", ${JSON.stringify(params)}) dalo ${wynik}, a mialo dac ${oczekiwane}`);
+    }
+  }
+}
+
 if (bledy) {
   console.error(`\nSzablony panelu: ${bledy} bledow.`);
   process.exit(1);

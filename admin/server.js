@@ -1250,10 +1250,28 @@ async function shopApi(path, { method = "GET", body } = {}) {
   return data;
 }
 
-/** Wynik akcji wraca w adresie, zeby odswiezenie strony nie powtarzalo zapisu. */
+/**
+ * Wynik akcji wraca w adresie, zeby odswiezenie strony nie powtarzalo zapisu.
+ *
+ * Adres powrotu CZESTO MA JUZ pytanie: formularze kolejki niosa w nim filtr
+ * i sortowanie, zeby po zapisie nie wypasc na domyslna liste. Doklejenie
+ * drugiego znaku zapytania dawalo `/queue?status=details?err=...`, czyli jeden
+ * parametr `status` o wartosci `details?err=...` i ZADNEGO `err`. Zapis
+ * odrzucony przez API wracal wtedy na strone bez slowa: operator widzial
+ * niezmieniona wartosc i zadnego bledu. Stad sklejanie przez `URLSearchParams`.
+ *
+ * Stary komunikat gasnie przy nowej akcji. Zielone "zapisano" z poprzedniego
+ * kroku, wiszace nad wynikiem nastepnego, czyta sie jak potwierdzenie czegos,
+ * co sie nie stalo.
+ */
 const back = (res, path, params = {}) => {
-  const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
-  res.redirect(q ? `${path}?${q}` : path);
+  const [sciezka, pytanie = ""] = String(path).split("?");
+  const q = new URLSearchParams(pytanie);
+  q.delete("msg");
+  q.delete("err");
+  for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+  const s = q.toString();
+  res.redirect(s ? `${sciezka}?${s}` : sciezka);
 };
 
 // --- Produkty ---
@@ -1645,7 +1663,9 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
     back(res, powrot, { msg: `${req.params.ref}: ${r.status}${wyczyszczone}` });
-  } catch (err) { back(res, powrot, { err: err.message }); }
+    // Numer w komunikacie o bledzie, bo w kolejce stoi kilkanascie wierszy
+    // i "nie da sie zapisac" bez numeru nie mowi, ktorego dotyczy.
+  } catch (err) { back(res, powrot, { err: `${req.params.ref}: ${err.message}` }); }
 });
 
 /**

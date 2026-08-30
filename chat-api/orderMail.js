@@ -949,6 +949,12 @@ const ETAP_T = {
     hi: "Dzień dobry,",
     zamkniecie: "Pozdrawiamy,\nZespół AEJaCA",
     podglad: "Podgląd zamówienia",
+    orderNo: "Numer zamówienia",
+    progress: "Postęp zlecenia",
+    terminLabel: "Planowana wysyłka",
+    przesylkaLabel: "Numer przesyłki",
+    stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
+
     termin: (data) => `Planowana wysyłka: ${data}.`,
     przesylka: (nr) => `Numer przesyłki: ${nr}.`,
     stany: {
@@ -965,6 +971,12 @@ const ETAP_T = {
     hi: "Hello,",
     zamkniecie: "Best regards,\nThe AEJaCA team",
     podglad: "View your order",
+    orderNo: "Order number",
+    progress: "Order progress",
+    terminLabel: "Planned dispatch",
+    przesylkaLabel: "Tracking number",
+    stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
+
     termin: (data) => `Planned dispatch: ${data}.`,
     przesylka: (nr) => `Tracking number: ${nr}.`,
     stany: {
@@ -981,6 +993,12 @@ const ETAP_T = {
     hi: "Guten Tag,",
     zamkniecie: "Mit freundlichen Grüßen,\nIhr AEJaCA-Team",
     podglad: "Bestellung ansehen",
+    orderNo: "Bestellnummer",
+    progress: "Auftragsfortschritt",
+    terminLabel: "Geplanter Versand",
+    przesylkaLabel: "Sendungsnummer",
+    stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
+
     termin: (data) => `Geplanter Versand: ${data}.`,
     przesylka: (nr) => `Sendungsnummer: ${nr}.`,
     stany: {
@@ -995,12 +1013,66 @@ const ETAP_T = {
 };
 
 /**
+ * Nazwy etapow na pasku postepu w mailu. Te same, ktore klient widzi na stronie
+ * zamowienia: dwa opisy tej samej drogi rozjechalyby sie przy pierwszej zmianie.
+ */
+const ETAP_KROKI = {
+  pl: { paid: "Zapłacone", details: "Ustalenia", work: "W realizacji", ready: "Gotowe", shipped: "Wysłane", handed: "Przekazane" },
+  en: { paid: "Paid", details: "Details", work: "In the workshop", ready: "Finished", shipped: "Dispatched", handed: "Handed over" },
+  de: { paid: "Bezahlt", details: "Absprachen", work: "In Arbeit", ready: "Fertig", shipped: "Versandt", handed: "Übergeben" },
+};
+
+/** Naglowek maila, krotszy od zdania w tresci. */
+const ETAP_TYTUL = {
+  pl: { details: "Ustalamy szczegóły", queued: "Zlecenie przyjęte do realizacji", in_production: "Zlecenie w realizacji", ready: "Zlecenie gotowe", shipped: "Zlecenie wysłane", completed: "Zamówienie zamknięte" },
+  en: { details: "Agreeing the details", queued: "Order accepted for production", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order closed" },
+  de: { details: "Details klären", queued: "Auftrag angenommen", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung abgeschlossen" },
+};
+
+/**
+ * Pasek postepu w mailu, jako tabela. Nie SVG i nie obrazek: klient pocztowy
+ * blokuje obrazki zewnetrzne domyslnie, a wtedy z calej grafiki zostaje pusta
+ * ramka i zdanie traci to, co miala wzmocnic. Tabela z kolorowymi kropkami
+ * wyswietla sie wszedzie, lacznie z Outlookiem.
+ */
+function paseczek(order, lang) {
+  const n = ETAP_KROKI[lang] || ETAP_KROKI.pl;
+  const odbior = order.delivery_method === "pickup";
+  const kroki = [{ id: "paid", label: n.paid, stempel: order.paid_at }];
+  if (order.requires_details) kroki.push({ id: "details", label: n.details, stempel: order.details_at });
+  kroki.push({ id: "work", label: n.work, stempel: order.queued_at || order.production_started_at });
+  kroki.push({ id: "ready", label: n.ready, stempel: order.ready_at });
+  kroki.push({ id: "shipped", label: odbior ? n.handed : n.shipped, stempel: order.shipped_at });
+
+  const gdzie = order.requires_details
+    ? { paid: 0, details: 1, queued: 2, in_production: 2, ready: 3, shipped: 4, completed: 4 }
+    : { paid: 0, details: 0, queued: 1, in_production: 1, ready: 2, shipped: 3, completed: 3 };
+  const naEtapie = gdzie[order.status] ?? 0;
+
+  const komorki = kroki.map((k, i) => {
+    const przebyty = i < naEtapie;
+    const biezacy = i === naEtapie;
+    const kolor = biezacy ? "#b58a3c" : przebyty ? "#3f9e6a" : "#d9d9d9";
+    const napis = biezacy ? "#b58a3c" : przebyty ? "#444" : "#aaa";
+    const waga = biezacy ? "700" : "400";
+    return `<td style="text-align:center;vertical-align:top;padding:0 2px;width:${Math.round(100 / kroki.length)}%">
+      <div style="width:12px;height:12px;border-radius:12px;background:${kolor};margin:0 auto 8px"></div>
+      <div style="font-size:11px;line-height:1.3;color:${napis};font-weight:${waga}">${esc(k.label)}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:2px">${k.stempel ? esc(String(k.stempel).slice(0, 10).split("-").reverse().join(".")) : "&nbsp;"}</div>
+    </td>`;
+  }).join("");
+
+  return `<table role="presentation" style="width:100%;border-collapse:collapse;margin:8px 0 4px"><tr>${komorki}</tr></table>`;
+}
+
+/**
  * Mail do klienta o nowym etapie zlecenia.
  *
  * @returns {object|null} null, gdy o tym etapie nie ma czego pisac
  */
 export function buildStatusUpdate(order) {
-  const l = ETAP_T[order.lang] || ETAP_T.pl;
+  const lang = ETAP_T[order.lang] ? order.lang : "pl";
+  const l = ETAP_T[lang];
   const zdanie = l.stany[order.status];
   if (!zdanie || !order.customer_email) return null;
 
@@ -1008,36 +1080,61 @@ export function buildStatusUpdate(order) {
   const tresc = order.status === "shipped" && odbior
     ? zdanie.replace("wyszło z pracowni", "czeka na odbiór").replace("has left the workshop", "is ready for collection").replace("hat die Werkstatt verlassen", "steht zur Abholung bereit")
     : zdanie;
+  const tytul = (ETAP_TYTUL[lang] || ETAP_TYTUL.pl)[order.status] || l.subject(order.order_ref);
 
   const link = order.access_token
     ? `${SITE}/order/status/?ref=${encodeURIComponent(order.order_ref)}&token=${encodeURIComponent(order.access_token)}`
     : `${SITE}/order/status/`;
+  const zTerminem = order.deadline_at && ["queued", "in_production", "ready"].includes(order.status);
+  const dzien = (d) => String(d).slice(0, 10).split("-").reverse().join(".");
 
-  const linie = [
-    l.hi,
-    "",
-    tresc.charAt(0).toUpperCase() + tresc.slice(1),
-  ];
-  // Termin dopisujemy tylko tam, gdzie jeszcze cos znaczy: po wysylce jest
-  // juz historia, a w ustalaniu nie ma go wcale.
-  if (order.deadline_at && ["queued", "in_production", "ready"].includes(order.status)) {
-    linie.push("", l.termin(String(order.deadline_at).slice(0, 10)));
-  }
-  if (order.status === "shipped" && order.tracking_number) {
-    linie.push("", l.przesylka(order.tracking_number));
-  }
+  // Wersja tekstowa zostaje: czesc klientow pocztowych i czytniki ekranu biora
+  // wlasnie ja, a mail bez niej ladu je czesciej w spamie.
+  const linie = [l.hi, "", tresc.charAt(0).toUpperCase() + tresc.slice(1)];
+  if (zTerminem) linie.push("", l.termin(dzien(order.deadline_at)));
+  if (order.status === "shipped" && order.tracking_number) linie.push("", l.przesylka(order.tracking_number));
   linie.push("", `${l.podglad}: ${link}`, "", l.zamkniecie);
   const text = linie.join("\n");
 
-  return {
-    to: order.customer_email,
-    from: FROM,
-    subject: l.subject(order.order_ref),
-    text,
-    html: `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6;color:#222">
-      ${esc(text).replace(/\n/g, "<br/>").replace(esc(link), `<a href="${esc(link)}">${esc(link)}</a>`)}
-    </div>`,
-  };
+  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
+    <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
+
+    <h1 style="margin:0 0 6px;font-size:20px;line-height:1.3;font-weight:700">${esc(tytul)}</h1>
+    <p style="margin:0 0 4px;font-size:12px;color:#777">${l.orderNo}</p>
+    <p style="margin:0 0 20px;font-size:15px;font-weight:700;font-family:ui-monospace,monospace">${esc(order.order_ref)}</p>
+
+    <p style="margin:0 0 22px;line-height:1.6">${esc(tresc.charAt(0).toUpperCase() + tresc.slice(1))}</p>
+
+    <div style="border-top:1px solid #eee;padding-top:18px">
+      <p style="margin:0 0 2px;font-size:12px;color:#777">${l.progress}</p>
+      ${paseczek(order, lang)}
+    </div>
+
+    ${zTerminem ? `
+      <div style="margin-top:18px;background:#faf6ee;border-radius:8px;padding:14px 16px">
+        <span style="font-size:12px;color:#8a7a5c">${l.terminLabel}</span>
+        <div style="font-size:18px;font-weight:700;color:#7a5f22;margin-top:2px">${esc(dzien(order.deadline_at))}</div>
+      </div>
+    ` : ""}
+
+    ${order.status === "shipped" && order.tracking_number ? `
+      <div style="margin-top:14px;background:#f4f4f4;border-radius:8px;padding:14px 16px">
+        <span style="font-size:12px;color:#777">${l.przesylkaLabel}</span>
+        <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;margin-top:2px">${esc(order.tracking_number)}</div>
+      </div>
+    ` : ""}
+
+    <p style="margin:24px 0 0">
+      <a href="${esc(link)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700">${esc(l.podglad)}</a>
+    </p>
+
+    <p style="margin:26px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.zamkniecie).replace(/\n/g, "<br/>")}</p>
+  </div>
+  <p style="max-width:560px;margin:14px auto 0;font-size:11px;color:#999;text-align:center">${esc(l.stopka)}</p>
+</body></html>`;
+
+  return { to: order.customer_email, from: FROM, subject: `${tytul}, ${order.order_ref}`, text, html };
 }
 
 /**
@@ -1050,7 +1147,8 @@ export async function sendStatusUpdate(pool, orderId) {
   try {
     const { rows } = await pool.query(
       `SELECT order_ref, status, lang, customer_email, access_token,
-              deadline_at, tracking_number, delivery_method
+              deadline_at, tracking_number, delivery_method, requires_details,
+              paid_at, details_at, queued_at, production_started_at, ready_at, shipped_at
          FROM orders WHERE id = $1`,
       [orderId]
     );

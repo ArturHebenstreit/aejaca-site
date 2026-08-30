@@ -75,12 +75,19 @@ export default {
       // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
       // kupic, najczesciej pyta wtedy, jak sie za to placi.
       { label: "Proces płatności", to: "/payments/" },
+      // Realizacja osobno od platnosci, bo to dwie rozne sprawy i klient
+      // szukajacy jednej nie ma przewijac drugiej (zgloszenie 2026-08-30).
+      { label: "Proces realizacji", to: "/order-process/" },
+      { label: "Sprawdź zamówienie", to: "/order/status/" },
       // Regulamin przed dokumentami szczegółowymi, bo jest wobec nich nadrzędny.
       { label: "Regulamin", to: "/terms/" },
       { label: "Gwarancja", to: "/warranty/" },
       { label: "Polityka zwrotów", to: "/returns/" },
       { label: "Wysyłka", to: "/shipping/" },
       { label: "Polityka prywatności", to: "/privacy/" },
+      // FAQ na koncu listy: to jest miejsce, do ktorego sie wraca po
+      // konkret, a nie punkt wyjscia do poznawania marki.
+      { label: "FAQ", to: "/faq/" },
     ],
     gallery: "Galeria",
     gallerySections: [

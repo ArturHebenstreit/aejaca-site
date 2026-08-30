@@ -40,6 +40,8 @@ const QuotePage = strona(() => import("./pages/QuotePage.jsx"));
 const Offer = strona(() => import("./pages/Offer.jsx"));
 const Shipping = strona(() => import("./pages/Shipping.jsx"));
 const Payments = strona(() => import("./pages/Payments.jsx"));
+const OrderProcess = strona(() => import("./pages/OrderProcess.jsx"));
+const Faq = strona(() => import("./pages/Faq.jsx"));
 const ToolsJewelry = strona(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = strona(() => import("./pages/ToolsStudio.jsx"));
 const AlloyCompositionPage = strona(() => import("./pages/AlloyCompositionPage.jsx"));
@@ -98,7 +100,8 @@ function LazyFallback() {
 const KOMPONENTY = {
   Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
   About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
-  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, ToolsJewelry,
+  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, OrderProcess, Faq,
+  ToolsJewelry,
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
   LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,

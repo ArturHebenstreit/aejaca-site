@@ -4426,15 +4426,16 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   const zegarWyzerowany = czyszczone.includes("deadline_at");
 
   if (dniZmienione) {
-    // Daty ustalenia zadamy tylko wtedy, gdy ZMIENIAMY termin, ktory juz
-    // istnial: to jest zmiana obietnicy danej klientowi i musi dac sie
-    // uzasadnic. Wpisanie terminu tam, gdzie go nie bylo, jest uzupelnieniem
-    // braku, a nie zmiana umowy: zamowienia sprzed wprowadzenia terminow maja
-    // `lead_days` puste i pierwsza wersja tej reguly nie pozwalala ich wypelnic
-    // wcale, bo zadala daty ustalenia czegos, czego nikt nie ustalal.
-    if (dni !== null && order.lead_days != null && !ustalonoDnia && !order.lead_days_agreed_at) {
+    // Daty ustalenia zadamy tylko wtedy, gdy termin robi sie DLUZSZY. To jest
+    // jedyny kierunek, w ktorym klient cos traci, wiec jedyny, ktory trzeba
+    // umiec uzasadnic za pol roku. Skrocenie terminu i wpisanie go tam, gdzie
+    // go nie bylo, przechodza bez pytania: pierwsza wersja tej reguly zadala
+    // daty przy KAZDEJ zmianie i przez to nie dalo sie poprawic wlasnej
+    // literowki w liczbie dni, choc nikt niczego klientowi nie zabieral.
+    const wydluzenie = dni !== null && order.lead_days != null && dni > Number(order.lead_days);
+    if (wydluzenie && !ustalonoDnia && !order.lead_days_agreed_at) {
       return res.status(400).json({
-        error: "Zmiana terminu wymaga daty ustalenia z klientem",
+        error: "Wydluzenie terminu wymaga daty ustalenia z klientem",
         code: "agreement_date_required",
       });
     }

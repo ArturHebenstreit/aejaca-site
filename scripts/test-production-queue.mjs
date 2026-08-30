@@ -403,10 +403,14 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   ma(KOLEJKA, /name="notify" value="1" checked/, "przy ruchu do przodu pytanie jest domyslnie zaznaczone");
   ma(KOLEJKA, /value="<%= COFNIJ_DO\[o\.status\] %>"[\s\S]{0,700}?name="notify" value="1"\n/,
      "przy cofaniu pytanie jest domyslnie puste");
-  // Termin, ktorego jeszcze nie bylo, wpisuje sie bez daty ustalenia: to jest
-  // uzupelnienie braku, a nie zmiana obietnicy danej klientowi.
-  ma(SERWER, /dni !== null && order\.lead_days != null && !ustalonoDnia/,
-     "daty ustalenia zadamy dopiero przy ZMIANIE istniejacego terminu");
+  // Daty ustalenia zadamy tylko w kierunku, w ktorym klient cos traci.
+  // Warunek postawiony na KAZDEJ zmianie nie pozwalal poprawic wlasnej
+  // literowki w liczbie dni i wygladal wtedy jak zepsuty zapis: pole wracalo
+  // z poprzednia wartoscia.
+  ma(SERWER, /const wydluzenie = dni !== null && order\.lead_days != null && dni > Number\(order\.lead_days\)/,
+     "wydluzenie terminu rozpoznaje sie po kierunku zmiany, nie po samym fakcie zmiany");
+  ma(SERWER, /if \(wydluzenie && !ustalonoDnia && !order\.lead_days_agreed_at\)/,
+     "daty ustalenia zadamy tylko przy wydluzeniu terminu");
 
   ma(SERWER, /async function ruszZlecenie/, "zaplata ma czym ruszyc zlecenie");
   ma(SERWER, /AND status = 'paid' RETURNING id/, "start zlecenia da sie powtorzyc bez szkody");

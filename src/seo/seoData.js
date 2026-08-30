@@ -447,6 +447,46 @@ export const SEO = {
       ogAlt: "Zahlungsablauf bei AEJaCA",
     },
   },
+  orderProcess: {
+    pl: {
+      title: "Proces realizacji, AEJaCA",
+      description: "Co dzieje się po zapłacie w AEJaCA: ustalenia szczegółów, liczenie terminu, praca w pracowni, gotowe do wysyłki i odbiór zamówienia.",
+      keywords: "proces realizacji AEJaCA, termin realizacji, status zamówienia, ustalenia szczegółów, odbiór zamówienia",
+      ogAlt: "Proces realizacji zamówienia w AEJaCA",
+    },
+    en: {
+      title: "How we make your order, AEJaCA",
+      description: "What happens after payment at AEJaCA: settling details, when the clock starts, work in the workshop, ready to ship and collecting your order.",
+      keywords: "AEJaCA order process, lead time, order status, settling details, order collection",
+      ogAlt: "How an AEJaCA order is made",
+    },
+    de: {
+      title: "Ablauf der Fertigung, AEJaCA",
+      description: "Was nach der Zahlung bei AEJaCA passiert: Details klären, Frist zählen, Arbeit in der Werkstatt, versandfertig und Abholung der Bestellung.",
+      keywords: "AEJaCA Fertigungsablauf, Lieferfrist, Bestellstatus, Details klären, Bestellung abholen",
+      ogAlt: "Ablauf einer AEJaCA Bestellung",
+    },
+  },
+  faq: {
+    pl: {
+      title: "Najczęściej zadawane pytania, AEJaCA",
+      description: "Odpowiedzi na pytania o płatność, ofertę, realizację i dostawę w AEJaCA. Wyszukiwarka treści i filtry tematyczne w jednym miejscu.",
+      keywords: "FAQ AEJaCA, pytania i odpowiedzi, płatność, oferta, termin realizacji, dostawa",
+      ogAlt: "Najczęściej zadawane pytania AEJaCA",
+    },
+    en: {
+      title: "Frequently asked questions, AEJaCA",
+      description: "Answers about payment, offers, order progress and delivery at AEJaCA. Search the answers and filter them by topic, all in one place.",
+      keywords: "AEJaCA FAQ, questions and answers, payment, offer, lead time, delivery",
+      ogAlt: "AEJaCA frequently asked questions",
+    },
+    de: {
+      title: "Häufige Fragen, AEJaCA",
+      description: "Antworten zu Zahlung, Angebot, Fertigung und Lieferung bei AEJaCA. Volltextsuche und Themenfilter an einer einzigen Stelle.",
+      keywords: "AEJaCA FAQ, Fragen und Antworten, Zahlung, Angebot, Lieferfrist, Versand",
+      ogAlt: "Häufige Fragen zu AEJaCA",
+    },
+  },
   shipping: {
     pl: {
       title: "Wysyłka i dostawa, AEJaCA",
