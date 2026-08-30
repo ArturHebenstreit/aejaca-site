@@ -1673,7 +1673,7 @@ app.post("/queue/:ref/item/:id/details", requireAuth, async (req, res) => {
   try {
     const r = await shopApi(
       `/api/orders/${encodeURIComponent(req.params.ref)}/items/${encodeURIComponent(req.params.id)}/details`,
-      { method: "POST", body: { settled: req.body.settled === "1" } }
+      { method: "POST", body: { settled: req.body.settled === "1", note: req.body.note ?? undefined } }
     );
     const ile = r.remaining > 0 ? `, zostało do ustalenia: ${r.remaining}` : ", wszystkie ustalenia domknięte";
     back(res, powrot, { msg: `${req.params.ref}: ${r.status}${ile}` });

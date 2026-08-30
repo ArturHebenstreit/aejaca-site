@@ -461,7 +461,14 @@
                  class="flex-1 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-neutral-300 font-mono" />
           <button type="button" data-kopiuj="<%= offerUrl %>"
                   class="shrink-0 px-3 py-2 rounded-lg border border-white/15 text-neutral-200 text-xs hover:border-white/35 transition-colors">
-            Kopiuj
+            Kopiuj link
+          </button>
+          <%# Sam numer tez do skopiowania, tak samo jak w Kolejce. Klient pyta
+              o oferte numerem czesciej niz linkiem: numer stoi w tytule przelewu
+              i w temacie korespondencji, wiec to on wraca w rozmowie. %>
+          <button type="button" data-kopiuj="<%= quote.quoteRef %>"
+                  class="shrink-0 px-3 py-2 rounded-lg border border-white/15 text-neutral-200 text-xs hover:border-white/35 transition-colors">
+            Kopiuj numer
           </button>
         </div>
       </label>

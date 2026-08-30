@@ -70,11 +70,23 @@ function dzienZeStempla(wartosc) {
   return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 }
 
-function OsCzasu({ order, u, odbiorOsobisty }) {
+function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   if (!order) return null;
 
+  // Pozycje, na ktorych ustalenia jeszcze czekamy. Klient ma prawo wiedziec,
+  // NA CO czekamy: "ustalamy szczegoly" bez wskazania rzeczy brzmi jak zwloka,
+  // a nie jak pytanie, ktore do niego wyslalismy.
+  const doUstalenia = (order.items || [])
+    .filter((i) => i.requiresDetails && !i.detailsSettled)
+    .map((i) => i.title);
+
+  // Pozycje z ustaleniami juz domknietymi, do wypisania pod terminem.
+  const ustalone = (order.items || []).filter((i) => i.requiresDetails && i.detailsSettled);
+
   const kroki = [{ id: "paid", label: u.tlPaid, data: order.paidAt }];
-  if (order.requiresDetails) kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt });
+  if (order.requiresDetails) {
+    kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt, pozycje: doUstalenia });
+  }
   kroki.push({ id: "work", label: u.tlProduction, data: order.queuedAt || order.productionStartedAt });
   kroki.push({ id: "ready", label: u.tlReady, data: order.readyAt });
   kroki.push({ id: "shipped", label: odbiorOsobisty ? u.tlHanded : u.tlShipped, data: order.shippedAt });
@@ -89,6 +101,21 @@ function OsCzasu({ order, u, odbiorOsobisty }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-5 mb-4 text-left">
+      {/* Numer, stan platnosci i data zaplaty stoja TU, a nie w osobnej karcie
+          pod spodem. Klient czyta te trzy rzeczy razem z postepem, bo razem
+          odpowiadaja na jedno pytanie: co sie dzieje z moim zamowieniem. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pb-4 mb-4 border-b border-white/10">
+        <span className="font-mono text-xs text-white">{order.orderRef}</span>
+        <span className="text-xs">
+          <span className={zaplacone ? "text-emerald-300" : "text-amber-300"}>
+            {zaplacone ? u.statusPaid : u.statusPending}
+          </span>
+          {dzienZeStempla(order.paidAt) && (
+            <span className="text-neutral-500"> &middot; {dzienZeStempla(order.paidAt)}</span>
+          )}
+        </span>
+      </div>
+
       <div className="text-neutral-500 text-xs mb-4">{u.tlTitle}</div>
 
       {/* Os idzie w DOL, a nie w bok. Strona zamowienia stoi w waskiej kolumnie
@@ -115,12 +142,23 @@ function OsCzasu({ order, u, odbiorOsobisty }) {
                 />
               )}
               <span className={`relative z-10 mt-1 w-3 h-3 shrink-0 rounded-full border-2 transition-colors ${kropka}`} />
-              <div className={`flex-1 min-w-0 flex items-baseline justify-between gap-3 ${biezacy ? "-mt-0.5" : ""}`}>
-                <span className={`text-sm leading-tight ${biezacy ? "text-amber-300 font-semibold" : przebyty ? "text-neutral-200" : "text-neutral-600"}`}>
-                  {k.label}
-                </span>
-                {dzienZeStempla(k.data) && (
-                  <span className="text-neutral-500 text-xs tabular-nums shrink-0">{dzienZeStempla(k.data)}</span>
+              <div className={`flex-1 min-w-0 ${biezacy ? "-mt-0.5" : ""}`}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className={`text-sm leading-tight ${biezacy ? "text-amber-300 font-semibold" : przebyty ? "text-neutral-200" : "text-neutral-600"}`}>
+                    {k.label}
+                  </span>
+                  {dzienZeStempla(k.data) && (
+                    <span className="text-neutral-500 text-xs tabular-nums shrink-0">{dzienZeStempla(k.data)}</span>
+                  )}
+                </div>
+                {/* Nazwy pozycji, na ktore czekamy. Pokazujemy je tylko na
+                    biezacym przystanku: przy etapie juz przebytym byloby to
+                    przypominanie o pytaniu, na ktore klient dawno odpowiedzial. */}
+                {biezacy && k.pozycje && k.pozycje.length > 0 && (
+                  <div className="mt-1.5 text-xs text-neutral-400 leading-relaxed">
+                    <span className="text-neutral-500">{u.tlWaitingFor}</span>{" "}
+                    {k.pozycje.join(", ")}
+                  </div>
                 )}
               </div>
             </li>
@@ -149,11 +187,61 @@ function OsCzasu({ order, u, odbiorOsobisty }) {
             </>
           ) : (
             <span className="text-neutral-400 text-sm">
-              {order.leadDays ? `${order.leadDays} ${u.daysUnit} ${u.tlAfterDetails}` : u.tlAfterDetails}
+              {order.leadDays
+                ? `${u.tlUpTo} ${order.leadDays} ${u.daysUnit} ${u.tlAfterDetails}`
+                : u.tlAfterDetails}
             </span>
           )}
         </span>
       </div>
+
+      {/* CO USTALILISMY. Data mowi, ze rozmowa byla, ale nie mowi, na czym
+          stanela, a to jest jedyna rzecz, ktora klient i pracownia musza
+          pamietac tak samo. Pokazujemy wylacznie pozycje juz domkniete:
+          te otwarte stoja wyzej, przy przystanku, na ktorym czekaja. */}
+      {ustalone.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="text-neutral-500 text-xs mb-2">{u.tlAgreed}</div>
+          <ul className="space-y-2">
+            {ustalone.map((i, n) => (
+              <li key={n} className="text-xs leading-relaxed">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-neutral-300">{i.title}</span>
+                  {dzienZeStempla(i.detailsSettledAt) && (
+                    <span className="text-neutral-500 tabular-nums shrink-0">{dzienZeStempla(i.detailsSettledAt)}</span>
+                  )}
+                </div>
+                {i.detailsNote && <p className="text-neutral-400 mt-0.5">{i.detailsNote}</p>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Dostawa razem z numerem punktu. Klient wybieral paczkomat tydzien
+          wczesniej i zwykle nie pamieta, ktory, a paczka jedzie wlasnie tam. */}
+      {(nazwaDostawy || order.deliveryPoint || order.trackingNumber) && (
+        <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
+          {nazwaDostawy && (
+            <div className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-neutral-500">{u.deliveryLabel}</span>
+              <span className="text-neutral-300 text-right">{nazwaDostawy}</span>
+            </div>
+          )}
+          {order.deliveryPoint && (
+            <div className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-neutral-500">{u.tlPickupPoint}</span>
+              <span className="text-neutral-200 font-mono text-right">{order.deliveryPoint}</span>
+            </div>
+          )}
+          {order.trackingNumber && (
+            <div className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-neutral-500">{u.trackingLabel}</span>
+              <span className="text-neutral-200 font-mono text-right">{order.trackingNumber}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -203,10 +291,15 @@ const UI = {
     tlReady: "Gotowe",
     tlShipped: "Wysłane",
     tlHanded: "Przekazane",
-    tlDeadline: "Termin",
-    tlAfterDetails: "po ustaleniach",
+    tlDeadline: "Termin realizacji",
+    tlAfterDetails: "po dokonaniu wszystkich ustaleń",
+    tlUpTo: "do",
+    tlWaitingFor: "Czekamy na ustalenia do:",
+    tlAgreed: "Co ustaliliśmy",
+    tlPickupPoint: "Punkt odbioru",
+
     stageDetails: "Ustalanie szczegółów zlecenia",
-    stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich, więc nic Ci nie ucieka.",
+    stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich.",
     stageRunning: "Zlecenie w realizacji",
     stageReady: "Zrealizowane",
     stageReadyDesc: "Praca skończona. Pakujemy albo przygotowujemy do odbioru.",
@@ -288,10 +381,15 @@ const UI = {
     tlReady: "Finished",
     tlShipped: "Dispatched",
     tlHanded: "Handed over",
-    tlDeadline: "Due",
-    tlAfterDetails: "after the details",
+    tlDeadline: "Delivery date",
+    tlAfterDetails: "once everything is agreed",
+    tlUpTo: "up to",
+    tlWaitingFor: "Waiting to agree:",
+    tlAgreed: "What we agreed",
+    tlPickupPoint: "Pickup point",
+
     stageDetails: "Agreeing the details",
-    stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that, so nothing is running out.",
+    stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that.",
     stageRunning: "In the workshop",
     stageReady: "Finished",
     stageReadyDesc: "The work is done. We are packing it or getting it ready for collection.",
@@ -373,10 +471,15 @@ const UI = {
     tlReady: "Fertig",
     tlShipped: "Versandt",
     tlHanded: "Übergeben",
-    tlDeadline: "Termin",
-    tlAfterDetails: "nach den Absprachen",
+    tlDeadline: "Liefertermin",
+    tlAfterDetails: "nach allen Absprachen",
+    tlUpTo: "bis zu",
+    tlWaitingFor: "Wir warten auf Absprachen zu:",
+    tlAgreed: "Was wir vereinbart haben",
+    tlPickupPoint: "Abholpunkt",
+
     stageDetails: "Details werden abgestimmt",
-    stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach, es geht Ihnen also nichts verloren.",
+    stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach.",
     stageRunning: "In der Werkstatt",
     stageReady: "Fertiggestellt",
     stageReadyDesc: "Die Arbeit ist fertig. Wir verpacken sie oder bereiten sie zur Abholung vor.",
@@ -788,7 +891,8 @@ export default function OrderStatus() {
                   za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
                   zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
               {order && zaplacone && (
-                <OsCzasu order={order} u={u} odbiorOsobisty={odbiorOsobisty} />
+                <OsCzasu order={order} u={u} odbiorOsobisty={odbiorOsobisty}
+                         zaplacone={zaplacone} nazwaDostawy={nazwaDostawy} />
               )}
 
               {/* Podsumowanie takie samo jak w mailu z potwierdzeniem: pozycje,
@@ -836,49 +940,19 @@ export default function OrderStatus() {
                 </div>
               )}
 
-              {order && (
+              {/* Numer, stan platnosci, data zaplaty, dostawa i numer przesylki
+                  przeniosly sie do karty postepu: klient czyta je razem z tym,
+                  co sie ze zleceniem dzieje, a nie w osobnej ramce nizej.
+                  Zostaja dwie rzeczy, ktore tam nie pasuja. */}
+              {order && ((!order.items || !order.items.length) || order.revisions) && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-6 text-left">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-neutral-500">{u.orderNo}</span>
-                    <span className="text-white font-mono text-xs">{order.orderRef}</span>
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-neutral-500">{u.statusLabel}</span>
-                    <span className={zaplacone ? "text-emerald-300" : "text-amber-300"}>
-                      {zaplacone ? u.statusPaid : u.statusPending}
-                    </span>
-                  </div>
                   {/* Backend i strona wdrazaja sie osobno. Starsza wersja API nie
                       przysyla pozycji, wiec kwota musi miec tu wlasne miejsce,
                       inaczej przez chwile nie byloby jej nigdzie. */}
                   {(!order.items || !order.items.length) && (
-                    <div className="flex justify-between mt-1">
+                    <div className="flex justify-between">
                       <span className="text-neutral-500">{u.amount}</span>
                       <span className="text-white font-semibold">{String(order.totalPLN).replace(".", ",")} PLN</span>
-                    </div>
-                  )}
-                  {order.paidAt && (
-                    <div className="flex justify-between mt-1">
-                      <span className="text-neutral-500">{u.paidAtLabel}</span>
-                      <span className="text-white">
-                        {new Date(order.paidAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")}
-                      </span>
-                    </div>
-                  )}
-                  {/* Numer przesylki pokazujemy klientowi, bo pytanie "gdzie jest
-                      paczka" inaczej wraca do nas mailem i odpowiada na nie czlowiek. */}
-                  {order.shippedAt && (
-                    <div className="flex justify-between mt-1">
-                      <span className="text-neutral-500">{u.shippedAtLabel}</span>
-                      <span className="text-white">
-                        {new Date(order.shippedAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")}
-                      </span>
-                    </div>
-                  )}
-                  {order.trackingNumber && (
-                    <div className="flex justify-between mt-1 gap-3">
-                      <span className="text-neutral-500 shrink-0">{u.trackingLabel}</span>
-                      <span className="text-white font-mono text-xs break-all text-right">{order.trackingNumber}</span>
                     </div>
                   )}
                   {/* Licznik poprawek widoczny od poczatku, zeby trzecia runda

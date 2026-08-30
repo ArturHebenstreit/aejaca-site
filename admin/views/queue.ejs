@@ -377,14 +377,25 @@
                                 Zegar calego zlecenia rusza, gdy zaznaczone sa
                                 wszystkie wymagane. %>
                             <% if (it.requiresDetails) { %>
-                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/details" class="shrink-0">
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/details" class="shrink-0 flex items-center gap-3">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="settled" value="<%= it.detailsSettledAt ? '0' : '1' %>" />
+                                <%# Tresc ustalenia jedzie razem z kwadracikiem, bo
+                                    to jedno zdarzenie: rozmowa skonczyla sie
+                                    czyms konkretnym. Sama data mowi, ze rozmowa
+                                    byla, ale nie mowi, na czym stanelo, a to
+                                    widzi takze klient na swojej stronie. %>
+                                <input name="note" value="<%= it.detailsNote || '' %>" placeholder="co ustalono"
+                                       class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-2 py-1 text-[11px] text-white" />
                                 <label class="flex items-center gap-2 cursor-pointer">
                                   <input type="checkbox" data-ustalenia <%= it.detailsSettledAt ? "checked" : "" %>
                                          class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <%# Napis jest PYTANIEM, dopoki nie ma odpowiedzi.
+                                      "Wymaga ustalen" opisywalo pozycje, a nie to,
+                                      co masz z nia zrobic, wiec kwadracik obok
+                                      wygladal jak informacja, a nie jak przelacznik. %>
                                   <span class="text-[10px] <%= it.detailsSettledAt ? "text-emerald-300" : "text-amber-300" %>">
-                                    <%= it.detailsSettledAt ? "Ustalenia domknięte" : "Wymaga ustaleń" %>
+                                    <%= it.detailsSettledAt ? "Ustalone" : "Ustalone?" %>
                                   </span>
                                 </label>
                               </form>
