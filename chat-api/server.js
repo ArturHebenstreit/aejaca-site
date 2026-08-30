@@ -4112,14 +4112,19 @@ app.get("/api/orders/queue", async (req, res) => {
   // Domyslnie kolejka pokazuje to, co jeszcze czeka na prace. `?status=`
   // pozwala siegnac po zakonczone i anulowane, bo inaczej omylkowe kliknieciecie
   // "zrobione" znika z ekranu i nie ma czego poprawic.
-  const DOZWOLONE_STANY = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed", "cancelled"];
+  // Czekanie na pieniadze jest CZESCIA kolejki, a nie osobna sprawa (decyzja
+  // wlasciciela, 2026-08-30). Zamowienie w euro stalo dotad wylacznie na
+  // stronie przelewow, wiec w kolejce nie bylo go w ogole, a jego pierwszy
+  // krok, potwierdzenie wplaty, mial wlasny formularz w innym miejscu.
+  const DOZWOLONE_STANY = ["awaiting_transfer", "payment_review", "paid", "details", "queued",
+    "in_production", "ready", "shipped", "completed", "cancelled", "expired"];
   const zadane = String(req.query.status || "").split(",").map((x) => x.trim()).filter(Boolean);
   const stany = zadane.length
     ? zadane.filter((x) => DOZWOLONE_STANY.includes(x))
     // Ustalanie szczegolow i "zrealizowane" stoja w domyslnym widoku, bo to
     // wlasnie one czekaja na RUCH Z NASZEJ STRONY. Zlecenie w ustalaniu nie ma
     // nawet zegara, wiec pominiete tutaj nie odezwaloby sie znikad.
-    : ["paid", "details", "queued", "in_production", "ready"];
+    : ["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready"];
   if (!stany.length) return res.status(400).json({ error: "Nie znamy takiego stanu" });
 
   // Sortowanie z BIALEJ LISTY, a nie z parametru wstawionego do zapytania:
@@ -4147,6 +4152,8 @@ app.get("/api/orders/queue", async (req, res) => {
             o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
             o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
+            o.payment_method, o.payment_status, o.currency, o.amount_eur_cents,
+            o.payment_review_reason, o.created_at,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -4214,6 +4221,15 @@ app.get("/api/orders/queue", async (req, res) => {
     completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
     carrier: o.carrier || null,
+    // Zamowienie czekajace na pieniadze stoi w tej samej tabeli, wiec panel
+    // potrzebuje przy nim kwoty i sposobu zaplaty: potwierdzenie wplaty jest
+    // pierwszym krokiem kolejki, a nie osobnym formularzem gdzie indziej.
+    paymentMethod: o.payment_method,
+    paymentStatus: o.payment_status,
+    currency: o.currency,
+    amountEurCents: o.amount_eur_cents,
+    paymentReviewReason: o.payment_review_reason || null,
+    createdAt: o.created_at,
     // Podpowiedz ze strefy, ktora wycenila przesylke. Paczkomat stoi tylko
     // w Polsce, wiec tam przewoznik jest znany bez pytania.
     carrierHint: o.delivery_method === "inpost_locker"

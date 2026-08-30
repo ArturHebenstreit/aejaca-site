@@ -191,6 +191,18 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.
   Decyzja: ADR-0027.
 
+### Czekanie na pieniądze jest częścią kolejki (od 2026-08-30)
+
+- **Kolejka pokazuje wszystko, co czeka na ruch z naszej strony**, razem
+  z zamówieniami czekającymi na przelew w euro i płatnościami odesłanymi do
+  ręcznej decyzji. Osobna strona przelewów zniknęła: dwa miejsca o tych samych
+  zamówieniach rozjeżdżają się przy pierwszej zmianie.
+- **Potwierdzenie wpłaty jest pierwszym krokiem kolejki**, pod przystankiem
+  „Zapłata", a nie osobnym formularzem gdzie indziej.
+- **Oś czasu klienta zaczyna się przy zapłacie, a nie po niej.** Pierwsza kropka
+  świeci, dopóki wpłata nie jest zaksięgowana, i to jest odpowiedź na pytanie
+  „czy potwierdziliście przelew". Decyzja: ADR-0029.
+
 ### Polski tekst do klienta nie zgaduje płci (od 2026-08-30)
 
 Klientka dostała maila ze zdaniem „wycena, którą zapisałeś", i to nie była

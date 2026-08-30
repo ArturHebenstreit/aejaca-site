@@ -969,6 +969,12 @@ https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
 realizacji, gotowe, wyslane). Nie piszemy przy kazdym ruchu w warsztacie.
 Aktualny stan zawsze jest na stronie zamowienia.
 
+**Zamowienie platne przelewem w euro** ma te sama strone zamowienia co kazde
+inne i te sama os czasu (od 2026-08-30). Pierwszy przystanek nazywa sie wtedy
+"Zapłata" i swieci, dopoki nie zaksiegujemy wplaty. Klientowi, ktory pyta "czy
+dostaliscie przelew", podaj wlasnie ten adres: po potwierdzeniu przystanek
+dostaje date i zielen, a zlecenie wchodzi do kolejki.
+
 **Strona zamowienia:** https://www.aejaca.com/order/status/ . Prywatny odnosnik
 przychodzi mailem po zaplacie. Kto go zgubil, wchodzi tam numerem zamowienia
 (zaczyna sie od AE) RAZEM z adresem e-mail, na ktory poszlo potwierdzenie. Sam

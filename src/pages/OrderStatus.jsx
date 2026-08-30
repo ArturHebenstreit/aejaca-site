@@ -92,7 +92,10 @@ function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
     .map((kto) => ({ kto, href: sledzenieUrl(kto, order.trackingNumber, lang) }))
     .filter((sl) => sl.href);
 
-  const kroki = [{ id: "paid", label: u.tlPaid, data: order.paidAt }];
+  // Dopoki wplata nie jest zaksiegowana, przystanek nazywa sie "Zapłata"
+  // i nie ma stempla: "Zapłacone" bez daty czytaloby sie jak zaprzeczenie
+  // ekranu stojacego wyzej, ktory prosi o przelew.
+  const kroki = [{ id: "paid", label: order.paidAt ? u.tlPaid : u.tlPayment, data: order.paidAt }];
   if (order.requiresDetails) {
     kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt, pozycje: doUstalenia });
   }
@@ -112,9 +115,9 @@ function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
 
   // Numer etapu, na ktorym stoi zlecenie. Jedna liczba zamiast piatki warunkow
   // rozsianych po widoku: dzieki niej "przebyte" i "przed nami" liczy sie samo.
-  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 5 };
+  const gdzie = { awaiting_transfer: 0, payment_review: 0, paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 5 };
   const teraz = order.requiresDetails
-    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 6 }[order.status]
+    ? { awaiting_transfer: 0, payment_review: 0, paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 6 }[order.status]
     : gdzie[order.status];
   // Potwierdzone doreczenie zamyka cala droge, wiec KAZDA kropka jest przebyta.
   // Ostatni przystanek jako "biezacy" swiecilby na bursztynowo, czyli mowilby
@@ -334,6 +337,7 @@ const UI = {
     stageTitle: "Realizacja",
     tlTitle: "Postęp zlecenia",
     tlPaid: "Zapłacone",
+    tlPayment: "Zapłata",
     tlDetails: "Ustalamy szczegóły",
     tlQueued: "Czeka w kolejce",
     tlProduction: "W realizacji",
@@ -441,6 +445,7 @@ const UI = {
     stageTitle: "Progress",
     tlTitle: "Order progress",
     tlPaid: "Paid",
+    tlPayment: "Payment",
     tlDetails: "Agreeing details",
     tlQueued: "In the queue",
     tlProduction: "In the workshop",
@@ -549,6 +554,7 @@ const UI = {
     stageTitle: "Fortschritt",
     tlTitle: "Auftragsfortschritt",
     tlPaid: "Bezahlt",
+    tlPayment: "Zahlung",
     tlDetails: "Details klären",
     tlQueued: "In der Warteschlange",
     tlProduction: "In Arbeit",
@@ -770,6 +776,12 @@ export default function OrderStatus() {
   // mowiace "do zaplaty" komus, kto zaplacil, i to jest dokladnie ten sam
   // blad, ktory strona popelniala przy adresie bez numeru.
   const zaplacone = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"].includes(order?.status);
+  // Os czasu zaczyna sie przy zaplacie, a nie po niej (decyzja wlasciciela,
+  // 2026-08-30). Zamowienie w euro czeka na zaksiegowanie przelewu i klient
+  // pytal wtedy "czy potwierdziliscie", bo widzial sam ekran oczekiwania.
+  // Pierwsza kropka swieci, dopoki pieniadze nie doszly, i to jest odpowiedz.
+  const czekaNaPieniadze = ["awaiting_transfer", "payment_review"].includes(order?.status);
+  const zOsia = zaplacone || czekaNaPieniadze;
   const etapSzczegolow = order?.status === "details";
   const etapGotowe = order?.status === "ready";
   // Odbior osobisty konczy sie przekazaniem, a nie wysylka. To samo pole
@@ -982,7 +994,7 @@ export default function OrderStatus() {
                   wychodzi inna przy buildzie i inna u klienta, React uznaje to
                   za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
                   zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
-              {order && zaplacone && (
+              {order && zOsia && (
                 <OsCzasu order={order} u={u} lang={lang} odbiorOsobisty={odbiorOsobisty}
                          zaplacone={zaplacone} nazwaDostawy={nazwaDostawy} />
               )}

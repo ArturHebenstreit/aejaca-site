@@ -5,7 +5,10 @@ const server = await readFile(new URL("./server.js", import.meta.url), "utf8");
 const paymentState = await readFile(new URL("./paymentState.js", import.meta.url), "utf8");
 const statusPage = await readFile(new URL("../src/pages/OrderStatus.jsx", import.meta.url), "utf8");
 const schema = await readFile(new URL("../scripts/orders-schema.sql", import.meta.url), "utf8");
-const adminView = await readFile(new URL("../admin/views/transfers.ejs", import.meta.url), "utf8");
+// Platnosc do recznej decyzji ma byc WIDOCZNA dla pracowni. Od 2026-08-30 stoi
+// w kolejce razem z reszta zamowien (ADR-0029), a nie na osobnej stronie
+// przelewow: zamowienie w euro nie pojawialo sie w kolejce w ogole.
+const adminView = await readFile(new URL("../admin/views/queue.ejs", import.meta.url), "utf8");
 
 assert.match(server, /allowedHeaders:\s*\["Content-Type", "Authorization"\]/);
 assert.match(server, /orderAccessAllowed\(req\.headers\.authorization, o\.access_token\)/);
@@ -33,6 +36,9 @@ assert.match(server, /payment_review_reason = CASE WHEN \$4/,
 assert.doesNotMatch(paymentState, /paymentReviewReason/,
   "nie utrzymujemy drugiej, nieuzywanej kopii reguly review");
 assert.match(schema, /'payment_review'/);
-assert.match(adminView, /Pilne płatności do ręcznej decyzji/);
+assert.match(adminView, /payment_review: \{ label:/,
+  "stan platnosci do sprawdzenia musi miec nazwe w kolejce");
+assert.match(adminView, /Pobrano pieniądze, zlecenie nie ruszyło/,
+  "pracownia ma widziec, ze pieniadze sa, a zlecenie stoi");
 
 console.log("Bezpieczenstwo platnosci i statusu: wszystkie sprawdzenia przeszly");
