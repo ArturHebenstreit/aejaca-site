@@ -126,7 +126,14 @@ CREATE TABLE IF NOT EXISTS orders (
   -- Czy po zaplacie zlecenie idzie najpierw do ustalania szczegolow. Zamraza
   -- sie razem z `lead_days`: znacznik przy pozycji moze sie pozniej zmienic,
   -- a to zamowienie ma zostac takie, jakie klient kupil.
+  --
+  -- To jest PODSUMOWANIE znacznikow z `order_items`, trzymane dla maila
+  -- i dla starych zamowien. O tym, czy zegar rusza, decyduja pozycje.
   requires_details      BOOLEAN NOT NULL DEFAULT FALSE,
+  -- Data ustalenia NOWEGO terminu z klientem. Zmiana `lead_days` po zaplacie
+  -- jest zmiana umowy, a nie poprawka literowki, wiec musi niesc date, kiedy
+  -- klient sie zgodzil. Zwykle jest to data maila potwierdzajacego.
+  lead_days_agreed_at   DATE,
   -- Ktore przypomnienia juz poszly, po nazwach progow: ["d14","d7","d3","d0"].
   -- Bez tego zapisu codzienny przebieg wysylalby ten sam mail kazdego ranka.
   reminders_sent        JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -187,6 +194,17 @@ CREATE TABLE IF NOT EXISTS order_items (
   file_sha256       VARCHAR(64),
   file_url          TEXT,
   geometry          JSONB,              -- objetosc, bbox, pole powierzchni, liczba trojkatow
+
+  -- USTALENIA STOJA PRZY POZYCJI (2026-08-30). Znacznik jedzie z pozycji
+  -- oferty i zamraza sie razem z cena. `details_settled_at` stempluje chwile,
+  -- w ktorej uznalismy te jedna pozycje za dogadana; zegar CALEGO zamowienia
+  -- rusza dopiero, gdy stempel ma kazda pozycja, ktora go wymaga.
+  --
+  -- Znacznik na samym zamowieniu mowil tylko "cos wymaga rozmowy" i nie umial
+  -- powiedziec, co jeszcze zostalo: przy trzech pozycjach z jedna do ustalenia
+  -- caly zegar stal, a pracownia nie wiedziala, na co czeka.
+  requires_details   BOOLEAN NOT NULL DEFAULT FALSE,
+  details_settled_at TIMESTAMPTZ,
 
   created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );

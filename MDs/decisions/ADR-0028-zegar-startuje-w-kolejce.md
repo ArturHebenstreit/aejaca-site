@@ -99,7 +99,65 @@ Przy zleceniu oplaconym ostrzezenie nazywa rzecz po imieniu: platnosc zostaje
 bez zamowienia, wiec ksiegowosc i panel przestaja sie zgadzac, a zwykla droga
 jest anulowanie.
 
-### 7. Znacznik ustalen da sie poprawic w kolejce
+### 7. Ustalenia stoja przy POZYCJI, a zegar czeka na ostatnia z nich
+
+Uzupelnienie z 2026-08-30. Znacznik na zamowieniu mowil tylko "cos wymaga
+rozmowy" i nie umial powiedziec, co jeszcze zostalo: przy trzech pozycjach
+z jedna do ustalenia caly zegar stal, a pracownia nie wiedziala, na co czeka.
+
+Znacznik jedzie wiec z pozycji oferty do pozycji zamowienia i zamraza sie
+razem z cena. Kazda pozycja, ktora go ma, dostaje w panelu wlasne pole
+zaznaczane; pozycja bez wymogu nie dostaje go wcale, bo pytanie "czy ustalone"
+nie mialoby przy niej tresci. Zegar calego zamowienia rusza w chwili, gdy
+stempel ma juz kazda pozycja, ktora go wymagala.
+
+Odznaczenie dziala w druga strone i jest calym powodem, dla ktorego zegar da
+sie zatrzymac: klient odzywa sie z uwaga po tym, jak uznalismy temat za
+zamkniety, a termin liczony dalej bylby terminem na prace, ktorej nie mozemy
+zaczac. Zamowienie wraca wtedy do ustalen razem z terminem i sladem po
+przypomnieniach.
+
+Osobny przycisk "ustalenia domkniete" znika. Dwa miejsca robiace to samo
+rozjechalyby sie przy pierwszej pozycji, o ktorej ktos zapomni.
+
+### 8. Przycisk stoi pod przystankiem, NA KTORYM zlecenie stoi
+
+Poprawka do punktu 5, decyzja wlasciciela z 2026-08-30. Przycisk pod
+przystankiem docelowym czytal sie jako "co juz sie stalo". Teraz mowi, co
+mozna zrobic z miejsca, w ktorym zlecenie jest: pod "gotowe do pobrania"
+stoi "biore do realizacji", pod "w realizacji" stoi "zakonczone", a pola
+wysylki pojawiaja sie dopiero przy "gotowe do wysylki", bo dopiero wtedy
+jest co nadawac.
+
+Zaznaczenie "przekazane osobiscie" chowa numer przesylki: kurier wtedy nie
+jechal i nie ma czego sledzic. Sposob dostawy z zamowienia ustawia tylko stan
+poczatkowy tego pola, bo paczka bywa odbierana osobiscie mimo wybranego kuriera.
+
+### 9. Termin zmieniony po zaplacie niesie date ustalenia
+
+`lead_days` przychodzi z oplaconej oferty. Zmiana po zaplacie jest zmiana
+umowy, a nie poprawka literowki, wiec API zada `lead_days_agreed_at`, czyli
+daty maila, w ktorym klient sie zgodzil. Bez niej w bazie zostawalaby liczba,
+ktorej za pol roku nikt nie umie uzasadnic.
+
+### 10. Klient widzi os czasu, a nie sama date
+
+Strona zamowienia pokazywala termin i nic wiecej, a klient pyta przede
+wszystkim "co sie dzieje". Os stoi w pionie, bo strona zamowienia jest waska
+kolumna, a piec przystankow w poziomie lamalo podpisy na dwie linie.
+
+Etapy "gotowe do pobrania" i "w realizacji" sa dla klienta JEDNYM stanem:
+w obu zaplacil, przyjelismy i termin biegnie. Roznica jest wewnetrzna. Daty
+formatujemy z napisu, a nie przez `Intl`, bo dane ICU w Node i w przegladarce
+bywaja z roznych wersji, a rozjazd wyrzuca cale poddrzewo (ADR-0022).
+
+### 11. Link do zamowienia stoi w kolejce
+
+Ten sam adres, ktory poszedl mailem po zaplacie, z przyciskiem kopiowania,
+tak samo jak przy ofercie. Klient gubi maile, a bez zetonu strona zamowienia
+pyta go o numer i adres. Dotad jedyna droga bylo szukanie starej wiadomosci.
+
+### 12. Znacznik ustalen da sie poprawic w kolejce
 
 Zamraza sie przy zaplacie, ale zlecenia sprzed jego wprowadzenia go nie maja,
 a zdarza sie tez, ze rzecz wymagajaca rozmowy przeszla przez oferte bez niego.

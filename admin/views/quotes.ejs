@@ -173,18 +173,30 @@
                 <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDateShort(q.valid_until) %></td>
                 <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDate(q.created_at) %></td>
                 <td class="px-4 py-2.5 text-right whitespace-nowrap">
-                  <%# Edycja i usuwanie mieszkaja na stronie wyceny, a nie w wierszu:
+                  <%# Te same znaki co w Kolejce: olowek otwiera, krzyzyk usuwa.
+                      Jeden zestaw na caly panel, bo ten sam rysunek ma wszedzie
+                      znaczyc to samo. Zielony znak i strzalka powrotu pojawiaja
+                      sie tam, gdzie jest co zatwierdzic albo z czego sie wycofac,
+                      a wiersz wyceny prowadzi do osobnej strony i nie edytuje sie
+                      na miejscu.
+
+                      Edycja i usuwanie mieszkaja na stronie wyceny, a nie w wierszu:
                       obie potrzebuja pozycji i potwierdzenia, a tabela ich nie pokaze. %>
-                  <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>"
-                     class="text-neutral-400 hover:text-white text-xs">Edytuj</a>
-                  <%# Za oferta czesciowo zlecona stoja juz prawdziwe zamowienia,
-                      tak samo jak za zlecona w calosci, wiec skrot do usuwania
-                      znika z wiersza w obu przypadkach. %>
-                  <% if (q.status !== "converted" && q.status !== "partial") { %>
-                    <span class="text-neutral-700 mx-1">&middot;</span>
-                    <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>#usun"
-                       class="text-red-400/70 hover:text-red-300 text-xs">Usuń</a>
-                  <% } %>
+                  <div class="flex items-center justify-end gap-1">
+                    <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>"
+                       class="dymek p-1.5 rounded-lg border border-white/10 text-neutral-300 hover:border-white/35 hover:text-white transition-colors"
+                       data-dymek="Otwórz do edycji" title="Otwórz do edycji"
+                       aria-label="Edytuj <%= q.quote_ref %>"><%- IKONY.olowek %></a>
+                    <%# Za oferta czesciowo zlecona stoja juz prawdziwe zamowienia,
+                        tak samo jak za zlecona w calosci, wiec skrot do usuwania
+                        znika z wiersza w obu przypadkach. %>
+                    <% if (q.status !== "converted" && q.status !== "partial") { %>
+                      <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>#usun"
+                         class="dymek p-1.5 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors"
+                         data-dymek="Usuń wycenę" title="Usuń wycenę"
+                         aria-label="Usuń <%= q.quote_ref %>"><%- IKONY.krzyzyk %></a>
+                    <% } %>
+                  </div>
                 </td>
               </tr>
             <% }); %>

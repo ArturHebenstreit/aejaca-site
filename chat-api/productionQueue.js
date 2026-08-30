@@ -176,6 +176,37 @@ export function etapPoZaplacie(wymagaSzczegolow) {
 }
 
 /**
+ * Czy wszystkie ustalenia zamowienia sa domkniete.
+ *
+ * Znacznik stoi PRZY POZYCJI, a nie przy zamowieniu, bo to pozycja wymaga
+ * rozmowy: przy trzech rzeczach z jedna do ustalenia caly zegar stal, a nikt
+ * nie widzial, na co konkretnie czekamy.
+ *
+ * Zamowienie bez ani jednej pozycji z wymogiem jest domkniete od razu. To nie
+ * jest wyjatek, tylko ta sama regula policzona na pustym zbiorze: nie ma na co
+ * czekac, wiec zegar rusza z chwila zaplaty.
+ *
+ * @param {Array<{requires_details?: boolean, details_settled_at?: any}>} pozycje
+ * @returns {boolean}
+ */
+export function ustaleniaDomkniete(pozycje) {
+  return (pozycje || [])
+    .filter((i) => i?.requires_details === true)
+    .every((i) => Boolean(i?.details_settled_at));
+}
+
+/**
+ * Ile pozycji czeka jeszcze na ustalenia. Do zdania w panelu i w mailu:
+ * "czekamy na dwie rzeczy" mowi wiecej niz "czekamy".
+ *
+ * @param {Array} pozycje
+ * @returns {number}
+ */
+export function ileDoUstalenia(pozycje) {
+  return (pozycje || []).filter((i) => i?.requires_details === true && !i?.details_settled_at).length;
+}
+
+/**
  * Czy w tym etapie termin realizacji juz biegnie.
  *
  * @param {string} status status zamowienia

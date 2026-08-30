@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { sciezkaJezyka } from "../routes.js";
-import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck, CalendarClock } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -47,6 +47,113 @@ function TransferRow({ label, value, mono, highlight }) {
       <span className={`text-sm break-all ${mono ? "font-mono text-xs" : ""} ${highlight ? "text-blue-300 font-semibold" : "text-white"}`}>
         {value}
       </span>
+    </div>
+  );
+}
+
+
+// ============================================================
+// OS CZASU ZLECENIA
+// ============================================================
+// To samo, co widzi pracownia w panelu, tylko jezykiem klienta i bez etapow,
+// ktore sa nasza sprawa: "gotowe do pobrania" i "w realizacji" to dla niego
+// jeden stan, bo w obu zaplacil, przyjelismy i termin biegnie.
+//
+// Daty formatujemy z napisu, a nie przez `Intl`: dane ICU w Node i w
+// przegladarce bywaja z roznych wersji, a rozjazd na prerenderze wyrzuca cale
+// poddrzewo (ADR-0022). Z tego samego powodu nie liczymy tu nic z `Date.now()`:
+// `daysLeft` przychodzi policzone z serwera.
+function dzienZeStempla(wartosc) {
+  if (!wartosc) return null;
+  const iso = String(wartosc).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
+}
+
+function OsCzasu({ order, u, odbiorOsobisty }) {
+  if (!order) return null;
+
+  const kroki = [{ id: "paid", label: u.tlPaid, data: order.paidAt }];
+  if (order.requiresDetails) kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt });
+  kroki.push({ id: "work", label: u.tlProduction, data: order.queuedAt || order.productionStartedAt });
+  kroki.push({ id: "ready", label: u.tlReady, data: order.readyAt });
+  kroki.push({ id: "shipped", label: odbiorOsobisty ? u.tlHanded : u.tlShipped, data: order.shippedAt });
+
+  // Numer etapu, na ktorym stoi zlecenie. Jedna liczba zamiast piatki warunkow
+  // rozsianych po widoku: dzieki niej "przebyte" i "przed nami" liczy sie samo.
+  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 1, ready: 2, shipped: 3, completed: 3 };
+  const teraz = order.requiresDetails
+    ? { paid: 0, details: 1, queued: 2, in_production: 2, ready: 3, shipped: 4, completed: 4 }[order.status]
+    : gdzie[order.status];
+  const naEtapie = Number.isInteger(teraz) ? teraz : 0;
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-5 mb-4 text-left">
+      <div className="text-neutral-500 text-xs mb-4">{u.tlTitle}</div>
+
+      {/* Os idzie w DOL, a nie w bok. Strona zamowienia stoi w waskiej kolumnie
+          i piec przystankow ustawionych poziomo lamalo podpisy na dwie linie,
+          co wygladalo na scisniete, a nie na zamierzone. W pionie kazdy
+          przystanek ma cala szerokosc na nazwe i date. */}
+      <ol className="relative">
+        {kroki.map((k, i) => {
+          const przebyty = i < naEtapie;
+          const biezacy = i === naEtapie;
+          const kropka = biezacy
+            ? "border-amber-400 bg-amber-400 shadow-[0_0_0_5px_rgba(251,191,36,0.18)]"
+            : przebyty
+              ? "border-emerald-400 bg-emerald-400"
+              : "border-white/20 bg-neutral-900";
+          return (
+            <li key={k.id} className="relative flex gap-4 pb-5 last:pb-0">
+              {/* Kreska laczaca stoi POD kropka i konczy sie na ostatnim
+                  przystanku, zeby os nie wisiala w powietrzu. */}
+              {i < kroki.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-[5px] top-4 bottom-0 w-px ${przebyty ? "bg-emerald-400/40" : "bg-white/10"}`}
+                />
+              )}
+              <span className={`relative z-10 mt-1 w-3 h-3 shrink-0 rounded-full border-2 transition-colors ${kropka}`} />
+              <div className={`flex-1 min-w-0 flex items-baseline justify-between gap-3 ${biezacy ? "-mt-0.5" : ""}`}>
+                <span className={`text-sm leading-tight ${biezacy ? "text-amber-300 font-semibold" : przebyty ? "text-neutral-200" : "text-neutral-600"}`}>
+                  {k.label}
+                </span>
+                {dzienZeStempla(k.data) && (
+                  <span className="text-neutral-500 text-xs tabular-nums shrink-0">{dzienZeStempla(k.data)}</span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      {/* Termin domyka os, bo jest tym, do czego ona zmierza. Do chwili
+          domkniecia ustalen nie ma daty i mowimy to wprost, zamiast pokazywac
+          date, ktorej nikt nie obiecal. */}
+      <div className="mt-5 pt-4 border-t border-white/10 flex items-baseline justify-between gap-4">
+        <span className="text-neutral-500 text-xs">{u.tlDeadline}</span>
+        <span className="text-right">
+          {order.deadlineAt ? (
+            <>
+              <span className="text-white text-sm font-semibold tabular-nums">{dzienZeStempla(order.deadlineAt)}</span>
+              {order.daysLeft != null && (
+                <span className={`block text-xs ${order.daysLeft < 0 ? "text-amber-300" : "text-neutral-500"}`}>
+                  {order.daysLeft === 0
+                    ? u.daysToday
+                    : order.daysLeft < 0
+                      ? `${Math.abs(order.daysLeft)} ${Math.abs(order.daysLeft) === 1 ? u.dayUnit : u.daysUnit} ${u.daysOver}`
+                      : `${order.daysLeft} ${order.daysLeft === 1 ? u.dayUnit : u.daysUnit}`}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-neutral-400 text-sm">
+              {order.leadDays ? `${order.leadDays} ${u.daysUnit} ${u.tlAfterDetails}` : u.tlAfterDetails}
+            </span>
+          )}
+        </span>
+      </div>
     </div>
   );
 }
@@ -89,6 +196,15 @@ const UI = {
     lookupBad: "Numer wygląda tak: AE20260827-1F1AC35C albo WY20260825-A1B2C3D4",
     lookupNotFound: "Nie znaleźliśmy zamówienia o tym numerze albo dane się nie zgadzają",
     stageTitle: "Realizacja",
+    tlTitle: "Postęp zlecenia",
+    tlPaid: "Zapłacone",
+    tlDetails: "Ustalamy szczegóły",
+    tlProduction: "W realizacji",
+    tlReady: "Gotowe",
+    tlShipped: "Wysłane",
+    tlHanded: "Przekazane",
+    tlDeadline: "Termin",
+    tlAfterDetails: "po ustaleniach",
     stageDetails: "Ustalanie szczegółów zlecenia",
     stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich, więc nic Ci nie ucieka.",
     stageRunning: "Zlecenie w realizacji",
@@ -165,6 +281,15 @@ const UI = {
     lookupBad: "The number looks like this: AE20260827-1F1AC35C or WY20260825-A1B2C3D4",
     lookupNotFound: "We found no order with that number, or the details do not match",
     stageTitle: "Progress",
+    tlTitle: "Order progress",
+    tlPaid: "Paid",
+    tlDetails: "Agreeing details",
+    tlProduction: "In the workshop",
+    tlReady: "Finished",
+    tlShipped: "Dispatched",
+    tlHanded: "Handed over",
+    tlDeadline: "Due",
+    tlAfterDetails: "after the details",
     stageDetails: "Agreeing the details",
     stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that, so nothing is running out.",
     stageRunning: "In the workshop",
@@ -241,6 +366,15 @@ const UI = {
     lookupBad: "Die Nummer sieht so aus: AE20260827-1F1AC35C oder WY20260825-A1B2C3D4",
     lookupNotFound: "Wir haben keine Bestellung mit dieser Nummer gefunden, oder die Daten stimmen nicht überein",
     stageTitle: "Fortschritt",
+    tlTitle: "Auftragsfortschritt",
+    tlPaid: "Bezahlt",
+    tlDetails: "Details klären",
+    tlProduction: "In Arbeit",
+    tlReady: "Fertig",
+    tlShipped: "Versandt",
+    tlHanded: "Übergeben",
+    tlDeadline: "Termin",
+    tlAfterDetails: "nach den Absprachen",
     stageDetails: "Details werden abgestimmt",
     stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach, es geht Ihnen also nichts verloren.",
     stageRunning: "In der Werkstatt",
@@ -644,49 +778,17 @@ export default function OrderStatus() {
                 )
               )}
 
-              {/* TERMIN REALIZACJI.
+              {/* POSTEP ZLECENIA. Zastapil karte z sama data: klient pytal
+                  nie tylko "na kiedy", ale przede wszystkim "co sie dzieje",
+                  a na to sama data nie odpowiada. Termin domyka os, wiec
+                  wszystko stoi w jednym miejscu.
+
                   `daysLeft` przychodzi POLICZONE z serwera. Data liczona tutaj
                   wychodzi inna przy buildzie i inna u klienta, React uznaje to
                   za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
                   zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
-              {order && zaplacone && !shipped && !completed && (order.deadlineAt || order.leadDays) && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-4 text-left">
-                  <div className="flex items-center gap-2 text-neutral-500 text-xs mb-2">
-                    <CalendarClock className="w-3.5 h-3.5" /> {u.stageTitle}
-                  </div>
-                  {/* Zegar nie biegnie w ustalaniu szczegolow, wiec zamiast daty
-                      pokazujemy, ile czasu bedzie OD ustalen. Data byloby tu
-                      obietnica, ktorej nikt nie zlozyl. */}
-                  {etapSzczegolow && order.leadDays ? (
-                    <div className="flex justify-between gap-4">
-                      <span className="text-neutral-400">{u.leadLabel}</span>
-                      <span className="text-neutral-200 shrink-0">
-                        {order.leadDays} {u.leadFromStart}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      {order.deadlineAt && (
-                        <div className="flex justify-between gap-4">
-                          <span className="text-neutral-400">{u.deadlineLabel}</span>
-                          <span className="text-neutral-200 shrink-0 tabular-nums">{order.deadlineAt}</span>
-                        </div>
-                      )}
-                      {order.daysLeft != null && (
-                        <div className="flex justify-between gap-4 mt-1">
-                          <span className="text-neutral-400">{u.daysLeftLabel}</span>
-                          <span className={`shrink-0 ${order.daysLeft < 0 ? "text-amber-300" : "text-neutral-200"}`}>
-                            {order.daysLeft === 0
-                              ? u.daysToday
-                              : order.daysLeft < 0
-                                ? `${Math.abs(order.daysLeft)} ${Math.abs(order.daysLeft) === 1 ? u.dayUnit : u.daysUnit} ${u.daysOver}`
-                                : `${order.daysLeft} ${order.daysLeft === 1 ? u.dayUnit : u.daysUnit}`}
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+              {order && zaplacone && (
+                <OsCzasu order={order} u={u} odbiorOsobisty={odbiorOsobisty} />
               )}
 
               {/* Podsumowanie takie samo jak w mailu z potwierdzeniem: pozycje,
