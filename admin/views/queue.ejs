@@ -53,6 +53,17 @@
   // Etapy, w ktorych termin juz biegnie. Ta sama lista co w `productionQueue.js`,
   // bo panel i przypomnienia musza uwazac za spozniona te sama robote.
   const Z_ZEGAREM = ["queued", "in_production", "ready"];
+  // POPRZEDNI ETAP, czyli dokad wraca omylkowe klikniecie. Cofanie ma lustrzane
+  // odbicie w tym, co doprowadzilo do etapu: te ponizej wynikaja z przyciskow,
+  // wiec cofa je przycisk. Wejscie w "gotowe do pobrania" wynika z odhaczenia
+  // ustalen, wiec cofa je odznaczenie pozycji, a nie osobna strzalka. Dwa
+  // sposoby na to samo rozjechalyby sie przy pierwszej pozycji.
+  const COFNIJ_DO = {
+    in_production: "queued",
+    ready: "in_production",
+    shipped: "ready",
+    completed: "shipped",
+  };
   const zostalo = (o) => {
     if (o.daysLeft == null || !Z_ZEGAREM.includes(o.status)) return null;
     if (o.daysLeft < 0) return { tekst: Math.abs(o.daysLeft) + " dni po terminie", klasa: "text-red-300" };
@@ -264,6 +275,15 @@
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="in_production" />
+                                <%# Pytamy przy KAZDEJ zmianie etapu, zamiast wysylac z automatu:
+                                    mail przy kazdym ruchu zamienilby skrzynke klienta w dziennik
+                                    naszej pracy. Przy cofaniu pole jest puste, bo prostujemy
+                                    wtedy wlasna pomylke, o ktorej klient nie zdazyl sie dowiedziec. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="notify" value="1" checked
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
+                                </label>
                                 <button class="px-2.5 py-1.5 rounded-lg bg-amber-400 text-neutral-950 text-[11px] font-medium hover:bg-amber-300 transition-colors">
                                   Biorę do realizacji
                                 </button>
@@ -274,6 +294,15 @@
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="ready" />
+                                <%# Pytamy przy KAZDEJ zmianie etapu, zamiast wysylac z automatu:
+                                    mail przy kazdym ruchu zamienilby skrzynke klienta w dziennik
+                                    naszej pracy. Przy cofaniu pole jest puste, bo prostujemy
+                                    wtedy wlasna pomylke, o ktorej klient nie zdazyl sie dowiedziec. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="notify" value="1" checked
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
+                                </label>
                                 <button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
                                   <%- IKONY.fistaszek %> Zakończone
                                 </button>
@@ -290,6 +319,15 @@
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="space-y-2">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="shipped" />
+                                <%# Pytamy przy KAZDEJ zmianie etapu, zamiast wysylac z automatu:
+                                    mail przy kazdym ruchu zamienilby skrzynke klienta w dziennik
+                                    naszej pracy. Przy cofaniu pole jest puste, bo prostujemy
+                                    wtedy wlasna pomylke, o ktorej klient nie zdazyl sie dowiedziec. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="notify" value="1" checked
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
+                                </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                   <input type="checkbox" data-osobiscie="<%= o.orderRef %>" <%= o.delivery.method === "pickup" ? "checked" : "" %>
                                          class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
@@ -314,10 +352,49 @@
                               </form>
                             <% } %>
 
+                            <%# Cofniecie o jeden etap. Stoi przy przystanku,
+                                NA KTORYM zlecenie stoi, tak samo jak akcja do
+                                przodu, i uzywa tego samego znaku co "zostaw bez
+                                zmian": zawinieta strzalka znaczy w tym panelu
+                                powrot. Stemple etapow po docelowym znikaja, bo
+                                przestaly byc prawda: zlecenie cofniete z
+                                "wyslane" traci date wysylki i list przewozowy.
+                                Zamowienie zamkniete nie ma wlasnego przystanku
+                                na osi, wiec jego powrot stoi przy "wyslane". %>
+                            <% if (COFNIJ_DO[o.status] && (k.id === o.status || (o.status === "completed" && k.id === "shipped"))) { %>
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit" class="mt-2">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <input type="hidden" name="stage" value="<%= COFNIJ_DO[o.status] %>" />
+                                <%# Pytamy przy KAZDEJ zmianie etapu, zamiast wysylac z automatu:
+                                    mail przy kazdym ruchu zamienilby skrzynke klienta w dziennik
+                                    naszej pracy. Przy cofaniu pole jest puste, bo prostujemy
+                                    wtedy wlasna pomylke, o ktorej klient nie zdazyl sie dowiedziec. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="notify" value="1"
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Powiadom klienta o cofnięciu</span>
+                                </label>
+                                <button class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[11px] hover:bg-amber-400/10 transition-colors"
+                                        data-dymek="Cofnij do: <%= STAN[COFNIJ_DO[o.status]].label %>"
+                                        title="Cofnij do: <%= STAN[COFNIJ_DO[o.status]].label %>">
+                                  <%- IKONY.cofnij %> Cofnij etap
+                                </button>
+                              </form>
+                            <% } %>
+
                             <% if (k.id === "shipped" && o.status === "shipped") { %>
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="completed" />
+                                <%# Pytamy przy KAZDEJ zmianie etapu, zamiast wysylac z automatu:
+                                    mail przy kazdym ruchu zamienilby skrzynke klienta w dziennik
+                                    naszej pracy. Przy cofaniu pole jest puste, bo prostujemy
+                                    wtedy wlasna pomylke, o ktorej klient nie zdazyl sie dowiedziec. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="notify" value="1"
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
+                                </label>
                                 <button class="px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[11px] hover:border-white/35 transition-colors">
                                   Zamknij i schowaj
                                 </button>
@@ -380,6 +457,16 @@
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/details" class="shrink-0 flex items-center gap-3">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="settled" value="<%= it.detailsSettledAt ? '0' : '1' %>" />
+                                <%# Domkniecie OSTATNIEJ pozycji przestawia etap,
+                                    wiec pytanie stoi takze tutaj. Przy pozycji,
+                                    ktora nie jest ostatnia, zaznaczenie nic nie
+                                    wysyla: serwer pisze do klienta tylko wtedy,
+                                    gdy etap naprawde sie zmienil. %>
+                                <label class="flex items-center gap-1.5 cursor-pointer" title="Powiadom klienta, jeśli to domknie wszystkie ustalenia">
+                                  <input type="checkbox" name="notify" value="1" checked
+                                         class="w-3.5 h-3.5 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-500 text-[10px]">mail</span>
+                                </label>
                                 <%# Tresc ustalenia jedzie razem z kwadracikiem, bo
                                     to jedno zdarzenie: rozmowa skonczyla sie
                                     czyms konkretnym. Sama data mowi, ze rozmowa

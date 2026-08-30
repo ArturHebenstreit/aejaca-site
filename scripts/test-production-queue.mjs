@@ -368,7 +368,7 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
      "korekta sklada przypisania pod nazwa kolumny, wiec dwa zapisy sie nie zderzaja");
   // Parametr dolozony do zapytania i w nim nieuzyty wywala cale zapytanie na
   // "could not determine data type", wiec sprawdzamy to przed wpisaniem.
-  ma(SERWER, /const zegarWyzerowany = czyszczone\.includes\("deadline_at"\)[\s\S]{0,900}?dataZmieniona && !zegarWyzerowany/,
+  ma(SERWER, /const zegarWyzerowany = czyszczone\.includes\("deadline_at"\)[\s\S]{0,1600}?dataZmieniona && !zegarWyzerowany/,
      "cofniecie przed etap z zegarem wygrywa z obiema drogami do terminu");
   ma(SERWER, /dataZmieniona = termin !== undefined && termin !== terminWBazie/,
      "korekta wie, ktore pole terminu operator naprawde ruszyl");
@@ -380,6 +380,34 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
      "weryfikacja platnosci nie siega zlecenia, ktore juz jest w pracy");
   ma(SERWER, /WHERE id = \$1 AND fulfilled_at IS NULL AND status <> ALL\(\$4::text\[\]\)/,
      "FAILURE po udanej platnosci nie dopisuje sie do zlecenia w pracy");
+  // Kazdy etap, w ktory wpycha PRZYCISK, musi miec droge powrotna tym samym
+  // sposobem. Sekcja edycji wiersza zostala ograniczona do notatki i przez
+  // chwile jedynym kierunkiem bylo "do przodu": omylkowe klikniecie zostawalo
+  // na zawsze. Wejscie w kolejke wynika z odhaczenia ustalen i wraca
+  // odznaczeniem pozycji, wiec go tu nie ma i nie ma byc.
+  const COFANIE = KOLEJKA.match(/const COFNIJ_DO = \{([\s\S]*?)\};/)?.[1] || "";
+  for (const etap of ["in_production", "ready", "shipped", "completed"]) {
+    ma(COFANIE, new RegExp(`\\b${etap}:`), `z etapu ${etap} da sie cofnac jednym klikiem`);
+  }
+  ma(KOLEJKA, /COFNIJ_DO\[o\.status\][\s\S]{0,600}?name="stage" value="<%= COFNIJ_DO\[o\.status\] %>"/,
+     "przycisk cofania wysyla etap poprzedni, a nie dowolny");
+
+  // Powiadomienie klienta wychodzi WYLACZNIE na zyczenie pracowni. Automat
+  // przy kazdej zmianie zamienilby skrzynke klienta w dziennik naszej pracy,
+  // a przy cofnieciu omylkowego klikniecia wysylalby sprostowanie czegos,
+  // o czym klient nie zdazyl sie dowiedziec.
+  ma(SERWER, /req\.body\?\.notify === true \|\| req\.body\?\.notify === "1"/,
+     "powiadomienie klienta idzie tylko na zyczenie");
+  ma(SERWER, /status !== order\.status && \(req\.body\?\.notify/,
+     "odhaczenie pozycji pisze do klienta dopiero, gdy zmienilo etap");
+  ma(KOLEJKA, /name="notify" value="1" checked/, "przy ruchu do przodu pytanie jest domyslnie zaznaczone");
+  ma(KOLEJKA, /value="<%= COFNIJ_DO\[o\.status\] %>"[\s\S]{0,700}?name="notify" value="1"\n/,
+     "przy cofaniu pytanie jest domyslnie puste");
+  // Termin, ktorego jeszcze nie bylo, wpisuje sie bez daty ustalenia: to jest
+  // uzupelnienie braku, a nie zmiana obietnicy danej klientowi.
+  ma(SERWER, /dni !== null && order\.lead_days != null && !ustalonoDnia/,
+     "daty ustalenia zadamy dopiero przy ZMIANIE istniejacego terminu");
+
   ma(SERWER, /async function ruszZlecenie/, "zaplata ma czym ruszyc zlecenie");
   ma(SERWER, /AND status = 'paid' RETURNING id/, "start zlecenia da sie powtorzyc bez szkody");
   ma(SERWER, /cron\.schedule\("0 7 \* \* \*", przypomnijOTerminach/, "przeglad terminow jedzie raz na dobe");

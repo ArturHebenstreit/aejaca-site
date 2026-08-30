@@ -1640,6 +1640,7 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
         leadDays: req.body.leadDays ?? undefined,
         deadlineAt: req.body.deadlineAt ?? undefined,
         leadDaysAgreedAt: req.body.leadDaysAgreedAt ?? undefined,
+        notify: req.body.notify === "1",
       },
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
@@ -1673,7 +1674,7 @@ app.post("/queue/:ref/item/:id/details", requireAuth, async (req, res) => {
   try {
     const r = await shopApi(
       `/api/orders/${encodeURIComponent(req.params.ref)}/items/${encodeURIComponent(req.params.id)}/details`,
-      { method: "POST", body: { settled: req.body.settled === "1", note: req.body.note ?? undefined } }
+      { method: "POST", body: { settled: req.body.settled === "1", note: req.body.note ?? undefined, notify: req.body.notify === "1" } }
     );
     const ile = r.remaining > 0 ? `, zostało do ustalenia: ${r.remaining}` : ", wszystkie ustalenia domknięte";
     back(res, powrot, { msg: `${req.params.ref}: ${r.status}${ile}` });
@@ -1686,6 +1687,8 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
       method: "POST",
       body: {
         stage: req.body.stage,
+        // Powiadomienie klienta idzie tylko wtedy, gdy pracownia je zaznaczyla.
+        notify: req.body.notify === "1",
         trackingNumber: (req.body.trackingNumber || "").trim() || undefined,
         note: (req.body.note || "").trim() || undefined,
         // Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj, a zaznaczona

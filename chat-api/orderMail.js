@@ -929,6 +929,140 @@ function buildDetailsNudge(order, items, dniStania) {
   };
 }
 
+// ============================================================
+// POWIADOMIENIE O ZMIANIE ETAPU, DLA KLIENTA
+// ============================================================
+// Klient dostawal maila przy zaplacie i przy wysylce, a miedzy nimi cisza.
+// Zlecenie robione trzy tygodnie milczalo tyle samo, wiec pytanie "co sie
+// dzieje" wracalo do nas mailem i odpowiadal na nie czlowiek.
+//
+// Mail wychodzi WYLACZNIE wtedy, gdy pracownia go zaznaczy przy przestawianiu
+// etapu. Automat przy kazdej zmianie zamienilby skrzynke klienta w dziennik
+// naszej pracy, a cofniecie omylkowego klikniecia wysylaloby sprostowanie
+// czegos, o czym klient nie zdazyl sie dowiedziec.
+
+const SITE = (process.env.SITE_URL || "https://www.aejaca.com").replace(/\/$/, "");
+
+const ETAP_T = {
+  pl: {
+    subject: (ref) => `Twoje zamówienie ${ref}, aktualizacja`,
+    hi: "Dzień dobry,",
+    zamkniecie: "Pozdrawiamy,\nZespół AEJaCA",
+    podglad: "Podgląd zamówienia",
+    termin: (data) => `Planowana wysyłka: ${data}.`,
+    przesylka: (nr) => `Numer przesyłki: ${nr}.`,
+    stany: {
+      details: "wracamy do ustalania szczegółów Twojego zlecenia. Odezwiemy się z pytaniami, a czas realizacji w tym czasie nie biegnie.",
+      queued: "wszystkie ustalenia mamy komplet, zlecenie trafiło do kolejki pracowni i termin realizacji zaczął biec.",
+      in_production: "zabraliśmy się do pracy nad Twoim zleceniem.",
+      ready: "zlecenie jest gotowe. Pakujemy je i przygotowujemy do wysyłki albo do odbioru.",
+      shipped: "zlecenie wyszło z pracowni.",
+      completed: "zamówienie jest zamknięte. Dziękujemy i do zobaczenia.",
+    },
+  },
+  en: {
+    subject: (ref) => `Your order ${ref}, an update`,
+    hi: "Hello,",
+    zamkniecie: "Best regards,\nThe AEJaCA team",
+    podglad: "View your order",
+    termin: (data) => `Planned dispatch: ${data}.`,
+    przesylka: (nr) => `Tracking number: ${nr}.`,
+    stany: {
+      details: "we are going back to agreeing the details of your order. We will be in touch with questions, and the lead time does not run in the meantime.",
+      queued: "everything is agreed, your order has entered the workshop queue and the lead time has started.",
+      in_production: "we have started working on your order.",
+      ready: "your order is finished. We are packing it for dispatch or collection.",
+      shipped: "your order has left the workshop.",
+      completed: "your order is now closed. Thank you, and see you next time.",
+    },
+  },
+  de: {
+    subject: (ref) => `Ihre Bestellung ${ref}, Aktualisierung`,
+    hi: "Guten Tag,",
+    zamkniecie: "Mit freundlichen Grüßen,\nIhr AEJaCA-Team",
+    podglad: "Bestellung ansehen",
+    termin: (data) => `Geplanter Versand: ${data}.`,
+    przesylka: (nr) => `Sendungsnummer: ${nr}.`,
+    stany: {
+      details: "wir kehren zur Abstimmung der Details Ihres Auftrags zurück. Wir melden uns mit Fragen, die Lieferzeit läuft in dieser Zeit nicht.",
+      queued: "alle Absprachen sind vollständig, Ihr Auftrag ist in der Werkstattschlange und die Lieferzeit läuft.",
+      in_production: "wir haben mit der Arbeit an Ihrem Auftrag begonnen.",
+      ready: "Ihr Auftrag ist fertig. Wir verpacken ihn für den Versand oder die Abholung.",
+      shipped: "Ihr Auftrag hat die Werkstatt verlassen.",
+      completed: "Ihre Bestellung ist abgeschlossen. Vielen Dank und bis zum nächsten Mal.",
+    },
+  },
+};
+
+/**
+ * Mail do klienta o nowym etapie zlecenia.
+ *
+ * @returns {object|null} null, gdy o tym etapie nie ma czego pisac
+ */
+export function buildStatusUpdate(order) {
+  const l = ETAP_T[order.lang] || ETAP_T.pl;
+  const zdanie = l.stany[order.status];
+  if (!zdanie || !order.customer_email) return null;
+
+  const odbior = order.delivery_method === "pickup";
+  const tresc = order.status === "shipped" && odbior
+    ? zdanie.replace("wyszło z pracowni", "czeka na odbiór").replace("has left the workshop", "is ready for collection").replace("hat die Werkstatt verlassen", "steht zur Abholung bereit")
+    : zdanie;
+
+  const link = order.access_token
+    ? `${SITE}/order/status/?ref=${encodeURIComponent(order.order_ref)}&token=${encodeURIComponent(order.access_token)}`
+    : `${SITE}/order/status/`;
+
+  const linie = [
+    l.hi,
+    "",
+    tresc.charAt(0).toUpperCase() + tresc.slice(1),
+  ];
+  // Termin dopisujemy tylko tam, gdzie jeszcze cos znaczy: po wysylce jest
+  // juz historia, a w ustalaniu nie ma go wcale.
+  if (order.deadline_at && ["queued", "in_production", "ready"].includes(order.status)) {
+    linie.push("", l.termin(String(order.deadline_at).slice(0, 10)));
+  }
+  if (order.status === "shipped" && order.tracking_number) {
+    linie.push("", l.przesylka(order.tracking_number));
+  }
+  linie.push("", `${l.podglad}: ${link}`, "", l.zamkniecie);
+  const text = linie.join("\n");
+
+  return {
+    to: order.customer_email,
+    from: FROM,
+    subject: l.subject(order.order_ref),
+    text,
+    html: `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6;color:#222">
+      ${esc(text).replace(/\n/g, "<br/>").replace(esc(link), `<a href="${esc(link)}">${esc(link)}</a>`)}
+    </div>`,
+  };
+}
+
+/**
+ * Wysylka powiadomienia o etapie. Wolana TYLKO wtedy, gdy pracownia zaznaczyla
+ * to przy przestawianiu zlecenia.
+ *
+ * @returns {Promise<boolean>} czy mail naprawde wyszedl
+ */
+export async function sendStatusUpdate(pool, orderId) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT order_ref, status, lang, customer_email, access_token,
+              deadline_at, tracking_number, delivery_method
+         FROM orders WHERE id = $1`,
+      [orderId]
+    );
+    const wiadomosc = rows[0] ? buildStatusUpdate(rows[0]) : null;
+    if (!wiadomosc) return false;
+    return await sendViaGmail([wiadomosc]);
+  } catch (e) {
+    console.error("[etap] powiadomienie nie zostalo wyslane:", e.message);
+    return false;
+  }
+}
+
 /** Pozycje zamowienia w postaci, ktorej potrzebuja oba przypomnienia. */
 async function pozycjeZamowienia(pool, orderId) {
   const { rows } = await pool.query(
