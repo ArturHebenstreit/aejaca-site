@@ -58,6 +58,8 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Ustawienia: ${tech}, dysza ${nozzle} mm.` : `Ustawienia: ${tech}.`,
     nextBody:
       "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki lub odbioru. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+    nextBodyPliki:
+      "Pliki masz powyżej i są Twoje na zawsze. Nic nie wysyłamy i na nic nie czekasz. Gdyby link wygasł, zanim zdążysz pobrać, albo gdybyś potrzebował innego formatu, napisz do nas.",
     filesTitle: "Pliki do pobrania",
     filesIntro: (dni, ile) =>
       `Zamówione pliki są gotowe. Link działa ${dni} dni i wystarcza na ${ile} pobrań, więc spokojnie pobierz je od razu i zachowaj kopię. Paczka ZIP zawiera STL i 3MF: STL rozumie każdy program, a 3MF niesie jednostkę, więc drukarka nie pomyli milimetrów z calami.`,
@@ -133,6 +135,8 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Settings: ${tech}, ${nozzle} mm nozzle.` : `Settings: ${tech}.`,
     nextBody:
       "We are starting work. We will get in touch once your order is ready for shipping or collection. If anything in your order needs clarification, we will write to you earlier.",
+    nextBodyPliki:
+      "Your files are above and they are yours for good. Nothing is being shipped and there is nothing to wait for. If the link expires before you download them, or if you need another format, write to us.",
     filesTitle: "Your files",
     filesIntro: (dni, ile) =>
       `Your files are ready. The link is valid for ${dni} days and allows ${ile} downloads, so download them now and keep a copy. The ZIP holds an STL and a 3MF: every program reads STL, while 3MF carries the unit, so your printer will not mistake millimetres for inches.`,
@@ -208,6 +212,8 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Einstellungen: ${tech}, Düse ${nozzle} mm.` : `Einstellungen: ${tech}.`,
     nextBody:
       "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zum Versand oder zur Abholung bereit ist. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+    nextBodyPliki:
+      "Ihre Dateien stehen oben und gehören dauerhaft Ihnen. Es wird nichts versandt und Sie warten auf nichts. Falls der Link abläuft, bevor Sie sie geladen haben, oder Sie ein anderes Format brauchen, schreiben Sie uns.",
     filesTitle: "Ihre Dateien",
     filesIntro: (dni, ile) =>
       `Ihre Dateien sind fertig. Der Link gilt ${dni} Tage und erlaubt ${ile} Downloads, laden Sie sie also gleich herunter und bewahren Sie eine Kopie auf. Das ZIP enthält STL und 3MF: STL liest jedes Programm, 3MF trägt die Einheit, damit Ihr Drucker Millimeter nicht für Zoll hält.`,
@@ -300,7 +306,7 @@ function withdrawalParts(order, items, l) {
           .replace("{ref}", order.order_ref))
     : null;
 
-  return { paras, doWziecia: w.hasCovered, form };
+  return { paras, doWziecia: w.hasCovered, form, samePliki: w.single === REGIME.DIGITAL };
 }
 
 function esc(s) {
@@ -465,7 +471,7 @@ function customerHtml(order, items, lang) {
   const rows = items
     .map(
       (i) => `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(i.title)} &times; ${i.qty}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(i.title)}${i.qty > 1 ? ` &times; ${i.qty}` : ""}</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">${money(i.line_grosze)}</td>
       </tr>`
     )
@@ -513,7 +519,7 @@ function customerHtml(order, items, lang) {
     ` : ""}
 
     <h3 style="font-size:14px;margin:24px 0 6px">${l.next}</h3>
-    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.nextBody}</p>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${wd.samePliki ? l.nextBodyPliki : l.nextBody}</p>
 
     ${zmienioneWymiary.length ? `
       <h3 style="font-size:14px;margin:24px 0 6px">${l.dimsTitle}</h3>
@@ -555,7 +561,7 @@ function customerHtml(order, items, lang) {
 
 function customerText(order, items, lang) {
   const l = T[lang] || T.pl;
-  const lines = items.map((i) => `- ${i.title} x ${i.qty}: ${money(i.line_grosze)}`);
+  const lines = items.map((i) => `- ${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}: ${money(i.line_grosze)}`);
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
   const zmienioneWymiary = distortedItems(items, lang);
@@ -584,7 +590,7 @@ function customerText(order, items, lang) {
       l.filesNominal,
     ] : []),
     "",
-    `${l.next}: ${l.nextBody}`,
+    `${l.next}: ${wd.samePliki ? l.nextBodyPliki : l.nextBody}`,
     // Wersja tekstowa jest tym, co przeczyta klient z czytnikiem ekranu i to,
     // co zostaje, gdy klient wylaczy HTML. Zapis o zmienionych wymiarach
     // i o potwierdzonych uwagach musi byc w obu, inaczej dokumentacja

@@ -104,15 +104,25 @@ const EKRANY = {
     ),
   },
   "03": {
-    nazwa: "Potwierdzenie: zlecenie czeka na ustalenia, z plikami do pobrania",
+    nazwa: "Potwierdzenie: zlecenie czeka na ustalenia, zegar stoi",
     zbuduj: () => doKlienta(
       { ...ZAMOWIENIE, status: "details", requires_details: true, deadline_at: null,
-        delivery_method: "digital", shipping_grosze: 0,
-        items_total_grosze: 19000, total_grosze: 19000, paid_grosze: 19000, lead_days: 5 },
-      [PLIK("Pierścionek z kreatora, plik STL", 19000)]
+        delivery_method: "courier", shipping_grosze: 1949,
+        items_total_grosze: 89000, total_grosze: 90949, paid_grosze: 90949, lead_days: 14 },
+      [{ title: "Sygnet z grawerem, srebro 925", qty: 1, unit_grosze: 89000, line_grosze: 89000,
+         item_type: "service", calculator: "jewelry_plain", params: {} }]
     ),
   },
   "04": {
+    nazwa: "Potwierdzenie: zamowienie cyfrowe, plik do pobrania",
+    zbuduj: () => doKlienta(
+      { ...ZAMOWIENIE, delivery_method: "digital", shipping_grosze: 0,
+        items_total_grosze: 19000, total_grosze: 19000, paid_grosze: 19000,
+        lead_days: null, deadline_at: null },
+      [PLIK("Pierścionek z kreatora, plik STL", 19000)]
+    ),
+  },
+  "05": {
     nazwa: "Dane do przelewu SEPA, zamowienie w euro",
     zbuduj: () => buildTransferMessage(
       { ...ZAMOWIENIE, lang: "de", status: "pending", payment_method: "bank_transfer" },
@@ -121,31 +131,31 @@ const EKRANY = {
         reference: "AE20260830-BEDBA9E9", dueAt: "2026-09-02T00:00:00Z" }
     ),
   },
-  "05": { nazwa: "Etap: wracamy do ustalania szczegolow", zbuduj: () => naEtapie("details", { requires_details: true, deadline_at: null, details_at: "2026-08-30T11:00:00Z" }) },
-  "06": { nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce", zbuduj: () => naEtapie("queued") },
-  "07": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
-  "08": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
-  "09": {
+  "06": { nazwa: "Etap: wracamy do ustalania szczegolow", zbuduj: () => naEtapie("details", { requires_details: true, deadline_at: null, details_at: "2026-08-30T11:00:00Z" }) },
+  "07": { nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce", zbuduj: () => naEtapie("queued") },
+  "08": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
+  "09": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
+  "10": {
     nazwa: "Etap: wyslane, z numerem przesylki",
     zbuduj: () => naEtapie("shipped", {
       production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
       shipped_at: "2026-09-02T09:00:00Z", tracking_number: "620012345678901234567890",
     }),
   },
-  "10": {
+  "11": {
     nazwa: "Etap: zamowienie zamkniete",
     zbuduj: () => naEtapie("completed", {
       production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
       shipped_at: "2026-09-02T09:00:00Z",
     }),
   },
-  "11": {
+  "12": {
     nazwa: "Wycena zapisana z kalkulatora",
     zbuduj: () => buildQuoteMessage(WYCENA,
       [{ title: "Pierścionek z granatem, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "item", selected: true }],
       ADRES_WYCENY),
   },
-  "12": {
+  "13": {
     nazwa: "Oferta z wariantami do wyboru i dodatkiem",
     zbuduj: () => buildQuoteMessage({ ...WYCENA, total_grosze: 168000 }, [
       { title: "Pierścionek, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "variant", selected: true },

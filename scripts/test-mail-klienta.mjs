@@ -9,13 +9,13 @@
 // Ten sprawdzian SKLADA prawdziwe wiadomosci i oglada wynik. Regula na kodzie
 // przepuscilaby mail, ktory sie sklada, ale nic w nim nie ma.
 
-import {
-  buildRaw,
-  buildOrderMessages,
-  buildTransferMessage,
-  buildStatusUpdate,
-  buildQuoteMessage,
-} from "../chat-api/orderMail.js";
+// Adres API musi stac w srodowisku PRZED wczytaniem modulu, bo ten czyta go raz
+// przy starcie. Zwykly `import` wykonuje sie przed instrukcjami pliku, wiec
+// przypisanie obok byloby za pozne i sprawdzian skladalby maile z ostrzezeniem
+// o braku linku do plikow.
+process.env.API_URL ||= "https://api.aejaca.com";
+const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage } =
+  await import("../chat-api/orderMail.js");
 import { SELLER } from "../chat-api/pricing/sellerInfo.js";
 
 /** Adres serwisu. `sellerInfo` go nie niesie, a sklejanie z `SELLER.site`
@@ -171,6 +171,43 @@ console.log("\n4b. Wzor odstapienia jedzie zalacznikiem, nie tresc maila\n");
   for (const lang of ["en", "de"]) {
     ok((mail(zPolki, lang).attachments || []).length === 1, `${lang}: zalacznik tez jest`);
   }
+}
+
+console.log("\n4c. Zdanie \"co dalej\" pasuje do tego, co klient kupil\n");
+
+// "Odezwiemy sie, gdy zamowienie bedzie gotowe do wysylki" obiecywalo przesylke
+// takze przy zamowieniu, ktore w calosci jest plikiem: klient mial go juz
+// w tym samym mailu i czekal na cos, co nigdy nie mialo wyjsc.
+{
+  const plik = [{ title: "Pierścionek z kreatora, plik STL", qty: 1, unit_grosze: 19000, line_grosze: 19000,
+    item_type: "service", calculator: "jewelry_ring_config", params: { output: "mesh" },
+    download_token: "t0ken", download_max: 5 }];
+  const rzecz = [{ title: "Pierścionek", qty: 1, unit_grosze: 32000, line_grosze: 32000,
+    item_type: "product", product_kind: "physical", product_offer: "stock" }];
+  const tresc = (poz) => {
+    const m = buildOrderMessages(ZAMOWIENIE, poz, []).find((x) => x.to === ZAMOWIENIE.customer_email);
+    return `${m.html}\n${m.text}`;
+  };
+  ok(!/gotowe do wysyłki lub odbioru/.test(tresc(plik)),
+     "zamowienie cyfrowe nie obiecuje wysylki");
+  ok(/Pliki masz powyżej/.test(tresc(plik)), "mowi zamiast tego, ze pliki juz sa");
+  ok(/gotowe do wysyłki lub odbioru/.test(tresc(rzecz)),
+     "przy rzeczy do wyslania zdanie zostaje bez zmian");
+}
+
+console.log("\n4d. Ilosc tylko wtedy, gdy jest wieksza niz jedna\n");
+
+{
+  const jedna = [{ title: "Sygnet", qty: 1, unit_grosze: 32000, line_grosze: 32000,
+    item_type: "product", product_kind: "physical", product_offer: "stock" }];
+  const trzy = [{ ...jedna[0], qty: 3, line_grosze: 96000 }];
+  const tresc = (poz) => {
+    const m = buildOrderMessages(ZAMOWIENIE, poz, []).find((x) => x.to === ZAMOWIENIE.customer_email);
+    return `${m.html}\n${m.text}`;
+  };
+  ok(!/Sygnet(&times;| x ) ?1\b/.test(tresc(jedna)) && !/Sygnet &times; 1/.test(tresc(jedna)),
+     "przy jednej sztuce nie ma \"x 1\"");
+  ok(/&times; 3/.test(tresc(trzy)) && /x 3/.test(tresc(trzy)), "przy trzech sztukach ilosc widac");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");
