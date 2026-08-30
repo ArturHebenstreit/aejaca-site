@@ -348,6 +348,24 @@
                                   <input name="trackingNumber" placeholder="numer przesyłki"
                                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white font-mono" />
                                 </label>
+                                <%# Przewoznik idzie do klienta z nazwy i buduje odnosnik do
+                                    sledzenia, wiec jest wyborem z listy, a nie polem tekstowym.
+                                    Lista przychodzi z API razem z kolejka: druga kopia tutaj
+                                    rozjechalaby sie przy pierwszym nowym przewozniku. Strefa
+                                    podpowiada, kto zwykle wozi w tamta strone, ale strefy
+                                    swiatowe nosza dwie nazwy naraz, a paczka jedzie jedna. %>
+                                <% if ((przewoznicy || []).length) { %>
+                                  <label class="block" data-przesylka="<%= o.orderRef %>">
+                                    <span class="text-neutral-500 text-[10px] block mb-1">Przewoźnik</span>
+                                    <select name="carrier"
+                                            class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white">
+                                      <option value="">nie podaję</option>
+                                      <% przewoznicy.forEach(function (kto) { %>
+                                        <option value="<%= kto %>" <%= (o.carrier || o.carrierHint) === kto ? "selected" : "" %>><%= kto %></option>
+                                      <% }); %>
+                                    </select>
+                                  </label>
+                                <% } %>
                                 <label class="block">
                                   <span class="text-neutral-500 text-[10px] block mb-1">Data wysyłki lub przekazania</span>
                                   <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
@@ -681,11 +699,14 @@
       var osobiscie = e.target.closest("[data-osobiscie]");
       if (osobiscie) {
         var ref = osobiscie.getAttribute("data-osobiscie");
-        var blok = document.querySelector('[data-przesylka="' + ref + '"]');
-        if (blok) {
-          blok.classList.toggle("hidden", osobiscie.checked);
-          var input = blok.querySelector("input");
-          if (input && osobiscie.checked) input.value = "";
+        // Bloków przesylkowych jest dwa, numer i przewoznik, wiec chowamy
+        // WSZYSTKIE. `querySelector` brał pierwszy i przewoznik zostawal na
+        // ekranie przy przekazaniu osobistym, czyli tam, gdzie nikt nie wiezie.
+        var bloki = document.querySelectorAll('[data-przesylka="' + ref + '"]');
+        for (var b = 0; b < bloki.length; b++) {
+          bloki[b].classList.toggle("hidden", osobiscie.checked);
+          var pole = bloki[b].querySelector("input, select");
+          if (pole && osobiscie.checked) pole.value = "";
         }
       }
     });

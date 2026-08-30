@@ -109,6 +109,11 @@ CREATE TABLE IF NOT EXISTS orders (
   shipped_at            TIMESTAMPTZ,
   completed_at          TIMESTAMPTZ,
   tracking_number       VARCHAR(64),
+  -- Przewoznik wybrany przy nadaniu. Strefa wysylkowa mowi tylko, kto zwykle
+  -- wozi w tamta strone, a strefy swiatowe nosza dwie nazwy naraz ("DHL /
+  -- FedEx"), wiec bez tego pola mail do klienta spoza Europy musialby odsylac
+  -- do dwoch stron sledzenia naraz. Biala lista: pricing/shipping.js.
+  carrier               VARCHAR(40),
 
   -- TERMIN REALIZACJI (ADR-0027).
   --

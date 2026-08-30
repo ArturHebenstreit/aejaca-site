@@ -16,7 +16,7 @@
 // Reczne lustro zdazylo sie juz rozjechac z oryginalem, a te dane stoja
 // w pouczeniu o odstapieniu, wiec musza byc jedne.
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
-import { zoneForCountry } from "./pricing/shipping.js";
+import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from "./pricing/shipping.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
@@ -1242,32 +1242,27 @@ function drogaWydania(order) {
  * Kto wiezie przesylke i gdzie klient ja sprawdzi.
  *
  * Numer bez nazwy przewoznika i bez adresu, pod ktory da sie go wkleic, jest
- * dla klienta ciagiem dwudziestu czterech cyfr. Przewoznika bierzemy z tej
- * samej tabeli stref, ktora wycenila przesylke (`pricing/shipping.js`), wiec
- * nazwa nie moze sie rozjechac z tym, co klient zaplacil.
+ * dla klienta ciagiem dwudziestu czterech cyfr.
  *
- * Strefy swiatowe nosza dwoch przewoznikow naraz ("DHL / FedEx") i nie wiemy,
- * ktory pojechal. Wtedy nazywamy obu i odsylamy na strony sledzenia obu, bo
- * numer w reku i zadnego miejsca do jego wklejenia jest gorsze niz dwa adresy.
+ * Nazwa bierze sie z tego, co pracownia wybrala przy nadaniu (`carrier`).
+ * Dopoki tego pola nie ma, wraca stara droga: przewoznik ze strefy, ktora
+ * wycenila przesylke. Strefy swiatowe nosza dwie nazwy naraz ("DHL / FedEx"),
+ * wiec bez wyboru z panelu odsylamy do obu: numer w reku i zadnego miejsca do
+ * jego wklejenia jest gorsze niz dwa adresy.
  *
  * @returns {{nazwa: string, adresy: Array<{pokaz: string, href: string}>}|null}
  */
 function przewoznik(order, lang) {
   if (!order.tracking_number || drogaWydania(order) !== "ship") return null;
-  const numer = encodeURIComponent(order.tracking_number);
   const strefa = zoneForCountry(order.country || "PL");
   // Paczkomat stoi tylko w Polsce, wiec brak strefy nie zmienia przewoznika.
-  const nazwa = order.delivery_method === "inpost_locker" ? "InPost" : strefa?.carrier || null;
-  if (!nazwa) return null;
-
-  const dhlKraj = { pl: "pl-pl", en: "global-en", de: "de-de" }[lang] || "global-en";
-  const strony = {
-    InPost: [{ pokaz: "inpost.pl/sledzenie-przesylek", href: `https://inpost.pl/sledzenie-przesylek?number=${numer}` }],
-    DHL: [{ pokaz: "dhl.com", href: `https://www.dhl.com/${dhlKraj}/home/tracking.html?tracking-id=${numer}` }],
-    FedEx: [{ pokaz: "fedex.com", href: `https://www.fedex.com/fedextrack/?trknbr=${numer}` }],
-  };
-  const adresy = nazwa.split("/").map((cz) => cz.trim()).flatMap((kto) => strony[kto] || []);
-  return adresy.length ? { nazwa, adresy } : null;
+  const zNadania = order.delivery_method === "inpost_locker" ? "InPost" : order.carrier;
+  const nazwy = przewoznicyZNazwy(zNadania || strefa?.carrier);
+  if (!nazwy.length) return null;
+  const adresy = nazwy
+    .map((kto) => ({ pokaz: sledzenieDomena(kto), href: sledzenieUrl(kto, order.tracking_number, lang) }))
+    .filter((a) => a.href);
+  return adresy.length ? { nazwa: nazwy.join(" / "), adresy } : null;
 }
 
 /**
@@ -1411,7 +1406,7 @@ export async function sendStatusUpdate(pool, orderId) {
   try {
     const { rows } = await pool.query(
       `SELECT order_ref, status, lang, customer_email, access_token,
-              deadline_at, tracking_number, delivery_method, country, requires_details,
+              deadline_at, tracking_number, carrier, delivery_method, country, requires_details,
               paid_at, details_at, queued_at, production_started_at, ready_at, shipped_at,
               completed_at
          FROM orders WHERE id = $1`,

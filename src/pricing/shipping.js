@@ -175,3 +175,48 @@ export function shippingOptions(country = "PL", itemsTotalGrosze = 0) {
     }))
     .filter((o) => o.grosze !== null);
 }
+
+// ------------------------------------------------------------
+// PRZEWOZNIK PRZY NADANIU
+// ------------------------------------------------------------
+// Strefa mowi, kto zwykle wozi w tamtym kierunku, ale strefy swiatowe nosza
+// dwie nazwy naraz ("DHL / FedEx"), a paczka jedzie jedna. Pracownia wybiera
+// przewoznika przy nadaniu, i to ta nazwa idzie do klienta. Lista stoi tutaj,
+// przy strefach, zeby nazwa z panelu i nazwa z cennika byly tym samym napisem.
+
+/** Przewoznicy, ktorych umiemy nazwac i do ktorych umiemy odeslac klienta. */
+export const PRZEWOZNICY = ["InPost", "DHL", "FedEx"];
+
+/**
+ * Nazwy przewoznikow z pola strefy albo z zamowienia. Strefa swiatowa trzyma
+ * dwie nazwy w jednym napisie, wiec rozbijamy je na liste.
+ */
+export function przewoznicyZNazwy(nazwa) {
+  return String(nazwa || "")
+    .split("/")
+    .map((cz) => cz.trim())
+    .filter((cz) => PRZEWOZNICY.includes(cz));
+}
+
+/**
+ * Adres, pod ktorym klient sprawdzi swoja przesylke, albo null.
+ *
+ * Jedno miejsce dla maila i dla strony zamowienia: dwa razy zapisany adres
+ * rozjechalby sie przy pierwszej zmianie po stronie przewoznika, a rozjazd
+ * widac dopiero wtedy, gdy klient klika i trafia donikad.
+ */
+export function sledzenieUrl(przewoznik, numer, lang = "pl") {
+  if (!numer || !PRZEWOZNICY.includes(przewoznik)) return null;
+  const nr = encodeURIComponent(numer);
+  if (przewoznik === "InPost") return `https://inpost.pl/sledzenie-przesylek?number=${nr}`;
+  if (przewoznik === "FedEx") return `https://www.fedex.com/fedextrack/?trknbr=${nr}`;
+  const kraj = { pl: "pl-pl", en: "global-en", de: "de-de" }[lang] || "global-en";
+  return `https://www.dhl.com/${kraj}/home/tracking.html?tracking-id=${nr}`;
+}
+
+/** Adres przewoznika bez numeru, do pokazania w tekscie odnosnika. */
+export function sledzenieDomena(przewoznik) {
+  if (przewoznik === "InPost") return "inpost.pl/sledzenie-przesylek";
+  if (przewoznik === "FedEx") return "fedex.com";
+  return "dhl.com";
+}

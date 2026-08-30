@@ -196,8 +196,41 @@ stylistycznej.
 w tym samym mailu. Zegar przypomnien to osobna sprawa i dalej obejmuje `ready`
 (punkt 3): pracownia ma wiedziec, ze spakowana paczka nie jedzie.
 
+### 14. Doreczenie jest przystankiem, a przewoznika wybiera pracownia
+
+Decyzja wlasciciela z 2026-08-30, poprawka do punktu 5.
+
+**Ostatnia kropka zapala sie dopiero po potwierdzeniu.** "Wyslane" i
+"zamkniete" dzielily jeden przystanek, wiec paczka wlozona do paczkomatu
+wygladala tak samo jak paczka odebrana, a droga klienta nigdy nie konczyla sie
+na zielono. Doreczenie ma wlasny przystanek ("Dostarczone", przy odbiorze
+osobistym "Odebrane") ze stemplem `completed_at`, na osi klienta, w mailu
+i w panelu. Potwierdzenie zapala CALA os: ostatni przystanek jako "biezacy"
+swiecilby na bursztynowo, czyli mowilby "trwa" o czyms, co juz sie stalo.
+Przycisk w panelu nazywa sie "Dostarczone", a nie "Zakonczone": pracownia ma
+wiedziec, co potwierdza, bo to jest widoczne dla klienta.
+
+**Przewoznika wybiera sie przy nadaniu.** Sam numer przesylki jest dla klienta
+ciagiem dwudziestu czterech cyfr. Strefa wysylkowa mowi, kto zwykle wozi w tamta
+strone, ale strefy swiatowe nosza dwie nazwy naraz ("DHL / FedEx"), a paczka
+jedzie jedna. Kolumna `carrier` trzyma nazwe wybrana w panelu, biala lista stoi
+przy strefach (`pricing/shipping.js`), a adres sledzenia buduje jeden pomocnik
+uzywany i przez mail, i przez strone zamowienia. Bez wyboru wraca podpowiedz ze
+strefy, a przy dwoch nazwach odsylamy do obu: numer w reku i zadnego miejsca do
+jego wklejenia jest gorsze niz dwa adresy.
+
+Cofniecie sprzed wysylki kasuje przewoznika razem z numerem: obie rzeczy opisuja
+przesylke, ktorej juz nie ma.
+
 ## Alternatywy i powody odrzucenia
 
+- **Przewoznik z samej strefy wysylkowej, bez pola w panelu.** Dziala dla
+  Polski i Europy, ale strefy swiatowe nosza dwie nazwy naraz i klient
+  z Australii dostawalby dwa adresy sledzenia zamiast jednego wlasciwego.
+  Zostaje jako droga zapasowa, gdy pracownia nie wybrala nic.
+- **Przewoznik jako pole tekstowe.** Napis wpisany z reki przechodzi zapis
+  i po cichu nie daje zadnego odnosnika, bo z nazwy budujemy adres. Biala lista
+  odrzuca literowke od razu.
 - **Rozgalezienie samej etykiety terminu** ("Planowana wysylka" przy kurierze,
   "Gotowe do odbioru" przy odbiorze). Dwie nazwy jednej daty w mailu, na stronie
   zamowienia i w panelu, a przy zamowieniu cyfrowym zadna z nich nie pasuje.
@@ -259,6 +292,6 @@ w tym samym mailu. Zegar przypomnien to osobna sprawa i dalej obejmuje `ready`
 
 ## Synchronizacja
 
-- `scripts/orders-schema.sql`: kolumna `queued_at`, status `queued`, indeksy.
+- `scripts/orders-schema.sql`: kolumny `queued_at` i `carrier`, status `queued`, indeksy.
 - `PROJECT_RULES.md`: sekcja o terminie realizacji.
 - `CLAUDE.md`, `AGENTS.md`: regula zglaszania nielogicznosci przed kodem.

@@ -25,7 +25,7 @@ import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
 import { MATERIAL_CORRECTIONS } from "./pricing/materialCorrections.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from "./pricing/currency.js";
-import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
+import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry, PRZEWOZNICY } from "./pricing/shipping.js";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
   listProducts, getProduct, reserveProduct, consumeReservations,
@@ -406,6 +406,10 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`).catch(() => {});
+  // Przewoznik wybrany przy nadaniu. Strefa mowi tylko, kto zwykle wozi w tamta
+  // strone, a strefy swiatowe nosza dwie nazwy naraz, wiec bez tego pola mail
+  // do klienta z Australii musialby odsylac do dwoch stron sledzenia.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
   // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
@@ -4139,7 +4143,7 @@ app.get("/api/orders/queue", async (req, res) => {
             o.customer_email, o.customer_name, o.customer_phone,
             o.delivery_method, o.delivery_point, o.address_line1, o.address_line2,
             o.postal_code, o.city, o.country,
-            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.completed_at,
+            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.completed_at, o.carrier,
             o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
             o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
@@ -4209,6 +4213,12 @@ app.get("/api/orders/queue", async (req, res) => {
     shippedAt: o.shipped_at,
     completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
+    carrier: o.carrier || null,
+    // Podpowiedz ze strefy, ktora wycenila przesylke. Paczkomat stoi tylko
+    // w Polsce, wiec tam przewoznik jest znany bez pytania.
+    carrierHint: o.delivery_method === "inpost_locker"
+      ? "InPost"
+      : zoneForCountry(o.country || "PL")?.carrier || null,
     productionNote: o.production_note,
     delivery: {
       method: o.delivery_method, point: o.delivery_point,
@@ -4219,7 +4229,10 @@ app.get("/api/orders/queue", async (req, res) => {
   }));
 
   const counts = orders.reduce((acc, o) => ({ ...acc, [o.status]: (acc[o.status] || 0) + 1 }), {});
-  res.json({ ok: true, orders, counts, sort });
+  // Lista przewoznikow jedzie razem z kolejka, zeby panel nie trzymal wlasnej
+  // kopii. Dwie listy rozjechalyby sie przy pierwszym nowym przewozniku, a
+  // rozjazd widac dopiero wtedy, gdy zapis wraca bledem "przewoznik spoza listy".
+  res.json({ ok: true, orders, counts, sort, przewoznicy: PRZEWOZNICY });
 });
 
 /**
@@ -4250,6 +4263,12 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   }
 
   const numer = req.body?.trackingNumber ? String(req.body.trackingNumber).trim().slice(0, 64) : null;
+  // Przewoznik z bialej listy, bo z nazwy budujemy adres sledzenia. Napis
+  // wpisany z reki przeszedlby zapis i po cichu nie dalby zadnego odnosnika.
+  const kurier = req.body?.carrier ? String(req.body.carrier).trim() : null;
+  if (kurier && !PRZEWOZNICY.includes(kurier)) {
+    return res.status(400).json({ error: `Przewoznik spoza listy: ${PRZEWOZNICY.join(", ")}`, code: "bad_carrier" });
+  }
   const notatka = req.body?.note ? String(req.body.note).slice(0, 2000) : null;
   // Data wysylki podana z reki, bo paczka bywa nadana wczoraj, a zaznaczona
   // dzisiaj. Bez tego termin realizacji wygladalby na przekroczony o dzien.
@@ -4270,11 +4289,12 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
         SET status = $2,
             ${regula.pole} = COALESCE(${regula.pole}, $6::timestamptz, NOW()),
             tracking_number = COALESCE($3, tracking_number),
+            carrier = COALESCE($7, carrier),
             production_note = COALESCE($4, production_note)
             ${rusza ? ", deadline_at = COALESCE(deadline_at, (COALESCE($6::timestamptz, NOW()) + (lead_days || ' days')::interval)::date)" : ""}
       WHERE id = $1 AND status = ANY($5::text[])
       RETURNING status, ${regula.pole} AS stempel, deadline_at`,
-    [order.id, etap, numer, notatka, regula.z, dzien || null]
+    [order.id, etap, numer, notatka, regula.z, dzien || null, kurier]
   );
   if (!zmiana.rowCount) {
     return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
@@ -4413,7 +4433,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     }
     // Cofniecie sprzed wysylki zabiera tez list przewozowy, bo nie ma czego
     // sledzic. Jawny numer w tym samym zadaniu i tak wygra, bo idzie nizej.
-    if (czyszczone.includes("shipped_at")) ustaw("tracking_number", "NULL");
+    if (czyszczone.includes("shipped_at")) { ustaw("tracking_number", "NULL"); ustaw("carrier", "NULL"); }
   }
 
   if (numer !== undefined) ustaw("tracking_number", parametr(numer));
@@ -5221,7 +5241,7 @@ app.get("/api/orders/:ref", async (req, res) => {
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
             amount_eur_cents, transfer_confirmed_at,
-            shipped_at, completed_at, tracking_number
+            shipped_at, completed_at, tracking_number, carrier, country
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -5297,6 +5317,11 @@ app.get("/api/orders/:ref", async (req, res) => {
     // Bez niego droga konczy sie na "wyslane" i nigdy nie robi sie zielona.
     completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
+    // Sam numer przesylki jest dla klienta ciagiem cyfr. Nazwa przewoznika
+    // pozwala stronie zbudowac odnosnik do sledzenia, tak samo jak robi to mail.
+    carrier: o.delivery_method === "inpost_locker"
+      ? "InPost"
+      : o.carrier || zoneForCountry(o.country || "PL")?.carrier || null,
     ...publicPaymentState(o),
     // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie
     // o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.

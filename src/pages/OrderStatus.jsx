@@ -12,6 +12,7 @@ import { sciezkaJezyka } from "../routes.js";
 import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
+import { przewoznicyZNazwy, sledzenieUrl } from "../pricing/shipping.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
   forgetOrderAccessToken,
@@ -72,7 +73,7 @@ function dzienZeStempla(wartosc) {
   return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 }
 
-function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
+function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   if (!order) return null;
 
   // Pozycje, na ktorych ustalenia jeszcze czekamy. Klient ma prawo wiedziec,
@@ -84,6 +85,12 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
 
   // Pozycje z ustaleniami juz domknietymi, do wypisania pod terminem.
   const ustalone = (order.items || []).filter((i) => i.requiresDetails && i.detailsSettled);
+
+  // Przewoznik przychodzi z API: pracownia wybiera go przy nadaniu, a gdy nie
+  // wybrala, API podstawia przewoznika ze strefy wysylkowej.
+  const sledzenieKlienta = przewoznicyZNazwy(order.carrier)
+    .map((kto) => ({ kto, href: sledzenieUrl(kto, order.trackingNumber, lang) }))
+    .filter((sl) => sl.href);
 
   const kroki = [{ id: "paid", label: u.tlPaid, data: order.paidAt }];
   if (order.requiresDetails) {
@@ -252,7 +259,18 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
           {order.trackingNumber && (
             <div className="flex items-baseline justify-between gap-3 text-xs">
               <span className="text-neutral-500">{u.trackingLabel}</span>
-              <span className="text-neutral-200 font-mono text-right">{order.trackingNumber}</span>
+              <span className="text-right">
+                <span className="text-neutral-200 font-mono block">{order.trackingNumber}</span>
+                {/* Sam numer jest dla klienta ciagiem cyfr. Adres sledzenia
+                    budujemy tym samym pomocnikiem co mail, zeby jedno miejsce
+                    zmieniane po stronie przewoznika poprawialo oba. */}
+                {sledzenieKlienta.map((sl) => (
+                  <a key={sl.href} href={sl.href} target="_blank" rel="noopener noreferrer"
+                     className="text-amber-300 hover:text-amber-200 underline underline-offset-2 ml-2">
+                    {sl.kto}
+                  </a>
+                ))}
+              </span>
             </div>
           )}
         </div>
@@ -965,7 +983,7 @@ export default function OrderStatus() {
                   za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
                   zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
               {order && zaplacone && (
-                <OsCzasu order={order} u={u} odbiorOsobisty={odbiorOsobisty}
+                <OsCzasu order={order} u={u} lang={lang} odbiorOsobisty={odbiorOsobisty}
                          zaplacone={zaplacone} nazwaDostawy={nazwaDostawy} />
               )}
 

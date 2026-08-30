@@ -179,6 +179,13 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
 - **Zdanie o wydaniu bierze się z `delivery_method`**, a nie wylicza klientowi
   obu możliwości naraz i nie podmienia słów w gotowym tekście. Trzy drogi:
   wysyłka, odbiór osobisty, pliki. Decyzja: ADR-0028, punkt 13.
+- **Ostatni przystanek zapala się dopiero po potwierdzeniu doręczenia.**
+  Paczka włożona do paczkomatu to jeszcze nie paczka odebrana. Przycisk
+  w panelu nazywa się „Dostarczone", bo pracownia ma wiedzieć, co potwierdza.
+- **Przewoźnika wybiera się przy nadaniu, z białej listy** (`pricing/shipping.js`).
+  Strefa tylko podpowiada, bo strefy światowe niosą dwie nazwy naraz, a paczka
+  jedzie jedna. Adres śledzenia buduje jeden pomocnik, wspólny dla maila
+  i strony zamówienia. Decyzja: ADR-0028, punkt 14.
 - **Próg przypomnienia zapisuje się dopiero po udanej wysyłce maila.** Zapis
   przed nią zamyka próg na zawsze przy pierwszej awarii poczty, po cichu.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.

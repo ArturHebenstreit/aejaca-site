@@ -245,6 +245,9 @@ console.log("\n4e. Numer przesylki: odnosnik tylko tam, gdzie znamy przewoznika\
      "strefa swiatowa nosi dwoch przewoznikow, wiec odsylamy do obu");
   ok(/inpost\.pl/.test(caly(wyslane({ delivery_method: "courier", country: "PL" }))),
      "kurier krajowy: to InPost, wiec odnosnik jest");
+  ok(/fedex\.com/.test(caly(wyslane({ delivery_method: "courier", country: "AU", carrier: "FedEx" })))
+     && !/dhl\.com/.test(caly(wyslane({ delivery_method: "courier", country: "AU", carrier: "FedEx" }))),
+     "przewoznik wybrany przy nadaniu wygrywa z podpowiedzia ze strefy");
   const odbior = caly(wyslane({ delivery_method: "pickup", country: "PL" }));
   ok(!/620012345678901234567890/.test(odbior),
      "odbior osobisty: zaden list przewozowy, bo paczka nigdzie nie jechala");

@@ -1630,6 +1630,9 @@ app.get("/queue", requireAuth, async (req, res) => {
     }));
     res.render("queue", {
       user: req.user, orders, counts: dane.counts,
+      // Lista przewoznikow jest API, nie panelu. Gdy jej nie ma (starsze API),
+      // pole wyboru sie nie rysuje, a mail wraca do podpowiedzi ze strefy.
+      przewoznicy: dane.przewoznicy || [],
       stan, sort: dane.sort || "newest", msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
@@ -1710,6 +1713,9 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         // Powiadomienie klienta idzie tylko wtedy, gdy pracownia je zaznaczyla.
         notify: req.body.notify === "1",
         trackingNumber: (req.body.trackingNumber || "").trim() || undefined,
+        // Przewoznik wybrany przy nadaniu. Puste znaczy "nie podaje", i wtedy
+        // mail wraca do podpowiedzi ze strefy wysylkowej.
+        carrier: (req.body.carrier || "").trim() || undefined,
         note: (req.body.note || "").trim() || undefined,
         // Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj, a zaznaczona
         // dzisiaj, i wtedy termin realizacji wygladalby na przekroczony o dzien.
