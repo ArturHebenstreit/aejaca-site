@@ -14,7 +14,8 @@
 // przypisanie obok byloby za pozne i sprawdzian skladalby maile z ostrzezeniem
 // o braku linku do plikow.
 process.env.API_URL ||= "https://api.aejaca.com";
-const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage } =
+const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
+        buildTopUpRequest, buildOrderExpired } =
   await import("../chat-api/orderMail.js");
 import { SELLER } from "../chat-api/pricing/sellerInfo.js";
 
@@ -323,6 +324,50 @@ console.log("\n4h. Zapisana wycena i oferta od nas to dwie rozne wiadomosci\n");
   ok(/^Oferta WY/.test(oferta.temat), "oferta: temat mowi o ofercie");
   ok(/Zamówienie powstaje dopiero wtedy, gdy opłacisz/.test(oferta.caly),
      "oferta: mowi, kiedy powstaje zamowienie");
+}
+
+console.log("\n4i. Trzy sytuacje po przelewie w euro\n");
+
+// Zamowienie w euro zamykalo sie po cichu, a roznica miedzy wplata a kwota
+// zamowienia nie mowila klientowi nic. To sa jego pieniadze.
+{
+  const PRZELEW = { iban: "PL00", bic: "BIC", holder: "AEJaCA", bank: "Bank", reference: "AE-TEST" };
+  // Jezyk wprost: bez niego `buildTopUpRequest` slusznie wraca do angielskiego,
+  // a sprawdzian szukalby polskich zdan w angielskim mailu.
+  const bazowe = { ...ZAMOWIENIE, lang: "pl", payment_method: "bank_transfer", amount_eur_cents: 7800 };
+  const caly = (m) => `${m.html}\n${m.text}`;
+
+  const doplata = caly(buildTopUpRequest(
+    { ...bazowe, transfer_received_cents: 7300, expires_at: "2026-09-02" }, PRZELEW, 500));
+  ok(/73\.00 EUR/.test(doplata) && /78\.00 EUR/.test(doplata) && /5\.00 EUR/.test(doplata),
+     "prosba o doplate podaje wplacone, nalezne i brakujace");
+  ok(/02\.09\.2026/.test(doplata), "prosba o doplate niesie date, do ktorej czekamy");
+  ok(/odsyłamy w całości na rachunek/.test(doplata),
+     "prosba mowi, co sie stanie po terminie, a nie tylko straszy terminem");
+  ok(/AE-TEST/.test(doplata), "doplata idzie z tym samym tytulem przelewu");
+
+  const pusto = caly(buildOrderExpired({ ...bazowe, transfer_received_cents: null }));
+  ok(/nie dotarła w terminie/.test(pusto), "wygasniecie bez wplaty mowi wprost, dlaczego");
+  ok(/zwrócimy go na rachunek nadawcy/.test(pusto),
+     "klient wie, ze przelew wyslany po terminie do niego wroci");
+
+  const czesc = caly(buildOrderExpired({ ...bazowe, transfer_received_cents: 7300 }));
+  ok(/Otrzymane 73\.00 EUR odsyłamy/.test(czesc), "przy czesciowej wplacie mowimy o zwrocie kwoty");
+  ok(!/zwrócimy go na rachunek nadawcy/.test(czesc),
+     "zdanie o przelewie po terminie nie ma sensu, gdy pieniadze juz sa i wracaja");
+
+  const zNadplata = buildOrderMessages({ ...bazowe, transfer_received_cents: 8000 }, POZYCJE, [])
+    .find((m) => m.to === ZAMOWIENIE.customer_email);
+  ok(/2\.00 EUR więcej/.test(caly(zNadplata)) && /Nadwyżkę odsyłamy/.test(caly(zNadplata)),
+     "potwierdzenie przy nadplacie mowi o zwrocie roznicy");
+  const zDrobna = buildOrderMessages({ ...bazowe, transfer_received_cents: 7770 }, POZYCJE, [])
+    .find((m) => m.to === ZAMOWIENIE.customer_email);
+  ok(/0\.30 EUR mniej/.test(caly(zDrobna)) && /Różnicę bierzemy na siebie/.test(caly(zDrobna)),
+     "przy drobnej niedoplacie mowimy, ze roznice pokrywamy my");
+  const rowno = buildOrderMessages({ ...bazowe, transfer_received_cents: 7800 }, POZYCJE, [])
+    .find((m) => m.to === ZAMOWIENIE.customer_email);
+  ok(!/Nadwyżkę|bierzemy na siebie/.test(caly(rowno)),
+     "przy kwocie zgodnej nie ma o czym pisac i nie piszemy");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");

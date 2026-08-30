@@ -25,7 +25,8 @@ import { readFileSync } from "node:fs";
 // pliku, wiec przypisanie wyzej bylo za pozne i sekcja z plikami do pobrania
 // nie rysowala sie w ogole. Stad wczytanie dynamiczne.
 process.env.API_URL ||= "https://api.aejaca.com";
-const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage } =
+const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
+        buildTopUpRequest, buildOrderExpired } =
   await import("../chat-api/orderMail.js");
 
 const KORZEN = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -183,6 +184,44 @@ const EKRANY = {
       production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
       shipped_at: "2026-09-02T09:00:00Z", completed_at: "2026-09-04T10:00:00Z",
     }),
+  },
+  // Trzy sytuacje po przelewie (zadanie #31): kwota zgodna zalatwiona jest
+  // ekranem 01, tutaj stoja dwie pozostale.
+  "05b": {
+    nazwa: "Wplynelo mniej: prosba o doplate, 3 dni",
+    zbuduj: () => buildTopUpRequest(
+      { ...ZAMOWIENIE, status: "awaiting_transfer", payment_method: "bank_transfer",
+        amount_eur_cents: 7800, transfer_received_cents: 7300,
+        transfer_asked_at: "2026-08-30T10:00:00Z", expires_at: "2026-09-02T10:00:00Z" },
+      { iban: process.env.TRANSFER_IBAN_EUR || "TRANSFER_IBAN_EUR (zmienna nieustawiona)",
+        bic: process.env.TRANSFER_BIC || "TRANSFER_BIC",
+        holder: process.env.TRANSFER_ACCOUNT_HOLDER || "TRANSFER_ACCOUNT_HOLDER",
+        bank: process.env.TRANSFER_BANK_NAME || "TRANSFER_BANK_NAME",
+        reference: "AE20260830-BEDBA9E9" },
+      500
+    ),
+  },
+  "05c": {
+    nazwa: "Zamowienie wygaslo, wplata nie dotarla",
+    zbuduj: () => buildOrderExpired(
+      { ...ZAMOWIENIE, status: "expired", payment_method: "bank_transfer",
+        amount_eur_cents: 7800, transfer_received_cents: null }
+    ),
+  },
+  "05d": {
+    nazwa: "Zamowienie wygaslo po niepelnej wplacie, zwrot",
+    zbuduj: () => buildOrderExpired(
+      { ...ZAMOWIENIE, status: "expired", payment_method: "bank_transfer",
+        amount_eur_cents: 7800, transfer_received_cents: 7300 }
+    ),
+  },
+  "05e": {
+    nazwa: "Potwierdzenie przy nadplacie, zwrot roznicy",
+    zbuduj: () => doKlienta(
+      { ...ZAMOWIENIE, payment_method: "bank_transfer", amount_eur_cents: 7800,
+        transfer_received_cents: 8000 },
+      [PRODUKT("Pierścionek z granatem, złoto 585", 32000)]
+    ),
   },
   "12": {
     nazwa: "Wycena zapisana z kalkulatora",

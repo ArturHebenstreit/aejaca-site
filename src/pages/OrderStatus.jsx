@@ -389,6 +389,9 @@ const UI = {
     transferTitle: "Zamówienie przyjęte, czekamy na przelew",
     transferDesc: "Nic nie zostało pobrane. Poniżej masz dane do przelewu. Ten sam komplet wysłaliśmy Ci mailem.",
     transferAmount: "Kwota do przelewu",
+    transferShortfall: "Do dopłaty",
+    transferReceived: "Wpłynęło",
+    transferOf: "z",
     transferIban: "Numer rachunku (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Odbiorca",
@@ -498,6 +501,9 @@ const UI = {
     transferTitle: "Order received, waiting for your transfer",
     transferDesc: "Nothing has been charged. Below are the transfer details. We sent you the same set by email.",
     transferAmount: "Amount to transfer",
+    transferShortfall: "Still due",
+    transferReceived: "Received",
+    transferOf: "of",
     transferIban: "Account number (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Beneficiary",
@@ -606,6 +612,9 @@ const UI = {
     transferTitle: "Bestellung eingegangen, wir warten auf Ihre Überweisung",
     transferDesc: "Es wurde nichts abgebucht. Unten finden Sie die Überweisungsdaten. Dieselben Angaben haben wir Ihnen per E-Mail geschickt.",
     transferAmount: "Zu überweisender Betrag",
+    transferShortfall: "Noch offen",
+    transferReceived: "Eingegangen",
+    transferOf: "von",
     transferIban: "Kontonummer (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Empfänger",
@@ -962,9 +971,21 @@ export default function OrderStatus() {
               {awaitingTransfer && (
                 tr?.iban ? (
                   <div className="rounded-xl border border-blue-400/25 bg-blue-400/[0.05] p-4 mb-6 text-left">
+                    {/* Po czesciowej wplacie liczy sie kwota BRAKUJACA, a nie
+                        kwota zamowienia: klient ma doplacic roznice, a nie
+                        przelac wszystkiego jeszcze raz. */}
                     <div className="text-center pb-3 mb-3 border-b border-white/10">
-                      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">{u.transferAmount}</div>
-                      <div className="text-3xl font-extrabold text-white tabular-nums">{tr.amountEur} EUR</div>
+                      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
+                        {tr.shortfallEur ? u.transferShortfall : u.transferAmount}
+                      </div>
+                      <div className="text-3xl font-extrabold text-white tabular-nums">
+                        {tr.shortfallEur || tr.amountEur} EUR
+                      </div>
+                      {tr.shortfallEur && (
+                        <div className="text-neutral-500 text-xs mt-1 tabular-nums">
+                          {u.transferReceived} {tr.receivedEur} EUR {u.transferOf} {tr.amountEur} EUR
+                        </div>
+                      )}
                     </div>
                     <TransferRow label={u.transferIban} value={tr.iban} mono />
                     {tr.bic && <TransferRow label={u.transferBic} value={tr.bic} mono />}

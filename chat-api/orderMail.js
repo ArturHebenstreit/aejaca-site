@@ -118,6 +118,24 @@ const T = {
     trHolder: "Odbiorca",
     trBank: "Bank",
     trRef: "Tytuł przelewu",
+    // ---- Wplata inna niz kwota zamowienia, i wygasniecie bez wplaty ----
+    dpSubject: (ref) => `Zamówienie ${ref}, prosimy o dopłatę`,
+    dpIntro: "Twoja wpłata dotarła, ale jest niższa od kwoty zamówienia. Poniżej różnica i dane do dopłaty. Zamówienie czeka, nic nie przepada.",
+    dpWplynelo: "Wpłynęło",
+    dpNalezne: "Kwota zamówienia",
+    dpBrakuje: "Do dopłaty",
+    dpTermin: (data) => `Na dopłatę czekamy do ${data}.`,
+    dpCoDalej: "Jeżeli różnica nie dotrze do tego dnia, zamykamy zamówienie, a otrzymaną kwotę odsyłamy w całości na rachunek, z którego przyszła. Nic nie tracisz, zamówienie można złożyć ponownie w każdej chwili.",
+    dpTytul: "Prosimy o tę samą nazwę w tytule przelewu, po niej rozpoznajemy zamówienie.",
+
+    wgSubject: (ref) => `Zamówienie ${ref} zostało zamknięte`,
+    wgIntro: "wpłata nie dotarła w terminie, więc zamykamy zamówienie, a zarezerwowany towar wraca do sprzedaży.",
+    wgIntroCzesc: (kwota) => `wpłata nie została uzupełniona w terminie, więc zamykamy zamówienie, a zarezerwowany towar wraca do sprzedaży. Otrzymane ${kwota} odsyłamy na rachunek, z którego przyszły.`,
+    wgPoTerminie: "Gdyby przelew wyszedł po tym terminie, zwrócimy go na rachunek nadawcy. Nie musisz o to prosić.",
+    wgPonownie: "Zamówienie możesz złożyć ponownie w każdej chwili, na tych samych zasadach. Ceny kruszcu przeliczymy wtedy na nowo.",
+
+    nadplata: (ile) => `Wpłynęło o ${ile} więcej niż kwota zamówienia. Nadwyżkę odsyłamy na rachunek, z którego przyszła.`,
+    niedoplataDrobna: (ile) => `Wpłynęło o ${ile} mniej niż kwota zamówienia, zwykle bierze się to z prowizji banku pośredniczącego. Różnicę bierzemy na siebie, zamówienie jest opłacone w całości.`,
     trDue: "Rezerwacja i kwota obowiązują do",
     trSteps: "Co się wydarzy dalej",
     trStepsBody: "Gdy pieniądze wpłyną na konto, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia. Prosimy o zachowanie tytułu przelewu, po nim rozpoznajemy zamówienie. Towar i kwota są dla Ciebie zarezerwowane przez 3 dni robocze. Jeżeli czwartego dnia roboczego wpłata nie zostanie zaksięgowana na wskazanym koncie, rezerwacja zostaje zdjęta, a towar wraca do sprzedaży.",
@@ -198,6 +216,23 @@ const T = {
     trHolder: "Beneficiary",
     trBank: "Bank",
     trRef: "Payment reference",
+    dpSubject: (ref) => `Order ${ref}, a top-up is needed`,
+    dpIntro: "Your payment arrived, but it is lower than the order amount. Below is the difference and the details for the top-up. The order is waiting, nothing is lost.",
+    dpWplynelo: "Received",
+    dpNalezne: "Order amount",
+    dpBrakuje: "Still due",
+    dpTermin: (data) => `We will wait for the top-up until ${data}.`,
+    dpCoDalej: "If the difference does not arrive by that day, we close the order and send the received amount back in full to the account it came from. Nothing is lost, and you can order again at any time.",
+    dpTytul: "Please keep the same payment reference, that is how we recognise your order.",
+
+    wgSubject: (ref) => `Order ${ref} has been closed`,
+    wgIntro: "the payment did not arrive in time, so we are closing the order and the reserved goods go back on sale.",
+    wgIntroCzesc: (kwota) => `the payment was not topped up in time, so we are closing the order and the reserved goods go back on sale. The ${kwota} we received is going back to the account it came from.`,
+    wgPoTerminie: "Should the transfer leave after that date, we will return it to the sender's account. You do not need to ask.",
+    wgPonownie: "You can place the order again at any time, on the same terms. Precious metal will be recalculated then at the current rate.",
+
+    nadplata: (ile) => `That is ${ile} more than the order amount. We are sending the surplus back to the account it came from.`,
+    niedoplataDrobna: (ile) => `That is ${ile} less than the order amount, usually a fee taken by an intermediary bank. We are covering the difference, your order is paid in full.`,
     trDue: "Reservation and amount valid until",
     trSteps: "What happens next",
     trStepsBody: "Once the money lands on our account we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from the day the money clears, not from the day you ordered. Please keep the payment reference, that is how we recognise your order. The goods and the amount are reserved for you for 3 business days. If the payment has not cleared on the stated account by the fourth business day, the reservation is released and the goods go back on sale.",
@@ -278,6 +313,23 @@ const T = {
     trHolder: "Empfänger",
     trBank: "Bank",
     trRef: "Verwendungszweck",
+    dpSubject: (ref) => `Bestellung ${ref}, bitte um Nachzahlung`,
+    dpIntro: "Ihre Zahlung ist eingegangen, liegt aber unter dem Bestellbetrag. Nachfolgend die Differenz und die Daten für die Nachzahlung. Die Bestellung wartet, nichts geht verloren.",
+    dpWplynelo: "Eingegangen",
+    dpNalezne: "Bestellbetrag",
+    dpBrakuje: "Noch offen",
+    dpTermin: (data) => `Auf die Nachzahlung warten wir bis zum ${data}.`,
+    dpCoDalej: "Geht die Differenz bis dahin nicht ein, schließen wir die Bestellung und senden den eingegangenen Betrag vollständig an das Konto zurück, von dem er kam. Es geht nichts verloren, Sie können jederzeit erneut bestellen.",
+    dpTytul: "Bitte behalten Sie denselben Verwendungszweck bei, daran erkennen wir Ihre Bestellung.",
+
+    wgSubject: (ref) => `Bestellung ${ref} wurde geschlossen`,
+    wgIntro: "die Zahlung ist nicht rechtzeitig eingegangen, daher schließen wir die Bestellung und die reservierte Ware geht zurück in den Verkauf.",
+    wgIntroCzesc: (kwota) => `die Zahlung wurde nicht rechtzeitig ergänzt, daher schließen wir die Bestellung und die reservierte Ware geht zurück in den Verkauf. Die eingegangenen ${kwota} senden wir an das Konto zurück, von dem sie kamen.`,
+    wgPoTerminie: "Sollte die Überweisung nach diesem Termin herausgehen, erstatten wir sie auf das Konto des Absenders. Sie müssen nicht darum bitten.",
+    wgPonownie: "Sie können jederzeit erneut bestellen, zu denselben Bedingungen. Edelmetall rechnen wir dann zum aktuellen Kurs neu.",
+
+    nadplata: (ile) => `Das sind ${ile} mehr als der Bestellbetrag. Den Überschuss senden wir an das Konto zurück, von dem er kam.`,
+    niedoplataDrobna: (ile) => `Das sind ${ile} weniger als der Bestellbetrag, meist eine Gebühr einer Zwischenbank. Die Differenz übernehmen wir, Ihre Bestellung ist vollständig bezahlt.`,
     trDue: "Reservierung und Betrag gültig bis",
     trSteps: "Wie es weitergeht",
     trStepsBody: "Sobald das Geld auf unserem Konto eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum. Bitte behalten Sie den Verwendungszweck bei, daran erkennen wir Ihre Bestellung. Ware und Betrag sind 3 Werktage lang für Sie reserviert. Ist die Zahlung bis zum vierten Werktag nicht auf dem angegebenen Konto eingegangen, wird die Reservierung aufgehoben und die Ware geht zurück in den Verkauf.",
@@ -485,6 +537,23 @@ function odnosnikiZamowienia(order, l, lang) {
   ];
 }
 
+/**
+ * Zdanie o roznicy miedzy tym, co wplynelo, a kwota zamowienia, albo null.
+ *
+ * Klient, ktoremu bank posredniczacy sciagnal kilka euro, dostawal
+ * potwierdzenie "zaplacono w calosci" i nie wiedzial, czy o roznicy jeszcze
+ * uslyszy. Nadplata milczala tak samo, a to sa jego pieniadze.
+ */
+function zdanieRoznicy(order, l) {
+  const oczekiwane = order.amount_eur_cents;
+  const wplynelo = order.transfer_received_cents;
+  if (oczekiwane == null || wplynelo == null) return null;
+  const roznica = wplynelo - oczekiwane;
+  if (roznica === 0) return null;
+  const ile = `${(Math.abs(roznica) / 100).toFixed(2)} EUR`;
+  return roznica > 0 ? l.nadplata(ile) : l.niedoplataDrobna(ile);
+}
+
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
   const rows = items
@@ -505,6 +574,7 @@ function customerHtml(order, items, lang) {
   return koperta({ lang, odnosniki: odnosnikiZamowienia(order, l, lang), srodek: `
     <p style="margin:0 0 6px">${l.hi}</p>
     <p style="margin:0 0 20px;line-height:1.6">${order.payment_method === "bank_transfer" ? l.thanksTransfer : l.thanks}</p>
+    ${zdanieRoznicy(order, l) ? `<p style="margin:-8px 0 20px;line-height:1.6;font-size:13px;color:#666">${esc(zdanieRoznicy(order, l))}</p>` : ""}
 
     <p style="margin:0 0 4px;font-size:12px;color:#777">${l.orderNo}</p>
     <p style="margin:0 0 20px;font-size:18px;font-weight:700;font-family:ui-monospace,monospace">${esc(order.order_ref)}</p>
@@ -589,6 +659,7 @@ function customerText(order, items, lang) {
     l.hi,
     "",
     order.payment_method === "bank_transfer" ? l.thanksTransfer : l.thanks,
+    ...(zdanieRoznicy(order, l) ? ["", zdanieRoznicy(order, l)] : []),
     "",
     `${l.orderNo}: ${order.order_ref}`,
     "",
@@ -846,6 +917,157 @@ export function buildTransferMessage(order, tr) {
   ].join("\n");
 
   return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.trSubject(order.order_ref), text, html };
+}
+
+/**
+ * Prosba o doplate, gdy wplata jest nizsza od kwoty zamowienia.
+ *
+ * Idzie DOPIERO powyzej progu drobnej roznicy: kilka euro sciagnietych przez
+ * bank posredniczacy pokrywamy sami, bo zatrzymanie zamowienia na trzy dni
+ * kosztuje klienta wiecej niz nas ta roznica.
+ *
+ * Mail nie straszy. Mowi, ile wplynelo, ile brakuje, do kiedy czekamy i co
+ * stanie sie potem, razem z ta czescia, ktora najbardziej uspokaja: pieniadze
+ * wracaja w calosci, a zamowienie mozna zlozyc od nowa.
+ */
+export function buildTopUpRequest(order, tr, brakujeCents) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const eur = (c) => `${(c / 100).toFixed(2)} EUR`;
+  const oczekiwane = order.amount_eur_cents ?? 0;
+  const wplynelo = order.transfer_received_cents ?? 0;
+  const doKiedy = order.expires_at ? dzien(order.expires_at) : null;
+
+  // Dane rachunku te same, co w pierwszej wiadomosci: klient ma doplacic tam,
+  // gdzie placil, i z tym samym tytulem.
+  const rows = transferRows(l, { ...tr, amountEur: (brakujeCents / 100).toFixed(2) })
+    .filter(([k]) => k !== l.trDue);
+  // Odnosnik do wlasnego zlecenia stoi tu tak samo jak w potwierdzeniu: klient,
+  // ktory dostaje prosbe o doplate, najpierw chce zobaczyc, co my widzimy.
+  const odnosniki = [
+    zdanieZAdresem(l.zdaniePlatnosci, adres(lang, "/payments/")),
+    ...odnosnikiZamowienia(order, l, lang).slice(0, 1),
+    zdanieRegulamin(l, lang),
+  ];
+
+  const kwoty = [
+    [l.dpWplynelo, eur(wplynelo)],
+    [l.dpNalezne, eur(oczekiwane)],
+  ];
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${esc(l.dpIntro)}</p>
+
+    <div style="border:1px solid #eee;border-radius:10px;padding:18px;margin-bottom:20px">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${kwoty.map(([k, v]) => `<tr>
+          <td style="padding:4px 0;color:#777">${esc(k)}</td>
+          <td style="padding:4px 0;text-align:right;font-family:ui-monospace,monospace">${esc(v)}</td>
+        </tr>`).join("")}
+      </table>
+      <p style="margin:14px 0 4px;font-size:12px;color:#777">${esc(l.dpBrakuje)}</p>
+      <p style="margin:0 0 16px;font-size:26px;font-weight:800;color:#7a5f22">${esc(eur(brakujeCents))}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${rows.map(([k, v]) => `<tr>
+          <td style="padding:6px 0;color:#777;white-space:nowrap;vertical-align:top">${esc(k)}</td>
+          <td style="padding:6px 0;text-align:right;font-family:ui-monospace,monospace;word-break:break-all">${esc(String(v))}</td>
+        </tr>`).join("")}
+      </table>
+      <p style="margin:12px 0 0;font-size:12px;color:#777;line-height:1.6">${esc(l.dpTytul)}</p>
+    </div>
+
+    ${doKiedy ? `<p style="margin:0 0 6px;font-size:15px;font-weight:700">${esc(l.dpTermin(doKiedy))}</p>` : ""}
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${esc(l.dpCoDalej)}</p>
+  ` });
+
+  const text = [
+    l.hi, "", l.dpIntro, "",
+    ...kwoty.map(([k, v]) => `${k}: ${v}`),
+    `${l.dpBrakuje}: ${eur(brakujeCents)}`,
+    "",
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    "", l.dpTytul,
+    ...(doKiedy ? ["", l.dpTermin(doKiedy)] : []),
+    "", l.dpCoDalej,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.dpSubject(order.order_ref), text, html };
+}
+
+/**
+ * Zamowienie wygaslo: wplata nie przyszla albo nie zostala uzupelniona.
+ *
+ * Zamowienie zamykalo sie DO 2026-08-30 po cichu. Klient, ktory przegapil
+ * termin, dowiadywal sie o tym dopiero wtedy, gdy sam zajrzal na strone,
+ * a klient, ktory przelal pieniadze dzien po terminie, nie mial skad wiedziec,
+ * ze wracaja do niego.
+ */
+export function buildOrderExpired(order) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const wplynelo = order.transfer_received_cents ?? 0;
+  const czesciowa = wplynelo > 0;
+  const wstep = czesciowa ? l.wgIntroCzesc(`${(wplynelo / 100).toFixed(2)} EUR`) : l.wgIntro;
+  const odnosniki = [
+    zdanieZAdresem(l.zdaniePlatnosci, adres(lang, "/payments/")),
+    zdanieRegulamin(l, lang),
+  ];
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <h1 style="margin:0 0 6px;font-size:20px;line-height:1.3;font-weight:700">${esc(l.wgSubject(order.order_ref))}</h1>
+    <p style="margin:0 0 4px;font-size:12px;color:#777">${esc(l.orderNo)}</p>
+    <p style="margin:0 0 20px;font-size:15px;font-weight:700;font-family:ui-monospace,monospace">${esc(order.order_ref)}</p>
+
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 18px;line-height:1.6">${esc(wstep)}</p>
+    ${czesciowa ? "" : `<p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.wgPoTerminie)}</p>`}
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${esc(l.wgPonownie)}</p>
+  ` });
+
+  const text = [
+    l.hi, "", wstep,
+    ...(czesciowa ? [] : ["", l.wgPoTerminie]),
+    "", l.wgPonownie,
+    "", `${l.orderNo}: ${order.order_ref}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.wgSubject(order.order_ref), text, html };
+}
+
+/**
+ * Prosba o doplate do klienta. Nie rzuca wyjatkiem: termin jest juz zapisany
+ * w bazie i nieudany mail nie ma prawa go cofnac.
+ */
+export async function sendTopUpRequest(pool, orderId, tr) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = rows[0];
+    if (!order?.customer_email) return false;
+    const brakuje = (order.amount_eur_cents ?? 0) - (order.transfer_received_cents ?? 0);
+    if (brakuje <= 0) return false;
+    return await sendViaGmail([buildTopUpRequest(order, tr, brakuje)]);
+  } catch (e) {
+    console.error("[doplata] prosba nie zostala wyslana:", e.message);
+    return false;
+  }
+}
+
+/** Wiadomosc o wygasnieciu zamowienia. Wolana z crona, wiec nigdy nie rzuca. */
+export async function sendOrderExpired(pool, orderId) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = rows[0];
+    if (!order?.customer_email) return false;
+    return await sendViaGmail([buildOrderExpired(order)]);
+  } catch (e) {
+    console.error("[wygasniecie] wiadomosc nie zostala wyslana:", e.message);
+    return false;
+  }
 }
 
 /** Mail z danymi do przelewu plus kopia dla nas, zebysmy wiedzieli, na co czekamy */
@@ -1554,6 +1776,19 @@ export async function sendOrderPaidEmails(pool, orderId) {
 // wlasnymi powiadomieniami przestaje byc czytana takze wtedy, gdy przyjdzie
 // prawdziwe zamowienie.
 
+/**
+ * Plakietka przy nazwie pozycji: "do wyboru", "dodatek", "zaznaczone".
+ *
+ * Klient pocztowy blokuje wlasne arkusze stylow, wiec kazda regula stoi wprost
+ * przy elemencie. Tlo, a nie sama ramka: ramka w Outlooku bywa gubiona.
+ */
+function plakietka(rodzaj, wybrany) {
+  const tlo = wybrany ? "#f3ead6" : "#f0f0f0";
+  const napis = wybrany ? "#7a5f22" : "#888";
+  return `<span style="display:inline-block;background:${tlo};color:${napis};font-size:11px;`
+    + `border-radius:4px;padding:1px 6px;margin-right:6px;white-space:nowrap">${esc(rodzaj)}</span>`;
+}
+
 const QUOTE_T = {
   pl: {
     hi: "Dzień dobry,",
@@ -1686,12 +1921,24 @@ export function buildQuoteMessage(quote, items, url) {
   // pokazuje trzy kwoty i sume nizsza od ich sumy, co wyglada jak blad
   // rachunkowy, a jest po prostu wyborem jednej rzeczy z trzech.
   const wybor = items.some((i) => i.kind === "variant" || i.kind === "option");
+  // Wariant odznaczony wygladal tak samo jak wybrany, wiec suma wychodzila
+  // nizsza od sumy wierszy i dopiero zdanie pod tabela to tlumaczylo. W HTML
+  // pokazuje to sam wiersz: wybrany normalnie, odrzucony szaro. Wersja tekstowa
+  // zostaje przy nawiasach, bo tam nie ma czym pokolorowac.
   const rows = items.map((i) => {
     const rodzaj = i.kind === "variant" ? l.pick : i.kind === "option" ? l.addon : null;
+    const wybrany = Boolean(rodzaj) && i.selected === true;
     const stan = rodzaj && i.selected ? `, ${l.chosen}` : "";
+    const ilosc = i.qty > 1 ? ` x ${i.qty}` : "";
     return {
-      label: `${rodzaj ? `[${rodzaj}${stan}] ` : ""}${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}`,
+      label: `${rodzaj ? `[${rodzaj}${stan}] ` : ""}${i.title}${ilosc}`,
+      // Plakietka zamiast nawiasow kwadratowych: `[do wyboru]` czytalo sie
+      // jak znacznik z kodu, ktory zostal w tresci przez nieuwage.
+      // Plakietka niesie takze slowo "zaznaczone", a nie sam kolor: czytnik
+      // ekranu koloru nie przeczyta, a to od niego zalezy kwota.
+      html: `${rodzaj ? plakietka(`${rodzaj}${stan}`, wybrany) : ""}${esc(i.title)}${esc(ilosc)}`,
       value: money(i.line_grosze ?? i.unit_grosze ?? 0),
+      przygaszony: Boolean(rodzaj) && i.selected === false,
     };
   });
 
@@ -1731,8 +1978,8 @@ export function buildQuoteMessage(quote, items, url) {
     <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(w.items)}</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       ${rows.map((r) => `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(r.label)}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">${esc(r.value)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;color:${r.przygaszony ? "#999" : "#111"}">${r.html}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap;color:${r.przygaszony ? "#999" : "#111"}">${esc(r.value)}</td>
       </tr>`).join("")}
       <tr>
         <td style="padding:12px 0;font-weight:700">${esc(l.total)}</td>

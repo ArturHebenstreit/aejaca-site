@@ -88,6 +88,36 @@ Nazwa zalezy od stempla, a nie od statusu: "Zapłacone" bez daty przy zamowieniu
 ktore wlasnie prosimy o przelew, byloby zdaniem nieprawdziwym, i to postawionym
 obok ekranu z danymi do przelewu.
 
+### 5. Trzy sytuacje po przelewie, i klient slyszy o kazdej
+
+Decyzja wlasciciela z 2026-08-30. Kwota z przelewu bywa inna niz kwota
+zamowienia i to nie jest bledem, tylko zyciem: bank posredniczacy sciaga
+oplate po drodze, klient przelewa z pamieci albo zaokragla.
+
+**Kwota zgodna** dziala jak dotad: potwierdzenie wplaty rusza zlecenie.
+
+**Kwota inna od zamowienia** rozstrzyga sie progiem: **5 EUR albo 2% kwoty, co
+mniejsze**. Sam procent nie wystarcza w obie strony, bo 2% z duzego zamowienia
+to juz kwota do rozmowy, a przy malym nie przechodzi nawet prowizja banku.
+
+- **Ponizej progu na minus** wplata liczy sie jak zgodna, a potwierdzenie mowi
+  wprost, ze roznice bierzemy na siebie. Zatrzymanie zamowienia na trzy dni
+  z powodu dwoch euro kosztuje klienta wiecej niz nas ta roznica.
+- **Powyzej progu na minus** idzie prosba o doplate z terminem trzech dni.
+  Zamowienie zostaje na przystanku "Zapłata", a termin zapisuje sie w tym samym
+  `expires_at`, ktory wygasza zamowienia nieoplacone: drugi zegar do utrzymania
+  rozjechalby sie z pierwszym. Brakujacej kwoty NIE zapisujemy osobno, bo to
+  roznica dwoch kolumn, ktore juz sa.
+- **Na plus** zamowienie rusza od razu, a nadwyzka wraca na rachunek nadawcy.
+  Nadplata nie ma prawa blokowac pracy, ktora jest juz oplacona, a pytanie
+  klienta o zdanie zostawiloby otwarta sprawe z jego pieniedzmi.
+
+**Brak wplaty** konczy sie tak jak dotad, czyli wygasnieciem po terminie, ale
+juz nie po cichu. Klient dostaje wiadomosc, w dwoch wersjach: gdy nie wplynelo
+nic, mail mowi, ze przelew wyslany po terminie wroci na rachunek nadawcy; gdy
+wplynela czesc, mowi, ze odsylamy te kwote. Mail nie blokuje wygaszania: towar
+ma wrocic do sprzedazy niezaleznie od tego, czy poczta zadziala.
+
 ## Alternatywy i powody odrzucenia
 
 - **Dolozenie `awaiting_transfer` do `ETAPY_KOLEJNO`.** Wygladalo na najprostsze,
@@ -99,6 +129,14 @@ obok ekranu z danymi do przelewu.
 - **Osobny, nowy przystanek "Zapłata" przed "Zapłacone".** Dwie kropki o tej
   samej rzeczy. Przystanek zaplaty juz istnieje, brakowalo mu tylko stanu
   "jeszcze nie".
+- **Sam procent jako prog niedoplaty.** Dziala dla jednej wielkosci zamowienia
+  i zawodzi dla kazdej innej. Kwota i procent razem, z mniejszej strony, sa
+  odporne w obie strony.
+- **Pytanie klienta, co zrobic z nadplata.** Uczciwe, ale zostawia otwarta
+  sprawe z cudzymi pieniedzmi, a czesc klientow nie odpisze nigdy.
+- **Zamkniecie po terminie doplaty przez czlowieka.** Wiecej kontroli, ale
+  zamowienie stoi tygodniami, jesli nikt nie zajrzy, a towar lezy zarezerwowany
+  dla kogos, kto nie zaplacil.
 - **Zostawienie `/transfers` jako widoku pomocniczego.** Odrzucone przez
   wlasciciela: dwa miejsca o tych samych zamowieniach rozjezdzaja sie przy
   pierwszej zmianie, a rozjazd w panelu konczy sie zleceniem obsluzonym dwa
@@ -113,8 +151,12 @@ obok ekranu z danymi do przelewu.
   (ADR-0028). Wiersz nie udaje, ze cokolwiek jest spoznione.
 - **Klient w euro widzi cala droge od pierwszej chwili**, razem z odpowiedzia na
   pytanie "czy potwierdziliscie wplate".
-- **Maile sie nie zmieniaja.** Dane do przelewu i potwierdzenie przyjecia
-  naleznosci wychodzily juz wczesniej i wychodza tak samo.
+- **Dochodza trzy wiadomosci do klienta**: prosba o doplate, wygasniecie bez
+  wplaty i wygasniecie po wplacie czesciowej. Potwierdzenie przyjecia
+  naleznosci dostaje jedno zdanie o roznicy, gdy roznica byla.
+- **Zamowienie po prosbie o doplate dostaje NOWE trzy dni.** Klient dostal juz
+  raz trzy dni na przelew i drugi raz dostaje tyle samo. Termin siedzi
+  w `expires_at`, wiec wygasza go ten sam cron co zawsze.
 
 ## Niezmienniki i testy
 
@@ -126,6 +168,8 @@ obok ekranu z danymi do przelewu.
   Test: `chat-api/paymentSafety.test.mjs`.
 - Atrapa kolejki w `admin/check-views.mjs` zawiera zamowienie czekajace na
   przelew, wiec kontrola szablonow naprawde renderuje te sciezke.
+- Kazda z trzech sytuacji po przelewie ma wlasne zdanie do klienta, a kwota
+  zgodna nie ma zadnego. Test: `scripts/test-mail-klienta.mjs`, sekcja 4i.
 
 ## Synchronizacja
 

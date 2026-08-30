@@ -1748,6 +1748,22 @@ app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
   } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
+// Wplynelo mniej: piszemy do klienta o doplate i dajemy trzy dni. Zamowienie
+// zostaje w kolejce na przystanku "Zapłata", a po terminie wygasa samo.
+app.post("/transfers/:ref/shortfall", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/transfer-shortfall`, {
+      method: "POST",
+      body: {
+        receivedEur: req.body.receivedEur ? Number(req.body.receivedEur) : undefined,
+        by: req.user.email,
+      },
+    });
+    const mail = r.mailed ? "mail poszedl" : "MAIL NIE POSZEDL";
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: prosba o doplate ${r.shortfallEur} EUR, ${mail}` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+});
+
 // Rezygnacja: towar i kod wracaja do puli od razu, wiersz zostaje z adnotacja.
 app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
   try {

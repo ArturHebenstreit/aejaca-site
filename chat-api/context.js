@@ -969,6 +969,15 @@ https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
 realizacji, gotowe, wyslane). Nie piszemy przy kazdym ruchu w warsztacie.
 Aktualny stan zawsze jest na stronie zamowienia.
 
+**Wplata inna niz kwota zamowienia** (przelew w euro): drobna roznica na minus,
+zwykle prowizja banku posredniczacego, przechodzi bez pytania i pokrywamy ja my
+(prog: 5 EUR albo 2% kwoty, co mniejsze). Przy wiekszej roznicy piszemy z prosba
+o doplate i czekamy TRZY DNI; bez doplaty zamowienie wygasa, a otrzymana kwota
+wraca na rachunek nadawcy. Nadwyzke zwracamy, a realizacja rusza od razu.
+Zamowienie, ktore wygaslo bez wplaty, TEZ dostaje wiadomosc: przelew wyslany po
+terminie wroci do klienta. Klientowi pytajacemu "co z moja wplata" podaj te
+droge zamiast obiecywac sprawdzenie.
+
 **Zamowienie platne przelewem w euro** ma te sama strone zamowienia co kazde
 inne i te sama os czasu (od 2026-08-30). Pierwszy przystanek nazywa sie wtedy
 "Zapłata" i swieci, dopoki nie zaksiegujemy wplaty. Klientowi, ktory pyta "czy

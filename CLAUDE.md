@@ -50,6 +50,21 @@ Shared writing rule: see `PROJECT_RULES.md`, section `Twarde niezmienniki`.
 
 **Always go step by step.** After completing each step in a multi-step process, stop and ask the user "Czy idziemy dalej?" before proceeding to the next step. Never write out multiple steps ahead without confirmation. This applies to: setup instructions, debugging flows, configuration walkthroughs, deployment steps - any sequential process involving the user doing something manually.
 
+### Pytania do właściciela idą formularzem - HARD RULE (polecenie właściciela, 2026-08-30, obowiązuje we wszystkich wątkach)
+
+**Każde pytanie i każda decyzja do właściciela ma postać formularza wyboru
+(`AskUserQuestion`), a nie akapitu w odpowiedzi.** Nagłówek krótki, warianty
+rozłączne, przy każdym jedno zdanie o skutku, a nie o mechanice.
+
+- **Rekomendacja stoi jako pierwsza i jest oznaczona** dopiskiem `(rekom.)`
+  w nazwie wariantu. Właściciel ma widzieć, co proponujemy, zanim przeczyta
+  resztę.
+- **Wariant odrzucony też jest opisany uczciwie**, razem z tym, co się traci.
+  Formularz, w którym tylko jedna odpowiedź brzmi sensownie, jest pozorny.
+- **Pytamy tylko o to, czego nie da się rozstrzygnąć z kodu, z dokumentów
+  i z decyzji już zapisanych.** Reszta to nasza robota, a nie jego.
+- Dotyczy też pytań o kolejność pracy i o to, co bierzemy jako następne.
+
 ## Model routing (cost optimization)
 
 ### Delegowanie - HARD RULE (polecenie właściciela, 2026-08-16, obowiązuje do odwołania)

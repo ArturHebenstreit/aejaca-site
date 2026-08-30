@@ -108,6 +108,7 @@ const L = {
     euRows: [
       ["Przelew SEPA", "Numer rachunku pokazujemy po złożeniu zamówienia i wysyłamy mailem. Tytułem przelewu jest numer zamówienia."],
       ["BLIK albo polski bank, jeżeli wolisz", "Płatność natychmiastową da się wybrać także na tych wersjach strony. Ma to sens, gdy masz polskie konto: rozliczenie idzie wtedy w złotych, tak jak wyżej."],
+      ["Gdy wpłynie inna kwota", "Drobną różnicę na minus, zwykle prowizję banku pośredniczącego, bierzemy na siebie i zamówienie rusza normalnie. Przy większej różnicy piszemy z prośbą o dopłatę i czekamy trzy dni; jeżeli nie dotrze, zamykamy zamówienie i odsyłamy otrzymaną kwotę na rachunek nadawcy. Nadwyżkę zwracamy tą samą drogą, a realizacja rusza od razu."],
     ],
     euNote: "Wpływ przelewu potwierdzamy ręcznie, bo przelew zagraniczny nie wraca do nas automatycznie. Kwota i rezerwacja towaru obowiązują 3 dni robocze. Jeżeli czwartego dnia roboczego wpłata nie jest zaksięgowana, rezerwacja spada, a towar wraca do sprzedaży. Termin realizacji liczymy od zaksięgowania, nie od złożenia zamówienia.",
     euFxTitle: "Skąd bierze się kwota w euro",
@@ -248,6 +249,7 @@ const L = {
     euRows: [
       ["SEPA transfer", "We show the account number once the order is placed and send it by e-mail. The payment reference is the order number."],
       ["BLIK or a Polish bank, if you prefer", "Instant payment can be chosen on these versions too. It makes sense if you hold a Polish account: settlement then runs in złoty, as above."],
+      ["If a different amount arrives", "A small shortfall, usually a fee taken by an intermediary bank, we cover ourselves and the order proceeds as normal. For a larger difference we write asking for a top-up and wait three days; if it does not arrive, we close the order and send the received amount back to the sender's account. A surplus goes back the same way, and the work starts right away."],
     ],
     euNote: "We confirm an incoming transfer by hand, because a foreign transfer does not report back to us automatically. The amount and the reservation hold for 3 business days. If the payment has not cleared by the fourth business day, the reservation is released and the goods go back on sale. The lead time runs from the money clearing, not from the order being placed.",
     euFxTitle: "Where the euro amount comes from",
@@ -388,6 +390,7 @@ const L = {
     euRows: [
       ["SEPA-Überweisung", "Die Kontonummer zeigen wir nach der Bestellung und senden sie per E-Mail. Verwendungszweck ist die Bestellnummer."],
       ["BLIK oder eine polnische Bank, falls gewünscht", "Die Sofortzahlung lässt sich auch auf diesen Versionen wählen. Sinnvoll ist das mit einem polnischen Konto: die Abrechnung läuft dann in Złoty wie oben."],
+      ["Wenn ein anderer Betrag eingeht", "Eine kleine Unterzahlung, meist eine Gebühr einer Zwischenbank, übernehmen wir, die Bestellung läuft normal weiter. Bei einer größeren Differenz bitten wir um eine Nachzahlung und warten drei Tage; geht sie nicht ein, schließen wir die Bestellung und senden den eingegangenen Betrag an das Konto des Absenders zurück. Einen Überschuss erstatten wir auf demselben Weg, die Arbeit beginnt sofort."],
     ],
     euNote: "Den Zahlungseingang bestätigen wir von Hand, weil eine Auslandsüberweisung nicht automatisch an uns zurückmeldet. Betrag und Reservierung gelten 3 Werktage. Ist die Zahlung am vierten Werktag nicht eingegangen, verfällt die Reservierung und die Ware geht zurück in den Verkauf. Die Lieferzeit rechnen wir ab Zahlungseingang, nicht ab Bestellung.",
     euFxTitle: "Woher der Eurobetrag kommt",

@@ -314,11 +314,24 @@
                                         class="w-full px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
                                   Potwierdzam wpływ
                                 </button>
-                                <%# Niedoplata nie jest bledem, tylko decyzja. API odmawia i podaje
-                                    roznice, a ten przycisk pozwala przyjac ja swiadomie. %>
+                                <%# Drobna roznica (do 5 EUR albo 2%, co mniejsze) przechodzi sama:
+                                    prowizja banku posredniczacego nie jest wina klienta. Wieksza
+                                    wymaga decyzji, i to sa te dwa przyciski nizej. %>
                                 <button name="force" value="true"
                                         class="w-full px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[10px] hover:bg-amber-400/10 transition-colors">
                                   Potwierdzam mimo różnicy
+                                </button>
+                                <%# Trzecia droga: wplynelo za malo i prosimy klienta o doplate.
+                                    Zamowienie zostaje na tym przystanku, dostaje trzy dni, a po
+                                    nich wygasa samo razem z mailem do klienta.
+
+                                    Przycisk siedzi w TYM SAMYM formularzu i zmienia tylko adres
+                                    (`formaction`). Drugie pole na te sama kwote byloby dwoma
+                                    miejscami na jedna liczbe, a wpisanie jej nie w to okienko
+                                    konczyloby sie prosba o doplate na przypadkowa kwote. %>
+                                <button formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall"
+                                        class="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-orange-400/40 text-orange-300 text-[10px] hover:bg-orange-400/10 transition-colors">
+                                  Napisz o dopłatę, 3 dni
                                 </button>
                               </form>
                               <%# Rezygnacja stoi osobno od potwierdzenia, bo to ruch w druga strone

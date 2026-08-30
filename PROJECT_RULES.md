@@ -203,6 +203,20 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   świeci, dopóki wpłata nie jest zaksięgowana, i to jest odpowiedź na pytanie
   „czy potwierdziliście przelew". Decyzja: ADR-0029.
 
+### Wpłata inna niż kwota zamówienia (od 2026-08-30)
+
+- **Próg drobnej różnicy: 5 EUR albo 2% kwoty, co mniejsze.** Poniżej progu
+  wpłata liczy się jak zgodna, a potwierdzenie mówi wprost, że różnicę bierzemy
+  na siebie. Prowizja banku pośredniczącego nie jest winą klienta.
+- **Powyżej progu piszemy o dopłatę i dajemy trzy dni**, licząc od wysłania
+  prośby. Termin siedzi w tym samym `expires_at`, który wygasza zamówienia
+  nieopłacone: drugi zegar rozjechałby się z pierwszym.
+- **Nadwyżkę zwracamy na rachunek nadawcy**, a realizacja rusza od razu.
+  Nadpłata nie blokuje pracy, która jest już opłacona.
+- **Wygaśnięcie nie jest ciche.** Klient dostaje wiadomość: gdy nic nie
+  wpłynęło, o tym, że przelew wysłany po terminie wróci do niego; gdy wpłynęła
+  część, o zwrocie tej kwoty. Decyzja: ADR-0029, punkt 5.
+
 ### Polski tekst do klienta nie zgaduje płci (od 2026-08-30)
 
 Klientka dostała maila ze zdaniem „wycena, którą zapisałeś", i to nie była

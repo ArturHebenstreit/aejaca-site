@@ -37,6 +37,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
+  sendTopUpRequest, sendOrderExpired,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
 } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
@@ -410,6 +411,8 @@ if (pool) {
   // strone, a strefy swiatowe nosza dwie nazwy naraz, wiec bez tego pola mail
   // do klienta z Australii musialby odsylac do dwoch stron sledzenia.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
+  // Chwila prosby o doplate. Od niej biegna trzy dni na uzupelnienie kwoty.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_asked_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
   // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
@@ -2917,6 +2920,12 @@ async function expireStaleOrders() {
       await releaseOrderReservations(pool, o.id);
       // Kod z przeterminowanego zamowienia wraca do puli razem z towarem.
       await releaseOrderRedemptions(pool, o.id);
+      // Zamowienie zamykalo sie PO CICHU (poprawka 2026-08-30). Klient, ktory
+      // przegapil termin, dowiadywal sie o tym dopiero wtedy, gdy sam zajrzal
+      // na strone, a ten, ktory przelal pieniadze dzien po terminie, nie mial
+      // skad wiedziec, ze wracaja do niego. Mail nie blokuje wygaszania: towar
+      // ma wrocic do sprzedazy niezaleznie od tego, czy poczta zadziala.
+      sendOrderExpired(pool, o.id).catch(() => {});
     }
     if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
   } catch (e) {
@@ -4091,7 +4100,19 @@ app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (r
 // oglada czlowiek. Ten endpoint jest odpowiednikiem SUCCESS z bramki: ustawia
 // oplacenie, wysyla te same maile i przenosi pliki do Zamowien. Wolno go
 // wykonac raz, bo pilnuje tego fulfilled_at.
-const TRANSFER_TOLERANCE = 0.98;
+// Prog drobnej niedoplaty: 5 EUR albo 2% kwoty, CO MNIEJSZE (decyzja
+// wlasciciela, 2026-08-30). Bank posredniczacy potrafi sciagnac kilka euro po
+// drodze i klient nie ma na to wplywu, wiec drobna roznice pokrywamy sami
+// zamiast zatrzymywac zamowienie na trzy dni. Procent sam nie wystarcza: 2%
+// z duzego zamowienia to juz kwota, ktora powinna wrocic do rozmowy.
+// Ile dni czekamy na doplate, zanim zamowienie wygasnie samo (decyzja
+// wlasciciela, 2026-08-30). Tyle samo, ile trwa rezerwacja przy pierwszym
+// przelewie: klient dostal juz raz trzy dni i drugi raz dostaje tyle samo.
+const DNI_NA_DOPLATE = 3;
+const TRANSFER_TOLERANCE_CENTS = 500;
+const TRANSFER_TOLERANCE_RATE = 0.02;
+const tolerancjaPrzelewu = (oczekiwane) =>
+  Math.min(TRANSFER_TOLERANCE_CENTS, Math.round(oczekiwane * TRANSFER_TOLERANCE_RATE));
 
 // ------------------------------------------------------------
 // KOLEJKA PRACOWNI
@@ -4715,13 +4736,14 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   // Drobna roznice przyjmujemy, wieksza wymaga swiadomej decyzji.
   const expected = order.amount_eur_cents ?? 0;
   const received = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : expected;
-  if (!force && expected > 0 && received < Math.round(expected * TRANSFER_TOLERANCE)) {
+  const brakuje = expected - received;
+  if (!force && expected > 0 && brakuje > tolerancjaPrzelewu(expected)) {
     return res.status(409).json({
       error: "Kwota nizsza od naleznej",
       code: "underpaid",
       expectedEur: (expected / 100).toFixed(2),
       receivedEur: (received / 100).toFixed(2),
-      shortfallEur: ((expected - received) / 100).toFixed(2),
+      shortfallEur: (brakuje / 100).toFixed(2),
     });
   }
 
@@ -4733,7 +4755,9 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
      WHERE id = $1`,
     [order.id, received, String(by || "admin").slice(0, 120), note ? String(note).slice(0, 2000) : null]
   );
-  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
+  const roznica = received - expected;
+  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`
+    + (roznica ? `, roznica ${(roznica / 100).toFixed(2)} EUR` : ""));
 
   // Dalej dokladnie to samo, co po SUCCESS z bramki, razem ze startem zegara:
   // przelew jest ta sama zaplata co BLIK, tylko wolniejsza.
@@ -4757,6 +4781,70 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   );
 
   res.json({ ok: true, orderRef: ref, receivedEur: (received / 100).toFixed(2) });
+});
+
+/**
+ * Prosba o doplate: wplynelo mniej, niz wynosi kwota zamowienia.
+ *
+ * Zamowienie ZOSTAJE w `awaiting_transfer`, bo pieniedzy dalej nie ma w pelnej
+ * kwocie. Zapisujemy, ile wplynelo, i przesuwamy `expires_at` o trzy dni:
+ * dalej dziala ten sam mechanizm, ktory wygasza zamowienia nieoplacone, wiec
+ * nie ma drugiego zegara do utrzymania. Brakujacej kwoty NIE zapisujemy
+ * osobno: to roznica dwoch kolumn, ktore juz mamy.
+ */
+app.post("/api/orders/:ref/transfer-shortfall", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { receivedEur, note, by } = req.body || {};
+  const { rows } = await pool.query(
+    `SELECT id, status, amount_eur_cents, fulfilled_at, eur_rate FROM orders WHERE order_ref = $1`,
+    [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.fulfilled_at) return res.status(409).json({ error: "Zamowienie juz zostalo rozliczone" });
+  if (order.status !== "awaiting_transfer") {
+    return res.status(409).json({ error: `Zamowienie ma status ${order.status}, nie czeka na przelew` });
+  }
+
+  const oczekiwane = order.amount_eur_cents ?? 0;
+  const wplynelo = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : 0;
+  if (wplynelo <= 0) return res.status(400).json({ error: "Podaj kwote, ktora wplynela", code: "no_amount" });
+  const brakuje = oczekiwane - wplynelo;
+  if (brakuje <= 0) {
+    return res.status(400).json({
+      error: "Ta kwota nie jest niedoplata, potwierdz wplyw zamiast prosic o doplate",
+      code: "not_underpaid",
+    });
+  }
+
+  const zapis = await pool.query(
+    `UPDATE orders
+        SET transfer_received_cents = $2,
+            transfer_asked_at = NOW(),
+            transfer_note = COALESCE($3, transfer_note),
+            transfer_confirmed_by = $4,
+            expires_at = NOW() + INTERVAL '${DNI_NA_DOPLATE} days'
+      WHERE id = $1 AND status = 'awaiting_transfer'
+      RETURNING expires_at`,
+    [order.id, wplynelo, note ? String(note).slice(0, 2000) : null, String(by || "admin").slice(0, 120)]
+  );
+  if (!zapis.rowCount) {
+    return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
+  }
+
+  console.log(`[doplata] ${ref}: wplynelo ${(wplynelo / 100).toFixed(2)} EUR, brakuje ${(brakuje / 100).toFixed(2)} EUR`);
+  const poszlo = await sendTopUpRequest(pool, order.id, {
+    ...TRANSFER,
+    reference: ref,
+  });
+  res.json({
+    ok: true, orderRef: ref, mailed: poszlo,
+    shortfallEur: (brakuje / 100).toFixed(2),
+    waitUntil: zapis.rows[0].expires_at,
+  });
 });
 
 /**
@@ -5256,7 +5344,7 @@ app.get("/api/orders/:ref", async (req, res) => {
             lang, paid_at, expires_at, delivery_method, delivery_point,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
-            amount_eur_cents, transfer_confirmed_at,
+            amount_eur_cents, transfer_confirmed_at, transfer_received_cents, transfer_asked_at,
             shipped_at, completed_at, tracking_number, carrier, country
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
@@ -5353,6 +5441,14 @@ app.get("/api/orders/:ref", async (req, res) => {
             reference: o.order_ref,
             dueAt: o.expires_at,
             confirmedAt: o.transfer_confirmed_at,
+            // Czesciowa wplata: klient ma widziec, ile doszlo i ile brakuje,
+            // a nie sama kwote zamowienia. Brakujacej kwoty nie trzymamy
+            // w bazie, bo to roznica dwoch kolumn, ktore juz sa.
+            receivedEur: o.transfer_received_cents != null
+              ? (o.transfer_received_cents / 100).toFixed(2) : null,
+            shortfallEur: o.transfer_asked_at && o.transfer_received_cents != null
+              ? ((o.amount_eur_cents - o.transfer_received_cents) / 100).toFixed(2) : null,
+            askedAt: o.transfer_asked_at,
           }
         : null,
   });
