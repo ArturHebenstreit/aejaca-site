@@ -16,6 +16,7 @@
 // pokazuje ceny, nie definicje.
 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import PYTANIA from "../data/faq/wycenaMetalu.js";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import MetalPricingCalc from "../components/calculators/MetalPricingCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -173,43 +174,15 @@ const HOWTO_STEPS = {
   ],
 };
 
-const FAQ = {
-  pl: [
-    { q: "Ile dostanę za gram złota 585 w skupie?", a: "Od 70 do 90% wartości kruszcu. Przy złocie 585 wartość kruszcu to 58,5% ceny czystego złota za gram, więc skup płaci mniej więcej od 41 do 53% ceny złota próby 999. Dokładna stawka zależy od masy partii i od tego, czy skup musi najpierw sprawdzić próbę." },
-    { q: "Czy kamienie w pierścionku liczą się do wagi?", a: "Nie. Skup kupuje metal, a kamienie są dla niego balastem, który trzeba usunąć. Cyrkonie zwykle przepadają. Diament, szafir czy szmaragd o sensownej wielkości warto wyjąć i wycenić osobno, bo jego wartość bywa wyższa niż całej oprawy." },
-    { q: "Co oznacza próba 585 w karatach?", a: "14 karatów. Próba to zawartość czystego złota w tysięcznych, karat w dwudziestych czwartych. 585 tysięcznych to 58,5%, a 14 z 24 części to 58,3%, więc obie liczby opisują ten sam stop." },
-    { q: "Moja biżuteria nie ma żadnej cechy. Co teraz?", a: "Brak cechy nie oznacza, że to nie złoto, ale sam nie ustalisz próby na oko. Jubiler lub skup sprawdzi ją kamieniem probierczym z kwasami albo spektrometrem XRF, zwykle bezpłatnie i bez uszkodzenia wyrobu. Dopiero z tym wynikiem kalkulator ma sens." },
-    { q: "Czy złoto białe jest warte tyle samo co żółte?", a: "Przy tej samej próbie tak. Kolor bierze się z domieszek, a te są bez znaczenia dla wyceny. Złoto białe 585 zawiera dokładnie tyle samo czystego złota co żółte 585. Powłoka rodowa nie dodaje wartości." },
-    { q: "Czy opłaca się sprzedać starą biżuterię na wagę?", a: "Nie zawsze. Wyroby sygnowane, przedwojenne albo po prostu sprawne i ładne bywają warte kilkukrotność wartości metalu na rynku wtórnym. Sprzedaż na wagę ma sens przy uszkodzonych, pogiętych i pojedynczych sztukach, których nikt nie kupi jako biżuterii." },
-    { q: "Czy zamiast sprzedawać, można przerobić stare złoto?", a: "Tak i często wychodzi to korzystniej. Przyjmujemy powierzony metal, przetapiamy go i wykonujemy z niego nowy wyrób, a wtedy płacisz tylko za robociznę i ewentualny brakujący surowiec, zamiast tracić marżę skupu i marżę na zakupie nowego złota." },
-  ],
-  en: [
-    { q: "How much will I get for a gram of 585 gold?", a: "Between 70 and 90% of the metal value. In 585 gold the metal value is 58.5% of the price of pure gold per gram, so a buyer pays roughly 41 to 53% of the 999 gold price. The exact rate depends on the size of the lot and on whether the buyer has to verify the purity first." },
-    { q: "Do the stones in a ring count towards the weight?", a: "No. A buyer purchases metal, and stones are ballast that has to be removed. Cubic zirconia is usually lost. A diamond, sapphire or emerald of any real size is worth removing and valuing separately, because it can be worth more than the whole setting." },
-    { q: "What is 585 fineness in karat?", a: "14 karat. Fineness states the pure gold content in thousandths, karat in twenty-fourths. 585 thousandths is 58.5%, and 14 parts out of 24 is 58.3%, so both numbers describe the same alloy." },
-    { q: "My jewelry has no hallmark. What now?", a: "A missing stamp does not mean it is not gold, but you cannot establish the fineness by eye. A jeweler or a buyer will test it with a touchstone and acids or with an XRF spectrometer, usually free of charge and without damaging the piece. Only with that result does the calculator mean anything." },
-    { q: "Is white gold worth the same as yellow?", a: "At the same fineness, yes. The colour comes from the alloying metals, which do not matter for valuation. White gold 585 holds exactly as much pure gold as yellow 585. Rhodium plating adds no value." },
-    { q: "Is it worth selling old jewelry by weight?", a: "Not always. Signed, pre-war or simply intact and attractive pieces can be worth several times the metal value on the secondary market. Selling by weight makes sense for damaged, bent and odd single pieces that nobody would buy as jewelry." },
-    { q: "Can old gold be remade instead of sold?", a: "Yes, and it often works out better. We accept metal you supply, melt it down and make a new piece from it. You then pay for the work and any material shortfall, instead of losing both the buyer's margin and the margin on buying new gold." },
-  ],
-  de: [
-    { q: "Wie viel bekomme ich für ein Gramm 585er Gold?", a: "Zwischen 70 und 90% des Materialwerts. Bei 585er Gold beträgt der Materialwert 58,5% des Feingoldpreises pro Gramm, ein Ankäufer zahlt also etwa 41 bis 53% des 999er Goldpreises. Der genaue Satz hängt von der Menge ab und davon, ob der Feingehalt erst geprüft werden muss." },
-    { q: "Zählen Steine im Ring zum Gewicht?", a: "Nein. Der Ankauf kauft Metall, Steine sind Ballast, der entfernt werden muss. Zirkonia geht meist verloren. Ein Diamant, Saphir oder Smaragd von nennenswerter Größe sollte ausgefasst und getrennt bewertet werden, sein Wert übersteigt oft den der ganzen Fassung." },
-    { q: "Was bedeutet Feingehalt 585 in Karat?", a: "14 Karat. Der Feingehalt nennt den Reingoldanteil in Tausendsteln, Karat in Vierundzwanzigsteln. 585 Tausendstel sind 58,5%, und 14 von 24 Teilen sind 58,3%, beide Zahlen beschreiben dieselbe Legierung." },
-    { q: "Mein Schmuck hat keine Punze. Was nun?", a: "Eine fehlende Punze heißt nicht, dass es kein Gold ist, aber der Feingehalt lässt sich nicht mit bloßem Auge bestimmen. Ein Juwelier oder Ankäufer prüft ihn mit Prüfstein und Säuren oder per XRF-Spektrometer, meist kostenlos und ohne Schaden am Stück. Erst mit diesem Ergebnis ist der Rechner aussagekräftig." },
-    { q: "Ist Weißgold so viel wert wie Gelbgold?", a: "Bei gleichem Feingehalt ja. Die Farbe kommt von den Zusatzmetallen, die für die Bewertung ohne Belang sind. Weißgold 585 enthält genauso viel Reingold wie gelbes 585. Eine Rhodinierung erhöht den Wert nicht." },
-    { q: "Lohnt es sich, alten Schmuck nach Gewicht zu verkaufen?", a: "Nicht immer. Signierte, Vorkriegs- oder schlicht intakte und schöne Stücke erzielen auf dem Zweitmarkt oft ein Vielfaches des Materialwerts. Der Verkauf nach Gewicht lohnt bei beschädigten, verbogenen und einzelnen Teilen, die niemand als Schmuck kauft." },
-    { q: "Kann man Altgold umarbeiten statt verkaufen?", a: "Ja, und häufig ist das günstiger. Wir nehmen beigestelltes Metall an, schmelzen es ein und fertigen daraus ein neues Stück. Sie zahlen dann Arbeitszeit und fehlendes Material, statt gleichzeitig die Ankaufsmarge und die Marge auf neues Gold zu verlieren." },
-  ],
-};
-
 const RELATED_TOOL_IDS = ["alloy-composition", "ring-blank", "ring-sizer"];
 
 export default function MetalPricingPage() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
   const seo = SEO_META[lang] || SEO_META.pl;
-  const faq = FAQ[lang] || FAQ.pl;
+  // Pytania stoja we wspolnym zbiorze danych, wiec te same odpowiedzi da sie
+  // znalezc przez wyszukiwarke na `/faq/`, bez drugiej kopii tekstu.
+  const faq = PYTANIA.map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
   const karats = KARAT_TABLE[lang] || KARAT_TABLE.pl;
   const steps = HOWTO_STEPS[lang] || HOWTO_STEPS.pl;
 

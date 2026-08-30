@@ -22,7 +22,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import FaqLista from "../components/FaqLista.jsx";
 import SpisTresci from "../components/SpisTresci.jsx";
-import { faqTematu } from "../data/faq.js";
+import SKLEP from "../data/faq/sklep.js";
 
 const L = {
   pl: {
@@ -214,7 +214,7 @@ export default function OrderProcess() {
   const odbiorRef = useScrollReveal();
   const sprawdzRef = useScrollReveal();
 
-  const pytania = [...faqTematu("realizacja"), ...faqTematu("dostawa")];
+  const pytania = SKLEP.filter((f) => f.temat === "realizacja" || f.temat === "dostawa");
   const pageUrl = `${SITE.url}/order-process/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),

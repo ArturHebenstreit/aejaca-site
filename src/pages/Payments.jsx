@@ -23,7 +23,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import FaqLista from "../components/FaqLista.jsx";
 import SpisTresci from "../components/SpisTresci.jsx";
-import { faqTematu } from "../data/faq.js";
+import SKLEP from "../data/faq/sklep.js";
 import { EUR_FX_MARGIN } from "../pricing/currency.js";
 import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
@@ -498,9 +498,9 @@ export default function Payments() {
   const troubleRef = useScrollReveal();
   const faqRef = useScrollReveal();
 
-  // Pytania stoja w `src/data/faq.js`, wiec ta sama odpowiedz nie rozjedzie
-  // sie miedzy ta strona, procesem realizacji a `/faq/`.
-  const pytania = [...faqTematu("platnosc"), ...faqTematu("oferta")];
+  // Pytania stoja w `src/data/faq/sklep.js`, wiec ta sama odpowiedz nie
+  // rozjedzie sie miedzy ta strona, procesem realizacji a `/faq/`.
+  const pytania = SKLEP.filter((f) => f.temat === "platnosc" || f.temat === "oferta");
   const pageUrl = `${SITE.url}/payments/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),

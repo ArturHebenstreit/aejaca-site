@@ -789,11 +789,18 @@ Reguły, które musisz znać na pamięć, bo pytają o nie najczęściej:
 
 ### Najczęściej zadawane pytania, jedno miejsce: https://www.aejaca.com/faq/
 
-Wszystkie pytania i odpowiedzi o płatność, oferty, realizację i dostawę, z wyszukiwarką treści
-i filtrami po tematach. Każda odpowiedź ma własną kotwicę, więc da się podać odnośnik do
-KONKRETNEJ odpowiedzi, a nie do strony, na której trzeba jej szukać. Gdy pytanie jest krótkie
-i typowe, odpowiedz i dorzuć ten adres; gdy dotyczy szczegółu jednej ze stron procesu,
-odeślij na tamtą stronę.
+**Komplet pytań serwisu w jednym miejscu**, z wyszukiwarką treści (odporną na ogonki)
+i filtrami po tematach: o marce, o biżuterii na zamówienie, o sTuDiO, o płatności, o ofertach,
+o realizacji, o wysyłce i odbiorze, o darmowych narzędziach i o współpracy B2B. Każda odpowiedź
+ma własną kotwicę w adresie (#pytanie-...), więc da się podać odnośnik do KONKRETNEJ odpowiedzi,
+a nie do strony, na której trzeba jej szukać.
+
+Każde pytanie stoi RÓWNIEŻ na swojej stronie tematycznej: pytanie o biżuterię na stronie
+biżuterii, pytanie o drukowalność przy narzędziu do sprawdzania modelu. Tekst jest jeden,
+oba miejsca go czytają, więc to samo pytanie nigdy nie dostaje dwóch różnych odpowiedzi.
+
+Gdy pytanie jest krótkie i typowe, odpowiedz i dorzuć ten adres; gdy dotyczy szczegółu jednej
+ze stron, odeślij na tamtą stronę.
 
 ### Oferta ustalona z człowiekiem i zapłata za nią: https://www.aejaca.com/oferta/
 

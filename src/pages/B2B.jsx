@@ -1,6 +1,7 @@
 import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Layers, Printer, Flame, Sparkles, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import PYTANIA from "../data/faq/b2b.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
@@ -89,13 +90,6 @@ const L = {
 
     faqTag: "Pytania i odpowiedzi",
     faqTitle: "FAQ B2B",
-    faq: [
-      { q: "Czy mogę zamówić sam wydruk wzorca bez odlewu?", a: "Tak. Filar 2 (wzorce castable 16K) możesz zamówić samodzielnie, wysyłamy gotowy wzorzec do Twojej odlewni." },
-      { q: "Czy wyroby są cechowane?", a: "Domyślnie tak, znak wytwórcy AEJaCA i zgłoszenie do Urzędu Probierczego. Po ustaleniu możemy przekazać wyrób bez cech, obowiązek zgłoszenia przechodzi wtedy na odbiorcę." },
-      { q: "Jak wygląda rozliczenie przy budowie marki?", a: "Etapowe, płacisz po akceptacji każdego kamienia milowego procesu white-label." },
-      { q: "Czy podpisujecie NDA?", a: "Tak, standardowo przy projektach autorskich." },
-      { q: "Jakie pliki przyjmujecie?", a: "STL, 3MF, STEP, OBJ. Jeśli nie masz pliku, wystarczy szkic lub zdjęcie, dopracujemy projekt w filarze 1 (CAD)." },
-    ],
 
     formTag: "Wycena w 24h",
     formTitle: "Porozmawiajmy o Twoim projekcie",
@@ -170,13 +164,6 @@ const L = {
 
     faqTag: "Questions and answers",
     faqTitle: "B2B FAQ",
-    faq: [
-      { q: "Can I order just a printed pattern, without casting?", a: "Yes. Pillar 2 (castable 16K patterns) can be ordered on its own, we ship the finished pattern to your foundry." },
-      { q: "Are the pieces hallmarked?", a: "By default yes, AEJaCA maker's mark plus a report to the Polish Assay Office. By arrangement we can hand over an unmarked piece, the reporting obligation then passes to you." },
-      { q: "How does billing work when building a brand?", a: "Staged, you pay after approving each milestone of the white-label process." },
-      { q: "Do you sign NDAs?", a: "Yes, standard practice for proprietary designs." },
-      { q: "What files do you accept?", a: "STL, 3MF, STEP, OBJ. No file yet? A sketch or photo is enough, we'll refine the design under pillar 1 (CAD)." },
-    ],
 
     formTag: "Quote within 24h",
     formTitle: "Let's talk about your project",
@@ -251,13 +238,6 @@ const L = {
 
     faqTag: "Fragen und Antworten",
     faqTitle: "B2B-FAQ",
-    faq: [
-      { q: "Kann ich nur den Modelldruck ohne Guss bestellen?", a: "Ja. Säule 2 (Castable 16K-Modelle) kann einzeln bestellt werden, wir versenden das fertige Modell an Ihre Gießerei." },
-      { q: "Werden die Stücke punziert?", a: "Standardmäßig ja, AEJaCA-Herstellerzeichen plus Meldung beim polnischen Punzierungsamt. Nach Absprache können wir ein unpunziertes Stück übergeben, die Meldepflicht geht dann auf Sie über." },
-      { q: "Wie funktioniert die Abrechnung beim Markenaufbau?", a: "Etappenweise, Sie zahlen nach Freigabe jedes Meilensteins des White-Label-Prozesses." },
-      { q: "Unterschreiben Sie NDAs?", a: "Ja, Standard bei urheberrechtlich geschützten Entwürfen." },
-      { q: "Welche Dateien akzeptieren Sie?", a: "STL, 3MF, STEP, OBJ. Noch keine Datei? Eine Skizze oder ein Foto genügt, wir verfeinern das Design in Säule 1 (CAD)." },
-    ],
 
     formTag: "Angebot in 24h",
     formTitle: "Sprechen wir über Ihr Projekt",
@@ -273,6 +253,9 @@ export default function B2B() {
   const getPillarRef = useStaggerReveal(90);
   const whiteLabelRef = useScrollReveal();
   const seriesRef = useScrollReveal();
+  // Pytania stoja we wspolnym zbiorze danych, wiec te same odpowiedzi da sie
+  // znalezc przez wyszukiwarke na `/faq/`, bez drugiej kopii tekstu.
+  const pytania = PYTANIA.map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
   const faqHeaderRef = useScrollReveal();
   const getFaqRef = useStaggerReveal(80);
   const formRef = useScrollReveal();
@@ -293,7 +276,7 @@ export default function B2B() {
       url: pageUrl,
       offers: { price: "95", minPrice: "20", maxPrice: "1200", currency: "EUR" },
     }),
-    buildFAQSchema(t.faq.map((f) => ({ q: f.q, a: f.a }))),
+    buildFAQSchema(pytania.map((f) => ({ q: f.q, a: f.a }))),
   ];
 
   const pillars = [
@@ -509,7 +492,7 @@ export default function B2B() {
               <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight">{t.faqTitle}</h2>
             </div>
             <div className="space-y-4">
-              {t.faq.map((item, i) => (
+              {pytania.map((item, i) => (
                 <div key={i} ref={getFaqRef(i)} className="reveal-scale p-5 rounded-xl glass-blue">
                   <h3 className="font-sans text-base font-semibold text-white mb-2">{item.q}</h3>
                   <p className="text-neutral-400 text-sm leading-relaxed">{item.a}</p>

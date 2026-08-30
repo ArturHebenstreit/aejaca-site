@@ -176,13 +176,6 @@ export default {
     ctaText: "Whether you need custom jewelry or a technical prototype, we're here to help.",
     ctaBtn: "Get in Touch",
     faqHeading: "Frequently asked questions",
-    faq: [
-      { q: "What is AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) is an independent Polish design studio founded in 2023 in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication - 3D printing, laser engraving and resin casting (AEJaCA sTuDiO). We serve customers in Polish, English and German, and ship worldwide." },
-      { q: "Do you make custom jewelry?", a: "Yes. We design and craft one-of-a-kind custom jewelry - engagement rings, wedding bands, necklaces, bracelets and earrings in 925 sterling silver and 14K/18K gold with natural gemstones. We model in 3D (Rhino, Fusion 360) from a sketch or idea, then produce via lost-wax casting with hand finishing." },
-      { q: "What does AEJaCA sTuDiO offer?", a: "AEJaCA sTuDiO is on-demand digital fabrication: 3D modeling / CAD of technical and functional parts (Rhino, Fusion 360), FDM/SLA 3D printing, CO2 laser engraving and cutting, fiber-laser marking, resin casting and prototyping. You can upload your own STL/SVG file or commission a model designed from scratch." },
-      { q: "How much does an order cost and how fast is a quote?", a: "You get an online quote in about 30 seconds with AEJaCA's calculators - no waiting for email. Simple mode gives a quick estimate; advanced mode gives full control over metal, stones and finish. For example: a silver ring with a gemstone from €95, a 3D-printed keychain from €6." },
-      { q: "Where is AEJaCA based and do you ship internationally?", a: "The studio is in Józefosław near Warsaw and ships worldwide. Within Poland: InPost parcel locker PLN 16.49, courier PLN 19.49, free delivery on orders over PLN 400. We also deliver to the EU, the UK and the USA via DHL Express." },
-    ],
   },
 
   // Jewelry page
@@ -327,18 +320,6 @@ export default {
     faq: {
       tag: "Common Questions",
       title: "Frequently Asked Questions",
-      items: [
-        { q: "How long does a custom jewelry project take?", a: "Typically 2–4 weeks depending on complexity. We'll give you a precise timeline after discussing your design." },
-        { q: "Can I provide my own gemstone?", a: "Absolutely! We're happy to work with stones you provide. We'll advise on the best setting approach." },
-        { q: "Do you offer resizing or modifications?", a: "Yes. We can resize rings and modify designs. Contact us with your needs and we'll find the best solution." },
-        { q: "What metals do you work with?", a: "Primarily sterling silver (925) and gold (14K, 18K). We also work with mixed metals for unique designs." },
-        { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
-        { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
-        { q: "How long does order fulfillment take?", a: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces, up to 14 days. You'll receive a tracking number as soon as the order ships." },
-        { q: "Can I return jewelry?", a: "Universal products, yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our [Returns](/returns) page." },
-        { q: "How much does shipping cost?", a: "InPost parcel locker 16.49 PLN, courier 19.49 PLN, free delivery on orders over 400 PLN. International from 100 PLN (Germany, Czechia, Slovakia, Lithuania), rest of the EU 140 PLN. Details on our [Shipping](/shipping) page." },
-        { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults, not mechanical damage or normal wear. Full details on our [Warranty](/warranty) page." },
-      ],
     },
 
     tips: {
@@ -570,15 +551,6 @@ export default {
     faq: {
       tag: "Common Questions",
       title: "Frequently Asked Questions",
-      items: [
-        { q: "What's the minimum order quantity?", a: "We accept single prototype orders as well as batch production. No minimum quantity required." },
-        { q: "How long does a typical project take?", a: "Simple projects: 1–3 days. Complex prototypes: 1–2 weeks. Batch production timelines depend on quantity." },
-        { q: "Can you work from my own 3D files?", a: "Yes! We accept STL, STEP, OBJ, and most common CAD formats. We can also design from scratch." },
-        { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
-        { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services, from concept to manufacturing-ready files." },
-        { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
-        { q: "How long does project fulfillment take?", a: "If material is in stock, fulfillment takes 3–5 business days (depending on quantity). Ordering materials extends the timeline by 3–7 days. If the order requires sourcing specialized components to match the specification (e.g., specific gemstones, specialty filaments, electronic components), fulfillment may take an additional 7–14 business days." },
-      ],
     },
 
     tips: {
