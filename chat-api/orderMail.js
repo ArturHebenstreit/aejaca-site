@@ -1098,6 +1098,7 @@ const ETAP_T = {
     progress: "Postęp zlecenia",
     terminLabel: "Planowana finalizacja",
     przesylkaLabel: "Numer przesyłki",
+    sledzLabel: "Śledź przesyłkę",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planowana finalizacja: ${data}.`,
@@ -1132,6 +1133,7 @@ const ETAP_T = {
     progress: "Order progress",
     terminLabel: "Planned completion",
     przesylkaLabel: "Tracking number",
+    sledzLabel: "Track the parcel",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planned completion: ${data}.`,
@@ -1162,6 +1164,7 @@ const ETAP_T = {
     progress: "Auftragsfortschritt",
     terminLabel: "Geplante Fertigstellung",
     przesylkaLabel: "Sendungsnummer",
+    sledzLabel: "Sendung verfolgen",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Geplante Fertigstellung: ${data}.`,
@@ -1211,6 +1214,25 @@ function drogaWydania(order) {
   if (order.delivery_method === "pickup") return "pickup";
   if (order.delivery_method === "digital") return "digital";
   return "ship";
+}
+
+/**
+ * Adres sledzenia przesylki albo null.
+ *
+ * Numer bez adresu, pod ktory da sie go wkleic, jest dla klienta ciagiem
+ * dwudziestu czterech cyfr. Przewoznika bierzemy z tego, co naprawde wiemy:
+ * paczkomat i kurier krajowy to InPost (cennik wysylki, strefa `pl`). Przy
+ * przesylce zagranicznej wozi DHL albo DHL/FedEx, zaleznie od strefy, a na
+ * zamowieniu nie zapisujemy ktory, wiec adresu NIE zgadujemy: zostaje sam
+ * numer. Zly odnosnik do sledzenia jest gorszy niz jego brak.
+ */
+function adresSledzenia(order) {
+  if (!order.tracking_number) return null;
+  const kraj = String(order.country || "PL").toUpperCase();
+  const inpost = order.delivery_method === "inpost_locker"
+    || (order.delivery_method === "courier" && kraj === "PL");
+  if (!inpost) return null;
+  return `https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(order.tracking_number)}`;
 }
 
 /**
@@ -1268,6 +1290,13 @@ export function buildStatusUpdate(order) {
   const tytul = (ETAP_TYTUL[lang] || ETAP_TYTUL.pl)[order.status] || l.subject(order.order_ref);
 
   const link = linkZlecenia(order, lang);
+  // List przewozowy tylko przy przesylce. Panel chowa to pole przy przekazaniu
+  // osobistym, ale warunek patrzyl wylacznie na status, wiec jedna omylkowa
+  // wartosc w bazie dorabiala numer przesylki do paczki, ktora nigdzie nie
+  // jechala.
+  const zPrzesylka = order.status === "shipped" && order.tracking_number
+    && drogaWydania(order) === "ship";
+  const sledzenie = zPrzesylka ? adresSledzenia(order) : null;
   // Karta z terminem stoi tylko dopoki termin jest jeszcze obietnica. Przy
   // etapie "gotowe" praca jest skonczona, wiec "planowana finalizacja" w
   // przyszlosci przeczylaby zdaniu stojacemu wyzej w tym samym mailu.
@@ -1281,7 +1310,8 @@ export function buildStatusUpdate(order) {
   // wlasnie ja, a mail bez niej ladu je czesciej w spamie.
   const linie = [l.hi, "", tresc.charAt(0).toUpperCase() + tresc.slice(1)];
   if (zTerminem) linie.push("", l.termin(dzien(order.deadline_at)));
-  if (order.status === "shipped" && order.tracking_number) linie.push("", l.przesylka(order.tracking_number));
+  if (zPrzesylka) linie.push("", l.przesylka(order.tracking_number));
+  if (sledzenie) linie.push(`${l.sledzLabel}: ${sledzenie}`);
   linie.push("", `${l.podglad}: ${link}`);
   linie.push("", odnosnikiText(lang, odnosniki), "", stopkaText(lang));
   const text = linie.join("\n");
@@ -1305,10 +1335,11 @@ export function buildStatusUpdate(order) {
       </div>
     ` : ""}
 
-    ${order.status === "shipped" && order.tracking_number ? `
+    ${zPrzesylka ? `
       <div style="margin-top:14px;background:#f4f4f4;border-radius:8px;padding:14px 16px">
         <span style="font-size:12px;color:#777">${l.przesylkaLabel}</span>
         <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;margin-top:2px">${esc(order.tracking_number)}</div>
+        ${sledzenie ? `<div style="margin-top:8px;font-size:13px"><a href="${esc(sledzenie)}" style="color:#b58a3c;font-weight:700">${esc(l.sledzLabel)}</a></div>` : ""}
       </div>
     ` : ""}
 
@@ -1331,7 +1362,7 @@ export async function sendStatusUpdate(pool, orderId) {
   try {
     const { rows } = await pool.query(
       `SELECT order_ref, status, lang, customer_email, access_token,
-              deadline_at, tracking_number, delivery_method, requires_details,
+              deadline_at, tracking_number, delivery_method, country, requires_details,
               paid_at, details_at, queued_at, production_started_at, ready_at, shipped_at
          FROM orders WHERE id = $1`,
       [orderId]

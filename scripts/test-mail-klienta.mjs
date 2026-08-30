@@ -219,6 +219,31 @@ console.log("\n4d. Ilosc tylko wtedy, gdy jest wieksza niz jedna\n");
   ok(/&times; 3/.test(tresc(trzy)) && /x 3/.test(tresc(trzy)), "przy trzech sztukach ilosc widac");
 }
 
+console.log("\n4e. Numer przesylki: odnosnik tylko tam, gdzie znamy przewoznika\n");
+
+// Numer bez adresu, pod ktory da sie go wkleic, jest ciagiem 24 cyfr. Adresu
+// nie zgadujemy: przy przesylce zagranicznej wozi DHL albo DHL/FedEx, a na
+// zamowieniu nie zapisujemy ktory.
+{
+  const wyslane = (dod) => buildStatusUpdate({
+    ...ZAMOWIENIE, status: "shipped", tracking_number: "620012345678901234567890",
+    production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+    shipped_at: "2026-09-02T09:00:00Z", ...dod,
+  });
+  const caly = (m) => `${m.html}\n${m.text}`;
+  const paczkomat = caly(wyslane({ delivery_method: "inpost_locker", country: "PL" }));
+  ok(/inpost\.pl\/sledzenie-przesylek\?number=620012345678901234567890/.test(paczkomat),
+     "paczkomat: odnosnik do sledzenia InPost");
+  ok(/Śledź przesyłkę/.test(paczkomat), "odnosnik ma nazwe, a nie goly adres");
+  ok(!/inpost\.pl/.test(caly(wyslane({ delivery_method: "courier", country: "DE" }))),
+     "kurier zagraniczny: samego numeru nie podpinamy pod polskiego przewoznika");
+  ok(/inpost\.pl/.test(caly(wyslane({ delivery_method: "courier", country: "PL" }))),
+     "kurier krajowy: to InPost, wiec odnosnik jest");
+  const odbior = caly(wyslane({ delivery_method: "pickup", country: "PL" }));
+  ok(!/620012345678901234567890/.test(odbior),
+     "odbior osobisty: zaden list przewozowy, bo paczka nigdzie nie jechala");
+}
+
 console.log("\n5. Data i liczba dni po ludzku\n");
 
 // Sterownik bazy oddaje kolumne DATE jako obiekt Date. Samo `String(...)`

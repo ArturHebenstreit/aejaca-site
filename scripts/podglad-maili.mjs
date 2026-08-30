@@ -167,6 +167,16 @@ const EKRANY = {
       shipped_at: "2026-09-02T09:00:00Z", tracking_number: "620012345678901234567890",
     }),
   },
+  // Przesylka zagraniczna: numer zostaje, odnosnika nie ma. Wozi DHL albo
+  // DHL/FedEx, zaleznie od strefy, a na zamowieniu nie zapisujemy ktory.
+  "10b": {
+    nazwa: "Etap: wyslane za granice, numer bez odnosnika",
+    zbuduj: () => naEtapie("shipped", {
+      delivery_method: "courier", country: "DE",
+      production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+      shipped_at: "2026-09-02T09:00:00Z", tracking_number: "JD014600009876543210",
+    }),
+  },
   "11": {
     nazwa: "Etap: zamowienie zamkniete",
     zbuduj: () => naEtapie("completed", {
