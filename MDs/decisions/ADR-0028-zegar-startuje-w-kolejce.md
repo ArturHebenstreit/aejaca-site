@@ -146,10 +146,10 @@ Strona zamowienia pokazywala termin i nic wiecej, a klient pyta przede
 wszystkim "co sie dzieje". Os stoi w pionie, bo strona zamowienia jest waska
 kolumna, a piec przystankow w poziomie lamalo podpisy na dwie linie.
 
-Etapy "gotowe do pobrania" i "w realizacji" sa dla klienta JEDNYM stanem:
-w obu zaplacil, przyjelismy i termin biegnie. Roznica jest wewnetrzna. Daty
-formatujemy z napisu, a nie przez `Intl`, bo dane ICU w Node i w przegladarce
-bywaja z roznych wersji, a rozjazd wyrzuca cale poddrzewo (ADR-0022).
+Etapy "gotowe do pobrania" i "w realizacji" byly dla klienta JEDNYM stanem.
+Punkt 13 to odwoluje. Daty formatujemy z napisu, a nie przez `Intl`, bo dane
+ICU w Node i w przegladarce bywaja z roznych wersji, a rozjazd wyrzuca cale
+poddrzewo (ADR-0022).
 
 ### 11. Link do zamowienia stoi w kolejce
 
@@ -164,8 +164,44 @@ a zdarza sie tez, ze rzecz wymagajaca rozmowy przeszla przez oferte bez niego.
 Bez pola w kolejce takie zlecenie na zawsze mowiloby "ustalenia nie byly
 wymagane" i nigdy nie stanelo by na wlasciwym przystanku osi.
 
+### 13. Klient widzi kolejke osobno, a data nazywa sie planowana finalizacja
+
+Decyzja wlasciciela z 2026-08-30, poprawka do punktow 10 i 3.
+
+**Kolejka jest osobnym przystankiem.** Punkt 10 chowal przed klientem roznice
+miedzy "czeka" a "robimy", wiec dwa powiadomienia pod rzad rysowaly ten sam
+obrazek, a zlecenie lezace w kolejce przedstawialo sie jako juz robione. Os czasu
+ma teraz "Czeka w kolejce" i "W realizacji" osobno, w mailu i na stronie
+zamowienia, ze zdaniem mowiacym wprost, ze nikt jeszcze nie wzial zlecenia do
+reki, ale termin juz biegnie.
+
+**Data nazywa sie "Planowana finalizacja", nie "Planowana wysylka".** Ta sama
+data stala pod nazwa mowiaca o wysylce przy zamowieniu odbieranym osobiscie
+i przy zamowieniu, ktore w calosci jest plikiem. Nazwa neutralna jest prawdziwa
+we wszystkich trzech drogach i nie kaze rozgalezac etykiety. Mowi tez, czego
+data NIE obejmuje: to dzien konca pracy i przekazania paczki, a nie dzien
+doreczenia. Angielski: "Planned completion", niemiecki: "Geplante
+Fertigstellung".
+
+**Zdanie o wydaniu bierze sie z `delivery_method`.** Wczesniej mail i strona
+wyliczaly klientowi obie mozliwosci naraz ("do wysylki albo do odbioru"), choc
+sposob dostawy znamy od zamowienia, a przy etapie "wyslane" kod podmienial
+fragmenty gotowego zdania, osobno dla kazdego jezyka. Zdania stoja teraz jako
+`{ ship, pickup, digital }` i wybiera je jedna funkcja. Podmiana slow wymagala
+trzech regulek na jezyk i milczaco przestawala dzialac przy kazdej poprawce
+stylistycznej.
+
+**Karta z terminem znika na etapie "gotowe".** Praca jest skonczona, wiec
+"planowana finalizacja" z data w przyszlosci przeczylaby zdaniu stojacemu wyzej
+w tym samym mailu. Zegar przypomnien to osobna sprawa i dalej obejmuje `ready`
+(punkt 3): pracownia ma wiedziec, ze spakowana paczka nie jedzie.
+
 ## Alternatywy i powody odrzucenia
 
+- **Rozgalezienie samej etykiety terminu** ("Planowana wysylka" przy kurierze,
+  "Gotowe do odbioru" przy odbiorze). Dwie nazwy jednej daty w mailu, na stronie
+  zamowienia i w panelu, a przy zamowieniu cyfrowym zadna z nich nie pasuje.
+  Jedna nazwa neutralna zalatwia wszystkie trzy drogi.
 - **Zegar startuje przy pobraniu do pracy.** Wtedy oferta nie moze obiecywac
   daty, tylko "14 dni od przyjecia do realizacji", i trzeba to zmienic w ofercie,
   mailu i na stronie zamowienia. Uczciwe, ale slabsze dla klienta: data jest

@@ -151,6 +151,15 @@ const EKRANY = {
   },
   "08": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
   "09": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
+  // Ta sama chwila, druga droga wydania. Zdanie o gotowosci bierze sie
+  // z `delivery_method`, wiec oba ekrany musza stac obok siebie w podgladzie.
+  "09b": {
+    nazwa: "Etap: gotowe, odbior osobisty",
+    zbuduj: () => naEtapie("ready", {
+      delivery_method: "pickup",
+      production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+    }),
+  },
   "10": {
     nazwa: "Etap: wyslane, z numerem przesylki",
     zbuduj: () => naEtapie("shipped", {

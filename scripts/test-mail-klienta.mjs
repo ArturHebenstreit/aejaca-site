@@ -188,11 +188,20 @@ console.log("\n4c. Zdanie \"co dalej\" pasuje do tego, co klient kupil\n");
     const m = buildOrderMessages(ZAMOWIENIE, poz, []).find((x) => x.to === ZAMOWIENIE.customer_email);
     return `${m.html}\n${m.text}`;
   };
-  ok(!/gotowe do wysyłki lub odbioru/.test(tresc(plik)),
+  ok(!/spakowane i pojedzie do Ciebie/.test(tresc(plik)),
      "zamowienie cyfrowe nie obiecuje wysylki");
   ok(/Pliki masz powyżej/.test(tresc(plik)), "mowi zamiast tego, ze pliki juz sa");
-  ok(/gotowe do wysyłki lub odbioru/.test(tresc(rzecz)),
-     "przy rzeczy do wyslania zdanie zostaje bez zmian");
+  ok(/spakowane i pojedzie do Ciebie/.test(tresc(rzecz)),
+     "przy rzeczy do wyslania mowimy o wysylce");
+  // Zdanie bierze sie z `delivery_method`, a nie wylicza obu mozliwosci naraz:
+  // klient odbierajacy osobiscie nie ma czekac na paczke.
+  const trescOdbior = (poz) => {
+    const m = buildOrderMessages({ ...ZAMOWIENIE, delivery_method: "pickup" }, poz, [])
+      .find((x) => x.to === ZAMOWIENIE.customer_email);
+    return `${m.html}\n${m.text}`;
+  };
+  ok(/gotowe do odbioru/.test(trescOdbior(rzecz)) && !/pojedzie do Ciebie/.test(trescOdbior(rzecz)),
+     "przy odbiorze osobistym mail mowi o odbiorze, nie o wysylce");
 }
 
 console.log("\n4d. Ilosc tylko wtedy, gdy jest wieksza niz jedna\n");

@@ -264,9 +264,20 @@ const UI = {
     paidTitle: "Dziękujemy, płatność przyjęta",
     paidDesc: "Potwierdzenie wysłaliśmy na Twój adres email. Zabieramy się do pracy i odezwiemy się, gdy zamówienie będzie gotowe.",
     productionTitle: "Status realizacji zamówienia",
-    productionDesc: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki. Nie musisz nic robić.",
+    // Zdania o wydaniu zalezą od tego, co klient wybral przy zamowieniu.
+    // Jedno zdanie dla wszystkich mowilo o paczce w drodze komus, kto odbiera
+    // osobiscie, i o wysylce komus, kto kupil plik.
+    productionDesc: {
+      ship: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie spakowane i pojedzie do Ciebie. Nie musisz nic robić.",
+      pickup: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie gotowe do odbioru, i umówimy godzinę. Nie musisz nic robić.",
+      digital: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy pliki będą gotowe do pobrania. Nie musisz nic robić.",
+    },
     shippedTitle: "Zamówienie wysłane",
-    shippedDesc: "Paczka jest w drodze. Jeżeli przesyłka ma numer do śledzenia, znajdziesz go poniżej.",
+    shippedDesc: {
+      ship: "Paczka jest w drodze. Jeżeli przesyłka ma numer do śledzenia, znajdziesz go poniżej.",
+      pickup: "Zamówienie czeka na Ciebie w Józefosławiu, o umówionej godzinie.",
+      digital: "Pliki są przekazane. Link do pobrania jest w mailu z potwierdzeniem zamówienia.",
+    },
     completedTitle: "Zamówienie zakończone",
     completedDesc: "Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
     shippedAtLabel: "Data wysyłki",
@@ -299,7 +310,7 @@ const UI = {
     tlReady: "Gotowe",
     tlShipped: "Wysłane",
     tlHanded: "Przekazane",
-    tlDeadline: "Termin realizacji",
+    tlDeadline: "Planowana finalizacja",
     tlAfterDetails: "po dokonaniu wszystkich ustaleń",
     tlUpTo: "do",
     tlWaitingFor: "Czekamy na ustalenia do:",
@@ -310,10 +321,12 @@ const UI = {
     stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich.",
     stageRunning: "Zlecenie w realizacji",
     stageReady: "Zrealizowane",
-    stageReadyDesc: "Praca skończona. Pakujemy albo przygotowujemy do odbioru.",
+    stageReadyDesc: {
+      ship: "Praca skończona. Pakujemy zamówienie i przygotowujemy je do wysyłki.",
+      pickup: "Praca skończona. Przygotowujemy zamówienie do odbioru osobistego, odezwiemy się, żeby umówić godzinę.",
+      digital: "Praca skończona. Pliki do pobrania są w mailu z potwierdzeniem zamówienia.",
+    },
     stageHanded: "Przekazane",
-    deadlineLabel: "Planowana wysyłka",
-    daysLeftLabel: "Do wysyłki zostało",
     daysUnit: "dni",
     dayUnit: "dzień",
     daysToday: "dzisiaj",
@@ -355,9 +368,17 @@ const UI = {
     paidTitle: "Thank you, payment received",
     paidDesc: "We have sent a confirmation to your email address. We are starting work and will get in touch once your order is ready.",
     productionTitle: "Order progress",
-    productionDesc: "We have your payment and the work has started. We will get in touch once the order is ready to ship. You do not need to do anything.",
+    productionDesc: {
+      ship: "We have your payment and the work has started. We will write once your order is packed and on its way to you. You do not need to do anything.",
+      pickup: "We have your payment and the work has started. We will write once your order is ready for collection, and we will agree a time. You do not need to do anything.",
+      digital: "We have your payment and the work has started. We will write once your files are ready to download. You do not need to do anything.",
+    },
     shippedTitle: "Your order has been shipped",
-    shippedDesc: "The parcel is on its way. If the shipment has a tracking number, you will find it below.",
+    shippedDesc: {
+      ship: "The parcel is on its way. If the shipment has a tracking number, you will find it below.",
+      pickup: "Your order is waiting for you in Józefosław, at the time we agreed.",
+      digital: "Your files have been handed over. The download link is in your order confirmation e-mail.",
+    },
     completedTitle: "Order completed",
     completedDesc: "Thank you. If anything is wrong with the piece, write to us, we answer every message.",
     shippedAtLabel: "Shipping date",
@@ -390,7 +411,7 @@ const UI = {
     tlReady: "Finished",
     tlShipped: "Dispatched",
     tlHanded: "Handed over",
-    tlDeadline: "Delivery date",
+    tlDeadline: "Planned completion",
     tlAfterDetails: "once everything is agreed",
     tlUpTo: "up to",
     tlWaitingFor: "Waiting to agree:",
@@ -401,10 +422,13 @@ const UI = {
     stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that.",
     stageRunning: "In the workshop",
     stageReady: "Finished",
-    stageReadyDesc: "The work is done. We are packing it or getting it ready for collection.",
+    stageReadyDesc: {
+      ship: "The work is done. We are packing your order and getting it ready for dispatch.",
+      pickup: "The work is done. We are getting your order ready for collection and will write to agree a time.",
+      digital: "The work is done. The download links are in your order confirmation e-mail.",
+    },
     stageHanded: "Handed over",
-    deadlineLabel: "Planned dispatch",
-    daysLeftLabel: "Days to dispatch",
+
     daysUnit: "days",
     dayUnit: "day",
     daysToday: "today",
@@ -446,9 +470,17 @@ const UI = {
     paidTitle: "Vielen Dank, Zahlung erhalten",
     paidDesc: "Die Bestätigung haben wir an Ihre E-Mail-Adresse gesendet. Wir beginnen mit der Arbeit und melden uns, sobald Ihre Bestellung fertig ist.",
     productionTitle: "Status Ihrer Bestellung",
-    productionDesc: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald die Bestellung versandfertig ist. Sie müssen nichts tun.",
+    productionDesc: {
+      ship: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Bestellung verpackt ist und zu Ihnen unterwegs geht. Sie müssen nichts tun.",
+      pickup: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Bestellung zur Abholung bereit ist, und vereinbaren eine Uhrzeit. Sie müssen nichts tun.",
+      digital: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Dateien zum Download bereitstehen. Sie müssen nichts tun.",
+    },
     shippedTitle: "Ihre Bestellung wurde versandt",
-    shippedDesc: "Das Paket ist unterwegs. Sofern die Sendung eine Sendungsnummer hat, finden Sie sie unten.",
+    shippedDesc: {
+      ship: "Das Paket ist unterwegs. Sofern die Sendung eine Sendungsnummer hat, finden Sie sie unten.",
+      pickup: "Ihre Bestellung wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
+      digital: "Ihre Dateien wurden übergeben. Der Download-Link steht in Ihrer Bestellbestätigung.",
+    },
     completedTitle: "Bestellung abgeschlossen",
     completedDesc: "Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
     shippedAtLabel: "Versanddatum",
@@ -481,7 +513,7 @@ const UI = {
     tlReady: "Fertig",
     tlShipped: "Versandt",
     tlHanded: "Übergeben",
-    tlDeadline: "Liefertermin",
+    tlDeadline: "Geplante Fertigstellung",
     tlAfterDetails: "nach allen Absprachen",
     tlUpTo: "bis zu",
     tlWaitingFor: "Wir warten auf Absprachen zu:",
@@ -492,10 +524,12 @@ const UI = {
     stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach.",
     stageRunning: "In der Werkstatt",
     stageReady: "Fertiggestellt",
-    stageReadyDesc: "Die Arbeit ist fertig. Wir verpacken sie oder bereiten sie zur Abholung vor.",
+    stageReadyDesc: {
+      ship: "Die Arbeit ist fertig. Wir verpacken Ihre Bestellung und bereiten den Versand vor.",
+      pickup: "Die Arbeit ist fertig. Wir bereiten Ihre Bestellung zur Abholung vor und melden uns, um eine Uhrzeit zu vereinbaren.",
+      digital: "Die Arbeit ist fertig. Die Download-Links stehen in Ihrer Bestellbestätigung.",
+    },
     stageHanded: "Übergeben",
-    deadlineLabel: "Geplanter Versand",
-    daysLeftLabel: "Tage bis zum Versand",
     daysUnit: "Tage",
     dayUnit: "Tag",
     daysToday: "heute",
@@ -698,6 +732,10 @@ export default function OrderStatus() {
   // `shipped_at`, inne zdanie: paczka, ktora nigdzie nie jechala, nie jest
   // "w drodze" i klient nie ma na co czekac pod drzwiami.
   const odbiorOsobisty = order?.deliveryMethod === "pickup";
+  // Droga wydania rozstrzyga zdania o pakowaniu, odbiorze i pobraniu plikow.
+  // Pole znamy od zamowienia, wiec nie ma powodu, zeby strona wyliczala klientowi
+  // wszystkie mozliwosci naraz.
+  const droga = order?.deliveryMethod === "pickup" ? "pickup" : order?.deliveryMethod === "digital" ? "digital" : "ship";
   // Kwoty formatuje strona, a nie serwer, bo ten sam wiersz musi umiec pokazac
   // pozycje, dostawe i rabat, a nie tylko sume.
   const zlote = (grosze) =>
@@ -753,15 +791,15 @@ export default function OrderStatus() {
   } else if (inProduction) {
     icon = <Hammer className="w-12 h-12 text-amber-400" />;
     title = u.productionTitle;
-    desc = u.productionDesc;
+    desc = u.productionDesc[droga];
   } else if (etapGotowe) {
     icon = <PackageCheck className="w-12 h-12 text-emerald-400" />;
     title = u.stageReady;
-    desc = u.stageReadyDesc;
+    desc = u.stageReadyDesc[droga];
   } else if (shipped) {
     icon = <Truck className="w-12 h-12 text-blue-400" />;
     title = odbiorOsobisty ? u.stageHanded : u.shippedTitle;
-    desc = u.shippedDesc;
+    desc = u.shippedDesc[droga];
   } else if (completed) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.completedTitle;

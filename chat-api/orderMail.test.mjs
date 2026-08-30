@@ -172,9 +172,9 @@ assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierd
   // Data i odmiana ida do klienta po ludzku. Wersja z myslnikami i "1 dni"
   // dotarla do klientki (zgloszenie 2026-08-30), wiec obie sa tu na stale.
   assert.match(doKlienta({ lead_days: 14, deadline_at: "2026-09-12" }).text,
-    /Termin realizacji: 14 dni\. Planowana wysyłka: 12\.09\.2026\./);
+    /Termin realizacji: 14 dni\. Planowana finalizacja: 12\.09\.2026\./);
   assert.match(doKlienta({ lead_days: 1, deadline_at: new Date(2026, 8, 12) }).text,
-    /Termin realizacji: 1 dzień\. Planowana wysyłka: 12\.09\.2026\./,
+    /Termin realizacji: 1 dzień\. Planowana finalizacja: 12\.09\.2026\./,
     "kolumna DATE przychodzi jako obiekt Date, a jeden dzien to nie sa dni");
   assert.match(doKlienta({ lead_days: 14, requires_details: true }).html,
     /liczymy dopiero od ustaleń/, "klient wie, ze zegar rusza po ustaleniach");

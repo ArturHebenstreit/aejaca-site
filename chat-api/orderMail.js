@@ -46,7 +46,7 @@ const T = {
     delivery: "Dostawa",
     total: "Zapłacono",
     leadTitle: "Termin realizacji",
-    leadPlanned: (ile, data) => `${ile}. Planowana wysyłka: ${data}.`,
+    leadPlanned: (ile, data) => `${ile}. Planowana finalizacja: ${data}.`,
     leadDetails: (ile) => ile
       ? `Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji, ${ile}, liczymy dopiero od ustaleń.`
       : "Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji liczymy dopiero od ustaleń.",
@@ -56,8 +56,14 @@ const T = {
     printAccepted: "Potwierdzenie zaznaczone przy dodawaniu pozycji do koszyka.",
     printRights: "To nie ogranicza Twoich uprawnień konsumenta. Oznacza tylko, że wydruk wykonujemy według Twojej specyfikacji, mimo ujawnionej właściwości pliku, więc jej skutek nie będzie traktowany jako nasza wada wykonania.",
     printSettings: (tech, nozzle) => nozzle ? `Ustawienia: ${tech}, dysza ${nozzle} mm.` : `Ustawienia: ${tech}.`,
-    nextBody:
-      "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki lub odbioru. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+    // "Co dalej" konczy sie tym, co klient wybral przy zamowieniu, a nie
+    // wyliczeniem obu mozliwosci: sposob dostawy stoi w tym samym mailu,
+    // kilka wierszy wyzej.
+    nextBody: {
+      ship: "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie spakowane i pojedzie do Ciebie. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+      pickup: "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do odbioru, i umówimy godzinę. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+      digital: "Zabieramy się do pracy. Odezwiemy się, gdy pliki będą gotowe do pobrania. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+    },
     nextBodyPliki:
       "Pliki masz powyżej i są Twoje na zawsze. Nic nie wysyłamy i na nic nie czekasz. Gdyby link wygasł, zanim zdążysz pobrać, albo gdybyś potrzebował innego formatu, napisz do nas.",
     filesTitle: "Pliki do pobrania",
@@ -123,7 +129,7 @@ const T = {
     delivery: "Delivery",
     total: "Paid",
     leadTitle: "Lead time",
-    leadPlanned: (ile, data) => `${ile}. Planned dispatch: ${data}.`,
+    leadPlanned: (ile, data) => `${ile}. Planned completion: ${data}.`,
     leadDetails: (ile) => ile
       ? `We will agree the details with you first and will be in touch about it. The lead time of ${ile} starts only after that.`
       : "We will agree the details with you first and will be in touch about it. The lead time starts only after that.",
@@ -133,8 +139,11 @@ const T = {
     printAccepted: "Confirmation ticked when the item was added to the cart.",
     printRights: "This does not limit your consumer rights. It only means we print to your specification despite the disclosed property of the file, so its consequence will not be treated as a fault in our workmanship.",
     printSettings: (tech, nozzle) => nozzle ? `Settings: ${tech}, ${nozzle} mm nozzle.` : `Settings: ${tech}.`,
-    nextBody:
-      "We are starting work. We will get in touch once your order is ready for shipping or collection. If anything in your order needs clarification, we will write to you earlier.",
+    nextBody: {
+      ship: "We are starting work. We will write once your order is packed and on its way to you. If anything in your order needs clarification, we will write to you earlier.",
+      pickup: "We are starting work. We will write once your order is ready for collection, and we will agree a time. If anything in your order needs clarification, we will write to you earlier.",
+      digital: "We are starting work. We will write once your files are ready to download. If anything in your order needs clarification, we will write to you earlier.",
+    },
     nextBodyPliki:
       "Your files are above and they are yours for good. Nothing is being shipped and there is nothing to wait for. If the link expires before you download them, or if you need another format, write to us.",
     filesTitle: "Your files",
@@ -200,7 +209,7 @@ const T = {
     delivery: "Lieferung",
     total: "Bezahlt",
     leadTitle: "Lieferzeit",
-    leadPlanned: (ile, data) => `${ile}. Geplanter Versand: ${data}.`,
+    leadPlanned: (ile, data) => `${ile}. Geplante Fertigstellung: ${data}.`,
     leadDetails: (ile) => ile
       ? `Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit von ${ile} beginnt erst danach.`
       : "Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit beginnt erst danach.",
@@ -210,8 +219,11 @@ const T = {
     printAccepted: "Bestätigung beim Hinzufügen zum Warenkorb angekreuzt.",
     printRights: "Das schränkt Ihre Verbraucherrechte nicht ein. Es bedeutet nur, dass wir nach Ihrer Vorgabe drucken, trotz der offengelegten Eigenschaft der Datei, sodass deren Folge nicht als Mangel unserer Ausführung gilt.",
     printSettings: (tech, nozzle) => nozzle ? `Einstellungen: ${tech}, Düse ${nozzle} mm.` : `Einstellungen: ${tech}.`,
-    nextBody:
-      "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zum Versand oder zur Abholung bereit ist. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+    nextBody: {
+      ship: "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung verpackt ist und zu Ihnen unterwegs geht. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+      pickup: "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zur Abholung bereit ist, und vereinbaren eine Uhrzeit. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+      digital: "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Dateien zum Download bereitstehen. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+    },
     nextBodyPliki:
       "Ihre Dateien stehen oben und gehören dauerhaft Ihnen. Es wird nichts versandt und Sie warten auf nichts. Falls der Link abläuft, bevor Sie sie geladen haben, oder Sie ein anderes Format brauchen, schreiben Sie uns.",
     filesTitle: "Ihre Dateien",
@@ -414,7 +426,10 @@ function terminKlienta(order, l, lang) {
   const ile = order.lead_days ? dniSlownie(order.lead_days, lang) : null;
   if (order.requires_details) return l.leadDetails(ile);
   if (order.deadline_at && ile) return l.leadPlanned(ile, dzien(order.deadline_at));
-  if (ile) return l.leadPlanned(ile, "-").replace(/\.[^.]*$/, ".");
+  // Sam czas, bez daty. Wczesniej stalo tu `leadPlanned(ile, "-")` obciete
+  // wyrazeniem, ktore nic nie obcinalo, wiec do klienta szlo "Planowana
+  // wysylka: -.".
+  if (ile) return `${ile}.`;
   return null;
 }
 
@@ -519,7 +534,7 @@ function customerHtml(order, items, lang) {
     ` : ""}
 
     <h3 style="font-size:14px;margin:24px 0 6px">${l.next}</h3>
-    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${wd.samePliki ? l.nextBodyPliki : l.nextBody}</p>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${wd.samePliki ? l.nextBodyPliki : l.nextBody[drogaWydania(order)]}</p>
 
     ${zmienioneWymiary.length ? `
       <h3 style="font-size:14px;margin:24px 0 6px">${l.dimsTitle}</h3>
@@ -590,7 +605,7 @@ function customerText(order, items, lang) {
       l.filesNominal,
     ] : []),
     "",
-    `${l.next}: ${wd.samePliki ? l.nextBodyPliki : l.nextBody}`,
+    `${l.next}: ${wd.samePliki ? l.nextBodyPliki : l.nextBody[drogaWydania(order)]}`,
     // Wersja tekstowa jest tym, co przeczyta klient z czytnikiem ekranu i to,
     // co zostaje, gdy klient wylaczy HTML. Zapis o zmienionych wymiarach
     // i o potwierdzonych uwagach musi byc w obu, inaczej dokumentacja
@@ -1081,18 +1096,30 @@ const ETAP_T = {
     podglad: "Podgląd zamówienia",
     orderNo: "Numer zamówienia",
     progress: "Postęp zlecenia",
-    terminLabel: "Planowana wysyłka",
+    terminLabel: "Planowana finalizacja",
     przesylkaLabel: "Numer przesyłki",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
-    termin: (data) => `Planowana wysyłka: ${data}.`,
+    termin: (data) => `Planowana finalizacja: ${data}.`,
     przesylka: (nr) => `Numer przesyłki: ${nr}.`,
     stany: {
       details: "wracamy do ustalania szczegółów Twojego zlecenia. Odezwiemy się z pytaniami, a czas realizacji w tym czasie nie biegnie.",
       queued: "wszystkie ustalenia mamy komplet. Zlecenie czeka w kolejce pracowni, a termin realizacji już biegnie. Odezwiemy się, gdy weźmiemy je do ręki.",
       in_production: "zabraliśmy się do pracy nad Twoim zleceniem.",
-      ready: "zlecenie jest gotowe. Pakujemy je i przygotowujemy do wysyłki albo do odbioru.",
-      shipped: "zlecenie wyszło z pracowni.",
+      // Wydanie ma trzy drogi i kazda mowi sie inaczej. Wczesniej stalo tu
+      // jedno zdanie "do wysylki albo do odbioru", chociaz `delivery_method`
+      // znamy od zamowienia, a przy wysylce dokladalismy podmiane slow
+      // w gotowym tekscie, osobna dla kazdego jezyka.
+      ready: {
+        ship: "zlecenie jest gotowe. Pakujemy je i przygotowujemy do wysyłki.",
+        pickup: "zlecenie jest gotowe. Przygotowujemy je do odbioru osobistego, odezwiemy się, żeby umówić godzinę.",
+        digital: "zlecenie jest gotowe. Pliki do pobrania są w mailu z potwierdzeniem zamówienia.",
+      },
+      shipped: {
+        ship: "zlecenie wyszło z pracowni.",
+        pickup: "zlecenie czeka na odbiór w Józefosławiu, o umówionej godzinie.",
+        digital: "zlecenie jest przekazane.",
+      },
       completed: "zamówienie jest zamknięte. Dziękujemy i do zobaczenia.",
     },
   },
@@ -1103,18 +1130,26 @@ const ETAP_T = {
     podglad: "View your order",
     orderNo: "Order number",
     progress: "Order progress",
-    terminLabel: "Planned dispatch",
+    terminLabel: "Planned completion",
     przesylkaLabel: "Tracking number",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
-    termin: (data) => `Planned dispatch: ${data}.`,
+    termin: (data) => `Planned completion: ${data}.`,
     przesylka: (nr) => `Tracking number: ${nr}.`,
     stany: {
       details: "we are going back to agreeing the details of your order. We will be in touch with questions, and the lead time does not run in the meantime.",
       queued: "everything is agreed. Your order is waiting in the workshop queue and the lead time is running. We will write again once someone picks it up.",
       in_production: "we have started working on your order.",
-      ready: "your order is finished. We are packing it for dispatch or collection.",
-      shipped: "your order has left the workshop.",
+      ready: {
+        ship: "your order is finished. We are packing it for dispatch.",
+        pickup: "your order is finished. We are getting it ready for collection and will write to agree a time.",
+        digital: "your order is finished. The download links are in your order confirmation e-mail.",
+      },
+      shipped: {
+        ship: "your order has left the workshop.",
+        pickup: "your order is waiting for collection in Józefosław, at the time we agreed.",
+        digital: "your order has been handed over.",
+      },
       completed: "your order is now closed. Thank you, and see you next time.",
     },
   },
@@ -1125,18 +1160,26 @@ const ETAP_T = {
     podglad: "Bestellung ansehen",
     orderNo: "Bestellnummer",
     progress: "Auftragsfortschritt",
-    terminLabel: "Geplanter Versand",
+    terminLabel: "Geplante Fertigstellung",
     przesylkaLabel: "Sendungsnummer",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
-    termin: (data) => `Geplanter Versand: ${data}.`,
+    termin: (data) => `Geplante Fertigstellung: ${data}.`,
     przesylka: (nr) => `Sendungsnummer: ${nr}.`,
     stany: {
       details: "wir kehren zur Abstimmung der Details Ihres Auftrags zurück. Wir melden uns mit Fragen, die Lieferzeit läuft in dieser Zeit nicht.",
       queued: "alle Absprachen sind vollständig. Ihr Auftrag wartet in der Werkstattschlange und die Lieferzeit läuft. Wir melden uns erneut, sobald ihn jemand in die Hand nimmt.",
       in_production: "wir haben mit der Arbeit an Ihrem Auftrag begonnen.",
-      ready: "Ihr Auftrag ist fertig. Wir verpacken ihn für den Versand oder die Abholung.",
-      shipped: "Ihr Auftrag hat die Werkstatt verlassen.",
+      ready: {
+        ship: "Ihr Auftrag ist fertig. Wir verpacken ihn für den Versand.",
+        pickup: "Ihr Auftrag ist fertig. Wir bereiten ihn zur Abholung vor und melden uns, um eine Uhrzeit zu vereinbaren.",
+        digital: "Ihr Auftrag ist fertig. Die Download-Links stehen in Ihrer Bestellbestätigung.",
+      },
+      shipped: {
+        ship: "Ihr Auftrag hat die Werkstatt verlassen.",
+        pickup: "Ihr Auftrag wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
+        digital: "Ihr Auftrag wurde übergeben.",
+      },
       completed: "Ihre Bestellung ist abgeschlossen. Vielen Dank und bis zum nächsten Mal.",
     },
   },
@@ -1158,6 +1201,17 @@ const ETAP_TYTUL = {
   en: { details: "Agreeing the details", queued: "Order is in the queue", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order closed" },
   de: { details: "Details klären", queued: "Auftrag in der Warteschlange", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung abgeschlossen" },
 };
+
+/**
+ * Ktora droga zlecenie opusci pracownie. Zdania o wydaniu wybieraja sie tym,
+ * a nie podmiana slow w gotowym tekscie: podmiana wymagala trzech regulek na
+ * jezyk i milczaco przestawala dzialac przy kazdej poprawce stylistycznej.
+ */
+function drogaWydania(order) {
+  if (order.delivery_method === "pickup") return "pickup";
+  if (order.delivery_method === "digital") return "digital";
+  return "ship";
+}
 
 /**
  * Pasek postepu w mailu, jako tabela. Nie SVG i nie obrazek: klient pocztowy
@@ -1208,17 +1262,16 @@ function paseczek(order, lang) {
 export function buildStatusUpdate(order) {
   const lang = ETAP_T[order.lang] ? order.lang : "pl";
   const l = ETAP_T[lang];
-  const zdanie = l.stany[order.status];
-  if (!zdanie || !order.customer_email) return null;
-
-  const odbior = order.delivery_method === "pickup";
-  const tresc = order.status === "shipped" && odbior
-    ? zdanie.replace("wyszło z pracowni", "czeka na odbiór").replace("has left the workshop", "is ready for collection").replace("hat die Werkstatt verlassen", "steht zur Abholung bereit")
-    : zdanie;
+  const wpis = l.stany[order.status];
+  const tresc = typeof wpis === "string" ? wpis : wpis?.[drogaWydania(order)];
+  if (!tresc || !order.customer_email) return null;
   const tytul = (ETAP_TYTUL[lang] || ETAP_TYTUL.pl)[order.status] || l.subject(order.order_ref);
 
   const link = linkZlecenia(order, lang);
-  const zTerminem = order.deadline_at && ["queued", "in_production", "ready"].includes(order.status);
+  // Karta z terminem stoi tylko dopoki termin jest jeszcze obietnica. Przy
+  // etapie "gotowe" praca jest skonczona, wiec "planowana finalizacja" w
+  // przyszlosci przeczylaby zdaniu stojacemu wyzej w tym samym mailu.
+  const zTerminem = order.deadline_at && ["queued", "in_production"].includes(order.status);
   // Odnosniki te same co w potwierdzeniu, bez powtarzania odnosnika do
   // zlecenia: ten stoi wyzej jako przycisk i drugi raz byloby go za duzo.
   const t = T[lang] || T.pl;

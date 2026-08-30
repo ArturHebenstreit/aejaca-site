@@ -14,7 +14,7 @@
     // Ustalenia domkniete, praca jeszcze nie ruszyla, ZEGAR JUZ BIEGNIE.
     queued: { label: "Gotowe do pobrania", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
     in_production: { label: "W realizacji", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
-    ready: { label: "Gotowe do wysyłki", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
+    ready: { label: "Gotowe", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
     shipped: { label: "Wysłane / przekazane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
     completed: { label: "Zamknięte", klasa: "text-neutral-300 border-white/15 bg-white/5" },
     cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
@@ -227,7 +227,7 @@
                       if (o.requiresDetails) KROKI.push({ id: "details", label: "Ustalanie szczegółów", data: o.detailsAt });
                       KROKI.push({ id: "queued", label: "Gotowe do pobrania", data: o.queuedAt });
                       KROKI.push({ id: "in_production", label: "W realizacji", data: o.productionStartedAt });
-                      KROKI.push({ id: "ready", label: "Gotowe do wysyłki", data: o.readyAt });
+                      KROKI.push({ id: "ready", label: "Gotowe", data: o.readyAt });
                       KROKI.push({ id: "shipped", label: wysylkowy, data: o.shippedAt });
                       // Termin domyka os, bo jest tym, do czego ona zmierza.
                       // Pojawia sie sam, w chwili gdy zegar rusza: przy zaplacie

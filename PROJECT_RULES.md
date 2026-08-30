@@ -171,6 +171,14 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
 - **Zegar biegnie w trzech etapach: gotowe do pobrania, w realizacji,
   gotowe do wysyłki.** Rzecz zrobiona i niewysłana ma przed sobą ten termin,
   o który chodzi najbardziej: dzień nadania.
+- **Data terminu nazywa się „Planowana finalizacja”**, a nie „Planowana
+  wysyłka”: ta sama data stoi przy zamówieniu odbieranym osobiście i przy
+  zamówieniu, które w całości jest plikiem. Mówi też, czego nie obejmuje, bo
+  jest dniem końca pracy i przekazania paczki, a nie dniem doręczenia.
+  Angielski: „Planned completion”, niemiecki: „Geplante Fertigstellung”.
+- **Zdanie o wydaniu bierze się z `delivery_method`**, a nie wylicza klientowi
+  obu możliwości naraz i nie podmienia słów w gotowym tekście. Trzy drogi:
+  wysyłka, odbiór osobisty, pliki. Decyzja: ADR-0028, punkt 13.
 - **Próg przypomnienia zapisuje się dopiero po udanej wysyłce maila.** Zapis
   przed nią zamyka próg na zawsze przy pierwszej awarii poczty, po cichu.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.

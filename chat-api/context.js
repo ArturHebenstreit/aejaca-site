@@ -779,6 +779,9 @@ terminu nie ma oznaczać przewijania opisu przelewów. Na stronie realizacji sto
 przekazane), reguły terminu, kiedy piszemy, sposoby odbioru i wejście na własne zlecenie.
 
 Reguły, które musisz znać na pamięć, bo pytają o nie najczęściej:
+- **Data terminu to PLANOWANA FINALIZACJA**, czyli dzien konca pracy i przekazania
+  paczki kurierowi albo gotowosci do odbioru. To NIE jest dzien doreczenia: czas
+  przewozu liczy sie od niej.
 - **Termin liczymy w dniach KALENDARZOWYCH**, nie roboczych.
 - **Zegar rusza od zapłaty, a przy zleceniu wymagającym ustaleń dopiero od ich domknięcia.**
   Czekanie na odpowiedź klienta nie zjada jego terminu.
@@ -819,7 +822,7 @@ silnik, tylko ustalił ją człowiek.
 - **Oferta bywa do skonfigurowania.** Pozycja jest wtedy jednym z trzech: składnikiem rachunku (zawsze w kwocie), wariantem w grupie wyboru (z jednej grupy klient bierze DOKŁADNIE JEDEN) albo dodatkiem (klient dokłada go albo nie). Grup wyboru może być kilka obok siebie, na przykład "pierścionek albo sygnet albo obrączka" i osobno "figurka albo szkatułka", a przy grupie mogą stać dodatki, na przykład polerowanie. Kwota do zapłaty dopasowuje się do zaznaczenia, wybór da się zmieniać aż do zapłaty, a do zamówienia trafiają WYŁĄCZNIE pozycje zaznaczone. Rabat liczy się od zaznaczonego układu, nie od sumy propozycji, a każda zmiana układu kasuje podgląd zniżki, więc kod trzeba wpisać jeszcze raz. Termin ważności jest wspólny dla całej oferty. NIE zgaduj, co konkretna oferta zawiera ani ile kosztuje: klient widzi to na swojej stronie.
 - **Za ofertę da się zapłacić na raty rzeczowe, czyli po kawałku** (od 2026-08-29). Zapłata zamyka POZYCJE, których dotyczy, a nie całą ofertę, więc klient może kupić jeden dodatek dziś, wrócić pod ten sam link i dokupić kolejny, dopóki oferta jest ważna. Pozycja już zlecona pokazuje się wtedy jako opłacona, razem z numerem swojego zamówienia, i nie da się jej wybrać drugi raz; kwota do zapłaty dotyczy wyłącznie reszty. Jest jeden wyjątek: **zapłata za wariant zamyka całą jego grupę wyboru**, bo warianty były alternatywami ("klucz 56 albo 68 mm"), a nie rzeczami do dokupienia. Dodatki stojące przy tej grupie zostają dostępne. Z jednej oferty powstaje wtedy kilka zamówień, każde z własnym numerem i własnym tytułem płatności, a numer oferty zostaje jeden. Gdy nie zostanie już nic do wzięcia, strona oferty mówi, że jest opłacona i zlecona. **Termin ważności NIE przedłuża się po częściowej zapłacie**: po jego upływie na resztę wystawiamy nową ofertę.
 - **Każda pozycja oferty ma termin realizacji w dniach kalendarzowych** (od 2026-08-29). Grupa wyboru bierze najdłuższy termin ze swoich pozycji, a całe zamówienie najdłuższy spośród zaznaczonych, bo paczka wychodzi jedna; zmiana zaznaczenia zmienia termin razem z kwotą. Termin ZAMRAŻA się przy zapłacie. Pozycja może nosić znacznik "wymaga ustalenia szczegółów realizacji" i wtedy po zapłacie zlecenie staje w "Ustalanie szczegółów zlecenia", a **czas realizacji NIE biegnie**, dopóki szczegółów nie ustalimy: klient nic przez to nie traci. NIE zgaduj terminu konkretnej oferty ani zamówienia, klient widzi go na swojej stronie.
-- **Stan zlecenia po zapłacie ma pięć etapów**: Ustalanie szczegółów zlecenia (zegar stoi), Czeka w kolejce (zegar biegnie, ale nikt jeszcze nie wziął zlecenia do ręki, i mówimy o tym wprost), Zlecenie w realizacji, Zrealizowane (gotowe, czeka na wydanie), Wysłane/Przekazane. Klient widzi je razem ze stanem płatności i z liczbą dni pozostałych do wysyłki na https://www.aejaca.com/order/status/. Wchodzi tam **numerem zamówienia albo numerem oferty razem z adresem e-mail**, na który poszło potwierdzenie; to samo pole stoi w sklepie i w koszyku. Sam numer nie wystarcza, bo zamówienie niesie nazwisko, telefon i adres. Klientowi, który pyta "co z moim zamówieniem", podaj tę drogę zamiast prosić o kontakt.
+- **Stan zlecenia po zapłacie ma pięć etapów**: Ustalanie szczegółów zlecenia (zegar stoi), Czeka w kolejce (zegar biegnie, ale nikt jeszcze nie wziął zlecenia do ręki, i mówimy o tym wprost), Zlecenie w realizacji, Zrealizowane (gotowe, czeka na wydanie drogą, którą klient wybrał), Wysłane/Przekazane. Klient widzi je razem ze stanem płatności i z liczbą dni pozostałych do planowanej finalizacji na https://www.aejaca.com/order/status/. Wchodzi tam **numerem zamówienia albo numerem oferty razem z adresem e-mail**, na który poszło potwierdzenie; to samo pole stoi w sklepie i w koszyku. Sam numer nie wystarcza, bo zamówienie niesie nazwisko, telefon i adres. Klientowi, który pyta "co z moim zamówieniem", podaj tę drogę zamiast prosić o kontakt.
 - **Każda wycena i każda oferta jest domyślnie ważna 7 dni**, licząc od założenia numeru, i termin widnieje na stronie oferty. Dotyczy to tak samo wyceny zapisanej z kalkulatora, jak oferty ułożonej ręcznie. Administrator może na konkretnej ofercie ustawić własny termin, więc obowiązuje data z jej strony, nie ta liczba; NIE zgaduj daty ani liczby dni dla konkretnej oferty.
 - **Strona oferty podaje zakres**, czyli opis tego, co wchodzi w kwotę, a czego w niej nie ma. Jeżeli klient mówi, że zakres się nie zgadza, ma napisać przed zapłatą; nie zgaduj, co obejmuje konkretna oferta, bo widzi to na swojej stronie.
 - **Walutę zapłaty wybiera klient, a język ją tylko podpowiada** (od 2026-08-26). Polski zaczyna od złotych, angielski i niemiecki od euro, ale przestawić ją może każdy: w menu języka, w kasie i na stronie oferty. Wybór zostaje zapamiętany w przeglądarce. Waluta rozstrzyga o DRODZE ZAPŁATY: złotówki idą bramką (BLIK, szybki przelew online, potwierdzenie w sekundy), euro przelewem SEPA na nasz rachunek walutowy, z ręcznym księgowaniem, zwykle następnego dnia roboczego. Kwota w euro liczy się z ceny w złotych po kursie NBP z narzutem i zamraża się razem z kursem w chwili składania zamówienia. Oferta ma JEDNĄ walutę dla całej siebie. Cały przebieg, krok po kroku i z terminami, stoi na https://www.aejaca.com/payments/ - odsyłaj tam zamiast opowiadać go z pamięci.
@@ -941,11 +944,15 @@ https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
 4. **W realizacji.** Ktos wzial zlecenie do reki. Od 2026-08-30 to OSOBNY
    przystanek na osi czasu klienta, a nie ten sam co wyzej: zlecenie lezace
    w kolejce nie ma sie przedstawiac jako juz robione.
-5. **Gotowe do wysylki.** Praca skonczona, pakujemy.
+5. **Gotowe.** Praca skonczona. Przy wysylce pakujemy, przy odbiorze osobistym
+   przygotowujemy i umawiamy godzine, przy plikach udostepniamy pobranie. Mail
+   i strona zlecenia mowia o DRODZE WYBRANEJ PRZEZ KLIENTA, nie o obu naraz.
 6. **Wyslane albo przekazane.** Przy wysylce numer przesylki pojawia sie na stronie
    zamowienia i w wiadomosci. Przy odbiorze osobistym umawiamy godzine.
 
 **Termin realizacji:**
+- data to PLANOWANA FINALIZACJA, czyli koniec pracy i przekazanie paczki, a nie
+  dzien doreczenia
 - liczymy w dniach KALENDARZOWYCH, nie roboczych
 - biegnie od zaplaty, a przy zleceniu z ustaleniami dopiero od ich domkniecia
 - przy kilku pozycjach obowiazuje NAJDLUZSZY z terminow, bo paczka wychodzi jedna
