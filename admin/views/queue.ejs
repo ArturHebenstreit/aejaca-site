@@ -16,7 +16,7 @@
     in_production: { label: "W realizacji", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
     ready: { label: "Gotowe", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
     shipped: { label: "Wysłane / przekazane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
-    completed: { label: "Zamknięte", klasa: "text-neutral-300 border-white/15 bg-white/5" },
+    completed: { label: "Dostarczone", klasa: "text-neutral-300 border-white/15 bg-white/5" },
     cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
   };
   // Adres powrotu niosa wszystkie formularze, zeby po zapisie nie wypasc
@@ -30,7 +30,7 @@
   const FILTRY = [
     { stan: "", label: "W toku" },
     { stan: "shipped", label: "Wysłane" },
-    { stan: "completed", label: "Zamknięte" },
+    { stan: "completed", label: "Dostarczone" },
     { stan: "cancelled", label: "Anulowane" },
     { stan: "paid,details,queued,in_production,ready,shipped,completed,cancelled", label: "Wszystko" },
   ];
@@ -229,6 +229,13 @@
                       KROKI.push({ id: "in_production", label: "W realizacji", data: o.productionStartedAt });
                       KROKI.push({ id: "ready", label: "Gotowe", data: o.readyAt });
                       KROKI.push({ id: "shipped", label: wysylkowy, data: o.shippedAt });
+                      // Doreczenie to OSOBNY przystanek, ten sam co u klienta.
+                      // Bez niego panel i strona zamowienia pokazywalyby dwie
+                      // rozne drogi, a klient pytajacy "czy doszlo" nie mialby
+                      // gdzie tego zobaczyc. Id celowo nie rowna sie zadnemu
+                      // statusowi: przystanek ma zzieleniec po potwierdzeniu,
+                      // a nie swiecic na bursztynowo jako "trwa".
+                      KROKI.push({ id: "delivered", label: o.delivery.method === "pickup" ? "Odebrane" : "Dostarczone", data: o.completedAt });
                       // Termin domyka os, bo jest tym, do czego ona zmierza.
                       // Pojawia sie sam, w chwili gdy zegar rusza: przy zaplacie
                       // albo po domknieciu ustalen.
@@ -307,7 +314,7 @@
                                   <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
                                 </label>
                                 <button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
-                                  <%- IKONY.fistaszek %> Zakończone
+                                  <%- IKONY.fistaszek %> Dostarczone
                                 </button>
                               </form>
                             <% } %>

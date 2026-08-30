@@ -4139,7 +4139,8 @@ app.get("/api/orders/queue", async (req, res) => {
             o.customer_email, o.customer_name, o.customer_phone,
             o.delivery_method, o.delivery_point, o.address_line1, o.address_line2,
             o.postal_code, o.city, o.country,
-            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.details_at, o.ready_at,
+            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.completed_at,
+            o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
             o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
@@ -4206,6 +4207,7 @@ app.get("/api/orders/queue", async (req, res) => {
     waitingDays: dni(o.paid_at),
     productionStartedAt: o.production_started_at,
     shippedAt: o.shipped_at,
+    completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
     productionNote: o.production_note,
     delivery: {
@@ -5219,7 +5221,7 @@ app.get("/api/orders/:ref", async (req, res) => {
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
             amount_eur_cents, transfer_confirmed_at,
-            shipped_at, tracking_number
+            shipped_at, completed_at, tracking_number
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -5291,6 +5293,9 @@ app.get("/api/orders/:ref", async (req, res) => {
     // go w kolejce wracala do galezi domyslnej i mowila oplaconemu klientowi,
     // ze czekamy na jego platnosc.
     shippedAt: o.shipped_at,
+    // Stempel doreczenia jest tym, co zapala ostatnia kropke na osi klienta.
+    // Bez niego droga konczy sie na "wyslane" i nigdy nie robi sie zielona.
+    completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
     ...publicPaymentState(o),
     // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie

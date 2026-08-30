@@ -16,6 +16,7 @@
 // Reczne lustro zdazylo sie juz rozjechac z oryginalem, a te dane stoja
 // w pouczeniu o odstapieniu, wiec musza byc jedne.
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
+import { zoneForCountry } from "./pricing/shipping.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
@@ -1098,7 +1099,10 @@ const ETAP_T = {
     progress: "Postęp zlecenia",
     terminLabel: "Planowana finalizacja",
     przesylkaLabel: "Numer przesyłki",
-    sledzLabel: "Śledź przesyłkę",
+    przewoznikLabel: (kto) => `Przesyłkę wiezie ${kto}`,
+    sledzLabel: "Sprawdź przesyłkę na stronie przewoźnika",
+    dostarczone: "Dostarczone",
+    odebrane: "Odebrane",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planowana finalizacja: ${data}.`,
@@ -1121,7 +1125,11 @@ const ETAP_T = {
         pickup: "zlecenie czeka na odbiór w Józefosławiu, o umówionej godzinie.",
         digital: "zlecenie jest przekazane.",
       },
-      completed: "zamówienie jest zamknięte. Dziękujemy i do zobaczenia.",
+      completed: {
+        ship: "potwierdzamy dostarczenie przesyłki. Zamówienie jest zamknięte, dziękujemy i do zobaczenia.",
+        pickup: "potwierdzamy odbiór zamówienia. Zamówienie jest zamknięte, dziękujemy i do zobaczenia.",
+        digital: "zamówienie jest zamknięte. Dziękujemy i do zobaczenia.",
+      },
     },
   },
   en: {
@@ -1133,7 +1141,10 @@ const ETAP_T = {
     progress: "Order progress",
     terminLabel: "Planned completion",
     przesylkaLabel: "Tracking number",
-    sledzLabel: "Track the parcel",
+    przewoznikLabel: (kto) => `Your parcel is carried by ${kto}`,
+    sledzLabel: "Check the parcel on the carrier site",
+    dostarczone: "Delivered",
+    odebrane: "Collected",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planned completion: ${data}.`,
@@ -1152,7 +1163,11 @@ const ETAP_T = {
         pickup: "your order is waiting for collection in Józefosław, at the time we agreed.",
         digital: "your order has been handed over.",
       },
-      completed: "your order is now closed. Thank you, and see you next time.",
+      completed: {
+        ship: "we confirm your parcel has been delivered. The order is now closed, thank you and see you next time.",
+        pickup: "we confirm your order has been collected. The order is now closed, thank you and see you next time.",
+        digital: "your order is now closed. Thank you, and see you next time.",
+      },
     },
   },
   de: {
@@ -1164,7 +1179,10 @@ const ETAP_T = {
     progress: "Auftragsfortschritt",
     terminLabel: "Geplante Fertigstellung",
     przesylkaLabel: "Sendungsnummer",
-    sledzLabel: "Sendung verfolgen",
+    przewoznikLabel: (kto) => `Ihre Sendung transportiert ${kto}`,
+    sledzLabel: "Sendung auf der Seite des Zustellers prüfen",
+    dostarczone: "Zugestellt",
+    odebrane: "Abgeholt",
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Geplante Fertigstellung: ${data}.`,
@@ -1183,7 +1201,11 @@ const ETAP_T = {
         pickup: "Ihr Auftrag wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
         digital: "Ihr Auftrag wurde übergeben.",
       },
-      completed: "Ihre Bestellung ist abgeschlossen. Vielen Dank und bis zum nächsten Mal.",
+      completed: {
+        ship: "wir bestätigen die Zustellung Ihrer Sendung. Die Bestellung ist abgeschlossen, vielen Dank und bis zum nächsten Mal.",
+        pickup: "wir bestätigen die Abholung Ihrer Bestellung. Die Bestellung ist abgeschlossen, vielen Dank und bis zum nächsten Mal.",
+        digital: "Ihre Bestellung ist abgeschlossen. Vielen Dank und bis zum nächsten Mal.",
+      },
     },
   },
 };
@@ -1193,16 +1215,16 @@ const ETAP_T = {
  * zamowienia: dwa opisy tej samej drogi rozjechalyby sie przy pierwszej zmianie.
  */
 const ETAP_KROKI = {
-  pl: { paid: "Zapłacone", details: "Ustalenia", queued: "W kolejce", work: "W realizacji", ready: "Gotowe", shipped: "Wysłane", handed: "Przekazane" },
-  en: { paid: "Paid", details: "Details", queued: "In the queue", work: "In the workshop", ready: "Finished", shipped: "Dispatched", handed: "Handed over" },
-  de: { paid: "Bezahlt", details: "Absprachen", queued: "In Warteschlange", work: "In Arbeit", ready: "Fertig", shipped: "Versandt", handed: "Übergeben" },
+  pl: { paid: "Zapłacone", details: "Ustalenia", queued: "W kolejce", work: "W realizacji", ready: "Gotowe", shipped: "Wysłane", handed: "Przekazane", delivered: "Dostarczone", collected: "Odebrane" },
+  en: { paid: "Paid", details: "Details", queued: "In the queue", work: "In the workshop", ready: "Finished", shipped: "Dispatched", handed: "Handed over", delivered: "Delivered", collected: "Collected" },
+  de: { paid: "Bezahlt", details: "Absprachen", queued: "In Warteschlange", work: "In Arbeit", ready: "Fertig", shipped: "Versandt", handed: "Übergeben", delivered: "Zugestellt", collected: "Abgeholt" },
 };
 
 /** Naglowek maila, krotszy od zdania w tresci. */
 const ETAP_TYTUL = {
-  pl: { details: "Ustalamy szczegóły", queued: "Zlecenie czeka w kolejce", in_production: "Zlecenie w realizacji", ready: "Zlecenie gotowe", shipped: "Zlecenie wysłane", completed: "Zamówienie zamknięte" },
-  en: { details: "Agreeing the details", queued: "Order is in the queue", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order closed" },
-  de: { details: "Details klären", queued: "Auftrag in der Warteschlange", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung abgeschlossen" },
+  pl: { details: "Ustalamy szczegóły", queued: "Zlecenie czeka w kolejce", in_production: "Zlecenie w realizacji", ready: "Zlecenie gotowe", shipped: "Zlecenie wysłane", completed: "Zamówienie dostarczone" },
+  en: { details: "Agreeing the details", queued: "Order is in the queue", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order delivered" },
+  de: { details: "Details klären", queued: "Auftrag in der Warteschlange", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung zugestellt" },
 };
 
 /**
@@ -1217,22 +1239,35 @@ function drogaWydania(order) {
 }
 
 /**
- * Adres sledzenia przesylki albo null.
+ * Kto wiezie przesylke i gdzie klient ja sprawdzi.
  *
- * Numer bez adresu, pod ktory da sie go wkleic, jest dla klienta ciagiem
- * dwudziestu czterech cyfr. Przewoznika bierzemy z tego, co naprawde wiemy:
- * paczkomat i kurier krajowy to InPost (cennik wysylki, strefa `pl`). Przy
- * przesylce zagranicznej wozi DHL albo DHL/FedEx, zaleznie od strefy, a na
- * zamowieniu nie zapisujemy ktory, wiec adresu NIE zgadujemy: zostaje sam
- * numer. Zly odnosnik do sledzenia jest gorszy niz jego brak.
+ * Numer bez nazwy przewoznika i bez adresu, pod ktory da sie go wkleic, jest
+ * dla klienta ciagiem dwudziestu czterech cyfr. Przewoznika bierzemy z tej
+ * samej tabeli stref, ktora wycenila przesylke (`pricing/shipping.js`), wiec
+ * nazwa nie moze sie rozjechac z tym, co klient zaplacil.
+ *
+ * Strefy swiatowe nosza dwoch przewoznikow naraz ("DHL / FedEx") i nie wiemy,
+ * ktory pojechal. Wtedy nazywamy obu i odsylamy na strony sledzenia obu, bo
+ * numer w reku i zadnego miejsca do jego wklejenia jest gorsze niz dwa adresy.
+ *
+ * @returns {{nazwa: string, adresy: Array<{pokaz: string, href: string}>}|null}
  */
-function adresSledzenia(order) {
-  if (!order.tracking_number) return null;
-  const kraj = String(order.country || "PL").toUpperCase();
-  const inpost = order.delivery_method === "inpost_locker"
-    || (order.delivery_method === "courier" && kraj === "PL");
-  if (!inpost) return null;
-  return `https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(order.tracking_number)}`;
+function przewoznik(order, lang) {
+  if (!order.tracking_number || drogaWydania(order) !== "ship") return null;
+  const numer = encodeURIComponent(order.tracking_number);
+  const strefa = zoneForCountry(order.country || "PL");
+  // Paczkomat stoi tylko w Polsce, wiec brak strefy nie zmienia przewoznika.
+  const nazwa = order.delivery_method === "inpost_locker" ? "InPost" : strefa?.carrier || null;
+  if (!nazwa) return null;
+
+  const dhlKraj = { pl: "pl-pl", en: "global-en", de: "de-de" }[lang] || "global-en";
+  const strony = {
+    InPost: [{ pokaz: "inpost.pl/sledzenie-przesylek", href: `https://inpost.pl/sledzenie-przesylek?number=${numer}` }],
+    DHL: [{ pokaz: "dhl.com", href: `https://www.dhl.com/${dhlKraj}/home/tracking.html?tracking-id=${numer}` }],
+    FedEx: [{ pokaz: "fedex.com", href: `https://www.fedex.com/fedextrack/?trknbr=${numer}` }],
+  };
+  const adresy = nazwa.split("/").map((cz) => cz.trim()).flatMap((kto) => strony[kto] || []);
+  return adresy.length ? { nazwa, adresy } : null;
 }
 
 /**
@@ -1254,11 +1289,19 @@ function paseczek(order, lang) {
   kroki.push({ id: "work", label: n.work, stempel: order.production_started_at });
   kroki.push({ id: "ready", label: n.ready, stempel: order.ready_at });
   kroki.push({ id: "shipped", label: odbior ? n.handed : n.shipped, stempel: order.shipped_at });
+  // Doreczenie jest OSOBNYM przystankiem (decyzja wlasciciela, 2026-08-30).
+  // Wczesniej "wyslane" i "zamkniete" dzielily ostatnia kropke, wiec paczka
+  // wlozona do paczkomatu wygladala tak samo jak paczka odebrana, a droga
+  // klienta nigdy nie konczyla sie na zielono.
+  kroki.push({ id: "delivered", label: odbior ? n.collected : n.delivered, stempel: order.completed_at });
 
   const gdzie = order.requires_details
-    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 5 }
-    : { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 4 };
-  const naEtapie = gdzie[order.status] ?? 0;
+    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 6 }
+    : { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 5 };
+  // Potwierdzone doreczenie zamyka cala droge, wiec KAZDA kropka jest przebyta.
+  // Ostatni przystanek jako "biezacy" swiecilby na bursztynowo, czyli mowilby
+  // "trwa" o czymkolwiek, co juz sie stalo.
+  const naEtapie = order.status === "completed" ? kroki.length : gdzie[order.status] ?? 0;
 
   const komorki = kroki.map((k, i) => {
     const przebyty = i < naEtapie;
@@ -1296,7 +1339,7 @@ export function buildStatusUpdate(order) {
   // jechala.
   const zPrzesylka = order.status === "shipped" && order.tracking_number
     && drogaWydania(order) === "ship";
-  const sledzenie = zPrzesylka ? adresSledzenia(order) : null;
+  const kurier = zPrzesylka ? przewoznik(order, lang) : null;
   // Karta z terminem stoi tylko dopoki termin jest jeszcze obietnica. Przy
   // etapie "gotowe" praca jest skonczona, wiec "planowana finalizacja" w
   // przyszlosci przeczylaby zdaniu stojacemu wyzej w tym samym mailu.
@@ -1311,7 +1354,10 @@ export function buildStatusUpdate(order) {
   const linie = [l.hi, "", tresc.charAt(0).toUpperCase() + tresc.slice(1)];
   if (zTerminem) linie.push("", l.termin(dzien(order.deadline_at)));
   if (zPrzesylka) linie.push("", l.przesylka(order.tracking_number));
-  if (sledzenie) linie.push(`${l.sledzLabel}: ${sledzenie}`);
+  if (kurier) {
+    linie.push(`${l.przewoznikLabel(kurier.nazwa)}. ${l.sledzLabel}:`);
+    for (const a of kurier.adresy) linie.push(a.href);
+  }
   linie.push("", `${l.podglad}: ${link}`);
   linie.push("", odnosnikiText(lang, odnosniki), "", stopkaText(lang));
   const text = linie.join("\n");
@@ -1339,7 +1385,10 @@ export function buildStatusUpdate(order) {
       <div style="margin-top:14px;background:#f4f4f4;border-radius:8px;padding:14px 16px">
         <span style="font-size:12px;color:#777">${l.przesylkaLabel}</span>
         <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;margin-top:2px">${esc(order.tracking_number)}</div>
-        ${sledzenie ? `<div style="margin-top:8px;font-size:13px"><a href="${esc(sledzenie)}" style="color:#b58a3c;font-weight:700">${esc(l.sledzLabel)}</a></div>` : ""}
+        ${kurier ? `
+          <div style="margin-top:10px;font-size:13px;color:#444">${esc(l.przewoznikLabel(kurier.nazwa))}.</div>
+          <div style="margin-top:2px;font-size:13px">${kurier.adresy.map((a) => `<a href="${esc(a.href)}" style="color:#b58a3c;font-weight:700">${esc(a.pokaz)}</a>`).join(" &nbsp;|&nbsp; ")}</div>
+        ` : ""}
       </div>
     ` : ""}
 
@@ -1363,7 +1412,8 @@ export async function sendStatusUpdate(pool, orderId) {
     const { rows } = await pool.query(
       `SELECT order_ref, status, lang, customer_email, access_token,
               deadline_at, tracking_number, delivery_method, country, requires_details,
-              paid_at, details_at, queued_at, production_started_at, ready_at, shipped_at
+              paid_at, details_at, queued_at, production_started_at, ready_at, shipped_at,
+              completed_at
          FROM orders WHERE id = $1`,
       [orderId]
     );

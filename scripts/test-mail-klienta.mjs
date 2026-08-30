@@ -234,14 +234,45 @@ console.log("\n4e. Numer przesylki: odnosnik tylko tam, gdzie znamy przewoznika\
   const paczkomat = caly(wyslane({ delivery_method: "inpost_locker", country: "PL" }));
   ok(/inpost\.pl\/sledzenie-przesylek\?number=620012345678901234567890/.test(paczkomat),
      "paczkomat: odnosnik do sledzenia InPost");
-  ok(/Śledź przesyłkę/.test(paczkomat), "odnosnik ma nazwe, a nie goly adres");
-  ok(!/inpost\.pl/.test(caly(wyslane({ delivery_method: "courier", country: "DE" }))),
+  ok(/Przesyłkę wiezie InPost/.test(paczkomat), "mail nazywa przewoznika");
+  const zagranica = caly(wyslane({ delivery_method: "courier", country: "DE" }));
+  ok(!/inpost\.pl/.test(zagranica),
      "kurier zagraniczny: samego numeru nie podpinamy pod polskiego przewoznika");
+  ok(/Przesyłkę wiezie DHL/.test(zagranica) && /dhl\.com/.test(zagranica),
+     "strefa europejska: DHL z nazwy i z adresu");
+  const swiat = caly(wyslane({ delivery_method: "courier", country: "AU" }));
+  ok(/dhl\.com/.test(swiat) && /fedex\.com/.test(swiat),
+     "strefa swiatowa nosi dwoch przewoznikow, wiec odsylamy do obu");
   ok(/inpost\.pl/.test(caly(wyslane({ delivery_method: "courier", country: "PL" }))),
      "kurier krajowy: to InPost, wiec odnosnik jest");
   const odbior = caly(wyslane({ delivery_method: "pickup", country: "PL" }));
   ok(!/620012345678901234567890/.test(odbior),
      "odbior osobisty: zaden list przewozowy, bo paczka nigdzie nie jechala");
+}
+
+console.log("\n4f. Ostatnia kropka zielenieje dopiero po potwierdzeniu doreczenia\n");
+
+// Wyslane i zamkniete dzielily jeden przystanek, wiec paczka wlozona do
+// paczkomatu wygladala tak samo jak paczka odebrana, a droga klienta nigdy nie
+// konczyla sie na zielono.
+{
+  const etap = (status, dod) => buildStatusUpdate({
+    ...ZAMOWIENIE, status, tracking_number: "620012345678901234567890",
+    production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
+    shipped_at: "2026-09-02T09:00:00Z", ...dod,
+  }).html;
+  const zielona = /#3f9e6a/g;
+  const bursztyn = /#b58a3c;margin:0 auto 8px/g;
+  const wyslane = etap("shipped", {});
+  const zamkniete = etap("completed", { completed_at: "2026-09-04T10:00:00Z" });
+  ok(/Dostarczone/.test(wyslane), "przystanek doreczenia stoi na osi juz przy wysylce");
+  ok((wyslane.match(bursztyn) || []).length === 1, "przy wysylce bursztynowa jest wysylka, a nie doreczenie");
+  ok((zamkniete.match(bursztyn) || []).length === 0
+     && (zamkniete.match(zielona) || []).length === 6,
+     "po potwierdzeniu doreczenia wszystkie kropki sa zielone");
+  ok(/04\.09\.2026/.test(zamkniete), "przystanek doreczenia niesie date potwierdzenia");
+  ok(/Odebrane/.test(etap("completed", { delivery_method: "pickup", completed_at: "2026-09-04T10:00:00Z" })),
+     "przy odbiorze osobistym ostatni przystanek nazywa sie odebrane");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");

@@ -178,10 +178,10 @@ const EKRANY = {
     }),
   },
   "11": {
-    nazwa: "Etap: zamowienie zamkniete",
+    nazwa: "Etap: doreczenie potwierdzone, zamowienie zamkniete",
     zbuduj: () => naEtapie("completed", {
       production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z",
-      shipped_at: "2026-09-02T09:00:00Z",
+      shipped_at: "2026-09-02T09:00:00Z", completed_at: "2026-09-04T10:00:00Z",
     }),
   },
   "12": {

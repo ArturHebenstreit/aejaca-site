@@ -97,14 +97,22 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   kroki.push({ id: "work", label: u.tlProduction, data: order.productionStartedAt });
   kroki.push({ id: "ready", label: u.tlReady, data: order.readyAt });
   kroki.push({ id: "shipped", label: odbiorOsobisty ? u.tlHanded : u.tlShipped, data: order.shippedAt });
+  // Doreczenie jest OSOBNYM przystankiem (decyzja wlasciciela, 2026-08-30).
+  // Wczesniej "wyslane" i "zamkniete" dzielily ostatnia kropke, wiec paczka
+  // wlozona do paczkomatu wygladala tak samo jak paczka odebrana, a droga
+  // klienta nigdy nie konczyla sie na zielono.
+  kroki.push({ id: "delivered", label: odbiorOsobisty ? u.tlCollected : u.tlDelivered, data: order.completedAt });
 
   // Numer etapu, na ktorym stoi zlecenie. Jedna liczba zamiast piatki warunkow
   // rozsianych po widoku: dzieki niej "przebyte" i "przed nami" liczy sie samo.
-  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 4 };
+  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 5 };
   const teraz = order.requiresDetails
-    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 5 }[order.status]
+    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 6 }[order.status]
     : gdzie[order.status];
-  const naEtapie = Number.isInteger(teraz) ? teraz : 0;
+  // Potwierdzone doreczenie zamyka cala droge, wiec KAZDA kropka jest przebyta.
+  // Ostatni przystanek jako "biezacy" swiecilby na bursztynowo, czyli mowilby
+  // "trwa" o czymkolwiek, co juz sie stalo.
+  const naEtapie = order.status === "completed" ? kroki.length : Number.isInteger(teraz) ? teraz : 0;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-5 mb-4 text-left">
@@ -278,8 +286,12 @@ const UI = {
       pickup: "Zamówienie czeka na Ciebie w Józefosławiu, o umówionej godzinie.",
       digital: "Pliki są przekazane. Link do pobrania jest w mailu z potwierdzeniem zamówienia.",
     },
-    completedTitle: "Zamówienie zakończone",
-    completedDesc: "Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+    completedTitle: "Zamówienie dostarczone",
+    completedDesc: {
+      ship: "Potwierdzamy dostarczenie przesyłki. Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+      pickup: "Potwierdzamy odbiór zamówienia. Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+      digital: "Zamówienie jest zamknięte. Dziękujemy. Jeżeli coś jest nie tak z plikami, napisz do nas, odpowiadamy na każdą wiadomość.",
+    },
     shippedAtLabel: "Data wysyłki",
     trackingLabel: "Numer przesyłki",
     pendingTitle: "Czekamy na potwierdzenie płatności",
@@ -310,6 +322,8 @@ const UI = {
     tlReady: "Gotowe",
     tlShipped: "Wysłane",
     tlHanded: "Przekazane",
+    tlDelivered: "Dostarczone",
+    tlCollected: "Odebrane",
     tlDeadline: "Planowana finalizacja",
     tlAfterDetails: "po dokonaniu wszystkich ustaleń",
     tlUpTo: "do",
@@ -379,8 +393,12 @@ const UI = {
       pickup: "Your order is waiting for you in Józefosław, at the time we agreed.",
       digital: "Your files have been handed over. The download link is in your order confirmation e-mail.",
     },
-    completedTitle: "Order completed",
-    completedDesc: "Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+    completedTitle: "Order delivered",
+    completedDesc: {
+      ship: "We confirm your parcel has been delivered. Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+      pickup: "We confirm your order has been collected. Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+      digital: "Your order is now closed. Thank you. If anything is wrong with the files, write to us, we answer every message.",
+    },
     shippedAtLabel: "Shipping date",
     trackingLabel: "Tracking number",
     pendingTitle: "Waiting for payment confirmation",
@@ -411,6 +429,8 @@ const UI = {
     tlReady: "Finished",
     tlShipped: "Dispatched",
     tlHanded: "Handed over",
+    tlDelivered: "Delivered",
+    tlCollected: "Collected",
     tlDeadline: "Planned completion",
     tlAfterDetails: "once everything is agreed",
     tlUpTo: "up to",
@@ -481,8 +501,12 @@ const UI = {
       pickup: "Ihre Bestellung wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
       digital: "Ihre Dateien wurden übergeben. Der Download-Link steht in Ihrer Bestellbestätigung.",
     },
-    completedTitle: "Bestellung abgeschlossen",
-    completedDesc: "Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+    completedTitle: "Bestellung zugestellt",
+    completedDesc: {
+      ship: "Wir bestätigen die Zustellung Ihrer Sendung. Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+      pickup: "Wir bestätigen die Abholung Ihrer Bestellung. Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+      digital: "Ihre Bestellung ist abgeschlossen. Vielen Dank. Falls mit den Dateien etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+    },
     shippedAtLabel: "Versanddatum",
     trackingLabel: "Sendungsnummer",
     pendingTitle: "Wir warten auf die Zahlungsbestätigung",
@@ -513,6 +537,8 @@ const UI = {
     tlReady: "Fertig",
     tlShipped: "Versandt",
     tlHanded: "Übergeben",
+    tlDelivered: "Zugestellt",
+    tlCollected: "Abgeholt",
     tlDeadline: "Geplante Fertigstellung",
     tlAfterDetails: "nach allen Absprachen",
     tlUpTo: "bis zu",
@@ -803,7 +829,7 @@ export default function OrderStatus() {
   } else if (completed) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.completedTitle;
-    desc = u.completedDesc;
+    desc = u.completedDesc[droga];
   } else if (paid) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.paidTitle;
