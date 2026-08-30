@@ -133,7 +133,16 @@ const EKRANY = {
         reference: "AE20260830-BEDBA9E9", dueAt: "2026-09-02T00:00:00Z" }
     ),
   },
-  "06": { nazwa: "Etap: wracamy do ustalania szczegolow", zbuduj: () => naEtapie("details", { requires_details: true, deadline_at: null, details_at: "2026-08-30T11:00:00Z" }) },
+  // Cofniecie do ustalen kasuje stemple etapow pozniejszych, wiec przyklad
+  // tez musi je wyczyscic. Inaczej podglad pokazuje date przy przystanku,
+  // ktorego zlecenie jeszcze nie przeszlo, i wyglada to na usterke kodu.
+  "06": {
+    nazwa: "Etap: wracamy do ustalania szczegolow",
+    zbuduj: () => naEtapie("details", {
+      requires_details: true, deadline_at: null, details_at: "2026-08-30T11:00:00Z",
+      queued_at: null, production_started_at: null, ready_at: null, shipped_at: null,
+    }),
+  },
   "07": { nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce", zbuduj: () => naEtapie("queued") },
   "08": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
   "09": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
