@@ -365,6 +365,11 @@ if (pool) {
     .catch((e) => console.error("[migracja] order_items.requires_details:", e.message));
   pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS details_settled_at TIMESTAMPTZ`)
     .catch((e) => console.error("[migracja] order_items.details_settled_at:", e.message));
+  // CO zostalo ustalone, jednym zdaniem. Sama data mowi, ze rozmowa byla,
+  // ale nie mowi, na czym stanelo, a to jest jedyna rzecz, ktora klient
+  // i pracownia musza pamietac tak samo.
+  pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS details_note TEXT`)
+    .catch((e) => console.error("[migracja] order_items.details_note:", e.message));
   // Termin zmieniony po zaplacie jest USTALENIEM Z KLIENTEM, a nie poprawka
   // literowki, wiec musi niesc date, kiedy zapadlo. Bez niej za pol roku nikt
   // nie odtworzy, czy klient sie na to zgodzil.
@@ -4148,7 +4153,7 @@ app.get("/api/orders/queue", async (req, res) => {
 
   const { rows: pozycje } = await pool.query(
     `SELECT id, order_id, title, qty, calculator, file_name, file_url, params,
-            requires_details, details_settled_at
+            requires_details, details_settled_at, details_note
        FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
     [rows.map((o) => o.id)]
   );
@@ -4164,6 +4169,7 @@ app.get("/api/orders/queue", async (req, res) => {
       // gdy domkniete sa wszystkie, ktore ich wymagaly.
       requiresDetails: p.requires_details === true,
       detailsSettledAt: p.details_settled_at,
+      detailsNote: p.details_note || null,
       // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
       // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
       description: p.params?.description ?? null,
@@ -4485,6 +4491,10 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
     return res.status(400).json({ error: "Zla pozycja", code: "bad_item" });
   }
   const domykamy = req.body?.settled !== false;
+  // Tresc ustalenia. `undefined` znaczy "nie ruszaj", pusty napis kasuje.
+  const notatka = req.body?.note === undefined
+    ? undefined
+    : String(req.body.note || "").slice(0, 500) || null;
 
   const client = await pool.connect();
   try {
@@ -4517,8 +4527,11 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
     }
 
     await client.query(
-      `UPDATE order_items SET details_settled_at = $2 WHERE id = $1`,
-      [itemId, domykamy ? new Date() : null]
+      `UPDATE order_items
+          SET details_settled_at = $2
+              ${notatka === undefined ? "" : ", details_note = $3"}
+        WHERE id = $1`,
+      notatka === undefined ? [itemId, domykamy ? new Date() : null] : [itemId, domykamy ? new Date() : null, notatka]
     );
 
     // Stan liczymy z pozycji PO zapisie, a nie z tego, co przyszlo w zadaniu:
@@ -5175,7 +5188,7 @@ app.get("/api/orders/:ref", async (req, res) => {
             discount_code, discount_grosze, credit_applied_grosze,
             lead_days, deadline_at, requires_details, details_at, queued_at, ready_at,
             production_started_at,
-            lang, paid_at, expires_at, delivery_method,
+            lang, paid_at, expires_at, delivery_method, delivery_point,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
             amount_eur_cents, transfer_confirmed_at,
@@ -5193,7 +5206,8 @@ app.get("/api/orders/:ref", async (req, res) => {
   // wlasciwie zamowil; podsumowanie mial wylacznie w mailu, ktory bywa
   // zarchiwizowany albo skasowany. Tu jada te same wiersze, co w mailu.
   const { rows: pozycje } = await pool.query(
-    `SELECT title, qty, unit_grosze, line_grosze FROM order_items WHERE order_id = $1 ORDER BY id`,
+    `SELECT title, qty, unit_grosze, line_grosze, requires_details, details_settled_at, details_note
+       FROM order_items WHERE order_id = $1 ORDER BY id`,
     [o.id]
   );
 
@@ -5212,10 +5226,22 @@ app.get("/api/orders/:ref", async (req, res) => {
     items: pozycje.map((i) => ({
       title: i.title, qty: i.qty,
       unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      // Klient ma prawo wiedziec, NA CO czekamy. "Ustalamy szczegoly" bez
+      // wskazania pozycji brzmi jak zwloka, a nie jak konkretne pytanie,
+      // ktore do niego wyslalismy.
+      requiresDetails: i.requires_details === true,
+      detailsSettled: Boolean(i.details_settled_at),
+      detailsSettledAt: i.details_settled_at,
+      // Co ustalilismy, slowami. Klient czyta to samo zdanie co pracownia,
+      // wiec nie ma dwoch wersji tej samej rozmowy.
+      detailsNote: i.details_note || null,
     })),
     paidAt: o.paid_at,
     expiresAt: o.expires_at,
     deliveryMethod: o.delivery_method,
+    // Numer paczkomatu albo punktu odbioru. Klient wybieral go tydzien
+    // wczesniej i zwykle nie pamieta, a paczka jedzie wlasnie tam.
+    deliveryPoint: o.delivery_point || null,
 
     // TERMIN REALIZACJI (ADR-0027).
     //
