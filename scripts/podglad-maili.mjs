@@ -143,7 +143,12 @@ const EKRANY = {
       queued_at: null, production_started_at: null, ready_at: null, shipped_at: null,
     }),
   },
-  "07": { nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce", zbuduj: () => naEtapie("queued") },
+  // "Wszystkie ustalenia mamy komplet" ma sens tylko przy zleceniu, ktore
+  // ustalen wymagalo. Tedy wchodzi mail po odhaczeniu ostatniej pozycji.
+  "07": {
+    nazwa: "Etap: ustalenia domkniete, zlecenie w kolejce",
+    zbuduj: () => naEtapie("queued", { requires_details: true, details_at: "2026-08-30T11:00:00Z" }),
+  },
   "08": { nazwa: "Etap: w realizacji", zbuduj: () => naEtapie("in_production", { production_started_at: "2026-08-31T08:00:00Z" }) },
   "09": { nazwa: "Etap: gotowe", zbuduj: () => naEtapie("ready", { production_started_at: "2026-08-31T08:00:00Z", ready_at: "2026-09-01T14:00:00Z" }) },
   "10": {
