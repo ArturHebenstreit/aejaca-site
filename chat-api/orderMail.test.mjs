@@ -18,27 +18,36 @@ const zPolki = { title: "Pierścionek z granatem", qty: 1, unit_grosze: 129000, 
 const naZamowienie = { title: "Grawer CO2", qty: 1, unit_grosze: 5000, line_grosze: 5000, item_type: "service", calculator: "laser_co2_engrave" };
 const cyfrowy = { title: "Model do druku", qty: 1, unit_grosze: 2000, line_grosze: 2000, item_type: "product", product_kind: "digital", product_offer: "ready" };
 
+const doKlienta = (items, lang = "pl") =>
+  buildOrderMessages({ ...order, lang }, items).find((m) => m.to === order.customer_email);
+
 const mailDo = (items, lang = "pl") => {
-  const msgs = buildOrderMessages({ ...order, lang }, items);
-  const klient = msgs.find((m) => m.to === order.customer_email);
+  const klient = doKlienta(items, lang);
   return `${klient.html}\n${klient.text}`;
 };
+
+/** Tresc zalacznikow, sklejona. Od 2026-08-30 wzor oswiadczenia nie stoi
+ *  w tresci maila, tylko jedzie zalacznikiem. */
+const zalaczniki = (items, lang = "pl") =>
+  (doKlienta(items, lang).attachments || []).map((z) => z.content).join("\n");
 
 // --- Rzecz z polki: prawo przysluguje i mail ma to powiedziec ---
 const polka = mailDo([zPolki]);
 assert.match(polka, /14 dni na odstąpienie/, "przy rzeczy z polki musi byc pouczenie o 14 dniach");
 assert.match(polka, /najtańszej oferowanej dostawy/, "zwrot kosztu dostawy to pieniadze klienta");
 assert.doesNotMatch(polka, /nie przysługuje/, "TO byl blad: prawo odbierane komus, kto je ma");
-assert.match(polka, /Wzór formularza odstąpienia/, "wzor formularza dolaczamy, gdy prawo przysluguje");
-assert.match(polka, /AE20260803-AABBCCDD/, "formularz niesie numer zamowienia");
-assert.match(polka, /Artur Hebenstreit/, "adresat formularza to sprzedawca z imienia i nazwiska");
-assert.match(polka, /Nowy Świat 33/, "razem z adresem do korespondencji");
+assert.match(zalaczniki([zPolki]), /Wzór oświadczenia o odstąpieniu/, "wzor jedzie zalacznikiem, gdy prawo przysluguje");
+assert.doesNotMatch(polka, /Data odbioru:/, "a w tresci maila juz go nie ma");
+const wzorPolka = zalaczniki([zPolki]);
+assert.match(wzorPolka, /AE20260803-AABBCCDD/, "wzor niesie numer zamowienia");
+assert.match(wzorPolka, /Artur Hebenstreit/, "adresat wzoru to sprzedawca z imienia i nazwiska");
+assert.match(wzorPolka, /Nowy Świat 33/, "razem z adresem do korespondencji");
 
 // --- Rzecz wykonywana pod klienta: prawa nie ma i tak zostaje ---
 const podKlienta = mailDo([naZamowienie]);
 assert.match(podKlienta, /art\. 38 pkt 3/, "podajemy podstawe, a nie samo 'nie przysluguje'");
 assert.match(podKlienta, /nie przysługuje/);
-assert.doesNotMatch(podKlienta, /Wzór formularza/, "nie ma po co dawac formularza, gdy nie ma od czego odstapic");
+assert.equal(zalaczniki([naZamowienie]), "", "nie ma po co dawac wzoru, gdy nie ma od czego odstapic");
 
 // --- Tresc cyfrowa ---
 const cyfrowa = mailDo([cyfrowy]);
@@ -50,15 +59,15 @@ const mieszane = mailDo([zPolki, naZamowienie]);
 assert.match(mieszane, /obejmuje:[^<]*Pierścionek z granatem/, "pozycja objeta prawem wymieniona z nazwy");
 assert.match(mieszane, /nie obejmuje[\s\S]*Grawer CO2/, "wylaczona rowniez z nazwy");
 assert.match(mieszane, /14 dni na odstąpienie/);
-assert.match(mieszane, /Wzór formularza odstąpienia/);
+assert.match(zalaczniki([zPolki, naZamowienie]), /Wzór oświadczenia o odstąpieniu/);
 
 // --- Trzy jezyki ---
 const en = mailDo([zPolki], "en");
 assert.match(en, /14 days to withdraw/);
-assert.match(en, /Model withdrawal form/);
+assert.match(zalaczniki([zPolki], "en"), /Model withdrawal form/);
 const de = mailDo([zPolki], "de");
 assert.match(de, /14 Tage Zeit/);
-assert.match(de, /Muster-Widerrufsformular/);
+assert.match(zalaczniki([zPolki], "de"), /Muster-Widerrufsformular/);
 
 // --- Zamowienie bez danych o rodzaju pozycji nie moze obiecac prawa na wyrost ---
 const bezDanych = mailDo([{ title: "Coś", qty: 1, unit_grosze: 100, line_grosze: 100 }]);

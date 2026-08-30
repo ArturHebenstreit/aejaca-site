@@ -72,8 +72,10 @@ const T = {
       "Zamówienie obejmuje treść cyfrową dostarczaną poza nośnikiem materialnym. Zgodnie z art. 38 pkt 13 ustawy o prawach konsumenta i Twoją wyraźną zgodą prawo odstąpienia wygasa z chwilą rozpoczęcia pobierania.",
     wdMixedCovered: "Prawo odstąpienia w terminie 14 dni obejmuje:",
     wdMixedExcluded: "Prawo odstąpienia nie obejmuje poniższych pozycji, bo powstają pod Twoje zamówienie albo są treścią cyfrową:",
-    wdFormTitle: "Wzór formularza odstąpienia od umowy",
-    wdFormNote: "Formularz jest dobrowolny, wystarczy zwykła wiadomość. Zostawiamy go, żebyś nie musiał go szukać.",
+    wdSzczegoly: "Szczegóły i terminy znajdziesz pod adresem",
+    wdZalacznik: "Wzór oświadczenia o odstąpieniu dołączyliśmy do tej wiadomości. Jest dobrowolny, wystarczy zwykła wiadomość na contact@aejaca.com.",
+    wdPlik: "odstapienie-od-umowy",
+    wdFormTitle: "Wzór oświadczenia o odstąpieniu od umowy",
     wdForm: [
       "Adresat: {seller}, {address}, contact@aejaca.com",
       "Ja niniejszym informuję o moim odstąpieniu od umowy sprzedaży następujących rzeczy:",
@@ -145,8 +147,10 @@ const T = {
       "This order includes digital content supplied without a tangible medium. Under Article 38(13) of the Polish Consumer Rights Act and your express consent, the right of withdrawal ends once the download begins.",
     wdMixedCovered: "The 14-day right of withdrawal covers:",
     wdMixedExcluded: "It does not cover the items below, because they are made to your order or are digital content:",
+    wdSzczegoly: "The details and the deadlines are at",
+    wdZalacznik: "The model withdrawal declaration is attached to this message. It is optional, a plain e-mail to contact@aejaca.com is enough.",
+    wdPlik: "withdrawal-form",
     wdFormTitle: "Model withdrawal form",
-    wdFormNote: "The form is optional, a plain message is enough. We include it so you do not have to look for it.",
     wdForm: [
       "To: {seller}, {address}, contact@aejaca.com",
       "I hereby give notice that I withdraw from the contract of sale of the following goods:",
@@ -218,8 +222,10 @@ const T = {
       "Die Bestellung umfasst digitale Inhalte, die nicht auf einem körperlichen Datenträger geliefert werden. Gemäß Art. 38 Nr. 13 des polnischen Verbraucherrechtsgesetzes und Ihrer ausdrücklichen Zustimmung erlischt das Widerrufsrecht mit Beginn des Downloads.",
     wdMixedCovered: "Das 14-tägige Widerrufsrecht gilt für:",
     wdMixedExcluded: "Nicht erfasst sind die folgenden Positionen, da sie nach Ihren Vorgaben gefertigt werden oder digitale Inhalte sind:",
+    wdSzczegoly: "Einzelheiten und Fristen finden Sie unter",
+    wdZalacznik: "Das Muster-Widerrufsformular liegt dieser Nachricht bei. Es ist freiwillig, eine formlose Nachricht an contact@aejaca.com genügt.",
+    wdPlik: "widerrufsformular",
     wdFormTitle: "Muster-Widerrufsformular",
-    wdFormNote: "Das Formular ist freiwillig, eine formlose Nachricht genügt. Wir legen es bei, damit Sie nicht danach suchen müssen.",
     wdForm: [
       "An: {seller}, {address}, contact@aejaca.com",
       "Hiermit widerrufe ich den Vertrag über den Kauf der folgenden Waren:",
@@ -282,6 +288,10 @@ function withdrawalParts(order, items, l) {
     }
   }
 
+  // Wzor oswiadczenia nie idzie juz w TRESCI maila: rozbijal ja na trzy czesci
+  // i spychal wszystko pozostale pod spod. Idzie ZALACZNIKIEM, bo mail jest
+  // potwierdzeniem umowy na trwalym nosniku i wzor ma dotrzec razem z nim,
+  // a odnosnik do strony trwalym nosnikiem nie jest.
   const form = w.hasCovered
     ? l.wdForm.map((line) =>
         line
@@ -290,7 +300,7 @@ function withdrawalParts(order, items, l) {
           .replace("{ref}", order.order_ref))
     : null;
 
-  return { paras, form, note: form ? l.wdFormNote : null, title: l.wdFormTitle };
+  return { paras, doWziecia: w.hasCovered, form };
 }
 
 function esc(s) {
@@ -532,11 +542,10 @@ function customerHtml(order, items, lang) {
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.withdrawal}</h3>
     ${wd.paras.map((t) => `<p style="margin:0 0 8px;line-height:1.6;font-size:13px;color:#666">${esc(t)}</p>`).join("")}
-    ${wd.form ? `
-      <p style="margin:12px 0 4px;font-size:12px;color:#888">${esc(wd.title)}. ${esc(wd.note)}</p>
-      <div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;font-size:12px;color:#555;line-height:1.9">
-        ${wd.form.map((line) => esc(line)).join("<br>")}
-      </div>` : ""}
+    ${wd.doWziecia ? `
+      <p style="margin:8px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.wdZalacznik)}</p>
+      <p style="margin:6px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.wdSzczegoly)}
+        <a href="${esc(adres(lang, "/returns/"))}" style="color:#b58a3c;font-weight:700;text-decoration:none;word-break:break-word">${esc(doPokazania(adres(lang, "/returns/")))}</a></p>` : ""}
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.questions}</h3>
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}</p>
@@ -601,7 +610,7 @@ function customerText(order, items, lang) {
     ] : []),
     "",
     `${l.withdrawal}: ${wd.paras.join(" ")}`,
-    ...(wd.form ? ["", `${wd.title}:`, ...wd.form] : []),
+    ...(wd.doWziecia ? ["", l.wdZalacznik, `${l.wdSzczegoly} ${adres(lang, "/returns/")}`] : []),
     "",
     `${l.questions}: ${l.questionsBody}`,
     "",
@@ -714,6 +723,23 @@ export function buildOrderMessages(order, items, attachments = []) {
   const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "pl";
   const l = T[lang];
 
+  // Wzor oswiadczenia jedzie ZALACZNIKIEM, i tylko wtedy, gdy w zamowieniu
+  // jest cokolwiek, od czego da sie odstapic. Przy rzeczy robionej pod klienta
+  // formularz odstapienia bylby obietnica prawa, ktorego nie ma.
+  //
+  // Plik tekstowy, a nie PDF: usluga platnosci nie ma biblioteki do PDF,
+  // a wbudowane kroje pisma nie znaja polskich znakow, wiec "odstąpieniu"
+  // wyszloby jako "odst pieniu". Tekst w UTF-8 otwiera sie wszedzie, klient
+  // wkleja go wprost do wiadomosci i wlasnie tak go wysle.
+  const wd = withdrawalParts(order, items, l);
+  const zalaczniki = wd.form
+    ? [{
+        filename: `${l.wdPlik}-${order.order_ref}.txt`,
+        mime: "text/plain",
+        content: [l.wdFormTitle, "", ...wd.form].join("\r\n") + "\r\n",
+      }]
+    : [];
+
   return [
     {
       to: order.customer_email,
@@ -722,6 +748,7 @@ export function buildOrderMessages(order, items, attachments = []) {
       subject: l.subject(order.order_ref),
       text: customerText(order, items, lang),
       html: customerHtml(order, items, lang),
+      attachments: zalaczniki,
     },
     {
       to: INTERNAL_TO,
@@ -838,33 +865,68 @@ export async function sendTransferInstructions(pool, orderId, tr) {
 }
 
 /** RFC 2822 w postaci, ktorej oczekuje Gmail API (base64url) */
-function buildRaw({ to, from, subject, text, html, replyTo }) {
-  const boundary = `bnd_${Math.random().toString(36).slice(2)}`;
+/**
+ * Sklada wiadomosc w postaci, ktorej oczekuje Gmail.
+ *
+ * Dwie warstwy, gdy sa zalaczniki: `multipart/mixed` obejmuje calosc, a w nim
+ * siedzi `multipart/alternative` z para tekst i HTML. Odwrotna kolejnosc
+ * sprawia, ze klient pocztowy pokazuje zalacznik ZAMIAST tresci albo obok
+ * niej jako druga wersje maila.
+ *
+ * @param {{attachments?: Array<{filename: string, content: string, mime?: string}>}} arg
+ *   `content` jest napisem w UTF-8. Base64 zawijamy po 76 znakow, bo dluzsze
+ *   linie lamie czesc serwerow poczty.
+ */
+export function buildRaw({ to, from, subject, text, html, replyTo, attachments = [] }) {
+  const tresc = `bnd_${Math.random().toString(36).slice(2)}`;
+  const zewnetrzny = `mix_${Math.random().toString(36).slice(2)}`;
   const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
+  const zZalacznikami = attachments.length > 0;
   const headers = [
     `From: ${from}`,
     `To: ${to}`,
     replyTo ? `Reply-To: ${replyTo}` : null,
     `Subject: ${encodedSubject}`,
     "MIME-Version: 1.0",
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    zZalacznikami
+      ? `Content-Type: multipart/mixed; boundary="${zewnetrzny}"`
+      : `Content-Type: multipart/alternative; boundary="${tresc}"`,
   ].filter(Boolean);
 
-  const body = [
-    "",
-    `--${boundary}`,
+  const zawin = (b64) => b64.match(/.{1,76}/g)?.join("\r\n") || "";
+  const czescTresci = [
+    `--${tresc}`,
     "Content-Type: text/plain; charset=UTF-8",
     "Content-Transfer-Encoding: base64",
     "",
-    Buffer.from(text, "utf8").toString("base64"),
-    `--${boundary}`,
+    zawin(Buffer.from(text, "utf8").toString("base64")),
+    `--${tresc}`,
     "Content-Type: text/html; charset=UTF-8",
     "Content-Transfer-Encoding: base64",
     "",
-    Buffer.from(html, "utf8").toString("base64"),
-    `--${boundary}--`,
-    "",
+    zawin(Buffer.from(html, "utf8").toString("base64")),
+    `--${tresc}--`,
   ];
+
+  const body = zZalacznikami
+    ? [
+        "",
+        `--${zewnetrzny}`,
+        `Content-Type: multipart/alternative; boundary="${tresc}"`,
+        "",
+        ...czescTresci,
+        ...attachments.flatMap((z) => [
+          `--${zewnetrzny}`,
+          `Content-Type: ${z.mime || "text/plain"}; charset=UTF-8; name="${z.filename}"`,
+          "Content-Transfer-Encoding: base64",
+          `Content-Disposition: attachment; filename="${z.filename}"`,
+          "",
+          zawin(Buffer.from(z.content, "utf8").toString("base64")),
+        ]),
+        `--${zewnetrzny}--`,
+        "",
+      ]
+    : ["", ...czescTresci, ""];
 
   return Buffer.from(headers.concat(body).join("\r\n"), "utf8")
     .toString("base64")

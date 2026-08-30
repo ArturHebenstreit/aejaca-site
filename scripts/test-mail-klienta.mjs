@@ -10,6 +10,7 @@
 // przepuscilaby mail, ktory sie sklada, ale nic w nim nie ma.
 
 import {
+  buildRaw,
   buildOrderMessages,
   buildTransferMessage,
   buildStatusUpdate,
@@ -121,6 +122,55 @@ for (const lang of ["pl", "en", "de"]) {
   ok(mail.text.includes(`${STRONA}${prefiks}/payments/`), `${lang}: odnosnik do procesu platnosci`);
   ok(mail.text.includes(`${STRONA}${prefiks}/order-process/`), `${lang}: odnosnik do procesu realizacji`);
   ok(mail.text.includes(`${STRONA}${prefiks}/terms/`), `${lang}: odnosnik do regulaminu`);
+}
+
+console.log("\n4b. Wzor odstapienia jedzie zalacznikiem, nie tresc maila\n");
+
+// Wzor rozbijal mail na trzy czesci i spychal wszystko pozostale pod spod,
+// wiec zszedl z tresci (decyzja wlasciciela). Ale mail jest potwierdzeniem
+// umowy na trwalym nosniku, a odnosnik do strony trwalym nosnikiem nie jest,
+// wiec wzor MUSI dotrzec razem z mailem.
+{
+  const zPolki = [{ title: "Pierścionek z granatem", qty: 1, unit_grosze: 32000, line_grosze: 32000,
+    item_type: "product", product_kind: "physical", product_offer: "stock" }];
+  const naZamowienie = [{ title: "Klucz Modern", qty: 1, unit_grosze: 4000, line_grosze: 4000,
+    item_type: "service", calculator: "laser_cut", params: {} }];
+  const mail = (poz, lang = "pl") =>
+    buildOrderMessages({ ...ZAMOWIENIE, lang }, poz, []).find((m) => m.to === ZAMOWIENIE.customer_email);
+
+  const zPolkiMail = mail(zPolki);
+  ok(zPolkiMail.attachments?.length === 1, "produkt z polki: dokladnie jeden zalacznik");
+  ok(zPolkiMail.attachments[0].filename.includes(ZAMOWIENIE.order_ref),
+     "nazwa pliku niesie numer zamowienia, wiec nie zginie w pobranych");
+  ok(zPolkiMail.attachments[0].content.includes("odstąpieniu od umowy sprzedaży"),
+     "zalacznik ma polskie znaki, a nie kwadraciki po kroju bez ogonkow");
+  ok(zPolkiMail.attachments[0].content.includes(ZAMOWIENIE.order_ref), "wzor ma juz wpisany numer zamowienia");
+
+  // Rzecz robiona pod klienta nie podlega odstapieniu, wiec formularz przy niej
+  // bylby obietnica prawa, ktorego nie ma.
+  ok((mail(naZamowienie).attachments || []).length === 0,
+     "usluga na zamowienie: zadnego formularza");
+
+  // Tresc maila ma juz tylko ZDANIE o zalaczniku i adres strony.
+  ok(!zPolkiMail.html.includes("Data odbioru:") && !zPolkiMail.text.includes("Data odbioru:"),
+     "wzor zniknal z tresci maila");
+  ok(zPolkiMail.text.includes("https://www.aejaca.com/returns/"), "tresc odsyla na strone zwrotow");
+
+  // Koperta: `multipart/mixed` na wierzchu, w srodku para tekst i HTML.
+  // Odwrotna kolejnosc pokazuje zalacznik zamiast tresci.
+  const raw = Buffer.from(buildRaw(zPolkiMail).replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
+  ok(/Content-Type: multipart\/mixed/.test(raw), "koperta jest multipart/mixed");
+  ok(/Content-Type: multipart\/alternative/.test(raw), "w srodku siedzi para tekst i HTML");
+  ok(/Content-Disposition: attachment; filename="odstapienie/.test(raw), "zalacznik ma naglowek zalacznika");
+  const czesci = raw.split(/--mix_[a-z0-9]+/);
+  const zakodowany = czesci.find((c) => c.includes("Content-Disposition: attachment"));
+  const odkodowany = Buffer.from(zakodowany.split("\r\n\r\n").slice(1).join("").replace(/\r\n/g, ""), "base64").toString("utf8");
+  ok(odkodowany.includes("Numer zamówienia: " + ZAMOWIENIE.order_ref),
+     "zalacznik po odkodowaniu jest tym, co do niego wlozylismy");
+
+  for (const lang of ["en", "de"]) {
+    ok((mail(zPolki, lang).attachments || []).length === 1, `${lang}: zalacznik tez jest`);
+  }
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");
