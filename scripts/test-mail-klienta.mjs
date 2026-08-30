@@ -278,6 +278,31 @@ console.log("\n4f. Ostatnia kropka zielenieje dopiero po potwierdzeniu doreczeni
      "przy odbiorze osobistym ostatni przystanek nazywa sie odebrane");
 }
 
+console.log("\n4g. Termin w ofercie liczy sie z pozycji ZAZNACZONYCH\n");
+
+// Kwota i termin musza mowic o tym samym ukladzie oferty. Termin liczony
+// z wszystkich wariantow naraz obiecywalby klientowi date wariantu, ktorego
+// nie wybral, i to zawsze tego najdluzszego.
+{
+  const WARIANTY = [
+    { id: 1, group_key: "pierscionek", title: "Pierścionek, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "variant", selected: true, lead_days: 14 },
+    { id: 2, group_key: "pierscionek", title: "Pierścionek, złoto 750", qty: 1, unit_grosze: 198000, line_grosze: 198000, kind: "variant", selected: false, lead_days: 21 },
+    { id: 3, title: "Grawer", qty: 1, unit_grosze: 23000, line_grosze: 23000, kind: "option", selected: true, lead_days: 3 },
+  ];
+  const mail = (poz) => {
+    const m = buildQuoteMessage({ ...WYCENA, lang: "pl" }, poz, "https://www.aejaca.com/oferta/");
+    return `${m.html}\n${m.text}`;
+  };
+  const zWariantami = mail(WARIANTY);
+  ok(/Termin realizacji: 14 dni/.test(zWariantami), "termin bierze najdluzszy z ZAZNACZONYCH");
+  ok(!/21 dni/.test(zWariantami), "odznaczony wariant nie narzuca swojego terminu");
+  ok(!/Termin realizacji/.test(mail([{ id: 1, title: "Rzecz bez terminu", qty: 1, unit_grosze: 1000, line_grosze: 1000, kind: "item", selected: true }])),
+     "bez terminu w pozycjach mail o nim milczy, zamiast obiecywac pustke");
+  ok(/Liczymy go od domknięcia ustaleń/.test(mail([
+       { id: 1, title: "Sygnet z grawerem", qty: 1, unit_grosze: 89000, line_grosze: 89000, kind: "item", selected: true, lead_days: 14, requires_details: true },
+     ])), "przy pozycji z ustaleniami mail mowi, od czego liczy sie zegar");
+}
+
 console.log("\n5. Data i liczba dni po ludzku\n");
 
 // Sterownik bazy oddaje kolumne DATE jako obiekt Date. Samo `String(...)`

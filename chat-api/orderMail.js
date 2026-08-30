@@ -17,6 +17,9 @@
 // w pouczeniu o odstapieniu, wiec musza byc jedne.
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from "./pricing/shipping.js";
+// Termin oferty liczy TA SAMA funkcja, ktora liczy go na stronie oferty
+// i przy zamowieniu: dwie liczby na jedno pytanie sa gorsze niz brak jednej.
+import { selectedQuoteItems, terminGrupy } from "./quotes.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
@@ -1561,6 +1564,9 @@ const QUOTE_T = {
     open: "Otwórz wycenę",
     validUntil: (d) => `Wycena obowiązuje do ${d}.`,
     validLabel: "Wycena ważna do",
+    leadLabel: "Termin realizacji",
+    leadZdanie: (ile) => `Termin realizacji: ${ile} od zapłaty.`,
+    leadDetails: (ile) => `Termin realizacji: ${ile}. Liczymy go od domknięcia ustaleń, bo zaznaczone pozycje wymagają wcześniejszej rozmowy.`,
     numer: "Numer wyceny",
     numerZdanie: (ref) => `Numer ${ref} wpiszesz też ręcznie, na stronie oferty, w sklepie albo w koszyku.`,
     metalNote:
@@ -1582,6 +1588,9 @@ const QUOTE_T = {
     open: "Open the quote",
     validUntil: (d) => `The quote is valid until ${d}.`,
     validLabel: "Quote valid until",
+    leadLabel: "Lead time",
+    leadZdanie: (ile) => `Lead time: ${ile} from payment.`,
+    leadDetails: (ile) => `Lead time: ${ile}. It is counted from the moment the details are agreed, because the selected items need a conversation first.`,
     numer: "Quote number",
     numerZdanie: (ref) => `You can also type the number ${ref} yourself, on the offer page, in the shop or in the cart.`,
     metalNote:
@@ -1603,6 +1612,9 @@ const QUOTE_T = {
     open: "Angebot öffnen",
     validUntil: (d) => `Das Angebot gilt bis ${d}.`,
     validLabel: "Angebot gültig bis",
+    leadLabel: "Lieferzeit",
+    leadZdanie: (ile) => `Lieferzeit: ${ile} ab Zahlung.`,
+    leadDetails: (ile) => `Lieferzeit: ${ile}. Sie zählt ab dem Abschluss der Absprachen, denn die gewählten Positionen brauchen vorher ein Gespräch.`,
     numer: "Angebotsnummer",
     numerZdanie: (ref) => `Die Nummer ${ref} können Sie auch selbst eingeben, auf der Angebotsseite, im Shop oder im Warenkorb.`,
     metalNote:
@@ -1649,6 +1661,20 @@ export function buildQuoteMessage(quote, items, url) {
   ];
   const wazneDo = quote.valid_until ? dzien(quote.valid_until) : null;
 
+  // Klient pyta o dwie liczby naraz: ile to kosztuje i na kiedy to bedzie.
+  // Druga stala dotad tylko na stronie oferty, wiec mail odpowiadal na polowe
+  // pytania. Termin liczy sie z pozycji ZAZNACZONYCH, tak samo jak kwota,
+  // wiec obie liczby zawsze mowia o tym samym ukladzie oferty.
+  // Cala oferta, nie same pozycje: przy starej ofercie `pick_one` rodzaj
+  // pozycji bierze sie z pola na WYCENIE, a `chosen_item_id` rozstrzyga wybor
+  // tam, gdzie nic nie jest zaznaczone.
+  const wybrane = selectedQuoteItems({ ...quote, items });
+  const dniTerminu = terminGrupy(wybrane);
+  const zUstaleniami = wybrane.some((i) => i.requires_details === true);
+  const termin = dniTerminu
+    ? (zUstaleniami ? l.leadDetails(dniSlownie(dniTerminu, lang)) : l.leadZdanie(dniSlownie(dniTerminu, lang)))
+    : null;
+
   const html = koperta({ lang, odnosniki, srodek: `
     <p style="margin:0 0 6px">${esc(l.hi)}</p>
     <p style="margin:0 0 20px;line-height:1.6">${esc(l.intro)}</p>
@@ -1680,6 +1706,8 @@ export function buildQuoteMessage(quote, items, url) {
         <div style="font-size:18px;font-weight:700;color:#7a5f22;margin-top:2px">${esc(wazneDo)}</div>
       </div>` : ""}
 
+    ${termin ? `<p style="margin:14px 0 0;line-height:1.6;font-size:13px;color:#444"><strong>${esc(l.leadLabel)}.</strong> ${esc(termin.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
+
     <p style="margin:18px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.metalNote)}</p>
     <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.noObligation)}</p>
   ` });
@@ -1693,6 +1721,7 @@ export function buildQuoteMessage(quote, items, url) {
     wybor ? `\n${l.configNote}` : null,
     "", `${l.open}: ${url}`,
     wazneDo ? `\n${l.validUntil(wazneDo)}` : "",
+    termin ? `\n${termin}` : null,
     "", l.metalNote,
     "", l.noObligation,
     "", odnosnikiText(lang, odnosniki),
@@ -1714,7 +1743,16 @@ export async function sendQuoteLink(pool, quoteRef, url) {
     if (!quote?.customer_email) return false;
 
     const { rows: items } = await pool.query(
-      "SELECT title, qty, unit_grosze, line_grosze, kind, selected FROM quote_items WHERE quote_id = $1 ORDER BY id",
+      // `id` i `group_key` decyduja o tym, ktory wariant jest wybrany, a `order_id`
+      // razem ze stanem zamowienia o tym, czy pozycja jest jeszcze do wziecia.
+      // Bez nich `selectedQuoteItems` nie ma czym rozrozniac pozycji i termin
+      // policzylby sie z WSZYSTKICH wariantow, takze odznaczonych.
+      `SELECT qi.id, qi.title, qi.qty, qi.unit_grosze, qi.line_grosze, qi.kind, qi.selected,
+              qi.group_key, qi.lead_days, qi.requires_details, qi.order_id, o.status AS order_status
+         FROM quote_items qi
+         LEFT JOIN orders o ON o.id = qi.order_id
+        WHERE qi.quote_id = $1
+        ORDER BY qi.id`,
       [quote.id]
     );
 
