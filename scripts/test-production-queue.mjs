@@ -29,7 +29,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta, etapPoZaplacie, terminRealizacji,
-         dniDoTerminu, zegarBiegnie, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM } from "../chat-api/productionQueue.js";
+         dniDoTerminu, zegarBiegnie, ustaleniaDomkniete, ileDoUstalenia,
+         ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM } from "../chat-api/productionQueue.js";
 import { PROGI, progDoWyslania, szturchnacSzczegoly, nazwaProgu } from "../chat-api/deadlineReminders.js";
 import { terminGrupy, quoteLeadDays, quoteRequiresDetails } from "../chat-api/quotes.js";
 
@@ -259,6 +260,19 @@ console.log("\n7. Termin realizacji: najdluzszy, i tylko z tego, co wybrane\n");
   rowne(ETAPY_PRACY.queued.pole, "queued_at", "wejscie do kolejki ma wlasny stempel");
   rowne(ETAPY_Z_ZEGAREM.includes("paid"), false, "stan przelotowy po ITN nie liczy sie do zegara");
 
+  // USTALENIA STOJA PRZY POZYCJI (2026-08-30). Zegar calego zamowienia rusza
+  // dopiero, gdy domkniete sa wszystkie pozycje, ktore ustalen wymagaly.
+  const pozU = (wymaga, kiedy) => ({ requires_details: wymaga, details_settled_at: kiedy || null });
+  rowne(ustaleniaDomkniete([]), true, "zamowienie bez pozycji nie ma na co czekac");
+  rowne(ustaleniaDomkniete([pozU(false), pozU(false)]), true, "bez ani jednego wymogu zegar rusza od razu");
+  rowne(ustaleniaDomkniete([pozU(true), pozU(false)]), false, "jedna pozycja do ustalenia zatrzymuje cale zlecenie");
+  rowne(ustaleniaDomkniete([pozU(true, "2026-08-30"), pozU(false)]), true, "domknieta pozycja zwalnia zegar");
+  rowne(ustaleniaDomkniete([pozU(true, "2026-08-30"), pozU(true)]), false, "druga pozycja z wymogiem dalej trzyma");
+  rowne(ileDoUstalenia([pozU(true), pozU(true, "2026-08-30"), pozU(false)]), 1, "liczymy, ile pozycji jeszcze czeka");
+  // Pozycja bez wymogu, ale ze stemplem, nie jest bledem i nie ma glosu:
+  // znacznik mogl zostac zdjety po domknieciu i to nie cofa zlecenia.
+  rowne(ustaleniaDomkniete([pozU(false, "2026-08-30")]), true, "stempel przy pozycji bez wymogu niczego nie blokuje");
+
   rowne(terminRealizacji("2026-09-01T10:00:00Z", 14), "2026-09-15", "termin to data, a nie liczba dni");
   rowne(terminRealizacji("2026-09-01T10:00:00Z", null), null, "bez liczby dni nie ma terminu");
   rowne(terminRealizacji(null, 14), null, "bez chwili startu nie ma terminu");
@@ -350,7 +364,7 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   // z "wyslane" kasuje list przewozowy, a panel przysyla go przy kazdym
   // zapisie, wiec plaska lista skladala zapytanie, ktore nie mialo prawa sie
   // wykonac: kazde takie cofniecie konczylo sie bledem 500.
-  ma(SERWER, /const pola = new Map\(\)[\s\S]{0,3000}?const zmiany = \[\.\.\.pola\.values\(\)\]/,
+  ma(SERWER, /const pola = new Map\(\)[\s\S]{0,6000}?const zmiany = \[\.\.\.pola\.values\(\)\]/,
      "korekta sklada przypisania pod nazwa kolumny, wiec dwa zapisy sie nie zderzaja");
   // Parametr dolozony do zapytania i w nim nieuzyty wywala cale zapytanie na
   // "could not determine data type", wiec sprawdzamy to przed wpisaniem.

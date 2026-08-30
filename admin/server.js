@@ -1601,8 +1601,17 @@ app.get("/queue", requireAuth, async (req, res) => {
     .filter(Boolean).join("&");
   try {
     const dane = await shopApi(`/api/orders/queue${pytanie ? `?${pytanie}` : ""}`);
+    // Link do strony zamowienia powstaje TU, a nie w widoku: to ten sam adres,
+    // ktory klient dostal mailem po zaplacie, i jedyna droga, zeby wyslac mu
+    // go ponownie, gdy zgubil wiadomosc. Bez zetonu strona pyta o adres email.
+    const orders = (dane.orders || []).map((o) => ({
+      ...o,
+      statusUrl: o.accessToken
+        ? `${SITE_URL}/order/status/?ref=${encodeURIComponent(o.orderRef)}&token=${encodeURIComponent(o.accessToken)}`
+        : null,
+    }));
     res.render("queue", {
-      user: req.user, orders: dane.orders, counts: dane.counts,
+      user: req.user, orders, counts: dane.counts,
       stan, sort: dane.sort || "newest", msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
@@ -1630,11 +1639,7 @@ app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
         // dwie rzeczy trzeba rozroznic, bo termin da sie skasowac.
         leadDays: req.body.leadDays ?? undefined,
         deadlineAt: req.body.deadlineAt ?? undefined,
-        // Pole zaznaczane nie przysyla niczego, gdy jest puste, wiec brak
-        // klucza znaczylby "nie ruszaj" i znacznika nie dalo by sie ZDJAC.
-        // Formularz niesie obok ukryte pole-swiadka, wiec wiemy, ze pytanie
-        // w ogole padlo.
-        requiresDetails: req.body.ustaleniaPytane ? Boolean(req.body.requiresDetails) : undefined,
+        leadDaysAgreedAt: req.body.leadDaysAgreedAt ?? undefined,
       },
     });
     const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
@@ -1659,6 +1664,19 @@ app.post("/queue/:ref/delete", requireAuth, async (req, res) => {
     const kody = r.releasedCodes?.length ? `, oddane kody: ${r.releasedCodes.join(", ")}` : "";
     const mimo = r.overridden?.length ? ` mimo tego, ze ${r.overridden.join(", ")}` : "";
     back(res, powrot, { msg: `Usunieto ${req.params.ref}${mimo}${kody}` });
+  } catch (err) { back(res, powrot, { err: err.message }); }
+});
+
+/** Domkniecie albo cofniecie ustalen jednej pozycji zamowienia. */
+app.post("/queue/:ref/item/:id/details", requireAuth, async (req, res) => {
+  const powrot = req.body.back || "/queue";
+  try {
+    const r = await shopApi(
+      `/api/orders/${encodeURIComponent(req.params.ref)}/items/${encodeURIComponent(req.params.id)}/details`,
+      { method: "POST", body: { settled: req.body.settled === "1" } }
+    );
+    const ile = r.remaining > 0 ? `, zostało do ustalenia: ${r.remaining}` : ", wszystkie ustalenia domknięte";
+    back(res, powrot, { msg: `${req.params.ref}: ${r.status}${ile}` });
   } catch (err) { back(res, powrot, { err: err.message }); }
 });
 

@@ -247,21 +247,20 @@
                             <% } else { %>&nbsp;<% } %>
                           </div>
 
-                          <%# Przycisk stoi pod przystankiem, do ktorego prowadzi.
-                              Widac wtedy nie tylko, co mozna zrobic, ale i dokad
-                              to przesunie zlecenie. %>
+                          <%# Przycisk stoi pod przystankiem, NA KTORYM zlecenie
+                              teraz stoi, i mowi, co z tego miejsca mozna zrobic
+                              (decyzja wlasciciela, 2026-08-30). Wczesniej stal
+                              pod przystankiem docelowym, co czytalo sie jako
+                              "co juz sie stalo", a nie "co zrobic teraz". %>
                           <div class="mt-2">
-                            <% if (k.id === "queued" && o.status === "details") { %>
-                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
-                                <input type="hidden" name="back" value="<%= POWROT %>" />
-                                <input type="hidden" name="stage" value="queued" />
-                                <button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
-                                  <%- IKONY.fistaszek %> Ustalenia domknięte
-                                </button>
-                              </form>
+                            <% if (k.id === "details" && o.status === "details") { %>
+                              <p class="text-[11px] text-purple-300 leading-tight">
+                                <%= o.items.filter(function (i) { return i.requiresDetails && !i.detailsSettledAt; }).length %>
+                                <span class="text-neutral-500">poz. do ustalenia, odhacz je niżej</span>
+                              </p>
                             <% } %>
 
-                            <% if (k.id === "in_production" && (o.status === "queued" || o.status === "paid")) { %>
+                            <% if (k.id === "queued" && (o.status === "queued" || o.status === "paid")) { %>
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="in_production" />
@@ -271,7 +270,7 @@
                               </form>
                             <% } %>
 
-                            <% if (k.id === "ready" && o.status === "in_production") { %>
+                            <% if (k.id === "in_production" && o.status === "in_production") { %>
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="hidden" name="stage" value="ready" />
@@ -281,40 +280,38 @@
                               </form>
                             <% } %>
 
-                            <% if (k.id === "shipped" && ["paid", "details", "queued", "in_production", "ready"].includes(o.status)) { %>
-                              <%# Rozwijane, bo ten jeden przystanek potrzebuje
-                                  dwoch pol, a rozlozone na osi rozpychalyby ja
-                                  na tyle, ze reszta przystankow zeszlaby nizej.
-                                  Odbior osobisty konczy sie przekazaniem i wtedy
-                                  nie ma listu przewozowego, wiec nie ma go czego
-                                  pytac. %>
-                              <details class="group">
-                                <summary class="cursor-pointer list-none px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-[11px] hover:border-white/35 transition-colors inline-block">
-                                  <%= wysylkowy %>
-                                </summary>
-                                <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="mt-2 space-y-2">
-                                  <input type="hidden" name="back" value="<%= POWROT %>" />
-                                  <input type="hidden" name="stage" value="shipped" />
-                                  <% if (o.delivery.method !== "pickup") { %>
-                                    <label class="block">
-                                      <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
-                                      <input name="trackingNumber" placeholder="numer przesyłki"
-                                             class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white font-mono" />
-                                    </label>
-                                  <% } %>
-                                  <label class="block">
-                                    <span class="text-neutral-500 text-[10px] block mb-1">Data<%= o.delivery.method === "pickup" ? " przekazania" : " nadania" %></span>
-                                    <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
-                                        a zaznaczona dzisiaj, i wtedy termin wygladalby na
-                                        przekroczony o dzien. %>
-                                    <input name="shippedOn" type="date"
-                                           class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
-                                  </label>
-                                  <button class="w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-[11px] hover:border-white/35 transition-colors">
-                                    Potwierdź <%= wysylkowy.toLowerCase() %>
-                                  </button>
-                                </form>
-                              </details>
+                            <%# Pola wysylki pojawiaja sie DOPIERO w "gotowe do
+                                wysylki", bo dopiero wtedy jest co nadawac.
+                                Zaznaczenie "przekazane osobiscie" chowa numer
+                                przesylki: kurier wtedy nie jechal i nie ma
+                                czego sledzic. Sposob dostawy z zamowienia
+                                ustawia tylko stan poczatkowy tego pola. %>
+                            <% if (k.id === "ready" && o.status === "ready") { %>
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="space-y-2">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <input type="hidden" name="stage" value="shipped" />
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                  <input type="checkbox" data-osobiscie="<%= o.orderRef %>" <%= o.delivery.method === "pickup" ? "checked" : "" %>
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[11px]">Przekazane osobiście</span>
+                                </label>
+                                <label class="block" data-przesylka="<%= o.orderRef %>">
+                                  <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                                  <input name="trackingNumber" placeholder="numer przesyłki"
+                                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white font-mono" />
+                                </label>
+                                <label class="block">
+                                  <span class="text-neutral-500 text-[10px] block mb-1">Data wysyłki lub przekazania</span>
+                                  <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
+                                      a zaznaczona dzisiaj, i wtedy termin wygladalby na
+                                      przekroczony o dzien. %>
+                                  <input name="shippedOn" type="date"
+                                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                                </label>
+                                <button class="w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-[11px] hover:border-white/35 transition-colors">
+                                  Wysłane / przekazane
+                                </button>
+                              </form>
                             <% } %>
 
                             <% if (k.id === "shipped" && o.status === "shipped") { %>
@@ -323,6 +320,28 @@
                                 <input type="hidden" name="stage" value="completed" />
                                 <button class="px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[11px] hover:border-white/35 transition-colors">
                                   Zamknij i schowaj
+                                </button>
+                              </form>
+                            <% } %>
+
+                            <%# Termin w dniach przychodzi z oplaconej oferty.
+                                Zmiana po zaplacie jest ustaleniem z klientem,
+                                wiec API zada daty, kiedy zapadlo. %>
+                            <% if (k.termin) { %>
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit" class="space-y-1.5">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <label class="block">
+                                  <span class="text-neutral-500 text-[10px] block mb-1">Termin w dniach</span>
+                                  <input name="leadDays" type="number" min="1" max="365" value="<%= o.leadDays || '' %>"
+                                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                                </label>
+                                <label class="block">
+                                  <span class="text-neutral-500 text-[10px] block mb-1">Ustalone z klientem dnia</span>
+                                  <input name="leadDaysAgreedAt" type="date" value="<%= o.leadDaysAgreedAt || '' %>"
+                                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                                </label>
+                                <button class="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                                  <%- IKONY.fistaszek %> Zapisz termin
                                 </button>
                               </form>
                             <% } %>
@@ -348,7 +367,29 @@
                     <ul class="space-y-2">
                       <% o.items.forEach(function (it) { %>
                         <li class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-                          <div class="text-xs text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="text-xs text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                            <%# Znacznik pojawia sie WYLACZNIE przy pozycji, ktora
+                                wymagala ustalen. Pole zaznaczane przy pozycji,
+                                ktora ich nie wymaga, kazaloby pytac, czego
+                                dotyczy, a odpowiedz brzmialaby "niczego".
+                                Zaznaczenie znaczy: mamy komplet dla TEJ pozycji.
+                                Zegar calego zlecenia rusza, gdy zaznaczone sa
+                                wszystkie wymagane. %>
+                            <% if (it.requiresDetails) { %>
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/details" class="shrink-0">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <input type="hidden" name="settled" value="<%= it.detailsSettledAt ? '0' : '1' %>" />
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                  <input type="checkbox" data-ustalenia <%= it.detailsSettledAt ? "checked" : "" %>
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-[10px] <%= it.detailsSettledAt ? "text-emerald-300" : "text-amber-300" %>">
+                                    <%= it.detailsSettledAt ? "Ustalenia domknięte" : "Wymaga ustaleń" %>
+                                  </span>
+                                </label>
+                              </form>
+                            <% } %>
+                          </div>
                           <div class="text-neutral-600 text-[10px] mt-0.5">
                             <%= it.calculator || "pozycja bez kalkulatora" %>
                             <% if (it.fileName) { %>
@@ -378,60 +419,49 @@
                   </div>
                 </div>
 
-                <%# EDYCJA WIERSZA. Osobno od postepu, bo tamto PCHA zlecenie
-                    naprzod wedlug wypisanych przejsc, a to poprawia pomylke. %>
+                <%# LINK DLA KLIENTA. Ten sam adres, ktory poszedl mailem po
+                    zaplacie. Klient gubi maile, a bez zetonu strona zamowienia
+                    pyta go o adres i numer, wiec musimy umiec podac link od
+                    reki. Kopiowanie ma zapas na wypadek panelu po http, bo
+                    `navigator.clipboard` dziala tylko po https i bez tego
+                    przycisk milczalby, wygladajac na zepsuty. %>
+                <div class="mt-5 border-t border-white/10 pt-4">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Link do zamówienia dla klienta</span>
+                  <% if (o.statusUrl) { %>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <input readonly value="<%= o.statusUrl %>"
+                             class="flex-1 min-w-[18rem] rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-[11px] text-neutral-300 font-mono" />
+                      <button type="button" data-kopiuj="<%= o.statusUrl %>"
+                              class="dymek px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-[11px] hover:border-white/35 transition-colors"
+                              data-dymek="Skopiuj link" title="Skopiuj link">Kopiuj link</button>
+                      <button type="button" data-kopiuj="<%= o.orderRef %>"
+                              class="dymek px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-[11px] hover:border-white/35 transition-colors"
+                              data-dymek="Skopiuj numer" title="Skopiuj numer">Kopiuj numer</button>
+                      <a href="<%= o.statusUrl %>" target="_blank" rel="noopener"
+                         class="text-[11px] text-amber-300 hover:text-amber-200 underline underline-offset-2">Otwórz</a>
+                    </div>
+                  <% } else { %>
+                    <p class="text-neutral-600 text-[11px]">
+                      To zamówienie nie ma żetonu dostępu. Klient wejdzie po numerze i adresie email.
+                    </p>
+                  <% } %>
+                </div>
+
+                <%# NOTATKA DO PRACOWNI. Nic wiecej: termin ma swoje miejsce na
+                    osi czasu, list przewozowy pojawia sie przy wysylce, a etap
+                    zmienia sie przyciskiem pod przystankiem. Formularz zbierajacy
+                    wszystko naraz kazal zgadywac, ktore pole na co dziala. %>
                 <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit"
                       id="edycja-<%= o.orderRef %>"
                       class="mt-5 border-t border-white/10 pt-4 flex flex-wrap items-end gap-3">
                   <input type="hidden" name="back" value="<%= POWROT %>" />
-                  <%# Swiadek pytania o ustalenia. Pole zaznaczane nie przysyla
-                      niczego, gdy jest puste, wiec bez niego znacznika nie dalo
-                      by sie ZDJAC: brak klucza znaczylby "nie ruszaj". %>
-                  <input type="hidden" name="ustaleniaPytane" value="1" />
-                  <label class="block">
-                    <span class="text-neutral-500 text-[10px] block mb-1">Etap</span>
-                    <select name="stage" class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white">
-                      <option value="">bez zmiany</option>
-                      <% ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"].forEach(function (e) { %>
-                        <% if (e !== o.status) { %><option value="<%= e %>"><%= STAN[e].label %></option><% } %>
-                      <% }); %>
-                    </select>
-                  </label>
-                  <label class="block">
-                    <span class="text-neutral-500 text-[10px] block mb-1">Termin w dniach</span>
-                    <input name="leadDays" type="number" min="1" max="365" value="<%= o.leadDays || '' %>"
-                           class="w-28 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
-                  </label>
-                  <label class="block">
-                    <span class="text-neutral-500 text-[10px] block mb-1">Na kiedy</span>
-                    <input name="deadlineAt" type="date" value="<%= o.deadlineAt || '' %>"
-                           class="w-40 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
-                  </label>
-                  <label class="block">
-                    <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
-                    <input name="trackingNumber" value="<%= o.trackingNumber || '' %>" placeholder="puste pole kasuje"
-                           class="w-44 rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white font-mono" />
-                  </label>
-                  <label class="block flex-1 min-w-[14rem]">
+                  <label class="block flex-1 min-w-[16rem]">
                     <span class="text-neutral-500 text-[10px] block mb-1">Notatka do pracowni</span>
                     <input name="note" value="<%= o.productionNote || '' %>" placeholder="puste pole kasuje"
                            class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-1.5 text-xs text-white" />
                   </label>
-                  <%# Znacznik ustalen zamraza sie przy zaplacie, ale zlecenia
-                      sprzed jego wprowadzenia go nie maja, a i zdarza sie, ze
-                      rzecz wymagajaca rozmowy przeszla przez oferte bez niego.
-                      Bez tego pola takie zlecenie na zawsze mowiloby, ze
-                      ustalenia nie byly wymagane. %>
-                  <label class="flex items-center gap-2 pb-1.5 cursor-pointer">
-                    <input type="checkbox" name="requiresDetails" value="1" <%= o.requiresDetails ? "checked" : "" %>
-                           class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
-                    <span class="text-neutral-400 text-[11px]">Wymagało ustaleń</span>
-                  </label>
                   <p class="text-neutral-600 text-[10px] leading-relaxed w-full">
-                    Zapisuje zielony znak przy wierszu, a żółta strzałka zamyka edycję bez zmian. Zmiana liczby dni
-                    przelicza termin od chwili startu zegara, a nie od dzisiaj; data wpisana wprost wygrywa
-                    z przeliczoną. Cofnięcie etapu kasuje stemple tego, co się nie wydarzyło: zlecenie wycofane
-                    z „Wysłane” traci datę wysyłki i list przewozowy, bo nic nie wyjechało.
+                    Zapisuje zielony znak przy wierszu, a żółta strzałka zamyka edycję bez zmian.
                   </p>
                 </form>
 
@@ -529,6 +559,49 @@
         // ktore wroca przy nastepnym otwarciu i beda wygladac na zapisane.
         var refZ = zamknij.getAttribute("data-zamknij");
         setTimeout(function () { kasowanie(refZ, false); pokaz(refZ, false); }, 0);
+      }
+    });
+
+    // Pole zaznaczane przy pozycji wysyla formularz od razu. Osobny przycisk
+    // "zapisz" przy kazdej pozycji zamienilby trzy pozycje w sześć klikniec,
+    // a stan i tak jest binarny.
+    document.addEventListener("change", function (e) {
+      var ustal = e.target.closest("[data-ustalenia]");
+      if (ustal && ustal.form) { ustal.form.submit(); return; }
+      // Odbior osobisty nie ma listu przewozowego, wiec pole znika razem
+      // z pytaniem, co w nim wpisac.
+      var osobiscie = e.target.closest("[data-osobiscie]");
+      if (osobiscie) {
+        var ref = osobiscie.getAttribute("data-osobiscie");
+        var blok = document.querySelector('[data-przesylka="' + ref + '"]');
+        if (blok) {
+          blok.classList.toggle("hidden", osobiscie.checked);
+          var input = blok.querySelector("input");
+          if (input && osobiscie.checked) input.value = "";
+        }
+      }
+    });
+
+    // Kopiowanie linku. `navigator.clipboard` istnieje tylko w kontekscie
+    // bezpiecznym, wiec przy panelu po http schodzimy do starej drogi zamiast
+    // milczec.
+    document.addEventListener("click", function (e) {
+      var kop = e.target.closest("[data-kopiuj]");
+      if (!kop) return;
+      var tekst = kop.getAttribute("data-kopiuj");
+      var potwierdz = function () {
+        var stary = kop.textContent;
+        kop.textContent = "Skopiowane";
+        setTimeout(function () { kop.textContent = stary; }, 1200);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(tekst).then(potwierdz);
+      } else {
+        var pom = document.createElement("textarea");
+        pom.value = tekst;
+        document.body.appendChild(pom);
+        pom.select();
+        try { document.execCommand("copy"); potwierdz(); } finally { pom.remove(); }
       }
     });
 

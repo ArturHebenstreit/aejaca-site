@@ -821,12 +821,16 @@ export async function convertQuoteToOrder(
     for (const item of doZamowienia) {
       await client.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
-           params, file_name, upload_id)
-         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9)`,
+           params, file_name, upload_id, requires_details)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
         [orderId, item.calculator, item.title, item.qty,
          item.unit_grosze, item.line_grosze,
          JSON.stringify({ ...(item.params ?? {}), description: item.description, fromQuote: quote.quote_ref }),
-         item.file_name, item.upload_id]
+         item.file_name, item.upload_id,
+         // Znacznik jedzie z pozycji oferty i zamraza sie razem z cena: pozycja
+         // moze pozniej zmienic znacznik w ofercie, a to zamowienie ma zostac
+         // takie, jakie klient kupil.
+         item.requires_details === true]
       );
       if (item.upload_id) {
         await client.query(`UPDATE uploads SET status = 'ordered', order_id = $2 WHERE id = $1`, [item.upload_id, orderId]);

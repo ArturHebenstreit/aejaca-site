@@ -49,7 +49,7 @@ import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { ETAPY_PRACY, przejscie, znanyEtap, korekta, etapPoZaplacie, terminRealizacji,
          dniDoTerminu, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM,
-         ETAPY_PO_ZAPLACIE } from "./productionQueue.js";
+         ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia } from "./productionQueue.js";
 import { progDoWyslania, szturchnacSzczegoly } from "./deadlineReminders.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -357,6 +357,19 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS ready_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS details_nudged_at TIMESTAMPTZ`).catch(() => {});
   const kolumnaKolejki = pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS queued_at TIMESTAMPTZ`);
+  // USTALENIA STOJA PRZY POZYCJI, A NIE PRZY ZAMOWIENIU (2026-08-30).
+  // Znacznik na zamowieniu mowil tylko "cos wymaga rozmowy" i nie umial
+  // powiedziec, co jeszcze zostalo. Przy trzech pozycjach z jedna do ustalenia
+  // caly zegar stal, a pracownia nie wiedziala, na co czeka.
+  pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`)
+    .catch((e) => console.error("[migracja] order_items.requires_details:", e.message));
+  pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS details_settled_at TIMESTAMPTZ`)
+    .catch((e) => console.error("[migracja] order_items.details_settled_at:", e.message));
+  // Termin zmieniony po zaplacie jest USTALENIEM Z KLIENTEM, a nie poprawka
+  // literowki, wiec musi niesc date, kiedy zapadlo. Bez niej za pol roku nikt
+  // nie odtworzy, czy klient sie na to zgodzil.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS lead_days_agreed_at DATE`)
+    .catch((e) => console.error("[migracja] lead_days_agreed_at:", e.message));
   kolumnaKolejki.catch((e) => console.error("[migracja] queued_at:", e.message));
 
   // Zamowienia stojace w `paid` to wlasnie "gotowe do pobrania": pieniadze
@@ -2485,7 +2498,24 @@ async function ruszZlecenie(pool, orderId) {
   const o = rows[0];
   if (!o || o.status !== "paid") return null;
 
-  if (etapPoZaplacie(o.requires_details) === "details") {
+  // O rozmowie decyduja POZYCJE, bo to one jej wymagaja. Zamowienie sprzed
+  // wprowadzenia znacznikow przy pozycjach ma go tylko na naglowku, wiec
+  // przepisujemy go w dol: inaczej takie zamowienie stanelo by w ustalaniu
+  // szczegolow bez ani jednej pozycji do odhaczenia, czyli na zawsze.
+  if (o.requires_details === true) {
+    await pool.query(
+      `UPDATE order_items SET requires_details = TRUE
+        WHERE order_id = $1
+          AND NOT EXISTS (SELECT 1 FROM order_items WHERE order_id = $1 AND requires_details)`,
+      [orderId]
+    ).catch((e) => console.error("[start] przepisanie znacznika ustalen:", e.message));
+  }
+  const { rows: pozycje } = await pool.query(
+    `SELECT requires_details, details_settled_at FROM order_items WHERE order_id = $1`,
+    [orderId]
+  );
+
+  if (!ustaleniaDomkniete(pozycje)) {
     const r = await pool.query(
       `UPDATE orders SET status = 'details', details_at = NOW()
         WHERE id = $1 AND status = 'paid' RETURNING id`,
@@ -4106,7 +4136,7 @@ app.get("/api/orders/queue", async (req, res) => {
             o.postal_code, o.city, o.country,
             o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
-            o.lead_days, o.deadline_at, o.requires_details,
+            o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -4117,7 +4147,8 @@ app.get("/api/orders/queue", async (req, res) => {
   if (!rows.length) return res.json({ ok: true, orders: [], counts: {} });
 
   const { rows: pozycje } = await pool.query(
-    `SELECT order_id, title, qty, calculator, file_name, file_url, params
+    `SELECT id, order_id, title, qty, calculator, file_name, file_url, params,
+            requires_details, details_settled_at
        FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
     [rows.map((o) => o.id)]
   );
@@ -4126,8 +4157,13 @@ app.get("/api/orders/queue", async (req, res) => {
     const klucz = String(p.order_id);
     if (!wgOrder.has(klucz)) wgOrder.set(klucz, []);
     wgOrder.get(klucz).push({
+      id: Number(p.id),
       title: p.title, qty: p.qty, calculator: p.calculator,
       fileName: p.file_name, fileUrl: p.file_url,
+      // Ustalenia stoja przy pozycji: zegar zamowienia rusza dopiero wtedy,
+      // gdy domkniete sa wszystkie, ktore ich wymagaly.
+      requiresDetails: p.requires_details === true,
+      detailsSettledAt: p.details_settled_at,
       // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
       // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
       description: p.params?.description ?? null,
@@ -4152,6 +4188,11 @@ app.get("/api/orders/queue", async (req, res) => {
     deadlineAt: o.deadline_at ? String(o.deadline_at).slice(0, 10) : null,
     daysLeft: dniDoTerminu(o.deadline_at),
     requiresDetails: o.requires_details === true,
+    leadDaysAgreedAt: o.lead_days_agreed_at ? String(o.lead_days_agreed_at).slice(0, 10) : null,
+    // Zeton dostepu do strony zamowienia. Panel sklada z niego ten sam adres,
+    // ktory klient dostal mailem po zaplacie, zeby dalo sie go wyslac ponownie
+    // bez szukania w skrzynce.
+    accessToken: o.access_token,
     detailsAt: o.details_at,
     queuedAt: o.queued_at,
     readyAt: o.ready_at,
@@ -4253,7 +4294,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
 
   const ref = String(req.params.ref || "");
   const { rows } = await pool.query(
-    "SELECT id, status, lead_days, deadline_at FROM orders WHERE order_ref = $1", [ref]
+    "SELECT id, status, lead_days, deadline_at, lead_days_agreed_at FROM orders WHERE order_ref = $1", [ref]
   );
   const order = rows[0];
   if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
@@ -4284,6 +4325,18 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
       dni = n;
     }
   }
+  // Data ustalenia nowego terminu z klientem. Zmiana liczby dni po zaplacie
+  // jest ZMIANA UMOWY, a nie poprawka literowki, wiec musi niesc date, kiedy
+  // klient sie na to zgodzil. Bez niej za pol roku nikt tego nie odtworzy.
+  let ustalonoDnia;
+  if (req.body?.leadDaysAgreedAt !== undefined) {
+    const surowa = String(req.body.leadDaysAgreedAt || "").trim();
+    if (surowa && !/^\d{4}-\d{2}-\d{2}$/.test(surowa)) {
+      return res.status(400).json({ error: "Date ustalenia podaj jako RRRR-MM-DD", code: "bad_date" });
+    }
+    ustalonoDnia = surowa || null;
+  }
+
   let termin;
   if (req.body?.deadlineAt !== undefined) {
     const surowa = String(req.body.deadlineAt || "").trim();
@@ -4347,6 +4400,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   if (numer !== undefined) ustaw("tracking_number", parametr(numer));
   if (notatka !== undefined) ustaw("production_note", parametr(notatka));
   if (ustalenia !== undefined) ustaw("requires_details", parametr(ustalenia));
+  if (ustalonoDnia !== undefined) ustaw("lead_days_agreed_at", `${parametr(ustalonoDnia)}::date`);
   // Cofniecie zlecenia przed etap z zegarem wygrywa z obiema droga do terminu.
   // Termin zostawiony przy zleceniu, ktore wrocilo do ustalen, bylby data
   // policzona z pracy, ktora sie jeszcze nie zaczela. Sprawdzamy to PRZED
@@ -4355,6 +4409,15 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   const zegarWyzerowany = czyszczone.includes("deadline_at");
 
   if (dniZmienione) {
+    // Zmiana terminu bez daty ustalenia zostawia w bazie liczbe, ktorej nikt
+    // nie umie uzasadnic. Odmawiamy tutaj, a nie w panelu, bo panel jest
+    // jednym z kilku wejsc.
+    if (dni !== null && !ustalonoDnia && !order.lead_days_agreed_at) {
+      return res.status(400).json({
+        error: "Zmiana terminu wymaga daty ustalenia z klientem",
+        code: "agreement_date_required",
+      });
+    }
     const n = parametr(dni);
     ustaw("lead_days", n);
     // Zmiana liczby dni przelicza termin OD CHWILI STARTU ZEGARA, a nie od
@@ -4377,7 +4440,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   const zapis = await pool.query(
     `UPDATE orders SET ${zmiany.join(", ")}, updated_at = NOW()
       WHERE id = $1 AND status = $${wartosci.length + 1}
-      RETURNING status, tracking_number, production_note, lead_days, deadline_at, requires_details`,
+      RETURNING status, tracking_number, production_note, lead_days, deadline_at, requires_details, lead_days_agreed_at`,
     [...wartosci, order.status]
   );
   if (!zapis.rowCount) {
@@ -4396,6 +4459,111 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     deadlineAt: zapis.rows[0].deadline_at ? String(zapis.rows[0].deadline_at).slice(0, 10) : null,
     cleared: czyszczone,
   });
+});
+
+/**
+ * Domkniecie albo cofniecie ustalen JEDNEJ pozycji zamowienia.
+ *
+ * Zegar zamowienia rusza dopiero wtedy, gdy domkniete sa ustalenia WSZYSTKICH
+ * pozycji, ktore ich wymagaly (decyzja wlasciciela, 2026-08-30). Dlatego to
+ * ta trasa, a nie osobny przycisk "ustalenia domkniete", przestawia zamowienie
+ * z rozmowy do kolejki: dwa miejsca robiace to samo rozjechalyby sie przy
+ * pierwszej pozycji, o ktorej ktos zapomni.
+ *
+ * Cofniecie dziala tak samo w druga strone i jest calym powodem, dla ktorego
+ * zegar da sie zatrzymac: klient odzywa sie z uwaga po tym, jak uznalismy
+ * temat za zamkniety, i termin liczony dalej bylby terminem na prace, ktorej
+ * nie mozemy zaczac.
+ */
+app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const itemId = Number(req.params.id);
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return res.status(400).json({ error: "Zla pozycja", code: "bad_item" });
+  }
+  const domykamy = req.body?.settled !== false;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: zam } = await client.query(
+      `SELECT id, status, lead_days FROM orders WHERE order_ref = $1 FOR UPDATE`, [ref]
+    );
+    const order = zam[0];
+    if (!order) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Zamowienie nie istnieje" }); }
+
+    // Poza tymi trzema stanami praca juz ruszyla albo zamowienie nie jest
+    // oplacone. W obie strony poprawia sie to korekta etapu, nie tedy.
+    if (!["paid", "details", "queued"].includes(order.status)) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({
+        error: `Zamowienie ma status ${order.status}, ustalenia domyka sie przed wzieciem do pracy`,
+        code: "too_late",
+      });
+    }
+
+    const { rows: poz } = await client.query(
+      `SELECT id, requires_details, details_settled_at FROM order_items
+        WHERE order_id = $1 ORDER BY id FOR UPDATE`, [order.id]
+    );
+    const pozycja = poz.find((i) => Number(i.id) === itemId);
+    if (!pozycja) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Nie ma takiej pozycji" }); }
+    if (pozycja.requires_details !== true) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ error: "Ta pozycja nie wymaga ustalen", code: "not_required" });
+    }
+
+    await client.query(
+      `UPDATE order_items SET details_settled_at = $2 WHERE id = $1`,
+      [itemId, domykamy ? new Date() : null]
+    );
+
+    // Stan liczymy z pozycji PO zapisie, a nie z tego, co przyszlo w zadaniu:
+    // dwie zakladki otwarte naraz zamykaja dwie rozne pozycje i tylko baza wie,
+    // ktora byla ostatnia.
+    const poZapisie = poz.map((i) =>
+      Number(i.id) === itemId ? { ...i, details_settled_at: domykamy ? new Date() : null } : i
+    );
+    const komplet = ustaleniaDomkniete(poZapisie);
+    const zostalo = ileDoUstalenia(poZapisie);
+
+    let status = order.status;
+    let termin = null;
+    if (komplet && (order.status === "details" || order.status === "paid")) {
+      const t = terminRealizacji(new Date(), order.lead_days);
+      const r = await client.query(
+        `UPDATE orders SET status = $2, queued_at = COALESCE(queued_at, NOW()),
+                deadline_at = COALESCE(deadline_at, $3::date)
+          WHERE id = $1 RETURNING status, deadline_at`,
+        [order.id, ETAP_STARTU_ZEGARA, t]
+      );
+      status = r.rows[0].status;
+      termin = r.rows[0].deadline_at ? String(r.rows[0].deadline_at).slice(0, 10) : null;
+    } else if (!komplet && order.status === "queued") {
+      // Zegar cofa sie razem ze sladem po przypomnieniach. Zostawione progi
+      // zamknelyby drugie podejscie: raz wyslane nie odezwaloby sie ponownie.
+      const r = await client.query(
+        `UPDATE orders SET status = 'details', details_at = COALESCE(details_at, NOW()),
+                queued_at = NULL, deadline_at = NULL, reminders_sent = '[]'::jsonb
+          WHERE id = $1 RETURNING status`,
+        [order.id]
+      );
+      status = r.rows[0].status;
+    }
+
+    await client.query("COMMIT");
+    console.log(`[ustalenia] ${ref}: pozycja ${itemId} ${domykamy ? "domknieta" : "otwarta"}, zostalo ${zostalo}, status ${status}`);
+    res.json({ ok: true, orderRef: ref, itemId, settled: domykamy, remaining: zostalo, status, deadlineAt: termin });
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("[ustalenia] nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac ustalen" });
+  } finally {
+    client.release();
+  }
 });
 
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
@@ -5005,7 +5173,8 @@ app.get("/api/orders/:ref", async (req, res) => {
   const { rows } = await pool.query(
     `SELECT id, order_ref, access_token, status, total_grosze, items_total_grosze, shipping_grosze,
             discount_code, discount_grosze, credit_applied_grosze,
-            lead_days, deadline_at, requires_details, details_at, ready_at,
+            lead_days, deadline_at, requires_details, details_at, queued_at, ready_at,
+            production_started_at,
             lang, paid_at, expires_at, delivery_method,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
@@ -5059,6 +5228,11 @@ app.get("/api/orders/:ref", async (req, res) => {
     daysLeft: dniDoTerminu(o.deadline_at),
     requiresDetails: o.requires_details === true,
     detailsAt: o.details_at,
+    // Chwila wejscia do kolejki. Klient widzi z niej moment, od ktorego liczy
+    // sie termin, wiec bez niej os czasu na stronie zamowienia mialaby dziure
+    // dokladnie tam, gdzie zaczyna sie odliczanie.
+    queuedAt: o.queued_at,
+    productionStartedAt: o.production_started_at,
     readyAt: o.ready_at,
     // Etap pracy widzi takze klient. Bez tego strona zamowienia po przestawieniu
     // go w kolejce wracala do galezi domyslnej i mowila oplaconemu klientowi,
