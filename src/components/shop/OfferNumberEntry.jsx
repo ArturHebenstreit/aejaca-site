@@ -12,7 +12,7 @@
 // bo oferta niesie nazwisko, telefon i adres (ADR-0012).
 
 import { useState } from "react";
-import { useNavigate } from "../../i18n/nav.jsx";
+import { Link, useNavigate } from "../../i18n/nav.jsx";
 import { ArrowRight, FileText } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
@@ -35,6 +35,10 @@ const UI = {
     button: "Sprawdź",
     hint: "Na następnym ekranie potwierdzisz adres e-mail, na który poszła oferta, albo kod odbioru z rozmowy.",
     bad: `Numer wygląda tak: ${PRZYKLAD} albo AE20260827-1F1AC35C`,
+    docs: "Zanim zapłacisz:",
+    docTerms: "Regulamin",
+    docPayments: "Proces płatności",
+    docProcess: "Proces realizacji",
   },
   en: {
     title: "Have an offer or order number?",
@@ -43,6 +47,10 @@ const UI = {
     button: "Check",
     hint: "On the next screen you confirm the e-mail address the offer went to, or the pickup code from our call.",
     bad: `The number looks like this: ${PRZYKLAD} or AE20260827-1F1AC35C`,
+    docs: "Before you pay:",
+    docTerms: "Terms of Service",
+    docPayments: "How payment works",
+    docProcess: "How we make your order",
   },
   de: {
     title: "Haben Sie eine Angebots- oder Bestellnummer?",
@@ -51,6 +59,10 @@ const UI = {
     button: "Prüfen",
     hint: "Im nächsten Schritt bestätigen Sie die E-Mail-Adresse, an die das Angebot ging, oder den Abholcode aus dem Gespräch.",
     bad: `Die Nummer sieht so aus: ${PRZYKLAD} oder AE20260827-1F1AC35C`,
+    docs: "Vor der Zahlung:",
+    docTerms: "AGB",
+    docPayments: "Zahlungsablauf",
+    docProcess: "Ablauf der Fertigung",
   },
 };
 
@@ -117,6 +129,17 @@ export default function OfferNumberEntry({ className = "" }) {
           ) : (
             <p className="text-neutral-600 text-xs leading-relaxed mt-2">{u.hint}</p>
           )}
+
+          {/* Odnosniki do zasad stoja TU, przy polu, w ktorym zaczyna sie
+              platnosc (zgloszenie wlasciciela 2026-08-30). Klient wahajacy sie
+              przed zaplata pyta o dwie rzeczy: na co sie godzi i co bedzie
+              dalej. Szukanie tego w stopce jest wychodzeniem z kasy. */}
+          <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="text-neutral-600 text-xs">{u.docs}</span>
+            <Link to="/terms/" className="text-neutral-400 hover:text-amber-400 text-xs transition-colors">{u.docTerms}</Link>
+            <Link to="/payments/" className="text-neutral-400 hover:text-amber-400 text-xs transition-colors">{u.docPayments}</Link>
+            <Link to="/order-process/" className="text-neutral-400 hover:text-amber-400 text-xs transition-colors">{u.docProcess}</Link>
+          </div>
         </div>
       </div>
     </section>

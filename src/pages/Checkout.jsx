@@ -62,7 +62,8 @@ const UI = {
     discount: "Rabat",
     payMethod: "Metoda płatności",
     beforeYouPay: "Zanim zapłacisz",
-    linkProcess: "Jak wygląda proces",
+    linkProcess: "Proces płatności",
+    linkOrderProcess: "Proces realizacji",
     linkWarranty: "Gwarancja",
     linkReturns: "Zwroty",
     linkShipping: "Wysyłka",
@@ -132,7 +133,8 @@ const UI = {
     discount: "Discount",
     payMethod: "Payment method",
     beforeYouPay: "Before you pay",
-    linkProcess: "How the process works",
+    linkProcess: "How payment works",
+    linkOrderProcess: "How we make your order",
     linkWarranty: "Warranty",
     linkReturns: "Returns",
     linkShipping: "Shipping",
@@ -202,7 +204,8 @@ const UI = {
     discount: "Rabatt",
     payMethod: "Zahlungsmethode",
     beforeYouPay: "Bevor Sie zahlen",
-    linkProcess: "So läuft der Prozess",
+    linkProcess: "Zahlungsablauf",
+    linkOrderProcess: "Ablauf der Fertigung",
     linkWarranty: "Garantie",
     linkReturns: "Rückgabe",
     linkShipping: "Versand",
@@ -806,6 +809,8 @@ export default function Checkout() {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 mt-8 text-xs">
             <span className="text-neutral-500">{u.beforeYouPay}:</span>{" "}
             <Link to="/payments/" className="text-blue-400 hover:text-blue-300">{u.linkProcess}</Link>
+            <span className="text-neutral-700"> &middot; </span>
+            <Link to="/order-process/" className="text-blue-400 hover:text-blue-300">{u.linkOrderProcess}</Link>
             <span className="text-neutral-700"> &middot; </span>
             <Link to="/shipping/" className="text-blue-400 hover:text-blue-300">{u.linkShipping}</Link>
             <span className="text-neutral-700"> &middot; </span>

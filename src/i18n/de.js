@@ -74,11 +74,14 @@ export default {
       // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
       // kupic, najczesciej pyta wtedy, jak sie za to placi.
       { label: "Zahlungsablauf", to: "/payments/" },
+      { label: "Ablauf der Fertigung", to: "/order-process/" },
+      { label: "Bestellung prüfen", to: "/order/status/" },
       { label: "AGB", to: "/terms/" },
       { label: "Garantie", to: "/warranty/" },
       { label: "Rückgaberecht", to: "/returns/" },
       { label: "Versand", to: "/shipping/" },
       { label: "Datenschutz", to: "/privacy/" },
+      { label: "FAQ", to: "/faq/" },
     ],
     gallery: "Galerie",
     gallerySections: [

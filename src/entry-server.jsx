@@ -46,6 +46,8 @@ import QuotePage from "./pages/QuotePage.jsx";
 import Offer from "./pages/Offer.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import Payments from "./pages/Payments.jsx";
+import OrderProcess from "./pages/OrderProcess.jsx";
+import Faq from "./pages/Faq.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
 import ToolsStudio from "./pages/ToolsStudio.jsx";
 import AlloyCompositionPage from "./pages/AlloyCompositionPage.jsx";
@@ -69,7 +71,8 @@ import NotFound from "./pages/NotFound.jsx";
 const KOMPONENTY = {
   Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
   About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
-  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, ToolsJewelry,
+  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, OrderProcess, Faq,
+  ToolsJewelry,
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
   LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,

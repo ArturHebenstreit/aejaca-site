@@ -65,6 +65,8 @@ export const TRASY = [
   { sciezka: "oferta/", komponent: "Offer" },
   { sciezka: "shipping/", komponent: "Shipping" },
   { sciezka: "payments/", komponent: "Payments" },
+  { sciezka: "order-process/", komponent: "OrderProcess" },
+  { sciezka: "faq/", komponent: "Faq" },
   { sciezka: "toolsjewelry/", komponent: "ToolsJewelry" },
   { sciezka: "toolsjewelry/alloy-composition/", komponent: "AlloyCompositionPage" },
   { sciezka: "toolsjewelry/metal-pricing/", komponent: "MetalPricingPage" },

@@ -134,7 +134,8 @@ const UI = {
     waive: "Zamawiam rzecz wykonywaną na moje zamówienie i wiem, że po jej wykonaniu nie przysługuje mi odstąpienie od umowy",
     pay: "Zapłać",
     beforeYouPay: "Zanim zapłacisz",
-    linkProcess: "Jak wygląda proces",
+    linkProcess: "Proces płatności",
+    linkOrderProcess: "Proces realizacji",
     linkWarranty: "Gwarancja",
     linkTerms: "Regulamin",
 
@@ -233,7 +234,8 @@ const UI = {
     waive: "I am ordering an item made to my specification and I understand the right of withdrawal does not apply once it is made",
     pay: "Pay",
     beforeYouPay: "Before you pay",
-    linkProcess: "How the process works",
+    linkProcess: "How payment works",
+    linkOrderProcess: "How we make your order",
     linkWarranty: "Warranty",
     linkTerms: "Terms of Service",
 
@@ -332,7 +334,8 @@ const UI = {
     waive: "Ich bestelle eine nach meinen Vorgaben gefertigte Sache und weiß, dass danach kein Widerrufsrecht besteht",
     pay: "Bezahlen",
     beforeYouPay: "Bevor Sie zahlen",
-    linkProcess: "So läuft der Prozess",
+    linkProcess: "Zahlungsablauf",
+    linkOrderProcess: "Ablauf der Fertigung",
     linkWarranty: "Garantie",
     linkTerms: "AGB",
 
@@ -1229,6 +1232,8 @@ export default function Offer() {
                     <p className="text-xs text-neutral-500 leading-relaxed">
                       {u.beforeYouPay}:{" "}
                       <Link to="/payments/" className="text-amber-400 hover:text-amber-300">{u.linkProcess}</Link>
+                      <span className="text-neutral-700"> &middot; </span>
+                      <Link to="/order-process/" className="text-amber-400 hover:text-amber-300">{u.linkOrderProcess}</Link>
                       <span className="text-neutral-700"> &middot; </span>
                       <Link to="/warranty/" className="text-amber-400 hover:text-amber-300">{u.linkWarranty}</Link>
                       <span className="text-neutral-700"> &middot; </span>

@@ -13,7 +13,7 @@
 // ktore rozjezdzaja sie po cichu i klient widzi inna kwote niz zaplaci.
 
 import { Link } from "../i18n/nav.jsx";
-import { ShoppingBag, FileText, Wallet, Globe, Coins, TrendingUp, Clock, ShieldCheck, AlertTriangle, RotateCcw, ArrowRight } from "lucide-react";
+import { ShoppingBag, FileText, Wallet, Globe, Coins, TrendingUp, Clock, ShieldCheck, AlertTriangle, RotateCcw, ArrowRight, Hammer } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -21,6 +21,9 @@ import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../se
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
+import FaqLista from "../components/FaqLista.jsx";
+import SpisTresci from "../components/SpisTresci.jsx";
+import { faqTematu } from "../data/faq.js";
 import { EUR_FX_MARGIN } from "../pricing/currency.js";
 import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
@@ -130,16 +133,23 @@ const L = {
       ["Ważność kwoty wiążącej z kalkulatora", "7 dni, kruszec z dnia zamówienia"],
     ],
     timeNote: "Po terminie ważności oferta nie przyjmuje zapłaty. Wystawiamy nową, nie przedłużamy starej, bo w międzyczasie mogły zmienić się ceny materiałów.",
-    afterTitle: "Co dzieje się po zapłacie",
-    afterSteps: [
-      ["Potwierdzenie od operatora", "Status zamówienia zmienia wyłącznie podpisany komunikat od operatora płatności. Nie zmienia go powrót do przeglądarki ani nasze kliknięcie."],
-      ["Maile", "Potwierdzenie idzie do Ciebie i do warsztatu. Przy kolejnych etapach też możesz dostać wiadomość, o ile jest o czym pisać."],
-      ["Strona zlecenia", "Prywatny odnośnik, który dostajesz mailem. Widać na niej oś czasu: zapłacone, ustalanie szczegółów, w realizacji, gotowe, wysłane. Do tego termin, numer paczkomatu i numer przesyłki po nadaniu."],
-      ["Ustalanie szczegółów", "Część zleceń wymaga rozmowy, zanim ruszy praca: wymiaru, wzoru, litery na sygnecie. Wtedy zlecenie zatrzymuje się na tym etapie i czas realizacji NIE biegnie. Na stronie zlecenia widzisz, której pozycji dotyczy pytanie, a po ustaleniach zapisujemy, na czym stanęło."],
-      ["Termin realizacji", "Liczymy go w dniach od chwili, w której wszystko jest ustalone, a przy zleceniu bez ustaleń od zapłaty. Gdy w zamówieniu jest kilka rzeczy, obowiązuje najdłuższy z terminów, bo paczka wychodzi jedna."],
-      ["Kolejka pracowni", "Zamówienia robimy w kolejności wpłat. Kto pierwszy zapłacił, ten pierwszy dostaje."],
-      ["Odbiór", "Paczkomat, kurier albo odbiór osobisty w Józefosławiu, zgodnie z tym, co wybrałeś przy zamówieniu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia."],
+    spis: [
+      { id: "drogi", label: "Dwie drogi" },
+      { id: "sklep", label: "Sklep" },
+      { id: "oferta", label: "Oferta" },
+      { id: "kwota", label: "Kwota" },
+      { id: "metody", label: "Metody" },
+      { id: "kruszec", label: "Kruszec" },
+      { id: "terminy", label: "Terminy" },
+      { id: "klopoty", label: "Gdy coś nie tak" },
+      { id: "faq", label: "FAQ" },
     ],
+    afterTitle: "Co dzieje się po zapłacie",
+    afterBody: "Zapłata kończy tę stronę i zaczyna następną. Etapy pracy, sposób liczenia terminu, wiadomości od nas i odbiór gotowej rzeczy opisuje osobny rozdział, żeby dojście do nich nie wymagało przewijania całego opisu płatności.",
+    afterCta: "Proces realizacji",
+    afterCheck: "Sprawdź swoje zamówienie",
+    faqTitle: "Najczęstsze pytania o płatność i oferty",
+    faqMore: "Wszystkie pytania i odpowiedzi",
     safeTitle: "Bezpieczeństwo",
     safeRows: [
       "Danych Twojej karty ani hasła do banku nigdy nie widzimy. Płacisz na stronie operatora, nie u nas.",
@@ -159,23 +169,6 @@ const L = {
     refundLink: "Polityka zwrotów",
     contact: "Masz pytanie, na które ta strona nie odpowiada? Napisz do nas.",
     contactLink: "Kontakt",
-    faq: [
-      { q: "Czy mogę zapłacić kartą?", a: "Nie. Dostępne są BLIK i szybki przelew online w złotych, a dla klientów rozliczających się w euro przelew SEPA. Nie ma też płatności za pobraniem." },
-      { q: "Gdzie wpisuję numer oferty?", a: "Na stronie oferty, na stronie sklepu albo w koszyku. Wszędzie tam jest pole \"Masz numer oferty?\". Po wpisaniu numeru potwierdzasz jeszcze adres e-mail, na który poszła oferta." },
-      { q: "Gdzie wpisuję kod rabatowy?", a: "Przy zakupie w sklepie w polu pod podsumowaniem zamówienia. Przy zapłacie za ofertę na stronie oferty, przed przejściem do płatności. Zniżkę widzisz przed zapłatą, nigdy nie zwracamy jej po fakcie." },
-      { q: "Czy rabat obejmuje dostawę?", a: "Nie. Kod schodzi wyłącznie z pozycji zlecenia i nigdy nie obniża kosztu dostawy." },
-      { q: "Dlaczego cena w euro nie jest ceną w złotych podzieloną przez kurs?", a: `Bo do kursu Narodowego Banku Polskiego doliczamy ${FX_PCT} procent. Między zamrożeniem kwoty a zaksięgowaniem przelewu mija kilka dni, a kurs w tym czasie się rusza.` },
-      { q: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?", a: "W takiej, jaką wybierzesz. Język podpowiada walutę i tylko tyle: angielski i niemiecki zaczynają od euro, polski od złotych. Walutę przestawisz w menu języka, w kasie i na stronie oferty, a wybór zostaje na następną wizytę. Waluta wynika z tego, gdzie masz konto, a nie z tego, w jakim języku czytasz." },
-      { q: "Jak długo ważna jest oferta?", a: "Domyślnie 7 dni, ale obowiązuje zawsze data wpisana w Twojej ofercie. Termin ustalamy osobno dla każdej z nich, bo przy wyrobach z kruszcu krótszy bywa uczciwszy niż długi. Po tej dacie oferta nie przyjmuje zapłaty i wystawiamy nową." },
-      { q: "Kwota po otwarciu zapisanej wyceny różni się od tej, którą pamiętam. Dlaczego?", a: "Bo przy wyrobach z kruszcu robocizna jest wiążąca przez cały okres ważności, ale sam metal liczymy z dnia, w którym otwierasz link. Doliczamy wyłącznie różnicę wynikającą z ruchu kursu złota czy platyny, nigdy zmiany naszego cennika. Przy ofercie ustalonej z człowiekiem tak się nie dzieje: tam kwota jest stała aż do daty ważności." },
-      { q: "Ile trwa realizacja i skąd wiem, na kiedy?", a: "Termin liczymy w dniach kalendarzowych. Przy zleceniu, które nie wymaga ustaleń, biegnie od zapłaty; przy takim, które ich wymaga, dopiero od chwili, gdy wszystko jest ustalone. Konkretną datę widzisz na stronie zlecenia, razem z liczbą dni, które zostały. Gdy w zamówieniu jest kilka rzeczy, obowiązuje najdłuższy z terminów, bo paczka wychodzi jedna." },
-      { q: "Co znaczy „ustalanie szczegółów”?", a: "Że zanim zaczniemy pracę, musimy coś z Tobą uzgodnić: rozmiar, wzór, literę na sygnecie, materiał. Na stronie zlecenia widzisz, której pozycji dotyczy pytanie. W tym czasie czas realizacji nie biegnie, więc czekanie na Twoją odpowiedź nie zjada Twojego terminu. Po ustaleniach zapisujemy jednym zdaniem, na czym stanęło, i to samo zdanie widzisz u siebie." },
-      { q: "Czy dostanę wiadomość, gdy coś się zmieni?", a: "Tak, przy istotnych etapach: gdy zlecenie wchodzi do realizacji, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia." },
-      { q: "Zgubiłem link do zamówienia. Jak sprawdzę, co się dzieje?", a: "Wejdź na stronę zamówienia i podaj numer razem z adresem e-mail, na który poszło potwierdzenie. Numer zaczyna się od AE. Sam numer nie wystarczy, bo strona pokazuje adres i zawartość zamówienia." },
-      { q: "Termin się przesunął. Co wtedy?", a: "Jeżeli zmiana wynika z ustaleń z Tobą, zapisujemy nowy termin razem z datą, w której go uzgodniliśmy, i widać to na stronie zlecenia. Jeżeli opóźnienie jest po naszej stronie, odzywamy się sami." },
-      { q: "Jak odbieram gotową rzecz?", a: "Tak, jak wybrałeś przy zamówieniu: paczkomat InPost, kurier albo odbiór osobisty w Józefosławiu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy się na godzinę." },
-      { q: "Zapłaciłem, i co dalej?", a: "Dostajesz maila z potwierdzeniem i prywatny odnośnik do strony statusu. Widać na niej etap pracy, a przy wysyłce także numer przesyłki. Zamówienia realizujemy w kolejności wpłat." },
-    ],
   },
 
   en: {
@@ -280,16 +273,23 @@ const L = {
       ["Validity of a binding calculator amount", "7 days; metal priced on the day of ordering"],
     ],
     timeNote: "Past its expiry date an offer takes no payment. We issue a new one rather than extending the old, because material prices may have moved in the meantime.",
-    afterTitle: "What happens once you have paid",
-    afterSteps: [
-      ["Confirmation from the provider", "The order status is changed only by a signed message from the payment provider. Neither returning to the browser nor a click of ours changes it."],
-      ["E-mails", "A confirmation goes to you and to the workshop. Later stages can send you a message too, when there is something worth saying."],
-      ["Order page", "A private link you receive by e-mail. It shows a timeline: paid, agreeing details, in the workshop, finished, dispatched. Plus the delivery date, the locker number and the tracking number once posted."],
-      ["Agreeing the details", "Some orders need a conversation before work starts: a size, a pattern, the letters on a signet. The order waits at that stage and the lead time does NOT run. The order page names the item we are waiting on, and once agreed we write down what we settled on."],
-      ["Delivery date", "Counted in days from the moment everything is agreed, or from payment when nothing needs agreeing. With several items in one order the longest of their times applies, because one parcel goes out."],
-      ["Workshop queue", "We work in the order payments arrived. Whoever paid first is served first."],
-      ["Collection", "Locker, courier or personal pickup in Józefosław, whichever you chose when ordering. Once posted, the tracking number appears on the order page."],
+    spis: [
+      { id: "drogi", label: "Two routes" },
+      { id: "sklep", label: "Shop" },
+      { id: "oferta", label: "Offer" },
+      { id: "kwota", label: "The amount" },
+      { id: "metody", label: "Methods" },
+      { id: "kruszec", label: "Metal" },
+      { id: "terminy", label: "Validity" },
+      { id: "klopoty", label: "If it goes wrong" },
+      { id: "faq", label: "FAQ" },
     ],
+    afterTitle: "What happens once you have paid",
+    afterBody: "Payment ends this page and starts the next one. The stages of work, how the delivery date is counted, when we write and how you collect the finished piece are on a page of their own, so reaching them does not mean scrolling through the whole payment story.",
+    afterCta: "How we make your order",
+    afterCheck: "Check your order",
+    faqTitle: "Common questions about payment and offers",
+    faqMore: "All questions and answers",
     safeTitle: "Security",
     safeRows: [
       "We never see your card details or your banking password. You pay on the provider's site, not on ours.",
@@ -309,23 +309,6 @@ const L = {
     refundLink: "Returns policy",
     contact: "A question this page does not answer? Write to us.",
     contactLink: "Contact",
-    faq: [
-      { q: "Can I pay by card?", a: "No. BLIK and instant bank transfer are available in złoty, and a SEPA transfer for customers settling in euro. Cash on delivery is not available either." },
-      { q: "Where do I enter the offer number?", a: "On the offer page, on the shop page or in the cart. All three carry a \"Have an offer number?\" field. After the number you also confirm the e-mail address the offer was sent to." },
-      { q: "Where do I enter a discount code?", a: "When buying in the shop, in the field under the order summary. When paying for an offer, on the offer page before moving to payment. You see the discount before paying; we never refund it afterwards." },
-      { q: "Does a discount cover delivery?", a: "No. A code comes off the order items only and never lowers the delivery cost." },
-      { q: "Why is the euro price not the złoty price divided by the rate?", a: `Because we add ${FX_PCT} percent to the National Bank of Poland rate. Several days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime.` },
-      { q: "I am in Poland but reading the site in English. Which currency will I pay in?", a: "Whichever you choose. The language only suggests a currency: English and German start in euro, Polish in złoty. You can switch it in the language menu, at checkout and on the offer page, and the choice sticks for your next visit. Currency follows where you keep your money, not what language you read in." },
-      { q: "How long is an offer valid?", a: "Seven days by default, but the date written on your offer is always the one that counts. We set it separately for each one, because on metal pieces a shorter term is often the honest one. Past that date the offer takes no payment and we issue a new one." },
-      { q: "The amount on my saved quote differs from the one I remember. Why?", a: "Because on metal pieces the labour is binding for the whole validity period, while the metal itself is priced on the day you open the link. We add only the difference caused by the gold or platinum rate moving, never by a change in our own price list. This does not happen on an offer agreed with a person: there the amount is fixed until its expiry date." },
-      { q: "How long does it take and how do I know the date?", a: "We count in calendar days. For an order that needs no agreeing, the clock starts at payment; for one that does, only once everything is agreed. The exact date is on your order page together with the days remaining. With several items in one order, the longest of their times applies, because one parcel goes out." },
-      { q: "What does agreeing the details mean?", a: "That before we start we need something settled with you: a size, a pattern, the letters on a signet, a material. The order page names the item in question. The lead time does not run during that wait, so answering us does not eat into your date. Once agreed, we write down in one sentence what we settled on, and you see the same sentence." },
-      { q: "Will I be told when something changes?", a: "Yes, at the stages that matter: when the order enters the workshop, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page." },
-      { q: "I lost the link to my order. How do I check on it?", a: "Open the order page and give the number together with the e-mail address the confirmation went to. The number starts with AE. The number alone is not enough, because the page shows your address and what you ordered." },
-      { q: "The date moved. What then?", a: "If the change comes from something agreed with you, we record the new date together with the day we agreed it, and it shows on your order page. If the delay is on our side, we contact you ourselves." },
-      { q: "How do I collect the finished piece?", a: "However you chose when ordering: an InPost locker, a courier or personal pickup in Józefosław. Once posted, the tracking number appears on your order page and in the message. For a personal pickup we agree a time." },
-      { q: "I have paid, what now?", a: "You get a confirmation e-mail and a private link to the status page. It shows the stage of the work and, once shipped, the tracking number. We work in the order payments arrived." },
-    ],
   },
 
   de: {
@@ -430,16 +413,23 @@ const L = {
       ["Gültigkeit eines verbindlichen Kalkulatorbetrags", "7 Tage; Metall zum Tag der Bestellung"],
     ],
     timeNote: "Nach Ablauf nimmt ein Angebot keine Zahlung mehr an. Wir stellen ein neues aus statt das alte zu verlängern, weil sich Materialpreise zwischenzeitlich bewegt haben können.",
-    afterTitle: "Was nach der Zahlung passiert",
-    afterSteps: [
-      ["Bestätigung des Anbieters", "Den Bestellstatus ändert ausschließlich eine signierte Nachricht des Zahlungsanbieters. Weder die Rückkehr in den Browser noch ein Klick von uns ändert ihn."],
-      ["E-Mails", "Eine Bestätigung geht an Sie und an die Werkstatt. Auch spätere Etappen können eine Nachricht auslösen, wenn es etwas zu sagen gibt."],
-      ["Auftragsseite", "Ein privater Link, den Sie per E-Mail erhalten. Er zeigt einen Zeitstrahl: bezahlt, Details klären, in Arbeit, fertig, versandt. Dazu den Termin, die Paketstation und nach dem Versand die Sendungsnummer."],
-      ["Details klären", "Manche Aufträge brauchen ein Gespräch, bevor die Arbeit beginnt: eine Größe, ein Muster, die Buchstaben auf einem Siegelring. Der Auftrag hält dann an dieser Etappe und die Lieferzeit läuft NICHT. Die Auftragsseite nennt die Position, auf die wir warten, und nach der Absprache halten wir fest, worauf wir uns geeinigt haben."],
-      ["Liefertermin", "Gezählt in Tagen ab dem Moment, in dem alles abgesprochen ist, bei Aufträgen ohne Absprachen ab der Zahlung. Bei mehreren Positionen gilt die längste Zeit, denn es geht ein Paket raus."],
-      ["Werkstattschlange", "Wir arbeiten in der Reihenfolge der Zahlungseingänge. Wer zuerst zahlt, kommt zuerst dran."],
-      ["Abholung", "Paketstation, Kurier oder Selbstabholung in Józefosław, je nach Ihrer Wahl bei der Bestellung. Nach dem Versand erscheint die Sendungsnummer auf der Auftragsseite."],
+    spis: [
+      { id: "drogi", label: "Zwei Wege" },
+      { id: "sklep", label: "Shop" },
+      { id: "oferta", label: "Angebot" },
+      { id: "kwota", label: "Der Betrag" },
+      { id: "metody", label: "Methoden" },
+      { id: "kruszec", label: "Metall" },
+      { id: "terminy", label: "Gültigkeit" },
+      { id: "klopoty", label: "Wenn etwas schiefgeht" },
+      { id: "faq", label: "FAQ" },
     ],
+    afterTitle: "Was nach der Zahlung passiert",
+    afterBody: "Die Zahlung beendet diese Seite und beginnt die nächste. Arbeitsetappen, die Zählung des Termins, unsere Nachrichten und der Erhalt des fertigen Stücks stehen auf einer eigenen Seite, damit der Weg dorthin nicht durch den gesamten Zahlungstext führt.",
+    afterCta: "Ablauf der Fertigung",
+    afterCheck: "Bestellung prüfen",
+    faqTitle: "Häufige Fragen zu Zahlung und Angeboten",
+    faqMore: "Alle Fragen und Antworten",
     safeTitle: "Sicherheit",
     safeRows: [
       "Ihre Kartendaten oder Ihr Bankpasswort sehen wir nie. Sie zahlen auf der Seite des Anbieters, nicht bei uns.",
@@ -459,23 +449,6 @@ const L = {
     refundLink: "Rückgaberichtlinie",
     contact: "Eine Frage, die diese Seite nicht beantwortet? Schreiben Sie uns.",
     contactLink: "Kontakt",
-    faq: [
-      { q: "Kann ich mit Karte zahlen?", a: "Nein. Verfügbar sind BLIK und Sofortüberweisung in Złoty sowie eine SEPA-Überweisung für die Abrechnung in Euro. Nachnahme gibt es ebenfalls nicht." },
-      { q: "Wo gebe ich die Angebotsnummer ein?", a: "Auf der Angebotsseite, auf der Shopseite oder im Warenkorb. Überall dort steht das Feld \"Haben Sie eine Angebotsnummer?\". Nach der Nummer bestätigen Sie zusätzlich die E-Mail-Adresse, an die das Angebot ging." },
-      { q: "Wo gebe ich einen Rabattcode ein?", a: "Beim Kauf im Shop im Feld unter der Bestellübersicht. Bei Zahlung für ein Angebot auf der Angebotsseite, vor dem Wechsel zur Zahlung. Den Rabatt sehen Sie vor der Zahlung, im Nachhinein erstatten wir ihn nie." },
-      { q: "Gilt ein Rabatt auch für den Versand?", a: "Nein. Ein Code geht ausschließlich von den Auftragspositionen ab und senkt nie die Versandkosten." },
-      { q: "Warum ist der Europreis nicht der Złoty-Preis geteilt durch den Kurs?", a: `Weil wir auf den Kurs der Polnischen Nationalbank ${FX_PCT} Prozent aufschlagen. Zwischen dem Einfrieren des Betrags und dem Eingang der Überweisung vergehen einige Tage, und der Kurs bewegt sich in dieser Zeit.` },
-      { q: "Ich bin in Polen, lese die Seite aber auf Deutsch. In welcher Währung zahle ich?", a: "In der, die Sie wählen. Die Sprache schlägt die Währung nur vor: Englisch und Deutsch starten in Euro, Polnisch in Złoty. Umstellen können Sie sie im Sprachmenü, an der Kasse und auf der Angebotsseite, und die Wahl bleibt bis zum nächsten Besuch. Die Währung richtet sich danach, wo Sie Ihr Geld haben, nicht danach, welche Sprache Sie lesen." },
-      { q: "Wie lange ist ein Angebot gültig?", a: "Standardmäßig sieben Tage, maßgeblich ist aber immer das auf Ihrem Angebot genannte Datum. Wir legen es für jedes Angebot einzeln fest, denn bei Metallstücken ist eine kürzere Frist oft die ehrlichere. Nach diesem Datum nimmt das Angebot keine Zahlung mehr an und wir stellen ein neues aus." },
-      { q: "Der Betrag in meiner gespeicherten Kalkulation weicht von dem ab, den ich in Erinnerung habe. Warum?", a: "Weil bei Metallstücken die Arbeitsleistung für die gesamte Gültigkeitsdauer verbindlich ist, das Metall selbst aber zum Tag der Linköffnung gerechnet wird. Wir addieren ausschließlich die Differenz aus der Kursbewegung von Gold oder Platin, nie aus einer Änderung unserer Preisliste. Bei einem persönlich vereinbarten Angebot passiert das nicht: dort steht der Betrag bis zum Ablaufdatum fest." },
-      { q: "Wie lange dauert es und woher kenne ich den Termin?", a: "Wir rechnen in Kalendertagen. Bei einem Auftrag ohne Absprachen läuft die Zeit ab der Zahlung, bei einem mit Absprachen erst, wenn alles geklärt ist. Das genaue Datum steht auf Ihrer Auftragsseite, samt der verbleibenden Tage. Bei mehreren Positionen gilt die längste Zeit, denn es geht ein Paket raus." },
-      { q: "Was bedeutet Details klären?", a: "Dass wir vor dem Arbeitsbeginn etwas mit Ihnen abstimmen müssen: eine Größe, ein Muster, die Buchstaben auf einem Siegelring, ein Material. Die Auftragsseite nennt die betroffene Position. Während dieser Zeit läuft die Lieferzeit nicht, Ihre Antwort geht also nicht von Ihrem Termin ab. Nach der Absprache halten wir in einem Satz fest, worauf wir uns geeinigt haben, und Sie sehen denselben Satz." },
-      { q: "Werde ich informiert, wenn sich etwas ändert?", a: "Ja, bei den wichtigen Etappen: wenn der Auftrag in die Werkstatt geht, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie immer auf der Auftragsseite." },
-      { q: "Ich habe den Link zur Bestellung verloren. Wie sehe ich den Stand?", a: "Öffnen Sie die Bestellseite und geben Sie die Nummer zusammen mit der E-Mail-Adresse an, an die die Bestätigung ging. Die Nummer beginnt mit AE. Die Nummer allein genügt nicht, weil die Seite Ihre Adresse und den Inhalt der Bestellung zeigt." },
-      { q: "Der Termin hat sich verschoben. Was dann?", a: "Beruht die Änderung auf einer Absprache mit Ihnen, halten wir den neuen Termin samt dem Tag der Absprache fest, sichtbar auf Ihrer Auftragsseite. Liegt die Verzögerung bei uns, melden wir uns von selbst." },
-      { q: "Wie erhalte ich das fertige Stück?", a: "So, wie Sie es bei der Bestellung gewählt haben: InPost-Paketstation, Kurier oder Selbstabholung in Józefosław. Nach dem Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht. Für die Selbstabholung stimmen wir eine Uhrzeit ab." },
-      { q: "Ich habe bezahlt, wie geht es weiter?", a: "Sie erhalten eine Bestätigungsmail und einen privaten Link zur Statusseite. Sie zeigt den Arbeitsstand und nach dem Versand die Sendungsnummer. Wir arbeiten in der Reihenfolge der Zahlungseingänge." },
-    ],
   },
 };
 
@@ -494,9 +467,9 @@ function Krok({ n, title, body }) {
   );
 }
 
-function Karta({ icon: Icon, title, children, innerRef }) {
+function Karta({ icon: Icon, id, title, children, innerRef }) {
   return (
-    <div ref={innerRef} className="reveal bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-5">
+    <div id={id} ref={innerRef} className="reveal scroll-mt-32 bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-5">
       <div className="flex items-center gap-3 mb-4">
         <Icon className="w-5 h-5 text-amber-400 shrink-0" />
         <h2 className="text-white font-semibold">{title}</h2>
@@ -525,6 +498,9 @@ export default function Payments() {
   const troubleRef = useScrollReveal();
   const faqRef = useScrollReveal();
 
+  // Pytania stoja w `src/data/faq.js`, wiec ta sama odpowiedz nie rozjedzie
+  // sie miedzy ta strona, procesem realizacji a `/faq/`.
+  const pytania = [...faqTematu("platnosc"), ...faqTematu("oferta")];
   const pageUrl = `${SITE.url}/payments/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),
@@ -532,7 +508,7 @@ export default function Payments() {
       { name: "Home", url: SITE.url },
       { name: l.tag, url: pageUrl },
     ]),
-    buildFAQSchema(l.faq),
+    buildFAQSchema(pytania.map((f) => ({ q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }))),
   ];
 
   return (
@@ -551,9 +527,11 @@ export default function Payments() {
               <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{l.description}</p>
             </div>
 
+            <SpisTresci pozycje={l.spis} />
+
             {/* Rozwidlenie na samej gorze: klient ma najpierw rozpoznac swoj
                 przypadek, a dopiero potem czytac szczegoly. */}
-            <div ref={pathsRef} className="reveal mb-5">
+            <div id="drogi" ref={pathsRef} className="reveal scroll-mt-32 mb-5">
               <h2 className="text-white font-semibold mb-2">{l.pathsTitle}</h2>
               <p className="text-neutral-400 text-sm mb-4">{l.pathsLead}</p>
               <div className="grid md:grid-cols-2 gap-4">
@@ -611,13 +589,13 @@ export default function Payments() {
               </p>
             </div>
 
-            <Karta icon={ShoppingBag} title={l.shopTitle} innerRef={shopRef}>
+            <Karta icon={ShoppingBag} id="sklep" title={l.shopTitle} innerRef={shopRef}>
               <ol className="divide-y divide-neutral-800">
                 {l.shopSteps.map(([t, b], i) => <Krok key={i} n={i + 1} title={t} body={b} />)}
               </ol>
             </Karta>
 
-            <Karta icon={FileText} title={l.offerTitle} innerRef={offerRef}>
+            <Karta icon={FileText} id="oferta" title={l.offerTitle} innerRef={offerRef}>
               <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.offerLead}</p>
               <ol className="divide-y divide-neutral-800">
                 {l.offerSteps.map(([t, b], i) => <Krok key={i} n={i + 1} title={t} body={b} />)}
@@ -638,7 +616,7 @@ export default function Payments() {
               </div>
             </Karta>
 
-            <Karta icon={Coins} title={l.sumTitle} innerRef={sumRef}>
+            <Karta icon={Coins} id="kwota" title={l.sumTitle} innerRef={sumRef}>
               <div className="divide-y divide-neutral-800 mb-4">
                 {l.sumRows.map(([name, desc], i) => (
                   <div key={i} className="py-3 first:pt-0">
@@ -659,7 +637,7 @@ export default function Payments() {
                 metody, inny czas rezerwacji i inny moment, od ktorego liczy sie
                 termin realizacji. Zlepione w jedna tabele zmuszaly kazdego
                 z nich do czytania polowy, ktora go nie dotyczy. */}
-            <Karta icon={Wallet} title={l.plTitle} innerRef={methodsRef}>
+            <Karta icon={Wallet} id="metody" title={l.plTitle} innerRef={methodsRef}>
               <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.plLead}</p>
               <div className="divide-y divide-neutral-800">
                 {l.plRows.map(([name, desc], i) => (
@@ -706,7 +684,7 @@ export default function Payments() {
                 "robocizna wiazaca, kruszec z dnia zamowienia" jest nieoczywista
                 i to o nia klient pyta, gdy kwota po otwarciu linku rozni sie
                 od tej, ktora pamieta. */}
-            <Karta icon={TrendingUp} title={l.metalTitle} innerRef={metalRef}>
+            <Karta icon={TrendingUp} id="kruszec" title={l.metalTitle} innerRef={metalRef}>
               <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.metalLead}</p>
               <div className="divide-y divide-neutral-800">
                 {l.metalRows.map(([name, desc], i) => (
@@ -723,7 +701,7 @@ export default function Payments() {
               </div>
             </Karta>
 
-            <Karta icon={Clock} title={l.timeTitle} innerRef={timeRef}>
+            <Karta icon={Clock} id="terminy" title={l.timeTitle} innerRef={timeRef}>
               <div className="divide-y divide-neutral-800">
                 {l.timeRows.map(([name, value], i) => (
                   <div key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
@@ -735,10 +713,19 @@ export default function Payments() {
               <p className="text-neutral-500 text-xs leading-relaxed mt-4">{l.timeNote}</p>
             </Karta>
 
-            <Karta icon={ShieldCheck} title={l.afterTitle} innerRef={afterRef}>
-              <ol className="divide-y divide-neutral-800">
-                {l.afterSteps.map(([t, b], i) => <Krok key={i} n={i + 1} title={t} body={b} />)}
-              </ol>
+            {/* Realizacja ma wlasna strone (zgloszenie wlasciciela 2026-08-30).
+                Tu zostaje sam drogowskaz, zeby ktos szukajacy terminu nie musial
+                przewijac calego opisu przelewow. */}
+            <Karta icon={Hammer} id="realizacja" title={l.afterTitle} innerRef={afterRef}>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.afterBody}</p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/order-process/" className="inline-flex items-center gap-2 rounded-lg bg-amber-400 px-4 py-2 text-sm font-medium text-neutral-950 transition-colors hover:bg-amber-300">
+                  {l.afterCta} <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link to="/order/status/" className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition-colors hover:border-neutral-500">
+                  {l.afterCheck}
+                </Link>
+              </div>
             </Karta>
 
             <Karta icon={ShieldCheck} title={l.safeTitle} innerRef={safeRef}>
@@ -749,7 +736,7 @@ export default function Payments() {
               </ul>
             </Karta>
 
-            <Karta icon={AlertTriangle} title={l.troubleTitle} innerRef={troubleRef}>
+            <Karta icon={AlertTriangle} id="klopoty" title={l.troubleTitle} innerRef={troubleRef}>
               <div className="divide-y divide-neutral-800">
                 {l.troubleRows.map(([q, a], i) => (
                   <div key={i} className="py-3 first:pt-0 last:pb-0">
@@ -767,16 +754,12 @@ export default function Payments() {
               </Link>
             </Karta>
 
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-5">
-              <h2 className="text-white font-semibold mb-4">FAQ</h2>
-              <div className="divide-y divide-neutral-800">
-                {l.faq.map((f, i) => (
-                  <div key={i} className="py-4 first:pt-0 last:pb-0">
-                    <div className="text-sm text-neutral-200">{f.q}</div>
-                    <p className="text-neutral-400 text-sm leading-relaxed mt-1">{f.a}</p>
-                  </div>
-                ))}
-              </div>
+            <div id="faq" className="scroll-mt-32 bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-5">
+              <h2 className="text-white font-semibold mb-4">{l.faqTitle}</h2>
+              <FaqLista pytania={pytania} />
+              <p className="mt-4">
+                <Link to="/faq/" className="text-amber-400 hover:text-amber-300 text-sm">{l.faqMore}</Link>
+              </p>
             </div>
 
             <p className="text-neutral-500 text-sm text-center mb-8">
