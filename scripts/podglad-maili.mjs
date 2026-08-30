@@ -125,9 +125,11 @@ const EKRANY = {
   "05": {
     nazwa: "Dane do przelewu SEPA, zamowienie w euro",
     zbuduj: () => buildTransferMessage(
-      { ...ZAMOWIENIE, lang: "de", status: "pending", payment_method: "bank_transfer" },
-      { amountEur: "78.00", iban: "PL61 1090 1014 0000 0712 1981 2874", bic: "WBKPPLPP",
-        holder: "AEJaCA Artur Hebenstreit", bank: "Santander Bank Polska",
+      { ...ZAMOWIENIE, status: "pending", payment_method: "bank_transfer" },
+      { amountEur: "78.00", iban: process.env.TRANSFER_IBAN_EUR || "TRANSFER_IBAN_EUR (zmienna nieustawiona)",
+        bic: process.env.TRANSFER_BIC || "TRANSFER_BIC",
+        holder: process.env.TRANSFER_ACCOUNT_HOLDER || "TRANSFER_ACCOUNT_HOLDER",
+        bank: process.env.TRANSFER_BANK_NAME || "TRANSFER_BANK_NAME",
         reference: "AE20260830-BEDBA9E9", dueAt: "2026-09-02T00:00:00Z" }
     ),
   },
