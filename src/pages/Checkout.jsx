@@ -61,6 +61,12 @@ const UI = {
     codeOk: "Kod naliczony",
     discount: "Rabat",
     payMethod: "Metoda płatności",
+    beforeYouPay: "Zanim zapłacisz",
+    linkProcess: "Jak wygląda proces",
+    linkWarranty: "Gwarancja",
+    linkReturns: "Zwroty",
+    linkShipping: "Wysyłka",
+
     payAny: "Wybiorę na stronie płatności Autopay",
     pay: "Kupuję i płacę",
     processing: "Przetwarzam",
@@ -125,6 +131,12 @@ const UI = {
     codeOk: "Code applied",
     discount: "Discount",
     payMethod: "Payment method",
+    beforeYouPay: "Before you pay",
+    linkProcess: "How the process works",
+    linkWarranty: "Warranty",
+    linkReturns: "Returns",
+    linkShipping: "Shipping",
+
     payAny: "I will choose on the Autopay payment page",
     pay: "Buy and pay",
     processing: "Processing",
@@ -189,6 +201,12 @@ const UI = {
     codeOk: "Code angerechnet",
     discount: "Rabatt",
     payMethod: "Zahlungsmethode",
+    beforeYouPay: "Bevor Sie zahlen",
+    linkProcess: "So läuft der Prozess",
+    linkWarranty: "Garantie",
+    linkReturns: "Rückgabe",
+    linkShipping: "Versand",
+
     payAny: "Ich wähle auf der Autopay-Zahlungsseite",
     pay: "Kaufen und bezahlen",
     processing: "Wird verarbeitet",
@@ -780,6 +798,23 @@ export default function Checkout() {
               {u.consentDigital}
             </Consent>
           )}
+
+          {/* Odnosniki do dokumentow STOJA TU, przy przycisku zaplaty, a nie
+              tylko w stopce. To jest chwila, w ktorej klient pyta "co bedzie
+              dalej": ile to potrwa, co jesli sie rozmysli, jak dziala gwarancja.
+              Odpowiedzi istnialy od dawna, tylko trzeba bylo ich szukac. */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 mt-8 text-xs">
+            <span className="text-neutral-500">{u.beforeYouPay}:</span>{" "}
+            <Link to="/payments/" className="text-blue-400 hover:text-blue-300">{u.linkProcess}</Link>
+            <span className="text-neutral-700"> &middot; </span>
+            <Link to="/shipping/" className="text-blue-400 hover:text-blue-300">{u.linkShipping}</Link>
+            <span className="text-neutral-700"> &middot; </span>
+            <Link to="/warranty/" className="text-blue-400 hover:text-blue-300">{u.linkWarranty}</Link>
+            <span className="text-neutral-700"> &middot; </span>
+            <Link to="/returns/" className="text-blue-400 hover:text-blue-300">{u.linkReturns}</Link>
+            <span className="text-neutral-700"> &middot; </span>
+            <Link to="/terms/" className="text-blue-400 hover:text-blue-300">{u.terms}</Link>
+          </div>
 
           <h2 className="text-white font-semibold mb-3 mt-8">{u.payMethod}</h2>
 

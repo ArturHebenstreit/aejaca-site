@@ -133,6 +133,11 @@ const UI = {
     terms: "Akceptuję regulamin i politykę prywatności",
     waive: "Zamawiam rzecz wykonywaną na moje zamówienie i wiem, że po jej wykonaniu nie przysługuje mi odstąpienie od umowy",
     pay: "Zapłać",
+    beforeYouPay: "Zanim zapłacisz",
+    linkProcess: "Jak wygląda proces",
+    linkWarranty: "Gwarancja",
+    linkTerms: "Regulamin",
+
     paying: "Przechodzę do płatności",
     needTerms: "Zaznacz akceptację regulaminu.",
     needDelivery: "Wybierz sposób dostawy i uzupełnij adres.",
@@ -227,6 +232,11 @@ const UI = {
     terms: "I accept the terms and the privacy policy",
     waive: "I am ordering an item made to my specification and I understand the right of withdrawal does not apply once it is made",
     pay: "Pay",
+    beforeYouPay: "Before you pay",
+    linkProcess: "How the process works",
+    linkWarranty: "Warranty",
+    linkTerms: "Terms of Service",
+
     paying: "Going to payment",
     needTerms: "Please accept the terms.",
     needDelivery: "Choose a delivery method and complete the address.",
@@ -321,6 +331,11 @@ const UI = {
     terms: "Ich akzeptiere die AGB und die Datenschutzerklärung",
     waive: "Ich bestelle eine nach meinen Vorgaben gefertigte Sache und weiß, dass danach kein Widerrufsrecht besteht",
     pay: "Bezahlen",
+    beforeYouPay: "Bevor Sie zahlen",
+    linkProcess: "So läuft der Prozess",
+    linkWarranty: "Garantie",
+    linkTerms: "AGB",
+
     paying: "Weiter zur Zahlung",
     needTerms: "Bitte akzeptieren Sie die AGB.",
     needDelivery: "Wählen Sie eine Versandart und vervollständigen Sie die Adresse.",
@@ -1205,6 +1220,19 @@ export default function Offer() {
 
                     <p className="text-neutral-600 text-xs leading-relaxed flex items-start gap-2">
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {u.payNote}
+                    </p>
+
+                    {/* Co sie stanie po zaplacie, do przeczytania stad, a nie ze
+                        stopki. Klient stoi w tej chwili przed decyzja i wlasnie
+                        wtedy pyta o termin, gwarancje i o to, co jesli sie
+                        rozmysli. */}
+                    <p className="text-xs text-neutral-500 leading-relaxed">
+                      {u.beforeYouPay}:{" "}
+                      <Link to="/payments/" className="text-amber-400 hover:text-amber-300">{u.linkProcess}</Link>
+                      <span className="text-neutral-700"> &middot; </span>
+                      <Link to="/warranty/" className="text-amber-400 hover:text-amber-300">{u.linkWarranty}</Link>
+                      <span className="text-neutral-700"> &middot; </span>
+                      <Link to="/terms/" className="text-amber-400 hover:text-amber-300">{u.linkTerms}</Link>
                     </p>
                   </section>
                 </>
