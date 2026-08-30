@@ -303,6 +303,28 @@ console.log("\n4g. Termin w ofercie liczy sie z pozycji ZAZNACZONYCH\n");
      ])), "przy pozycji z ustaleniami mail mowi, od czego liczy sie zegar");
 }
 
+console.log("\n4h. Zapisana wycena i oferta od nas to dwie rozne wiadomosci\n");
+
+// Ta sama funkcja obsluguje obie chwile. "Wycena, ktora zapisales" bylo przy
+// ofercie wystawionej przez nas nieprawda widoczna dla klienta: wariantow sam
+// sobie nie ulozyl. Rozstrzyga `source`, ktory i tak lezy w bazie.
+{
+  const mail = (source) => {
+    const m = buildQuoteMessage({ ...WYCENA, source, lang: "pl" }, POZYCJE_WYCENY, "https://www.aejaca.com/oferta/");
+    return { caly: `${m.html}\n${m.text}`, temat: m.subject };
+  };
+  const zapisana = mail("saved");
+  const oferta = mail("contact");
+  ok(/wycena zapisana na aejaca.com/.test(zapisana.caly), "zapisana: mowi, ze klient ja zapisal");
+  ok(/Twoja wycena/.test(zapisana.temat), "zapisana: temat mowi o wycenie");
+  ok(/oferta przygotowana na podstawie Twojego zapytania/.test(oferta.caly),
+     "oferta: mowi, ze przygotowalismy ja my");
+  ok(!/wycena zapisana/.test(oferta.caly), "oferta: nie twierdzi, ze klient sam ja zapisal");
+  ok(/^Oferta WY/.test(oferta.temat), "oferta: temat mowi o ofercie");
+  ok(/Zamówienie powstaje dopiero wtedy, gdy opłacisz/.test(oferta.caly),
+     "oferta: mowi, kiedy powstaje zamowienie");
+}
+
 console.log("\n5. Data i liczba dni po ludzku\n");
 
 // Sterownik bazy oddaje kolumne DATE jako obiekt Date. Samo `String(...)`

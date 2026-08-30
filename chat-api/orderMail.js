@@ -19,7 +19,7 @@ import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from "./pricing/shipping.js";
 // Termin oferty liczy TA SAMA funkcja, ktora liczy go na stronie oferty
 // i przy zamowieniu: dwie liczby na jedno pytanie sa gorsze niz brak jednej.
-import { selectedQuoteItems, terminGrupy } from "./quotes.js";
+import { selectedQuoteItems, terminGrupy, SAVED_QUOTE_SOURCE } from "./quotes.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
@@ -1556,74 +1556,116 @@ export async function sendOrderPaidEmails(pool, orderId) {
 
 const QUOTE_T = {
   pl: {
-    subject: (ref) => `Twoja wycena ${ref}, AEJaCA`,
     hi: "Dzień dobry,",
-    intro: "poniżej wycena zapisana na aejaca.com. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
-    items: "Wyceniane pozycje",
     total: "Razem",
-    open: "Otwórz wycenę",
-    validUntil: (d) => `Wycena obowiązuje do ${d}.`,
-    validLabel: "Wycena ważna do",
+    // Ta sama wiadomosc wychodzi w dwoch zupelnie roznych chwilach: klient
+    // zapisuje sobie wycene z kalkulatora ALBO dostaje od nas oferte na swoje
+    // zapytanie. "Wycena, ktora zapisales" bylo w tym drugim przypadku
+    // nieprawda, i to nieprawda widoczna: klient wariantow sam sobie nie
+    // ulozyl. Rozstrzyga `quotes.source`, bo ta informacja jest w bazie od
+    // poczatku i nie trzeba jej zgadywac.
+    zapisana: {
+      subject: (ref) => `Twoja wycena ${ref}, AEJaCA`,
+      intro: "poniżej wycena zapisana na aejaca.com. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
+      items: "Wyceniane pozycje",
+      numer: "Numer wyceny",
+      open: "Otwórz wycenę",
+      validUntil: (d) => `Wycena obowiązuje do ${d}.`,
+      validLabel: "Wycena ważna do",
+      noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
+    },
+    oferta: {
+      subject: (ref) => `Oferta ${ref}, AEJaCA`,
+      intro: "poniżej oferta przygotowana na podstawie Twojego zapytania. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
+      items: "Pozycje oferty",
+      numer: "Numer oferty",
+      open: "Otwórz ofertę",
+      validUntil: (d) => `Oferta obowiązuje do ${d}.`,
+      validLabel: "Oferta ważna do",
+      noObligation: "Oferta nie jest zamówieniem i do niczego nie zobowiązuje. Zamówienie powstaje dopiero wtedy, gdy opłacisz wybrane pozycje.",
+    },
     leadLabel: "Termin realizacji",
     leadZdanie: (ile) => `Termin realizacji: ${ile} od zapłaty.`,
     leadDetails: (ile) => `Termin realizacji: ${ile}. Liczymy go od domknięcia ustaleń, bo zaznaczone pozycje wymagają wcześniejszej rozmowy.`,
-    numer: "Numer wyceny",
     numerZdanie: (ref) => `Numer ${ref} wpiszesz też ręcznie, na stronie oferty, w sklepie albo w koszyku.`,
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
-    noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
     pick: "do wyboru",
     addon: "dodatek",
     chosen: "zaznaczone",
-    configNote: "Kwota dotyczy układu zaznaczonego poniżej. Wariant i dodatki zmienisz na stronie oferty, a kwota policzy się od nowa.",
+    configNote: "Kwota dotyczy układu zaznaczonego wyżej. Wariant i dodatki zmienisz na stronie oferty, a kwota policzy się od nowa.",
     questions: "Pytania",
     bye: "Pozdrawiamy",
   },
   en: {
-    subject: (ref) => `Your quote ${ref}, AEJaCA`,
     hi: "Hello,",
-    intro: "here is the quote you saved on aejaca.com. The link opens it any time, on any device.",
-    items: "Quoted items",
     total: "Total",
-    open: "Open the quote",
-    validUntil: (d) => `The quote is valid until ${d}.`,
-    validLabel: "Quote valid until",
+    zapisana: {
+      subject: (ref) => `Your quote ${ref}, AEJaCA`,
+      intro: "here is the quote saved on aejaca.com. The link opens it any time, on any device.",
+      items: "Quoted items",
+      numer: "Quote number",
+      open: "Open the quote",
+      validUntil: (d) => `The quote is valid until ${d}.`,
+      validLabel: "Quote valid until",
+      noObligation: "Saving a quote is not an order and commits you to nothing.",
+    },
+    oferta: {
+      subject: (ref) => `Offer ${ref}, AEJaCA`,
+      intro: "here is the offer we prepared for your enquiry. The link opens it any time, on any device.",
+      items: "Items in the offer",
+      numer: "Offer number",
+      open: "Open the offer",
+      validUntil: (d) => `The offer is valid until ${d}.`,
+      validLabel: "Offer valid until",
+      noObligation: "An offer is not an order and commits you to nothing. The order begins when you pay for the items you picked.",
+    },
     leadLabel: "Lead time",
     leadZdanie: (ile) => `Lead time: ${ile} from payment.`,
     leadDetails: (ile) => `Lead time: ${ile}. It is counted from the moment the details are agreed, because the selected items need a conversation first.`,
-    numer: "Quote number",
     numerZdanie: (ref) => `You can also type the number ${ref} yourself, on the offer page, in the shop or in the cart.`,
     metalNote:
       "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
-    noObligation: "Saving a quote is not an order and commits you to nothing.",
     pick: "choice",
     addon: "add-on",
     chosen: "selected",
-    configNote: "The amount covers the configuration marked below. You can change the variant and the add-ons on the offer page and the amount follows.",
+    configNote: "The amount covers the configuration marked above. You can change the variant and the add-ons on the offer page and the amount follows.",
     questions: "Questions",
     bye: "Best regards",
   },
   de: {
-    subject: (ref) => `Ihr Angebot ${ref}, AEJaCA`,
     hi: "Guten Tag,",
-    intro: "hier ist das Angebot, das Sie auf aejaca.com gespeichert haben. Der Link öffnet es jederzeit, auch auf einem anderen Gerät.",
-    items: "Kalkulierte Positionen",
     total: "Gesamt",
-    open: "Angebot öffnen",
-    validUntil: (d) => `Das Angebot gilt bis ${d}.`,
-    validLabel: "Angebot gültig bis",
+    zapisana: {
+      subject: (ref) => `Ihre Kalkulation ${ref}, AEJaCA`,
+      intro: "hier ist die auf aejaca.com gespeicherte Kalkulation. Der Link öffnet sie jederzeit, auch auf einem anderen Gerät.",
+      items: "Kalkulierte Positionen",
+      numer: "Kalkulationsnummer",
+      open: "Kalkulation öffnen",
+      validUntil: (d) => `Die Kalkulation gilt bis ${d}.`,
+      validLabel: "Kalkulation gültig bis",
+      noObligation: "Eine gespeicherte Kalkulation ist keine Bestellung und verpflichtet zu nichts.",
+    },
+    oferta: {
+      subject: (ref) => `Angebot ${ref}, AEJaCA`,
+      intro: "hier ist das Angebot, das wir zu Ihrer Anfrage erstellt haben. Der Link öffnet es jederzeit, auch auf einem anderen Gerät.",
+      items: "Positionen des Angebots",
+      numer: "Angebotsnummer",
+      open: "Angebot öffnen",
+      validUntil: (d) => `Das Angebot gilt bis ${d}.`,
+      validLabel: "Angebot gültig bis",
+      noObligation: "Ein Angebot ist keine Bestellung und verpflichtet zu nichts. Die Bestellung entsteht erst mit der Zahlung der gewählten Positionen.",
+    },
     leadLabel: "Lieferzeit",
     leadZdanie: (ile) => `Lieferzeit: ${ile} ab Zahlung.`,
     leadDetails: (ile) => `Lieferzeit: ${ile}. Sie zählt ab dem Abschluss der Absprachen, denn die gewählten Positionen brauchen vorher ein Gespräch.`,
-    numer: "Angebotsnummer",
     numerZdanie: (ref) => `Die Nummer ${ref} können Sie auch selbst eingeben, auf der Angebotsseite, im Shop oder im Warenkorb.`,
     metalNote:
       "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
-    noObligation: "Das Speichern eines Angebots ist keine Bestellung und verpflichtet zu nichts.",
     pick: "zur Auswahl",
     addon: "Zusatz",
     chosen: "ausgewählt",
-    configNote: "Der Betrag gilt für die unten markierte Zusammenstellung. Variante und Zusätze ändern Sie auf der Angebotsseite, der Betrag folgt.",
+    configNote: "Der Betrag gilt für die oben markierte Zusammenstellung. Variante und Zusätze ändern Sie auf der Angebotsseite, der Betrag folgt.",
     questions: "Fragen",
     bye: "Mit freundlichen Grüßen",
   },
@@ -1636,6 +1678,10 @@ const QUOTE_T = {
 export function buildQuoteMessage(quote, items, url) {
   const lang = ["pl", "en", "de"].includes(quote.lang) ? quote.lang : "pl";
   const l = QUOTE_T[lang];
+  // Wycena zapisana przez klienta czy oferta wystawiona przez nas. Rozstrzyga
+  // `source`, zapisany przy tworzeniu wyceny: klient zapisuje z kalkulatora
+  // (`saved`), reszta zrodel to zapytania, na ktore odpowiadamy oferta.
+  const w = quote.source === SAVED_QUOTE_SOURCE ? l.zapisana : l.oferta;
   // Wiersz musi mowic, czym pozycja JEST. Bez tego oferta z wariantami
   // pokazuje trzy kwoty i sume nizsza od ich sumy, co wyglada jak blad
   // rachunkowy, a jest po prostu wyborem jednej rzeczy z trzech.
@@ -1677,12 +1723,12 @@ export function buildQuoteMessage(quote, items, url) {
 
   const html = koperta({ lang, odnosniki, srodek: `
     <p style="margin:0 0 6px">${esc(l.hi)}</p>
-    <p style="margin:0 0 20px;line-height:1.6">${esc(l.intro)}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${esc(w.intro)}</p>
 
-    <p style="margin:0 0 4px;font-size:12px;color:#777">${esc(l.numer)}</p>
+    <p style="margin:0 0 4px;font-size:12px;color:#777">${esc(w.numer)}</p>
     <p style="margin:0 0 20px;font-size:18px;font-weight:700;font-family:ui-monospace,monospace">${esc(quote.quote_ref)}</p>
 
-    <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(l.items)}</p>
+    <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(w.items)}</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       ${rows.map((r) => `<tr>
         <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(r.label)}</td>
@@ -1697,38 +1743,38 @@ export function buildQuoteMessage(quote, items, url) {
     ${wybor ? `<p style="margin:12px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.configNote)}</p>` : ""}
 
     <p style="margin:24px 0 0">
-      <a href="${esc(url)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700">${esc(l.open)}</a>
+      <a href="${esc(url)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700">${esc(w.open)}</a>
     </p>
 
     ${wazneDo ? `
       <div style="margin-top:20px;background:#faf6ee;border-radius:8px;padding:14px 16px">
-        <span style="font-size:12px;color:#8a7a5c">${esc(l.validLabel)}</span>
+        <span style="font-size:12px;color:#8a7a5c">${esc(w.validLabel)}</span>
         <div style="font-size:18px;font-weight:700;color:#7a5f22;margin-top:2px">${esc(wazneDo)}</div>
       </div>` : ""}
 
     ${termin ? `<p style="margin:14px 0 0;line-height:1.6;font-size:13px;color:#444"><strong>${esc(l.leadLabel)}.</strong> ${esc(termin.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
 
     <p style="margin:18px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.metalNote)}</p>
-    <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.noObligation)}</p>
+    <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(w.noObligation)}</p>
   ` });
 
   const text = [
-    l.hi, "", l.intro, "",
-    `${l.numer}: ${quote.quote_ref}`, "",
-    l.items + ":",
+    l.hi, "", w.intro, "",
+    `${w.numer}: ${quote.quote_ref}`, "",
+    w.items + ":",
     ...rows.map((r) => `- ${r.label}: ${r.value}`),
     `${l.total}: ${money(quote.total_grosze)}`,
     wybor ? `\n${l.configNote}` : null,
-    "", `${l.open}: ${url}`,
-    wazneDo ? `\n${l.validUntil(wazneDo)}` : "",
+    "", `${w.open}: ${url}`,
+    wazneDo ? `\n${w.validUntil(wazneDo)}` : "",
     termin ? `\n${termin}` : null,
     "", l.metalNote,
-    "", l.noObligation,
+    "", w.noObligation,
     "", odnosnikiText(lang, odnosniki),
     "", stopkaText(lang),
   ].filter((line) => line !== null).join("\n");
 
-  return { to: quote.customer_email, from: FROM, replyTo: SELLER.email, subject: l.subject(quote.quote_ref), text, html };
+  return { to: quote.customer_email, from: FROM, replyTo: SELLER.email, subject: w.subject(quote.quote_ref), text, html };
 }
 
 /**

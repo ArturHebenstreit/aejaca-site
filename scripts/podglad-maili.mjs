@@ -186,13 +186,16 @@ const EKRANY = {
   },
   "12": {
     nazwa: "Wycena zapisana z kalkulatora",
-    zbuduj: () => buildQuoteMessage(WYCENA,
+    zbuduj: () => buildQuoteMessage({ ...WYCENA, source: "saved" },
       [{ id: 1, title: "Pierścionek z granatem, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "item", selected: true, lead_days: 14 }],
       ADRES_WYCENY),
   },
+  // Ten sam kod, dwie zupelnie rozne chwile: klient zapisal sobie wycene
+  // z kalkulatora (`source: "saved"`) albo dostal od nas oferte na swoje
+  // zapytanie. Oba ekrany stoja obok siebie, bo tekst rozni sie w kazdym zdaniu.
   "13": {
-    nazwa: "Oferta z wariantami do wyboru i dodatkiem",
-    zbuduj: () => buildQuoteMessage({ ...WYCENA, total_grosze: 168000 }, [
+    nazwa: "Oferta od nas, z wariantami i dodatkiem",
+    zbuduj: () => buildQuoteMessage({ ...WYCENA, source: "contact", total_grosze: 168000 }, [
       { id: 1, group_key: "pierscionek", title: "Pierścionek, złoto 585", qty: 1, unit_grosze: 145000, line_grosze: 145000, kind: "variant", selected: true, lead_days: 14 },
       { id: 2, group_key: "pierscionek", title: "Pierścionek, złoto 750", qty: 1, unit_grosze: 198000, line_grosze: 198000, kind: "variant", selected: false, lead_days: 21 },
       { id: 3, title: "Grawer wewnątrz obrączki", qty: 1, unit_grosze: 23000, line_grosze: 23000, kind: "option", selected: true, lead_days: 3, requires_details: true },
