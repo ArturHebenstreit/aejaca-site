@@ -43,7 +43,7 @@ const L = {
     stages: [
       ["Zapłacone", "Status zmienia wyłącznie podpisany komunikat od operatora płatności. Powrót do przeglądarki niczego nie zmienia, nasze kliknięcie też nie. Przy przelewie w euro liczy się chwila zaksięgowania."],
       ["Ustalanie szczegółów", "Tylko przy zleceniach, które tego wymagają: rozmiar, wzór, litera na sygnecie, materiał. Czas realizacji w tym czasie NIE biegnie, więc czekanie na Twoją odpowiedź nie zjada Twojego terminu. Na stronie zlecenia widzisz, której pozycji dotyczy pytanie."],
-      ["Przyjęte do realizacji", "Wszystko ustalone, zlecenie stoi w kolejce pracowni, termin już biegnie."],
+      ["Czeka w kolejce", "Wszystko ustalone, zlecenie stoi w kolejce pracowni, a termin już biegnie. Nikt jeszcze nie wziął go do ręki i mówimy o tym wprost, zamiast udawać, że praca trwa."],
       ["W realizacji", "Ktoś wziął zlecenie do ręki i pracuje nad nim."],
       ["Gotowe", "Praca skończona. Pakujemy albo przygotowujemy do odbioru."],
       ["Wysłane lub przekazane", "Przy wysyłce numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy godzinę."],
@@ -58,7 +58,7 @@ const L = {
       ["Gdzie go zobaczysz", "Na stronie zlecenia, razem z liczbą dni, które zostały. Termin pojawia się w ofercie jeszcze przed zapłatą, przy wybranych pozycjach."],
     ],
     mailsTitle: "Kiedy do Ciebie piszemy",
-    mailsBody: "Przy istotnych etapach: gdy zlecenie wchodzi do realizacji, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo Twoja skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia, o każdej porze.",
+    mailsBody: "Przy istotnych etapach: gdy zlecenie trafia do kolejki i rusza termin, gdy ktoś bierze je do ręki, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo Twoja skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia, o każdej porze.",
     pickupTitle: "Odbiór",
     pickupRows: [
       ["Paczkomat InPost", "Tylko na terenie Polski. Numer paczkomatu wybierasz przy zamówieniu i widzisz go potem na stronie zlecenia."],
@@ -94,7 +94,7 @@ const L = {
     stages: [
       ["Paid", "The status is changed only by a signed message from the payment provider. Returning to the browser changes nothing, and neither does a click of ours. For a euro transfer, what counts is the moment the money clears."],
       ["Agreeing the details", "Only for orders that need it: a size, a pattern, the letters on a signet, a material. The lead time does NOT run during that wait, so answering us does not eat into your date. The order page names the item we are waiting on."],
-      ["Accepted for production", "Everything agreed, the order is in the workshop queue and the clock is running."],
+      ["In the queue", "Everything agreed, the order is in the workshop queue and the clock is running. Nobody has picked it up yet, and we say so rather than pretend the work is under way."],
       ["In the workshop", "Someone has picked the order up and is working on it."],
       ["Finished", "The work is done. We are packing it or preparing it for collection."],
       ["Dispatched or handed over", "For a shipment, the tracking number appears on the order page and in the message. For a personal pickup we agree a time."],
@@ -109,7 +109,7 @@ const L = {
       ["Where you see it", "On your order page, with the days remaining. The time also appears in an offer before payment, next to the selected items."],
     ],
     mailsTitle: "When we write to you",
-    mailsBody: "At the stages that matter: when the order enters the workshop, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page, at any hour.",
+    mailsBody: "At the stages that matter: when the order joins the queue and the clock starts, when someone picks it up, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page, at any hour.",
     pickupTitle: "Collection",
     pickupRows: [
       ["InPost locker", "Inside Poland only. You pick the locker when ordering and see it later on your order page."],
@@ -145,7 +145,7 @@ const L = {
     stages: [
       ["Bezahlt", "Den Status ändert ausschließlich eine signierte Nachricht des Zahlungsanbieters. Die Rückkehr in den Browser ändert nichts, ein Klick von uns ebenso wenig. Bei einer Euro-Überweisung zählt der Moment der Gutschrift."],
       ["Details klären", "Nur bei Aufträgen, die es brauchen: eine Größe, ein Muster, die Buchstaben auf einem Siegelring, ein Material. Die Lieferzeit läuft in dieser Zeit NICHT, Ihre Antwort geht also nicht von Ihrem Termin ab. Die Auftragsseite nennt die betroffene Position."],
-      ["Zur Fertigung angenommen", "Alles geklärt, der Auftrag steht in der Werkstattschlange und die Zeit läuft."],
+      ["In der Warteschlange", "Alles geklärt, der Auftrag steht in der Werkstattschlange und die Zeit läuft. In die Hand genommen hat ihn noch niemand, und das sagen wir offen, statt Arbeit vorzutäuschen."],
       ["In Arbeit", "Jemand hat den Auftrag in die Hand genommen."],
       ["Fertig", "Die Arbeit ist getan. Wir verpacken oder bereiten die Abholung vor."],
       ["Versandt oder übergeben", "Beim Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht. Bei Selbstabholung stimmen wir eine Uhrzeit ab."],
@@ -160,7 +160,7 @@ const L = {
       ["Wo Sie ihn sehen", "Auf Ihrer Auftragsseite, samt den verbleibenden Tagen. Die Zeit erscheint auch im Angebot vor der Zahlung, bei den gewählten Positionen."],
     ],
     mailsTitle: "Wann wir Ihnen schreiben",
-    mailsBody: "Bei den wichtigen Etappen: wenn der Auftrag in die Werkstatt geht, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie jederzeit auf der Auftragsseite.",
+    mailsBody: "Bei den wichtigen Etappen: wenn der Auftrag in die Warteschlange kommt und die Frist beginnt, wenn ihn jemand in die Hand nimmt, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie jederzeit auf der Auftragsseite.",
     pickupTitle: "Erhalt",
     pickupRows: [
       ["InPost-Paketstation", "Nur innerhalb Polens. Sie wählen die Station bei der Bestellung und sehen sie später auf der Auftragsseite."],

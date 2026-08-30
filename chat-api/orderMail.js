@@ -1089,7 +1089,7 @@ const ETAP_T = {
     przesylka: (nr) => `Numer przesyłki: ${nr}.`,
     stany: {
       details: "wracamy do ustalania szczegółów Twojego zlecenia. Odezwiemy się z pytaniami, a czas realizacji w tym czasie nie biegnie.",
-      queued: "wszystkie ustalenia mamy komplet, zlecenie trafiło do kolejki pracowni i termin realizacji zaczął biec.",
+      queued: "wszystkie ustalenia mamy komplet. Zlecenie czeka w kolejce pracowni, a termin realizacji już biegnie. Odezwiemy się, gdy weźmiemy je do ręki.",
       in_production: "zabraliśmy się do pracy nad Twoim zleceniem.",
       ready: "zlecenie jest gotowe. Pakujemy je i przygotowujemy do wysyłki albo do odbioru.",
       shipped: "zlecenie wyszło z pracowni.",
@@ -1111,7 +1111,7 @@ const ETAP_T = {
     przesylka: (nr) => `Tracking number: ${nr}.`,
     stany: {
       details: "we are going back to agreeing the details of your order. We will be in touch with questions, and the lead time does not run in the meantime.",
-      queued: "everything is agreed, your order has entered the workshop queue and the lead time has started.",
+      queued: "everything is agreed. Your order is waiting in the workshop queue and the lead time is running. We will write again once someone picks it up.",
       in_production: "we have started working on your order.",
       ready: "your order is finished. We are packing it for dispatch or collection.",
       shipped: "your order has left the workshop.",
@@ -1133,7 +1133,7 @@ const ETAP_T = {
     przesylka: (nr) => `Sendungsnummer: ${nr}.`,
     stany: {
       details: "wir kehren zur Abstimmung der Details Ihres Auftrags zurück. Wir melden uns mit Fragen, die Lieferzeit läuft in dieser Zeit nicht.",
-      queued: "alle Absprachen sind vollständig, Ihr Auftrag ist in der Werkstattschlange und die Lieferzeit läuft.",
+      queued: "alle Absprachen sind vollständig. Ihr Auftrag wartet in der Werkstattschlange und die Lieferzeit läuft. Wir melden uns erneut, sobald ihn jemand in die Hand nimmt.",
       in_production: "wir haben mit der Arbeit an Ihrem Auftrag begonnen.",
       ready: "Ihr Auftrag ist fertig. Wir verpacken ihn für den Versand oder die Abholung.",
       shipped: "Ihr Auftrag hat die Werkstatt verlassen.",
@@ -1147,16 +1147,16 @@ const ETAP_T = {
  * zamowienia: dwa opisy tej samej drogi rozjechalyby sie przy pierwszej zmianie.
  */
 const ETAP_KROKI = {
-  pl: { paid: "Zapłacone", details: "Ustalenia", work: "W realizacji", ready: "Gotowe", shipped: "Wysłane", handed: "Przekazane" },
-  en: { paid: "Paid", details: "Details", work: "In the workshop", ready: "Finished", shipped: "Dispatched", handed: "Handed over" },
-  de: { paid: "Bezahlt", details: "Absprachen", work: "In Arbeit", ready: "Fertig", shipped: "Versandt", handed: "Übergeben" },
+  pl: { paid: "Zapłacone", details: "Ustalenia", queued: "W kolejce", work: "W realizacji", ready: "Gotowe", shipped: "Wysłane", handed: "Przekazane" },
+  en: { paid: "Paid", details: "Details", queued: "In the queue", work: "In the workshop", ready: "Finished", shipped: "Dispatched", handed: "Handed over" },
+  de: { paid: "Bezahlt", details: "Absprachen", queued: "In Warteschlange", work: "In Arbeit", ready: "Fertig", shipped: "Versandt", handed: "Übergeben" },
 };
 
 /** Naglowek maila, krotszy od zdania w tresci. */
 const ETAP_TYTUL = {
-  pl: { details: "Ustalamy szczegóły", queued: "Zlecenie przyjęte do realizacji", in_production: "Zlecenie w realizacji", ready: "Zlecenie gotowe", shipped: "Zlecenie wysłane", completed: "Zamówienie zamknięte" },
-  en: { details: "Agreeing the details", queued: "Order accepted for production", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order closed" },
-  de: { details: "Details klären", queued: "Auftrag angenommen", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung abgeschlossen" },
+  pl: { details: "Ustalamy szczegóły", queued: "Zlecenie czeka w kolejce", in_production: "Zlecenie w realizacji", ready: "Zlecenie gotowe", shipped: "Zlecenie wysłane", completed: "Zamówienie zamknięte" },
+  en: { details: "Agreeing the details", queued: "Order is in the queue", in_production: "Order in the workshop", ready: "Order finished", shipped: "Order dispatched", completed: "Order closed" },
+  de: { details: "Details klären", queued: "Auftrag in der Warteschlange", in_production: "Auftrag in Arbeit", ready: "Auftrag fertig", shipped: "Auftrag versandt", completed: "Bestellung abgeschlossen" },
 };
 
 /**
@@ -1170,13 +1170,18 @@ function paseczek(order, lang) {
   const odbior = order.delivery_method === "pickup";
   const kroki = [{ id: "paid", label: n.paid, stempel: order.paid_at }];
   if (order.requires_details) kroki.push({ id: "details", label: n.details, stempel: order.details_at });
-  kroki.push({ id: "work", label: n.work, stempel: order.queued_at || order.production_started_at });
+  // "Czeka w kolejce" i "w realizacji" to OSOBNE przystanki (decyzja
+  // wlasciciela, 2026-08-30). Wczesniej dzielily jeden, wiec dwa powiadomienia
+  // pod rzad rysowaly klientowi ten sam obrazek, a zlecenie lezace w kolejce
+  // przedstawialo sie jako juz robione.
+  kroki.push({ id: "queued", label: n.queued, stempel: order.queued_at });
+  kroki.push({ id: "work", label: n.work, stempel: order.production_started_at });
   kroki.push({ id: "ready", label: n.ready, stempel: order.ready_at });
   kroki.push({ id: "shipped", label: odbior ? n.handed : n.shipped, stempel: order.shipped_at });
 
   const gdzie = order.requires_details
-    ? { paid: 0, details: 1, queued: 2, in_production: 2, ready: 3, shipped: 4, completed: 4 }
-    : { paid: 0, details: 0, queued: 1, in_production: 1, ready: 2, shipped: 3, completed: 3 };
+    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 5 }
+    : { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 4 };
   const naEtapie = gdzie[order.status] ?? 0;
 
   const komorki = kroki.map((k, i) => {

@@ -160,9 +160,9 @@ export default [
       de: "Werde ich informiert, wenn sich etwas ändert?",
     },
     a: {
-      pl: "Tak, przy istotnych etapach: gdy zlecenie wchodzi do realizacji, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia.",
-      en: "Yes, at the stages that matter: when the order enters the workshop, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page.",
-      de: "Ja, bei den wichtigen Etappen: wenn der Auftrag in die Werkstatt geht, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie immer auf der Auftragsseite.",
+      pl: "Tak, przy istotnych etapach: gdy zlecenie trafia do kolejki i rusza termin, gdy ktoś bierze je do ręki, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia.",
+      en: "Yes, at the stages that matter: when the order joins the queue and the clock starts, when someone picks it up, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page.",
+      de: "Ja, bei den wichtigen Etappen: wenn der Auftrag in die Warteschlange kommt und die Frist beginnt, wenn ihn jemand in die Hand nimmt, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie immer auf der Auftragsseite.",
     },
   },
   {

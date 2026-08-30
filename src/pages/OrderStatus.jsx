@@ -55,9 +55,11 @@ function TransferRow({ label, value, mono, highlight }) {
 // ============================================================
 // OS CZASU ZLECENIA
 // ============================================================
-// To samo, co widzi pracownia w panelu, tylko jezykiem klienta i bez etapow,
-// ktore sa nasza sprawa: "gotowe do pobrania" i "w realizacji" to dla niego
-// jeden stan, bo w obu zaplacil, przyjelismy i termin biegnie.
+// To samo, co widzi pracownia w panelu, tylko jezykiem klienta. Od 2026-08-30
+// "czeka w kolejce" i "w realizacji" to DWA przystanki, a nie jeden: zlecenie
+// lezace w kolejce przedstawialo sie wczesniej jako juz robione, a dwa
+// powiadomienia pod rzad rysowaly ten sam obrazek. Wolimy powiedziec wprost,
+// ze nikt jeszcze nie wzial zlecenia do reki.
 //
 // Daty formatujemy z napisu, a nie przez `Intl`: dane ICU w Node i w
 // przegladarce bywaja z roznych wersji, a rozjazd na prerenderze wyrzuca cale
@@ -87,15 +89,20 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   if (order.requiresDetails) {
     kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt, pozycje: doUstalenia });
   }
-  kroki.push({ id: "work", label: u.tlProduction, data: order.queuedAt || order.productionStartedAt });
+  // "Czeka w kolejce" i "w realizacji" to OSOBNE przystanki (decyzja
+  // wlasciciela, 2026-08-30). Wczesniej dzielily jeden, wiec zlecenie lezace
+  // w kolejce pokazywalo sie klientowi jako juz robione, a dwa powiadomienia
+  // pod rzad rysowaly ten sam obrazek i drugie wygladalo na pomylke.
+  kroki.push({ id: "queued", label: u.tlQueued, data: order.queuedAt });
+  kroki.push({ id: "work", label: u.tlProduction, data: order.productionStartedAt });
   kroki.push({ id: "ready", label: u.tlReady, data: order.readyAt });
   kroki.push({ id: "shipped", label: odbiorOsobisty ? u.tlHanded : u.tlShipped, data: order.shippedAt });
 
   // Numer etapu, na ktorym stoi zlecenie. Jedna liczba zamiast piatki warunkow
   // rozsianych po widoku: dzieki niej "przebyte" i "przed nami" liczy sie samo.
-  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 1, ready: 2, shipped: 3, completed: 3 };
+  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 4 };
   const teraz = order.requiresDetails
-    ? { paid: 0, details: 1, queued: 2, in_production: 2, ready: 3, shipped: 4, completed: 4 }[order.status]
+    ? { paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 5 }[order.status]
     : gdzie[order.status];
   const naEtapie = Number.isInteger(teraz) ? teraz : 0;
 
@@ -287,6 +294,7 @@ const UI = {
     tlTitle: "Postęp zlecenia",
     tlPaid: "Zapłacone",
     tlDetails: "Ustalamy szczegóły",
+    tlQueued: "Czeka w kolejce",
     tlProduction: "W realizacji",
     tlReady: "Gotowe",
     tlShipped: "Wysłane",
@@ -377,6 +385,7 @@ const UI = {
     tlTitle: "Order progress",
     tlPaid: "Paid",
     tlDetails: "Agreeing details",
+    tlQueued: "In the queue",
     tlProduction: "In the workshop",
     tlReady: "Finished",
     tlShipped: "Dispatched",
@@ -467,6 +476,7 @@ const UI = {
     tlTitle: "Auftragsfortschritt",
     tlPaid: "Bezahlt",
     tlDetails: "Details klären",
+    tlQueued: "In der Warteschlange",
     tlProduction: "In Arbeit",
     tlReady: "Fertig",
     tlShipped: "Versandt",
@@ -663,9 +673,9 @@ export default function OrderStatus() {
   // spadalo na galaz domyslna i mowilo oplaconemu klientowi, ze czekamy na
   // jego platnosc. Stoja w lancuchu PRZED `failed`, bo pozniejsza nieudana
   // proba platnosci nie cofa zamowienia, ktore juz jest w robocie.
-  // "Gotowe do pobrania" i "w robocie" to dla klienta jedno i to samo zdanie:
-  // zaplacil, przyjelismy, termin biegnie. Roznica miedzy nimi jest wewnetrzna
-  // i dotyczy tego, czy ktos w pracowni wzial juz zlecenie do reki.
+  // Naglowek strony jest dla obu etapow ten sam, bo mowi o stanie zamowienia
+  // jako calosci. Roznice miedzy "czeka w kolejce" a "w realizacji" pokazuje
+  // os czasu wyzej, i tam sa to osobne przystanki.
   const inProduction = order?.status === "queued" || order?.status === "in_production";
   const shipped = order?.status === "shipped";
   const completed = order?.status === "completed";
