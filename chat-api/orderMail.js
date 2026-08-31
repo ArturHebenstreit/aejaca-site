@@ -143,6 +143,8 @@ const T = {
     ocGorzej: "A jeżeli cokolwiek jest nie tak, napisz do nas zamiast wystawiać ocenę: poprawimy albo zrobimy od nowa, i dopiero potem porozmawiamy o opinii.",
     ocRaz: "Piszemy w tej sprawie jeden raz.",
     ocGoogle: "Ocenę w Google wystawisz pod adresem ",
+    ocGuzikGoogle: "Oceń nas w Google",
+    ocGuzikTrustpilot: "Oceń nas na Trustpilocie",
     ocTrustpilot: "Opinię na Trustpilocie dodasz pod adresem ",
 
     nadplata: (ile) => `Wpłynęło o ${ile} więcej niż kwota zamówienia. Nadwyżkę odsyłamy na rachunek, z którego przyszła.`,
@@ -248,6 +250,8 @@ const T = {
     ocGorzej: "And if anything is not right, write to us instead of leaving a review: we will fix it or make it again, and only then talk about a review.",
     ocRaz: "We write about this once.",
     ocGoogle: "You can review us on Google at ",
+    ocGuzikGoogle: "Review us on Google",
+    ocGuzikTrustpilot: "Review us on Trustpilot",
     ocTrustpilot: "You can add a review on Trustpilot at ",
 
     nadplata: (ile) => `That is ${ile} more than the order amount. We are sending the surplus back to the account it came from.`,
@@ -353,6 +357,8 @@ const T = {
     ocGorzej: "Und wenn etwas nicht stimmt, schreiben Sie uns, statt eine Bewertung abzugeben: wir bessern nach oder fertigen neu, und erst danach sprechen wir über eine Bewertung.",
     ocRaz: "Wir schreiben dazu einmal.",
     ocGoogle: "Bei Google bewerten Sie uns unter ",
+    ocGuzikGoogle: "Bei Google bewerten",
+    ocGuzikTrustpilot: "Auf Trustpilot bewerten",
     ocTrustpilot: "Auf Trustpilot bewerten Sie uns unter ",
 
     nadplata: (ile) => `Das sind ${ile} mehr als der Bestellbetrag. Den Überschuss senden wir an das Konto zurück, von dem er kam.`,
@@ -1089,12 +1095,35 @@ export function buildProsbaOOcene(order) {
 
   const odnosniki = [...gdzie, zdanieProces(l, lang)];
 
+  // Dwa przyciski zamiast dwoch zdan z adresem. Prosba o ocene zyje albo umiera
+  // na tym, czy da sie ja spelnic jednym kciukiem w telefonie, a odnosnik
+  // w akapicie wymaga celowania. Znak firmowy obu serwisow jest osadzony jako
+  // OBRAZ Z NASZEJ DOMENY (klient pocztowy nie wykona CSS-a ani SVG w tle),
+  // a gdyby obrazy byly zablokowane, zostaje `alt` i czytelny napis obok.
+  const guzik = (tekst, url, ikona, tlo, kolorTekstu, obramowanie) => `
+    <a href="${esc(url)}" style="display:inline-block;margin:0 8px 10px 0;padding:12px 20px;border-radius:999px;background:${tlo};color:${kolorTekstu};border:1px solid ${obramowanie};text-decoration:none;font-size:14px;font-weight:600">
+      <img src="${SELLER.site}/img/mail/${ikona}" width="18" height="18" alt=""
+           style="width:18px;height:18px;vertical-align:middle;margin-right:8px;border:0" />${esc(tekst)}
+    </a>`;
+
+  const przyciski = [
+    SELLER.reviews?.google
+      ? guzik(l.ocGuzikGoogle, SELLER.reviews.google, "google.png", "#ffffff", "#1f1f1f", "#dadce0")
+      : "",
+    SELLER.reviews?.trustpilot
+      ? guzik(l.ocGuzikTrustpilot, SELLER.reviews.trustpilot, "trustpilot.png", "#00b67a", "#ffffff", "#00b67a")
+      : "",
+  ].join("");
+
   const html = koperta({ lang, odnosniki, srodek: `
     <h1 style="margin:0 0 20px;font-size:20px;line-height:1.3;font-weight:700">${esc(l.ocSubject)}</h1>
 
     <p style="margin:0 0 6px">${esc(l.hi)}</p>
     <p style="margin:0 0 18px;line-height:1.6">${esc(l.ocIntro)}</p>
     <p style="margin:0 0 18px;line-height:1.6">${esc(l.ocProsba)}</p>
+
+    <div style="margin:0 0 22px">${przyciski}</div>
+
     <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.ocGorzej)}</p>
     <p style="margin:0;line-height:1.6;font-size:13px;color:#777">${esc(l.ocRaz)}</p>
   ` });
