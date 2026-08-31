@@ -110,6 +110,17 @@ app.use((req, res, next) => {
   next();
 });
 
+/**
+ * Jezyk wiadomosci: jeden z trzech, ktore serwis obsluguje, albo polski.
+ *
+ * Wartosc przychodzi z zewnatrz (webhook n8n, formularz, kolumna w bazie), wiec
+ * nie wolno jej podac dalej bez sprawdzenia: slownik maila szuka klucza i przy
+ * "fr" oddalby `undefined`, czyli mail bez tresci.
+ */
+function jezykZadania(wartosc) {
+  return ["pl", "en", "de"].includes(wartosc) ? wartosc : "pl";
+}
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const pool = process.env.DATABASE_URL
@@ -125,6 +136,11 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS inbound_delivery VARCHAR(30)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
+  // Jezyk zapisujemy PRZY KODZIE, bo przypomnienie wychodzi czterdziesci dni
+  // pozniej, gdy nie ma juz ani zapytania, ani sesji, z ktorej dalo sie go
+  // odczytac. Bez tego Niemiec dostawal polskie przypomnienie do niemieckiego
+  // kodu. Stare kody nie maja jezyka i lecą po polsku, jak dotad.
+  pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS lang VARCHAR(5)`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
   // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
   // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
@@ -3027,7 +3043,7 @@ if (pool) cron.schedule("0 7 * * *", przypomnijOTerminach, { timezone: "Europe/W
 async function przypomnijOKodach() {
   try {
     const { rows } = await pool.query(
-      `SELECT code, issued_to, value, valid_to
+      `SELECT code, issued_to, value, valid_to, lang
          FROM discount_codes
         WHERE active = TRUE AND used_count = 0 AND reminded_at IS NULL
           AND issued_to IS NOT NULL AND valid_to IS NOT NULL
@@ -3038,11 +3054,14 @@ async function przypomnijOKodach() {
     );
     for (const k of rows) {
       if (await pisalismyDzisiaj(k.issued_to)) continue;
+      // Jezyk bierzemy z kodu, a nie z zalozenia. Kod sprzed migracji go nie
+      // ma, wiec zostaje polski: to jedyne miejsce, w ktorym zgadujemy.
+      const jezyk = jezykZadania(k.lang);
       const wiadomosc = LEAD_MAILE.przypomnienieKodu({
-        lang: "pl", to: k.issued_to, kod: k.code,
+        lang: jezyk, to: k.issued_to, kod: k.code,
         procent: k.value != null ? `${k.value}%` : null,
         waznyDo: String(k.valid_to).slice(0, 10).split("-").reverse().join("."),
-        dni: dniSlownie(DNI_PRZED_KONCEM_KODU, "pl"),
+        dni: dniSlownie(DNI_PRZED_KONCEM_KODU, jezyk),
       });
       const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
       if (!poszlo) continue;
@@ -3937,7 +3956,7 @@ app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, r
     // powitalny i rabat doklejony do wyceny sprzed tygodnia. Dwie kopie tego
     // zapytania rozjechalyby sie przy pierwszej zmianie regul kodu.
     const kod = await issueSingleUseCode(pool, {
-      email, percent, days, campaign: "newsletter", prefix: "AEJ10",
+      email, percent, days, campaign: "newsletter", prefix: "AEJ10", lang: jezykZadania(req.body?.lang),
       note: `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`,
     });
     if (!kod) return res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
@@ -4006,7 +4025,7 @@ app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => 
       const procent = Number.isInteger(req.body?.procent) ? Math.min(req.body.procent, MAX_PERCENT) : 5;
       const dni = Number.isInteger(req.body?.dni) ? Math.min(Math.max(req.body.dni, 7), 365) : 14;
       const kod = pool ? await issueSingleUseCode(pool, {
-        email: to, percent: procent, days: dni, campaign: "quote-followup", prefix: `AEJ${procent}`,
+        email: to, percent: procent, days: dni, campaign: "quote-followup", prefix: `AEJ${procent}`, lang,
         note: `Rabat do wyceny, ${new Date().toISOString().slice(0, 10)}`,
       }) : null;
       // Bez kodu ten mail nie ma o czym pisac: zdanie "oto Twoj rabat" bez

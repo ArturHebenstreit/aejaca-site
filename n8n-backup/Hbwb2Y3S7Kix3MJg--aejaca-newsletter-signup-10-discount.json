@@ -271,6 +271,10 @@
             {
               "name": "email",
               "value": "={{ $('Webhook — Newsletter').item.json.body.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $('Webhook — Newsletter').item.json.body.lang }}"
             }
           ]
         },

@@ -37,19 +37,19 @@ const T = {
     zdanieRegulamin: "Regulamin serwisu znajdziesz pod adresem ",
 
     // 1. Szacunek z kalkulatora
-    kalkSubject: "Twoja wycena z kalkulatora AEJaCA",
+    kalkSubject: "Szacunek z kalkulatora AEJaCA",
     kalkIntro: "poniżej wycena policzona przez nasz kalkulator. Jest szacunkiem, a nie ofertą: cenę wiążącą podajemy po obejrzeniu projektu, bo o kwocie decydują szczegóły, których kalkulator nie zna.",
     kalkNarzedzie: "Narzędzie",
     kalkParametry: "Co policzyliśmy",
     kalkPlik: "Przysłany plik",
     kalkCena: "Szacowana cena",
     kalkCoDalej: "Co dalej",
-    kalkCoDalejTresc: "Odpisz na tę wiadomość i napisz, co chcesz zrobić. Odezwiemy się w ciągu jednego dnia roboczego z ceną wiążącą i terminem. Jeżeli wycena była tylko rozeznaniem, nic nie musisz robić: nie odzywamy się bez powodu.",
+    kalkCoDalejTresc: "Odpisz na tę wiadomość i napisz, co chcesz zrobić. Odezwiemy się w ciągu jednego, dwóch dni roboczych z ceną wiążącą i terminem. Jeżeli wycena była tylko rozeznaniem, nic nie musisz robić: nie odzywamy się bez powodu.",
 
     // 2. Przypomnienie po 48 godzinach
     fu48Subject: "Pytania do wyceny z AEJaCA?",
     fu48Intro: "dwa dni temu policzyliśmy dla Ciebie wycenę i nie chcemy zostawiać jej bez słowa. Jeżeli coś w niej nie gra, napisz: kwota bierze się z materiału, pracochłonności i wykończenia, a każdą z tych rzeczy da się jeszcze zmienić.",
-    fu48CoMozna: "Najczęściej pytacie o trzy rzeczy: czy da się taniej przy innym materiale, ile potrwa realizacja i czy przyjmiemy własny projekt. Odpowiedź na każdą z nich jest twierdząca, a szczegóły zależą od Twojego zlecenia.",
+    fu48CoMozna: "Najczęściej pytacie o trzy rzeczy: czy da się taniej przy innym materiale, czy zdążymy na Twój termin i czy przyjmiemy własny projekt. Odpowiedź na każdą z nich jest twierdząca, a termin potwierdzamy razem z ceną wiążącą.",
     fu48Cisza: "Jeżeli sprawa jest nieaktualna, po prostu nie odpisuj. To był ostatni raz, kiedy przypominamy o tej wycenie, nie licząc jednej wiadomości o rabacie.",
 
     // 3. Rabat po siedmiu dniach
@@ -77,7 +77,7 @@ const T = {
     newsCzegoTresc: "Piszemy rzadko i tylko wtedy, gdy mamy o czym: nowa technika, nowy materiał, rzecz, którą właśnie skończyliśmy. Wypisujesz się jednym kliknięciem w każdej wiadomości.",
 
     // 7. Przypomnienie o kodzie, ktory zaraz wygasnie
-    przypSubject: (kod) => `Kod ${kod} traci ważność`,
+    przypSubject: (procent, dni) => (procent ? `Twój kod ${procent} traci ważność za ${dni}` : `Twój kod traci ważność za ${dni}`),
     przypIntro: (dni) => `kod od nas jest jeszcze ważny, ale zostało mu ${dni}. Przypominamy raz, bo szkoda, żeby przepadł niezauważony.`,
     przypJak: "Kod wpisujesz w koszyku albo na stronie oferty. Obejmuje pozycje zamówienia, nie obejmuje kosztu wysyłki.",
     przypKoniec: "To jedyne przypomnienie o tym kodzie. Jeżeli nie masz teraz na co go wykorzystać, po prostu przepadnie i nic się nie stanie.",
@@ -103,11 +103,11 @@ const T = {
     kalkPlik: "The file you sent",
     kalkCena: "Estimated price",
     kalkCoDalej: "What happens next",
-    kalkCoDalejTresc: "Reply to this message and tell us what you would like to do. We will come back within one business day with a binding price and a lead time. If the estimate was only research, you need not do anything: we do not write without a reason.",
+    kalkCoDalejTresc: "Reply to this message and tell us what you would like to do. We will come back within one or two business days with a binding price and a lead time. If the estimate was only research, you need not do anything: we do not write without a reason.",
 
     fu48Subject: "Any questions about your AEJaCA estimate?",
     fu48Intro: "two days ago we priced a project for you and we do not want to leave it without a word. If something does not add up, write to us: the amount comes from the material, the work involved and the finish, and each of those can still be changed.",
-    fu48CoMozna: "People usually ask three things: whether a different material would be cheaper, how long the work takes, and whether we accept your own design. The answer to each is yes, and the details depend on your project.",
+    fu48CoMozna: "People usually ask three things: whether a different material would be cheaper, whether we can meet your deadline, and whether we accept your own design. The answer to each is yes, and we confirm the date together with the binding price.",
     fu48Cisza: "If the matter is no longer current, simply do not reply. This is the last reminder about this estimate, apart from one message about a discount.",
 
     rabatSubject: (kod) => `Discount ${kod} for your AEJaCA project`,
@@ -131,7 +131,7 @@ const T = {
     newsCzegoSieSpodziewac: "What to expect",
     newsCzegoTresc: "We write rarely and only when there is something to say: a new technique, a new material, a piece we have just finished. One click in any message unsubscribes you.",
 
-    przypSubject: (kod) => `Code ${kod} is about to expire`,
+    przypSubject: (procent, dni) => (procent ? `Your ${procent} code expires in ${dni}` : `Your code expires in ${dni}`),
     przypIntro: (dni) => `the code we sent you is still valid, but only for ${dni}. This is a single reminder, so it does not lapse unnoticed.`,
     przypJak: "Enter the code in the cart or on the offer page. It covers the items, it does not cover shipping.",
     przypKoniec: "This is the only reminder about this code. If there is nothing you want to use it on right now, it will simply lapse and nothing happens.",
@@ -156,11 +156,11 @@ const T = {
     kalkPlik: "Ihre Datei",
     kalkCena: "Geschätzter Preis",
     kalkCoDalej: "Wie es weitergeht",
-    kalkCoDalejTresc: "Antworten Sie auf diese Nachricht und schreiben Sie, was Sie vorhaben. Wir melden uns innerhalb eines Werktages mit einem verbindlichen Preis und einer Lieferzeit. War die Kalkulation nur eine Orientierung, müssen Sie nichts tun: wir schreiben nicht ohne Grund.",
+    kalkCoDalejTresc: "Antworten Sie auf diese Nachricht und schreiben Sie, was Sie vorhaben. Wir melden uns innerhalb von ein bis zwei Werktagen mit einem verbindlichen Preis und einer Lieferzeit. War die Kalkulation nur eine Orientierung, müssen Sie nichts tun: wir schreiben nicht ohne Grund.",
 
     fu48Subject: "Fragen zu Ihrer AEJaCA-Kalkulation?",
     fu48Intro: "vor zwei Tagen haben wir für Sie ein Projekt kalkuliert und möchten es nicht unkommentiert lassen. Wenn etwas nicht passt, schreiben Sie uns: der Betrag ergibt sich aus Material, Arbeitsaufwand und Finish, und jedes davon lässt sich noch ändern.",
-    fu48CoMozna: "Meist werden drei Dinge gefragt: ob ein anderes Material günstiger wäre, wie lange die Arbeit dauert und ob wir einen eigenen Entwurf annehmen. Die Antwort ist jeweils ja, die Details hängen von Ihrem Auftrag ab.",
+    fu48CoMozna: "Meist werden drei Dinge gefragt: ob ein anderes Material günstiger wäre, ob wir Ihren Termin einhalten können und ob wir einen eigenen Entwurf annehmen. Die Antwort ist jeweils ja, den Termin bestätigen wir zusammen mit dem verbindlichen Preis.",
     fu48Cisza: "Ist die Sache nicht mehr aktuell, antworten Sie einfach nicht. Das war die letzte Erinnerung an diese Kalkulation, abgesehen von einer Nachricht zu einem Rabatt.",
 
     rabatSubject: (kod) => `Rabatt ${kod} für Ihr AEJaCA-Projekt`,
@@ -184,7 +184,7 @@ const T = {
     newsCzegoSieSpodziewac: "Was Sie erwartet",
     newsCzegoTresc: "Wir schreiben selten und nur, wenn es etwas zu sagen gibt: eine neue Technik, ein neues Material, ein gerade fertiggestelltes Stück. Ein Klick in jeder Nachricht meldet Sie wieder ab.",
 
-    przypSubject: (kod) => `Code ${kod} läuft bald ab`,
+    przypSubject: (procent, dni) => (procent ? `Ihr Code über ${procent} läuft in ${dni} ab` : `Ihr Code läuft in ${dni} ab`),
     przypIntro: (dni) => `der Code, den Sie von uns erhalten haben, gilt noch, aber nur ${dni}. Wir erinnern einmal daran, damit er nicht unbemerkt verfällt.`,
     przypJak: "Den Code geben Sie im Warenkorb oder auf der Angebotsseite ein. Er gilt für die Positionen, nicht für den Versand.",
     przypKoniec: "Das ist die einzige Erinnerung an diesen Code. Wenn Sie ihn gerade nicht brauchen, verfällt er einfach und es passiert nichts.",
@@ -423,7 +423,7 @@ export function buildAutoOdpowiedz({ lang = "pl", to, temat, inReplyTo, threadId
 export function buildPrzypomnienieKodu({ lang = "pl", to, kod, procent, waznyDo, dni }) {
   const l = T[jezyk(lang)];
   return zloz({
-    lang: jezyk(lang), to, subject: l.przypSubject(kod), naglowek: l.przypSubject(kod),
+    lang: jezyk(lang), to, subject: l.przypSubject(procent, dni), naglowek: l.przypSubject(procent, dni),
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.przypIntro(dni))}</p>
       ${ramkaKodu(l.rabatKod, kod, procent ? l.rabatIle(procent) : "")}
