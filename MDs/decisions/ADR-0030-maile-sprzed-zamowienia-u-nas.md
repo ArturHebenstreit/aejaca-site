@@ -87,7 +87,20 @@ Decyzja wlasciciela z 2026-08-31:
   wczesniej zamknalby przypomnienie na zawsze przy pierwszej awarii poczty,
   i to po cichu.
 
-### 5. Dwie reguly chroniace skrzynke klienta
+### 5. Autoodpowiedz idzie prosto z `chat-api`, bez okrazenia przez n8n
+
+Uzupelnienie z 2026-08-31, po wdrozeniu. To `chat-api` wykrywa maila od klienta
+(`gmail.js`) i to on ma polaczenie z Gmailem, wiec droga chat-api -> n8n ->
+z powrotem chat-api byla wylacznie droga. Przeplyw `AEJaCA Auto-reply` znika,
+a razem z nim webhook, zmienna `N8N_AUTOREPLY_WEBHOOK_URL` i zaleznosc od tego,
+czy n8n akurat zyje.
+
+Zabezpieczenia zostaja nietkniete: jedno potwierdzenie na nadawce na dobe, dobor
+watku przez `threadId`, atomowe zajecie watku przed wyslaniem i `AUTOREPLY_DRY_RUN`
+do prob. Przeplyw wolno wylaczyc DOPIERO po wdrozeniu tej zmiany: dopoki stary
+`chat-api` wola webhook, wylaczony przeplyw znaczy brak autoodpowiedzi.
+
+### 6. Dwie reguly chroniace skrzynke klienta
 
 Klient, ktory zapisze sie do newslettera i wyceni cos w kalkulatorze, moglby
 dostac piec wiadomosci w tydzien. To juz nie jest opieka, tylko nagabywanie,

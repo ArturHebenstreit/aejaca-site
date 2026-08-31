@@ -122,10 +122,11 @@ const SELF_DOMAINS = (process.env.AUTOREPLY_SELF_DOMAINS || "aejaca.com")
   .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 
 // Send an AEJaCA "thank you for contacting us" acknowledgement for a fresh
-// client inquiry. The actual email is sent by n8n (same channel as the contact
-// and quote forms); here we only decide *whether* to send and guard against
-// duplicates and loops. Never throws - a failure here must not break ingestion.
-export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, gmailMessageId, snippet }) {
+// client inquiry. Tresc i wysylka stoja w `leadMail.js`, tak samo jak dla
+// pozostalych wiadomosci sprzed zamowienia; tutaj decydujemy tylko, CZY wyslac,
+// i pilnujemy, zeby nie wyslac dwa razy ani nie odpisac samym sobie.
+// Never throws - a failure here must not break ingestion.
+export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, gmailMessageId, gmailThreadId, snippet }) {
   try {
     if (process.env.AUTOREPLY_ENABLED !== "true") return;
     if (!toEmail) return;
@@ -133,7 +134,6 @@ export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, l
     const domain = toEmail.split("@")[1] || "";
     if (SELF_DOMAINS.includes(domain)) return;
 
-    const webhook = process.env.N8N_AUTOREPLY_WEBHOOK_URL;
     const dryRun = process.env.AUTOREPLY_DRY_RUN === "true";
 
     // Rate-limit: at most one acknowledgement per sender per 24h across threads.
@@ -149,7 +149,7 @@ export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, l
       return;
     }
 
-    if (dryRun || !webhook) {
+    if (dryRun) {
       console.log(`[autoreply] DRY_RUN would acknowledge ${toEmail} (lang=${lang}) re: "${(subject || "").slice(0, 60)}"`);
       return;
     }
@@ -162,25 +162,30 @@ export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, l
     );
     if (claim.rows.length === 0) return; // already acknowledged
 
-    const payload = {
-      to: toEmail,
-      subject: subject || "",
+    // Odpowiadamy SAMI, bez okrazenia przez n8n (decyzja wlasciciela,
+    // 2026-08-31). To ten kod wykrywa maila od klienta i to on ma polaczenie
+    // z Gmailem, wiec droga chat-api -> n8n -> chat-api byla wylacznie droga.
+    // Autoodpowiedz przestaje przy okazji zalezec od tego, czy n8n akurat zyje.
+    //
+    // Import w srodku funkcji, bo `orderMail.js` siega po ten plik przy
+    // wysylce: staly import w obie strony zamknalby kolo przy starcie.
+    const { buildAutoOdpowiedz } = await import("./leadMail.js");
+    const { sendLeadMail } = await import("./orderMail.js");
+    const wiadomosc = buildAutoOdpowiedz({
       lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
-      gmail_message_id: gmailMessageId || null,
-      in_reply_to: messageIdHeader || null,
-      snippet: snippet || "",
-      source: "autoreply",
-    };
+      to: toEmail,
+      temat: subject || "",
+      // Watek po naszej stronie i naglowki po stronie klienta. Bez obu rozmowa
+      // rozpada mu sie na dwa kawalki i odpisuje automatowi zamiast nam.
+      inReplyTo: messageIdHeader || null,
+      threadId: gmailThreadId || null,
+    });
     try {
-      const r = await fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!r.ok) console.error(`[autoreply] n8n webhook ${r.status} for ${toEmail}`);
-      else console.log(`[autoreply] acknowledged ${toEmail} (lang=${payload.lang})`);
+      const poszlo = await sendLeadMail([wiadomosc]);
+      if (poszlo) console.log(`[autoreply] acknowledged ${toEmail} (lang=${wiadomosc.subject ? lang : "pl"})`);
+      else console.error(`[autoreply] Gmail nie zadzialal dla ${toEmail}`);
     } catch (err) {
-      console.error(`[autoreply] webhook error for ${toEmail}:`, err.message);
+      console.error(`[autoreply] send error for ${toEmail}:`, err.message);
     }
   } catch (err) {
     console.error("[autoreply] maybeSendAutoReply error:", err.message);
@@ -286,7 +291,7 @@ export async function processGmailMessage(gmail, pool, messageId) {
         }
         // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
         // Only for brand-new inbound lead threads - never on ongoing replies,
-        // never on not_lead/spam. Sending itself is delegated to n8n.
+        // never on not_lead/spam.
         if (tag === "lead") {
           await maybeSendAutoReply(pool, {
             threadDbId,
@@ -295,6 +300,9 @@ export async function processGmailMessage(gmail, pool, messageId) {
             lang,
             messageIdHeader,
             gmailMessageId: messageId,
+            // Identyfikator ROZMOWY, nie wiadomosci: to on wpina odpowiedz
+            // w istniejacy watek po naszej stronie.
+            gmailThreadId: threadId,
             snippet,
           });
         }
