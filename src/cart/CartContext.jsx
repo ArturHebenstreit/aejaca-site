@@ -12,6 +12,7 @@
 // plikow do R2 pozycja z plikiem zyje tylko w biezacej sesji przegladarki.
 
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { trackCart } from "../utils/analytics.js";
 
 const STORAGE_KEY = "aejaca_cart_v1";
 const TTL_MS = 7 * 24 * 60 * 60 * 1000; // wycena jest wazna 7 dni, koszyk tak samo
@@ -66,14 +67,25 @@ export function CartProvider({ children }) {
     if (ready) save(items);
   }, [items, ready]);
 
+  // Dodanie i usuniecie liczymy TUTAJ, a nie na kazdym przycisku w serwisie.
+  // Do koszyka wklada sie z karty produktu, z uslugi, z kalkulatora i z kreatora
+  // pierscionka, wiec licznik postawiony przy przyciskach mialby cztery kopie
+  // i rozjechalby sie przy piatym miejscu.
   const add = useCallback((item) => {
     const withId = { ...item, id: nextId(), addedAt: Date.now() };
     setItems((prev) => [...prev, withId]);
+    trackCart("add_to_cart", item.title || item.slug || item.kind || "?",
+      (item.unitGrosze || 0) * (item.qty || 1));
     return withId.id;
   }, []);
 
   const remove = useCallback((id) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => {
+      const poz = prev.find((i) => i.id === id);
+      if (poz) trackCart("remove_from_cart", poz.title || poz.slug || poz.kind || "?",
+        (poz.unitGrosze || 0) * (poz.qty || 1));
+      return prev.filter((i) => i.id !== id);
+    });
   }, []);
 
   const setQty = useCallback((id, qty) => {

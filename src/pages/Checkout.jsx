@@ -24,6 +24,7 @@ import { inboundOptionsFor, wymagaPrzesylki } from "../data/inboundDelivery.js";
 import { validateCustomer } from "../shop/customerFields.js";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
+import { trackCheckout, idSesji } from "../utils/analytics.js";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
 
 const UI = {
@@ -293,6 +294,15 @@ export default function Checkout() {
   const [codeBusy, setCodeBusy] = useState(false);
   const [codeError, setCodeError] = useState(null);
 
+  // Wejscie do kasy, raz na wizyte. Czekamy na `ready`, bo koszyk wczytuje sie
+  // po zamontowaniu i przed tym wygladalby na pusty przy kazdym odswiezeniu.
+  const [zgloszonoKase, setZgloszonoKase] = useState(false);
+  useEffect(() => {
+    if (!ready || zgloszonoKase || items.length === 0) return;
+    setZgloszonoKase(true);
+    trackCheckout("begin_checkout", `${items.length}`, subtotalGrosze);
+  }, [ready, items.length, subtotalGrosze, zgloszonoKase]);
+
   // Zgody zalezne od zawartosci koszyka, nie od zamowienia jako calosci.
   const hasMadeToOrder = items.some((i) => i.withdrawal === "made_to_order" || i.kind === "service");
   const hasDigital = items.some((i) => i.withdrawal === "digital");
@@ -498,7 +508,15 @@ export default function Checkout() {
         paymentMethod: payMode,
         currency,
         discountCode: applied?.code || null,
+        // Identyfikator wizyty. Bez niego zamowienie jest w statystyce sierota:
+        // widac, ze przyszlo, ale nie widac, z jakiego zrodla ani z ktorej
+        // strony wejscia. Serwer zapisuje go przy zamowieniu i nigdzie indziej.
+        sessionId: idSesji(),
       });
+
+      // Proba zlozenia zamowienia. Roznica miedzy ta liczba a liczba zamowien
+      // oplaconych to jest dokladnie to, co gubi sie na bramce i przy przelewie.
+      trackCheckout("place_order", `${payMode}|${delivery.id}`, subtotalGrosze);
 
       if (!created.ok) {
         setError(

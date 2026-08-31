@@ -87,15 +87,18 @@ export async function createQuote(pool, input) {
 
   const { rows } = await pool.query(
     `INSERT INTO quotes (quote_ref, lang, currency, source, customer_email, customer_name, customer_phone,
-       message, access_token, ip_hash, rates_snapshot, valid_until)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       message, access_token, ip_hash, rates_snapshot, valid_until, session_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      RETURNING id`,
     [quoteRef, lang, currency, input.source || "quote",
      input.email ? String(input.email).trim().toLowerCase() : null,
      input.name || null, input.phone || null,
      input.message || null, accessToken, input.ipHash || null,
      input.ratesSnapshot ? JSON.stringify(input.ratesSnapshot) : null,
-     validUntil]
+     validUntil,
+     // Wizyta, z ktorej przyszlo zapytanie. Wycena zalozona recznie w panelu
+     // nie ma zadnej i tak ma zostac: puste pole znaczy "nie z serwisu".
+     input.sessionId ? String(input.sessionId).slice(0, 50) : null]
   );
   const quoteId = rows[0].id;
 

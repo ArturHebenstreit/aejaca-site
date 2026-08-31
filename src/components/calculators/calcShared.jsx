@@ -7,7 +7,7 @@ const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { Link } from "../../i18n/nav.jsx";
 import { Send, Paperclip, X, MessageCircle, Mail, ShoppingCart, Microscope, ArrowRight } from "lucide-react";
-import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
+import { trackInquiry, trackFunnel, idSesji } from "../../utils/analytics.js";
 
 // Rdzen cenowy zyje w src/pricing/config.js, bo ten sam kod liczy cene
 // na backendzie zamowien. Tutaj tylko re-eksport, zeby kalkulatory
@@ -458,6 +458,11 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           },
           ...(filePayload ? { file: filePayload } : {}),
           ...(rateSnapshot ? { rateSnapshot } : {}),
+          // Wizyta, z ktorej przyszlo zapytanie. Backend czytal to pole od
+          // dawna i zapisywal do `leads.session_id`, tylko nikt go nie wysylal,
+          // wiec kolumna stala pusta, a statystyka nie umiala powiedziec,
+          // z jakiego zrodla ruchu biora sie zapytania.
+          sessionId: idSesji(),
           ts: new Date().toISOString(),
         }),
       });

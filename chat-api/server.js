@@ -11,6 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
+import { zrodloWizyty, jezykZeSciezki, toRobot } from "./zrodlaRuchu.js";
 import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
@@ -141,6 +142,33 @@ if (pool) {
   // odczytac. Bez tego Niemiec dostawal polskie przypomnienie do niemieckiego
   // kodu. Stare kody nie maja jezyka i lecą po polsku, jak dotad.
   pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS lang VARCHAR(5)`).catch(() => {});
+
+  // ANALITYKA. Do 2026-08-31 tabela zdarzen nie niosla ani zrodla wizyty, ani
+  // jezyka, ani jednego indeksu. Pierwsze znaczylo, ze na pytanie "skad biora
+  // sie odwiedzajacy" nie dalo sie odpowiedziec w ogole. Drugie, ze kazdy
+  // wykres w panelu czytal cala tabele, a ta trzyma dwa lata historii.
+  for (const kolumna of [
+    "referrer VARCHAR(200)",      // gospodarz i sciezka strony, z ktorej kliknieto
+    "utm_source VARCHAR(100)",
+    "utm_medium VARCHAR(100)",
+    "utm_campaign VARCHAR(100)",
+    "channel VARCHAR(30)",        // wyliczony kanal: wyszukiwarki, spolecznosciowe, wprost
+    "source VARCHAR(120)",        // zrodlo do zajrzenia, gdy liczba wyglada dziwnie
+    "lang VARCHAR(5)",            // z prefiksu adresu, wiec dziala tez wstecz
+    "internal BOOLEAN DEFAULT FALSE", // ruch wlasciciela, oznaczony przez niego samego
+  ]) {
+    pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS ${kolumna}`).catch(() => {});
+  }
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_events_ts ON events (ts)`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_events_session ON events (session)`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_events_kat_ts ON events (category, ts)`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_events_channel_ts ON events (channel, ts)`).catch(() => {});
+
+  // Zamowienie i wycena wskazuja wizyte, z ktorej powstaly. Bez tego analityka
+  // konczy sie na zainteresowaniu i nie umie powiedziec, ktore zrodlo ruchu
+  // przynosi PIENIADZE. Identyfikator jest losowy i nie laczy dwoch wizyt.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+  pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
   // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
   // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
@@ -800,6 +828,45 @@ async function lookupCountry(ip) {
   }
 }
 
+/**
+ * Adresy, ktorych nie liczymy w statystyce. Wlasciciel ogladajacy wlasny serwis
+ * to nie jest zainteresowanie rynku, a przy kilkudziesieciu wizytach dziennie
+ * potrafi przesunac kazdy wykres. Adresy stoja w zmiennej srodowiskowej uslugi
+ * (ANALYTICS_IGNORE_IPS, po przecinku) i NIE sa nigdzie zapisywane.
+ */
+const IGNOROWANE_IP = new Set(
+  String(process.env.ANALYTICS_IGNORE_IPS || "").split(",").map((s) => s.trim()).filter(Boolean)
+);
+
+/**
+ * Kraj dopisywany PO ODPOWIEDZI, a nie w jej trakcie.
+ *
+ * Licznik dostaje zdarzenia przez sendBeacon, wiec przegladarka nic nie czeka,
+ * ale nasze zadanie trzymalo do trzech sekund polaczenie i watek na kazdym
+ * nowym odwiedzajacym. Teraz odpowiadamy od razu, a kraj dopisuje sie do
+ * wierszy tej sesji, gdy zewnetrzna usluga odpowie. Nieudane zapytanie zostawia
+ * puste pole zamiast wstrzymywac zapis.
+ */
+const krajWToku = new Set();
+function uzupelnijKrajPozniej(ip, sesje) {
+  if (!pool || !ip || !sesje?.length || krajWToku.has(ip)) return;
+  krajWToku.add(ip);
+  lookupCountry(ip)
+    .then((kraj) => {
+      if (!kraj) return;
+      // WYLACZNIE sesje z tej paczki. Dopisanie kraju wszystkim wierszom bez
+      // kraju ostemplowaloby cudzy ruch krajem jednego odwiedzajacego, a blad
+      // tego rodzaju jest niewidoczny: liczby wygladaja poprawnie i sa falszem.
+      return pool.query(
+        `UPDATE events SET country = $1
+          WHERE country IS NULL AND session = ANY($2) AND ts > NOW() - INTERVAL '2 hours'`,
+        [kraj, sesje]
+      );
+    })
+    .catch(() => {})
+    .finally(() => krajWToku.delete(ip));
+}
+
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // ------------------------------------------------------------
@@ -815,7 +882,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // TRZECIEJ pozycji, zawsze dwucyfrowej: `1.1.01` -> `1.1.02`. Ta sama regula
 // co w `admin/wersja.js`. Numery obu uslug nie musza byc rowne: kazda zmienia
 // sie wtedy, gdy naprawde sie zmienia.
-const WERSJA_API = "1.1.05";
+const WERSJA_API = "1.1.06";
 
 app.get("/api/version", async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -1611,6 +1678,7 @@ app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
       message: String(message || "").slice(0, 8000),
       items: items.slice(0, 20),
       ipHash: createHash("sha256").update(ip).digest("hex").slice(0, 30),
+      sessionId: req.body?.sessionId || null,
     });
     console.log(`[wycena] przyjeto ${created.quoteRef} od ${String(email).toLowerCase()}`);
     res.json({ ok: true, quoteRef: created.quoteRef });
@@ -1695,6 +1763,7 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
       // Kursy zapisujemy tylko wtedy, gdy jakas pozycja realnie od nich zalezy.
       ratesSnapshot: priced.some((p) => p.calculator.startsWith("jewelry_")) ? rates : null,
       ipHash: createHash("sha256").update(ip).digest("hex").slice(0, 30),
+      sessionId: req.body?.sessionId || null,
     });
 
     // Kwoty wpisujemy po id pozycji, a te znamy dopiero po zapisie.
@@ -3531,11 +3600,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze, inbound_delivery)
+         discount_code, discount_grosze, inbound_delivery, session_id)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27, $28)
+         $26, $27, $28, $29)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -3550,7 +3619,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
        wantsTransfer ? "bank_transfer" : "autopay",
        amountEurCents, eurRate, discountCode, discountGrosze,
-       przesylkaOd ? inbound : null]
+       przesylkaOd ? inbound : null,
+       // Wizyta, z ktorej wzielo sie zamowienie. Sluzy WYLACZNIE statystyce:
+       // pokazuje, z jakiego zrodla ruchu i z ktorej strony wejscia przyszedl
+       // przychod. Identyfikator jest losowy i nie laczy dwoch wizyt.
+       String(req.body?.sessionId || "").slice(0, 50) || null]
     );
     const orderId = rows[0].id;
 
@@ -5621,8 +5694,21 @@ app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req
   const events = Array.isArray(body.events) ? body.events.slice(0, 50) : [];
   if (events.length === 0) return res.json({ ok: true });
 
-  const country = req.headers["cf-ipcountry"] || await lookupCountry(ip).catch(() => null);
+  // Narzedzie sprawdzajace strone liczy sie w tabeli tak samo jak czlowiek,
+  // a przy naszym ruchu jedno takie potrafi podwoic dzien. Odpowiadamy OK,
+  // zeby nie zdradzac, ze odrzucamy: to i tak nie jest zabezpieczenie.
+  if (toRobot(req.headers["user-agent"])) return res.json({ ok: true });
+
+  // Wlasne przegladanie serwisu nie jest zainteresowaniem rynku. Adresy stoja
+  // w zmiennej srodowiskowej uslugi i nie trafiaja do bazy.
+  if (IGNOROWANE_IP.has(ip)) return res.json({ ok: true });
+
   const device = detectDevice(req.headers["user-agent"]);
+  // Kraj z naglowka Cloudflare, gdy jest. Zapytanie do zewnetrznej usludze NIE
+  // blokuje juz odpowiedzi: licznik ma oddac sterowanie od razu, a kraj dopisze
+  // sie do wierszy tej sesji, gdy przyjdzie. Wczesniej kazdy nowy odwiedzajacy
+  // czekal do trzech sekund w srodku zadania.
+  const country = req.headers["cf-ipcountry"] || countryCache.get(ip) || null;
 
   const values = [];
   const params = [];
@@ -5630,16 +5716,33 @@ app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req
   for (const e of events) {
     if (!e.s || !e.c) continue;
     const ts = e.t ? new Date(e.t).toISOString() : new Date().toISOString();
-    values.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++})`);
-    params.push(ts, String(e.s).slice(0, 50), String(e.p || "/").slice(0, 500), String(e.c).slice(0, 50), String(e.a || "").slice(0, 200), String(e.l || "").slice(0, 500), e.v ?? null, country, device);
+    const sciezka = String(e.p || "/").slice(0, 500);
+    const referrer = String(e.r || "").slice(0, 200) || null;
+    const utmSource = String(e.us || "").slice(0, 100) || null;
+    const utmMedium = String(e.um || "").slice(0, 100) || null;
+    const utmCampaign = String(e.uc || "").slice(0, 100) || null;
+    const { kanal, zrodlo } = zrodloWizyty(referrer, { source: utmSource, medium: utmMedium });
+    values.push(`(${Array.from({ length: 17 }, () => `$${idx++}`).join(", ")})`);
+    params.push(ts, String(e.s).slice(0, 50), sciezka, String(e.c).slice(0, 50),
+      String(e.a || "").slice(0, 200), String(e.l || "").slice(0, 500), e.v ?? null,
+      country, device,
+      referrer, utmSource, utmMedium, utmCampaign,
+      kanal, zrodlo.slice(0, 120), jezykZeSciezki(sciezka),
+      // Wlasciciel oznacza swoje urzadzenia sam, wejsciem na adres z ?nolicz=1.
+      // Zdarzenie zapisujemy mimo to: kokpit go nie liczy, ale da sie pokazac,
+      // a brak wpisu wygladalby identycznie jak zepsuty licznik.
+      e.w === 1 || e.w === true);
   }
 
   if (values.length === 0) return res.json({ ok: true });
 
   pool.query(
-    `INSERT INTO events (ts, session, path, category, action, label, value, country, device) VALUES ${values.join(",")}`,
+    `INSERT INTO events (ts, session, path, category, action, label, value, country, device,
+       referrer, utm_source, utm_medium, utm_campaign, channel, source, lang, internal) VALUES ${values.join(",")}`,
     params
   ).catch(() => {});
+
+  if (!country) uzupelnijKrajPozniej(ip, [...new Set(events.map((e) => String(e.s || "").slice(0, 50)).filter(Boolean))]);
 
   res.json({ ok: true });
 });

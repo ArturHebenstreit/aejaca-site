@@ -7,6 +7,8 @@ import { randomBytes } from "node:crypto";
 
 import { fileURLToPath } from "url";
 import { opisWersji } from "./wersja.js";
+import { okresy, kpi, dzienne, wedlug, tresc, lejekSklepu, lejekWycen,
+         wyboryKalkulatora, sesje, sciezkaSesji, skutkiSesji, sygnaly } from "./analityka.js";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -470,92 +472,85 @@ app.get("/export/:table", requireAuth, async (req, res) => {
 });
 
 // --- Analytics dashboard ---
+// ------------------------------------------------------------
+// KOKPIT ANALITYCZNY
+// ------------------------------------------------------------
+// Kazda liczba stoi obok tej samej liczby z poprzedniego okresu, bo bez
+// porownania liczba nie znaczy nic. Kazde zestawienie prowadzi do wierszy,
+// z ktorych powstalo (`/analytics/szczegoly`), a stamtad do pojedynczej
+// wizyty (`/analytics/sesja/...`). Wykres, pod ktory nie da sie zajrzec,
+// sluzy do zgadywania, a nie do podejmowania decyzji.
 app.get("/analytics", requireAuth, async (req, res) => {
-  const days = parseInt(req.query.days) || 30;
-  const since = `NOW() - INTERVAL '${days} days'`;
+  const o = okresy(req.query.days);
+  // Ruch wlasciciela jest oznaczony (znacznik w przegladarce, `?nolicz=1`)
+  // i domyslnie nie liczy sie w kokpicie. Przelacznik pokazuje go z powrotem,
+  // bo inaczej nie dalo by sie sprawdzic, czy oznaczenie w ogole dziala.
+  const zWlasnymi = req.query.wew === "1";
+  const opcje = { zWlasnymi };
+  // Kazda sekcja osobno: jedno zapytanie, ktore padnie (bo kolumna dojdzie
+  // dopiero z nastepnym wdrozeniem chat-api), nie ma prawa zabrac calego ekranu.
+  const bezpiecznie = (p, zapas) => p.catch((e) => { console.error("[analityka]", e.message); return zapas; });
   try {
-    const [kpi, daily, topPages, calcFunnel, topCalc, countries, devices, recentEvents] = await Promise.all([
-      pool.query(`
-        SELECT
-          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE) AS visitors_today,
-          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE - 6) AS visitors_week,
-          COUNT(DISTINCT session) FILTER (WHERE ts >= NOW() - INTERVAL '30 days') AS visitors_month,
-          COUNT(*) FILTER (WHERE category = 'page' AND ts >= CURRENT_DATE) AS pageviews_today,
-          COUNT(*) FILTER (WHERE category = 'page' AND ts >= NOW() - INTERVAL '30 days') AS pageviews_month,
-          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry') AS inquiries_total,
-          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '30 days') AS inquiries_month
-        FROM events
-      `),
-      pool.query(`
-        SELECT DATE(ts) AS day,
-               COUNT(DISTINCT session) AS visitors,
-               COUNT(*) FILTER (WHERE category = 'page') AS pageviews
-        FROM events
-        WHERE ts >= NOW() - INTERVAL '${days} days'
-        GROUP BY DATE(ts)
-        ORDER BY day
-      `),
-      pool.query(`
-        SELECT path,
-               COUNT(DISTINCT session) AS visitors,
-               COUNT(*) AS views
-        FROM events
-        WHERE category = 'page' AND ts >= ${since}
-        GROUP BY path
-        ORDER BY visitors DESC
-        LIMIT 10
-      `),
-      pool.query(`
-        SELECT
-          COUNT(DISTINCT session) FILTER (WHERE category = 'page' AND (path LIKE '%/jewelry/%' OR path LIKE '%/studio/%')) AS calc_page_visits,
-          COUNT(DISTINCT session) FILTER (WHERE category = 'calc') AS calc_interactions,
-          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry') AS inquiry_submits,
-          (SELECT COUNT(DISTINCT session_id) FROM leads WHERE session_id IS NOT NULL AND created_at >= ${since}) AS leads_with_session
-        FROM events
-        WHERE ts >= ${since}
-      `),
-      pool.query(`
-        SELECT action, label, COUNT(*) AS cnt
-        FROM events
-        WHERE category = 'calc' AND ts >= ${since}
-        GROUP BY action, label
-        ORDER BY cnt DESC
-        LIMIT 15
-      `),
-      pool.query(`
-        SELECT country, COUNT(DISTINCT session) AS visitors
-        FROM events
-        WHERE ts >= ${since} AND country IS NOT NULL AND country != ''
-        GROUP BY country
-        ORDER BY visitors DESC
-        LIMIT 10
-      `),
-      pool.query(`
-        SELECT device, COUNT(DISTINCT session) AS visitors
-        FROM events
-        WHERE ts >= ${since} AND device IS NOT NULL
-        GROUP BY device
-        ORDER BY visitors DESC
-      `),
-      pool.query(`
-        SELECT id, ts, session, path, category, action, label, value, country, device
-        FROM events
-        ORDER BY ts DESC
-        LIMIT 50
-      `),
-    ]);
+    const [teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci, kraje, urzadzenia, jezyki, lejekS, lejekW, wybory] =
+      await Promise.all([
+        bezpiecznie(kpi(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(kpi(pool, o.poprzedniOd, o.poprzedniDo, opcje), {}),
+        bezpiecznie(dzienne(pool, o.od, o.do, opcje), []),
+        bezpiecznie(wedlug(pool, "kanal", o.od, o.do, 12, opcje), []),
+        bezpiecznie(wedlug(pool, "zrodlo", o.od, o.do, 12, opcje), []),
+        bezpiecznie(wedlug(pool, "wejscie", o.od, o.do, 12, opcje), []),
+        bezpiecznie(tresc(pool, o.od, o.do, 15, opcje), []),
+        bezpiecznie(wedlug(pool, "kraj", o.od, o.do, 8, opcje), []),
+        bezpiecznie(wedlug(pool, "urzadzenie", o.od, o.do, 5, opcje), []),
+        bezpiecznie(wedlug(pool, "jezyk", o.od, o.do, 5, opcje), []),
+        bezpiecznie(lejekSklepu(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(lejekWycen(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(wyboryKalkulatora(pool, o.od, o.do, 20, opcje), []),
+      ]);
 
     res.render("analytics", {
       user: req.user,
-      days,
-      kpi: kpi.rows[0],
-      daily: daily.rows,
-      topPages: topPages.rows,
-      calcFunnel: calcFunnel.rows[0],
-      topCalc: topCalc.rows,
-      countries: countries.rows,
-      devices: devices.rows,
-      recentEvents: recentEvents.rows,
+      days: o.dni,
+      zWlasnymi,
+      teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci,
+      kraje, urzadzenia, jezyki, lejekS, lejekW, wybory,
+      sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }),
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// Wiersze pod liczba: pojedyncze wizyty w wybranym wymiarze.
+app.get("/analytics/szczegoly", requireAuth, async (req, res) => {
+  const o = okresy(req.query.days);
+  try {
+    const wiersze = await sesje(pool, {
+      od: o.od, do: o.do,
+      wymiar: req.query.wymiar || null,
+      wartosc: req.query.wartosc || null,
+      limit: 200,
+      zWlasnymi: req.query.wew === "1",
+    });
+    res.render("analytics-szczegoly", {
+      user: req.user, days: o.dni,
+      wymiar: req.query.wymiar || "", wartosc: req.query.wartosc || "",
+      wiersze,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// Jedna wizyta, zdarzenie po zdarzeniu, razem z tym, czym sie skonczyla.
+app.get("/analytics/sesja/:session", requireAuth, async (req, res) => {
+  try {
+    const [kroki, skutki] = await Promise.all([
+      sciezkaSesji(pool, req.params.session),
+      skutkiSesji(pool, req.params.session),
+    ]);
+    res.render("analytics-sesja", {
+      user: req.user, session: req.params.session, kroki, skutki,
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });

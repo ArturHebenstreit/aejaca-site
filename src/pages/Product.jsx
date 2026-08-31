@@ -8,7 +8,7 @@
 // Ta sama rzecz dolozona drugi raz podbija ilosc istniejacej pozycji, a nie
 // tworzy drugiej: dwie linie z tym samym pierscionkiem czytaja sie jak pomylka.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { ShoppingCart, Package, Download, RotateCcw, Truck, ArrowLeft, Check } from "lucide-react";
@@ -25,6 +25,7 @@ import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js"
 import NotFound from "./NotFound.jsx";
 import PriceReduction from "../components/shop/PriceReduction.jsx";
 import Obraz from "../components/Obraz.jsx";
+import { trackProduct } from "../utils/analytics.js";
 
 const UI = {
   pl: {
@@ -142,6 +143,13 @@ export default function Product() {
   const cart = useCart();
   const [added, setAdded] = useState(false);
   const [shown, setShown] = useState(0);
+
+  // Obejrzenie karty produktu. Stoi PRZED wyjsciem na NotFound, bo tak wymaga
+  // React: haki musza sie wykonac przy kazdym renderze, takze tym, ktory konczy
+  // sie brakiem produktu.
+  useEffect(() => {
+    if (product) trackProduct("product", product.slug, product.priceGrosze);
+  }, [product]);
 
   if (!product) return <NotFound />;
 

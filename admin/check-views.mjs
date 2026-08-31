@@ -162,6 +162,55 @@ const ZESTAWY = {
   discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null },
   "discount-edit": { user: uzytkownik, kod, err: null },
   materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
+
+  // KOKPIT ANALITYCZNY. Atrapa niesie po jednym wierszu w kazdym zestawieniu,
+  // bo pusty zestaw i tak przechodzi galezia "brak danych" i nie sprawdzilby
+  // nic z tego, co naprawde rysuje wykresy i paski.
+  analytics: {
+    user: uzytkownik, days: 30,
+    teraz: { wizyty: 120, zaangazowane: 64, odbicia: 40, odslony: 310, sredni_czas: 74, zapytania: 6, zamowienia: 2, przychod: 128000 },
+    przedtem: { wizyty: 90, zaangazowane: 40, odbicia: 38, odslony: 240, sredni_czas: 61, zapytania: 3, zamowienia: 1, przychod: 64000 },
+    dni: [
+      { dzien: "2026-08-29", wizyty: 40, zapytania: 2, zamowienia: 1, przychod: 64000 },
+      { dzien: "2026-08-30", wizyty: 45, zapytania: 3, zamowienia: 0, przychod: 0 },
+      { dzien: "2026-08-31", wizyty: 35, zapytania: 1, zamowienia: 1, przychod: 64000 },
+    ],
+    kanaly: [{ wartosc: "wyszukiwarki", wizyty: 70, zaangazowane: 40, odbicia: 20, zapytania: 4, zamowienia: 1, przychod: 64000, sredni_czas: 80 }],
+    zrodla: [{ wartosc: "google.com", wizyty: 70, zaangazowane: 40, odbicia: 20, zapytania: 4, zamowienia: 1, przychod: 64000, sredni_czas: 80 }],
+    wejscia: [{ wartosc: "/toolstudio/laser-parameters/", wizyty: 30, zaangazowane: 10, odbicia: 22, zapytania: 0, zamowienia: 0, przychod: 0, sredni_czas: 45 }],
+    tresci: [{ adres: "/shop/", odslony: 90, wizyty: 60, sredni_czas: 52, srednie_przewiniecie: 63 }],
+    kraje: [{ wartosc: "PL", wizyty: 80, zaangazowane: 44, odbicia: 25, zapytania: 5, zamowienia: 2, przychod: 128000, sredni_czas: 77 }],
+    urzadzenia: [{ wartosc: "mobile", wizyty: 70, zaangazowane: 30, odbicia: 30, zapytania: 2, zamowienia: 0, przychod: 0, sredni_czas: 41 }],
+    jezyki: [{ wartosc: "pl", wizyty: 95, zaangazowane: 55, odbicia: 30, zapytania: 6, zamowienia: 2, przychod: 128000, sredni_czas: 80 }],
+    lejekS: { wizyty: 120, sklep: 60, karta: 24, koszyk: 8, kasa: 5, zlozone: 3, oplacone: 2 },
+    lejekW: { kalkulator: 30, formularz: 12, zapytanie: 6, wyceny: 4, oplacone: 1 },
+    wybory: [{ kalkulator: "jewelry", pole: "metal", wybor: "silver_925", ile: 22, wizyty: 14 }],
+    sygnaly: [
+      { waga: "uwaga", tresc: "Strona wejscia bez ani jednego zapytania." },
+      { waga: "spokoj", tresc: "Nic nie odstaje od poprzedniego okresu." },
+    ],
+  },
+  "analytics-szczegoly": {
+    user: uzytkownik, days: 30, wymiar: "kanal", wartosc: "wyszukiwarki",
+    wiersze: [{
+      session: "abc123xyz", start: new Date("2026-08-31T09:00:00Z"), koniec: new Date("2026-08-31T09:06:00Z"),
+      odslony: 4, interakcje: 3, kanal: "wyszukiwarki", zrodlo: "google.com", kampania: null,
+      kraj: "PL", urzadzenie: "mobile", jezyk: "pl", sekundy: 320, wejscie: "/shop/jewelry/",
+      zapytania: 1, zamowienia: 1, oplacone: 1, przychod: 64000,
+    }],
+  },
+  "analytics-sesja": {
+    user: uzytkownik, session: "abc123xyz",
+    kroki: [
+      { ts: new Date("2026-08-31T09:00:00Z"), path: "/shop/jewelry/", category: "page", action: "view", label: "/shop/jewelry/", value: null, channel: "wyszukiwarki", source: "google.com", country: "PL", device: "mobile", lang: "pl" },
+      { ts: new Date("2026-08-31T09:02:00Z"), path: "/shop/pierscionek/", category: "shop", action: "add_to_cart", label: "Pierscionek", value: 640, channel: "wyszukiwarki", source: "google.com", country: "PL", device: "mobile", lang: "pl" },
+      { ts: new Date("2026-08-31T09:05:00Z"), path: "/checkout/", category: "page", action: "engaged", label: "/checkout/", value: 95, channel: "wyszukiwarki", source: "google.com", country: "PL", device: "mobile", lang: "pl" },
+    ],
+    skutki: {
+      zapytania: [{ id: 7, created_at: new Date("2026-08-31"), email: "k@example.com", calculator: "jewelry", source: "quote", status: "new", quote_ref: "WY20260831-AAAA" }],
+      zamowienia: [{ order_ref: "AE20260831-BBBB", created_at: new Date("2026-08-31"), status: "paid", total_grosze: 64000, paid_at: new Date("2026-08-31"), lang: "pl" }],
+    },
+  },
 };
 
 // Pomocniki wspolne dla wszystkich szablonow bierzemy Z SERWERA, a nie z listy

@@ -1,5 +1,5 @@
 // ============================================================
-// AEJaCA ANALYTICS - lightweight event tracking
+// AEJaCA: LICZNIK ODWIEDZIN BEZ ZAPISU W URZADZENIU
 // ============================================================
 // Zdarzenia ida przez sendBeacon na wlasny punkt zbiorczy. Bez ciasteczek,
 // bez danych osobowych i BEZ ZAPISU CZEGOKOLWIEK W URZADZENIU.
@@ -12,21 +12,59 @@
 //
 // Kolejka zyje w pamieci strony i ginie razem z nia, identyfikator odwiedzin
 // tak samo: losowany przy wejsciu, nigdzie nie zapisywany, wiec nie laczy
-// dwoch wizyt tej samej osoby. Wczesniej byla tu jeszcze sciezka zapasowa
-// zapisujaca zdarzenia do localStorage, gdy nie skonfigurowano punktu
-// zbiorczego. Nigdy nie dzialala na produkcji, ale jej samo istnienie
-// sprawialo, ze zdanie "nic nie zapisujemy" bylo prawdziwe warunkowo,
-// a nie z konstrukcji. Zostala usunieta.
+// dwoch wizyt tej samej osoby. Konsekwencja jest swiadoma: NIE MIERZYMY
+// POWRACAJACYCH i nie sklejamy sciezki przez kilka dni. Zeby to zmienic,
+// trzeba banera zgody, a nie sprytniejszego kodu.
+//
+// Od 2026-08-31 kazde zdarzenie niesie takze POCHODZENIE WIZYTY: skad
+// przyszla (referrer) i z jakiej kampanii (utm_*). Bez tego pytanie "skad
+// biora sie odwiedzajacy" nie mialo w danych zadnej odpowiedzi, a jest to
+// pierwsze pytanie, ktore ktokolwiek zadaje statystyce. Pochodzenie ustala
+// sie RAZ, przy wejsciu, i jedzie z kazdym zdarzeniem, zeby zapytanie
+// w panelu nie musialo szukac pierwszego wiersza sesji.
 // ============================================================
 
 const _chatBase = import.meta.env.VITE_CHAT_API_URL?.replace(/\/$/, '');
 const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL
   || (_chatBase ? `${_chatBase}/api/events` : null);
-const FLUSH_INTERVAL = 30_000;  // flush every 30s
+const FLUSH_INTERVAL = 30_000;  // co 30 sekund
 const MAX_QUEUE = 200;
 
 let queue = [];
 let sessionId = null;
+
+// --- Wlasny ruch wlasciciela ---------------------------------------------
+// Wlasciciel oglada swoj serwis z trzech urzadzen, z domu, z pracy i z telefonu,
+// a adres IP ma zmienny, wiec wykluczenie po adresie nie ma czego zlapac.
+// Przegladarka nie zdradza zadnego identyfikatora urzadzenia (podaje system
+// i przegladarke, wspolne dla milionow ludzi) i tak ma byc.
+//
+// Zostaje wiec znacznik, ktory wlasciciel ustawia sobie SAM: wejscie na adres
+// z `?nolicz=1` zapisuje jeden klucz w tej przegladarce, `?nolicz=0` go kasuje.
+// To jedyna rzecz, ktora ten plik zapisuje w urzadzeniu, i jest wyjatkiem
+// uzasadnionym: zapisuje ja swiadomie sam zainteresowany, sluzy WYLACZNIE
+// wylaczeniu zliczania i nie niesie zadnej informacji o czlowieku.
+//
+// Zdarzenia z oznaczonego urzadzenia nadal LECA na serwer, tylko z flaga
+// "wewnetrzne". Kokpit ich domyslnie nie liczy, ale da sie je pokazac jednym
+// przelacznikiem. Wyrzucanie ich juz w przegladarce byloby wygodniejsze
+// i gorsze: brak wpisow wyglada dokladnie tak samo jak zepsuty licznik.
+const KLUCZ_WEWNETRZNY = "aejaca_nolicz";
+let ruchWewnetrzny = false;
+
+function ustalZnacznik() {
+  if (typeof window === "undefined") return;
+  try {
+    const q = new URLSearchParams(window.location.search).get("nolicz");
+    if (q === "1") localStorage.setItem(KLUCZ_WEWNETRZNY, "1");
+    else if (q === "0") localStorage.removeItem(KLUCZ_WEWNETRZNY);
+    ruchWewnetrzny = localStorage.getItem(KLUCZ_WEWNETRZNY) === "1";
+  } catch {
+    // Tryb prywatny potrafi zablokowac pamiec przegladarki. Bez znacznika
+    // wizyta liczy sie normalnie, co jest lepsze niz wywrocenie licznika.
+    ruchWewnetrzny = false;
+  }
+}
 
 function getSessionId() {
   if (!sessionId) {
@@ -35,12 +73,65 @@ function getSessionId() {
   return sessionId;
 }
 
+// --- Pochodzenie wizyty ---------------------------------------------------
+
 /**
- * Track a custom event.
- * @param {string} category - Event category (e.g. "calculator", "navigation", "inquiry")
- * @param {string} action   - What happened (e.g. "select_metal", "change_lang", "send_inquiry")
- * @param {string} [label]  - Additional context (e.g. "gold_18k", "pl→en", "Fiber Laser")
- * @param {number} [value]  - Optional numeric value
+ * Skad przyszla ta wizyta. Liczone raz, przy pierwszym zdarzeniu.
+ *
+ * Referrer obcinamy do gospodarza i sciezki: pelny adres cudzej strony bywa
+ * dluzszy niz sama informacja i potrafi niesc parametry, ktorych nie chcemy
+ * u siebie trzymac. Wejscie z naszej wlasnej domeny to nie jest zrodlo ruchu,
+ * tylko przejscie miedzy stronami, wiec je pomijamy.
+ *
+ * Klasyfikacje na kanaly (wyszukiwarka, spolecznosciowe, poczta, polecenie)
+ * robi serwer, bo tam da sie ja poprawic bez wdrazania serwisu od nowa.
+ */
+let pochodzenie = null;
+function skadPrzyszli() {
+  if (pochodzenie) return pochodzenie;
+  if (typeof window === "undefined") return {};
+
+  let ref = "";
+  try {
+    const r = document.referrer || "";
+    if (r) {
+      const u = new URL(r);
+      if (u.hostname !== window.location.hostname) {
+        ref = (u.hostname + u.pathname).slice(0, 200);
+      }
+    }
+  } catch {
+    // Referrer bywa pusty albo niepoprawny. Brak zrodla to tez informacja.
+  }
+
+  const q = new URLSearchParams(window.location.search);
+  const utm = (nazwa) => (q.get(nazwa) || "").slice(0, 100) || undefined;
+
+  pochodzenie = {
+    r: ref || undefined,
+    us: utm("utm_source"),
+    um: utm("utm_medium"),
+    uc: utm("utm_campaign"),
+  };
+  return pochodzenie;
+}
+
+/**
+ * Identyfikator biezacej wizyty, do dolaczenia przy skladaniu zamowienia
+ * albo zapytania. Dzieki niemu widac, z ktorej strony wejscia i z jakiego
+ * zrodla wzial sie PRZYCHOD, a nie samo zainteresowanie. Identyfikator jest
+ * losowy, zyje tylko w pamieci karty i nie laczy dwoch wizyt.
+ */
+export function idSesji() {
+  return getSessionId();
+}
+
+/**
+ * Zapisuje zdarzenie do kolejki.
+ * @param {string} category - Kategoria (np. "page", "calc", "shop", "inquiry")
+ * @param {string} action   - Co sie stalo (np. "view", "add_to_cart")
+ * @param {string} [label]  - Szczegol (np. "gold_18k", "pierscionek-granat")
+ * @param {number} [value]  - Liczba, jesli zdarzenie ja niesie
  */
 export function trackEvent(category, action, label = "", value = null) {
   const event = {
@@ -51,73 +142,131 @@ export function trackEvent(category, action, label = "", value = null) {
     t: Date.now(),
     s: getSessionId(),
     p: typeof window !== "undefined" ? window.location.pathname : "/",
+    ...skadPrzyszli(),
+    ...(ruchWewnetrzny ? { w: 1 } : {}),
   };
 
   queue.push(event);
+  if (queue.length > MAX_QUEUE) queue = queue.slice(-MAX_QUEUE);
+}
 
-  // Trim queue if too large
-  if (queue.length > MAX_QUEUE) {
-    queue = queue.slice(-MAX_QUEUE);
+// --- Odslony i czas na stronie -------------------------------------------
+
+/**
+ * Czas spedzony na stronie, liczony TYLKO wtedy, gdy karta jest widoczna.
+ *
+ * Bez tego zastrzezenia karta otwarta w tle przez godzine wygladalaby jak
+ * najbardziej wciagajaca strona w serwisie. Wynik idzie osobnym zdarzeniem
+ * przy wyjsciu ze strony, bo dopiero wtedy jest znany.
+ */
+let biezaca = null;
+
+function zamknijPomiar() {
+  if (!biezaca) return;
+  const teraz = Date.now();
+  if (biezaca.odKiedyWidoczna) biezaca.widoczneMs += teraz - biezaca.odKiedyWidoczna;
+  const sekundy = Math.round(biezaca.widoczneMs / 1000);
+  // Zdarzenie o zerowej dlugosci nie niesie nic poza szumem.
+  if (sekundy > 0) {
+    queue.push({
+      c: "page", a: "engaged", l: biezaca.path, v: Math.min(sekundy, 3600),
+      t: teraz, s: getSessionId(), p: biezaca.path, ...skadPrzyszli(),
+      ...(ruchWewnetrzny ? { w: 1 } : {}),
+    });
+  }
+  biezaca = null;
+}
+
+/** Odslona strony. Wolane przy kazdej zmianie trasy. */
+export function trackPageView(path, referrer = "") {
+  ustalZnacznik();
+  zamknijPomiar();
+  trackEvent("page", "view", path);
+  if (typeof window !== "undefined") {
+    biezaca = {
+      path,
+      widoczneMs: 0,
+      odKiedyWidoczna: document.visibilityState === "visible" ? Date.now() : null,
+    };
   }
 }
 
-/**
- * Track a page view (called on route change).
- */
-export function trackPageView(path, referrer = "") {
-  trackEvent("page", "view", path);
-}
-
-/**
- * Track calculator interaction.
- */
+/** Interakcja z kalkulatorem. */
 export function trackCalc(calculator, param, value) {
   trackEvent("calc", `${calculator}:${param}`, String(value));
 }
 
-/**
- * Track inquiry form submission.
- */
+/** Wyslane zapytanie o wycene. */
 export function trackInquiry(calculator, params) {
   trackEvent("inquiry", "send", `${calculator}|${params}`);
 }
 
-/**
- * Track language change.
- */
+/** Zmiana jezyka. */
 export function trackLangChange(from, to) {
   trackEvent("nav", "lang_change", `${from}→${to}`);
 }
 
 /**
- * Track CTA button click (hero buttons, contact links, etc.)
- * @param {string} label  - Human-readable label (e.g. "hero_jewelry_cta", "navbar_contact")
- * @param {string} [href] - Destination path (optional)
+ * Klikniecie w wezwanie do dzialania.
+ * @param {string} label  - Nazwa czytelna dla czlowieka (np. "hero_jewelry_cta")
+ * @param {string} [href] - Dokad prowadzi
  */
 export function trackCTA(label, href = "") {
   trackEvent("cta", "click", label, null);
   if (href) trackEvent("cta", "destination", href);
 }
 
-/**
- * Track funnel step progression.
- * @param {string} funnel - Funnel name (e.g. "jewelry_quote", "studio_quote")
- * @param {string} step   - Step name (e.g. "open_calculator", "set_metal", "submit_inquiry")
- */
+/** Krok lejka. */
 export function trackFunnel(funnel, step) {
   trackEvent("funnel", step, funnel);
 }
 
+// --- Sklep ----------------------------------------------------------------
+// Sklep, koszyk i kasa nie wysylaly do 2026-08-31 zadnego zdarzenia, wiec
+// statystyka konczyla sie na kalkulatorze i o sprzedazy nie mowila nic.
+// Kwoty podajemy w ZLOTOWKACH (a nie w groszach), bo tak czyta je czlowiek
+// w panelu, a kolumna `value` jest liczbowa i sredniej z groszy nikt nie
+// przeczyta bez dzielenia w glowie.
+
+/** Obejrzenie karty produktu albo usługi. `rodzaj` to "product" albo "service". */
+export function trackProduct(rodzaj, identyfikator, cenaGrosze = null) {
+  trackEvent("shop", `view_${rodzaj}`, String(identyfikator || ""),
+    cenaGrosze == null ? null : Math.round(cenaGrosze) / 100);
+}
+
+/** Dodanie do koszyka albo usuniecie z niego. */
+export function trackCart(akcja, tytul, wartoscGrosze = null) {
+  trackEvent("shop", akcja, String(tytul || ""),
+    wartoscGrosze == null ? null : Math.round(wartoscGrosze) / 100);
+}
+
+/** Wejscie do kasy i wybory w niej: dostawa, sposob zaplaty. */
+export function trackCheckout(krok, szczegol = "", wartoscGrosze = null) {
+  trackEvent("shop", krok, String(szczegol || ""),
+    wartoscGrosze == null ? null : Math.round(wartoscGrosze) / 100);
+}
+
+/** Otwarcie oferty przyslanej mailem i klikniecie zaplaty na niej. */
+export function trackOffer(akcja, szczegol = "") {
+  trackEvent("offer", akcja, String(szczegol || ""));
+}
+
 /**
- * Initialize scroll-depth tracking for the current page.
- * Fires once per milestone (25 / 50 / 75 / 90 %) per page navigation.
- * Call on every route change - it replaces the previous listener.
+ * Uzycie darmowego narzedzia (przelicznik rozmiaru, parametry lasera i reszta).
+ *
+ * Odslona strony narzedzia mowi tylko, ze ktos ja otworzyl. Dopiero policzenie
+ * czegos odroznia realne zainteresowanie od przypadkowego wejscia z wyszukiwarki,
+ * a te strony sa naszym najwiekszym zrodlem ruchu z Google.
  */
+export function trackTool(narzedzie, akcja = "use", szczegol = "") {
+  trackEvent("tool", akcja, `${narzedzie}${szczegol ? `|${szczegol}` : ""}`);
+}
+
+/** Przewijanie strony. Fires once per milestone per page navigation. */
 let _scrollCleanup = null;
 export function initScrollTracking() {
   if (typeof window === "undefined") return;
 
-  // Remove previous listener if called again on route change
   if (_scrollCleanup) {
     _scrollCleanup();
     _scrollCleanup = null;
@@ -143,7 +292,7 @@ export function initScrollTracking() {
   _scrollCleanup = () => window.removeEventListener("scroll", onScroll);
 }
 
-// --- Flushing ---
+// --- Wysylka --------------------------------------------------------------
 
 function flush() {
   if (queue.length === 0) return;
@@ -152,8 +301,7 @@ function flush() {
   queue = [];
 
   if (ENDPOINT) {
-    // Send to CF Worker - use text/plain Blob to avoid CORS preflight
-    // (application/json triggers OPTIONS preflight which complicates credentials)
+    // text/plain, zeby nie wywolywac zapytania wstepnego CORS.
     const payload = JSON.stringify({ events: batch });
     const blob = new Blob([payload], { type: "text/plain" });
     if (navigator.sendBeacon) {
@@ -169,14 +317,28 @@ function flush() {
   // Statystyka nie jest warta zapisu w cudzym urzadzeniu.
 }
 
-// Browser-only initialization
 if (typeof window !== "undefined") {
+  ustalZnacznik();
   setInterval(flush, FLUSH_INTERVAL);
 
   window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") flush();
+    if (document.visibilityState === "hidden") {
+      // Karta schowana: domykamy odliczanie czasu, ale strony nie konczymy,
+      // bo czytajacy potrafi wrocic do tej samej karty za minute.
+      if (biezaca?.odKiedyWidoczna) {
+        biezaca.widoczneMs += Date.now() - biezaca.odKiedyWidoczna;
+        biezaca.odKiedyWidoczna = null;
+      }
+      flush();
+    } else if (biezaca && !biezaca.odKiedyWidoczna) {
+      biezaca.odKiedyWidoczna = Date.now();
+    }
   });
-  window.addEventListener("pagehide", flush);
+
+  window.addEventListener("pagehide", () => {
+    zamknijPomiar();
+    flush();
+  });
 
   // Podglad tego, co czeka w pamieci, do zajrzenia w konsoli przy diagnozie.
   window.getAnalyticsEvents = () => [...queue];
