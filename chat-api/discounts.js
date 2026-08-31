@@ -266,7 +266,7 @@ export function randomCode(prefix = "AEJ", length = 6) {
  *
  * @returns {Promise<{code: string, validTo: Date|null, reused: boolean}|null>}
  */
-export async function issueSingleUseCode(pool, { email, percent, days, campaign, prefix, note }) {
+export async function issueSingleUseCode(pool, { email, percent, days, campaign, prefix, note, lang }) {
   const adres = String(email || "").trim().toLowerCase();
   if (!pool || !adres) return null;
 
@@ -285,11 +285,11 @@ export async function issueSingleUseCode(pool, { email, percent, days, campaign,
     const code = randomCode(prefix);
     const { rows } = await pool.query(
       `INSERT INTO discount_codes
-         (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note)
-       VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, $4, $5, $6)
+         (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note, lang)
+       VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, $4, $5, $6, $7)
        ON CONFLICT (code) DO NOTHING
        RETURNING code, valid_to`,
-      [code, percent, String(days), campaign, adres, note || null]
+      [code, percent, String(days), campaign, adres, note || null, lang || null]
     );
     if (rows[0]) return { code: rows[0].code, validTo: rows[0].valid_to, reused: false };
   }

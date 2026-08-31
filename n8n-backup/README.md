@@ -111,6 +111,12 @@ Ciało:    { "rodzaj": "...", "lang": "pl", "to": "klient@example.com", ... }
 W n8n zostaje wszystko, co nie jest treścią: webhooki, wgrywanie na Dysk,
 powiadomienia dla pracowni i odliczanie 48 godzin oraz 7 dni.
 
+Druga trasa, `/api/discounts/welcome`, wystawia kod powitalny i od 31 sierpnia
+2026 przyjmuje też `lang`. Węzeł `Kod powitalny` w newsletterze podaje go razem
+z adresem, bo język zapisuje się **przy kodzie**: przypomnienie o kodzie wychodzi
+czterdzieści dni później, gdy nie ma już zapytania, z którego dałoby się go
+odczytać.
+
 **Kolejność wdrożenia jest wiążąca.** Railway buduje `chat-api` z gałęzi
 `main`, więc przepływy wolno przestawić dopiero po scaleniu i wdrożeniu.
 Przestawiony wcześniej przepływ przestałby wysyłać cokolwiek.
