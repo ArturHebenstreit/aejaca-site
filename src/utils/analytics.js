@@ -262,6 +262,45 @@ export function trackTool(narzedzie, akcja = "use", szczegol = "") {
   trackEvent("tool", akcja, `${narzedzie}${szczegol ? `|${szczegol}` : ""}`);
 }
 
+/**
+ * Uzycie narzedzia, liczone RAZ na wizyte na danej stronie narzedziowej.
+ *
+ * Dziewiec darmowych narzedzi (rozmiarowka, parametry lasera, kurczliwosc,
+ * kreator pierscionka i reszta) jest naszym najwiekszym magnesem z wyszukiwarki,
+ * a odslona ich strony mowi tylko tyle, ze ktos ja otworzyl. Roznica miedzy
+ * "wszedl z Google i wyszedl" a "policzyl sobie rozmiar" jest cala roznica
+ * miedzy ruchem a zainteresowaniem, i to ona decyduje, ktore narzedzie warto
+ * rozwijac.
+ *
+ * Nasluch stoi w JEDNYM miejscu, na poziomie dokumentu, zamiast w kazdym
+ * z jedenastu narzedzi osobno. Powod jest ten sam co przy koszyku: jedenascie
+ * kopii licznika rozjezdza sie przy dwunastym narzedziu, a to, ze ktos ruszyl
+ * suwakiem albo wpisal liczbe, wyglada tak samo w kazdym z nich.
+ */
+const ADRESY_NARZEDZI = /^\/(?:en\/|de\/)?(toolsjewelry|toolstudio)\//;
+let _narzedzieCleanup = null;
+
+export function initToolTracking(path) {
+  if (typeof window === "undefined") return;
+  if (_narzedzieCleanup) { _narzedzieCleanup(); _narzedzieCleanup = null; }
+  if (!ADRESY_NARZEDZI.test(path || "")) return;
+
+  const zdarzenia = ["pointerdown", "keydown", "input", "change"];
+  const raz = (e) => {
+    // Klikniecie w odnosnik albo w menu to opuszczenie strony, a nie uzycie
+    // narzedzia. Liczymy dopiero ruch W SRODKU: pole, suwak, przycisk liczenia.
+    if (e.type === "pointerdown" && e.target?.closest?.("a, nav, header, footer")) return;
+    trackTool(path);
+    sprzataj();
+  };
+  const sprzataj = () => {
+    zdarzenia.forEach((n) => window.removeEventListener(n, raz, true));
+    _narzedzieCleanup = null;
+  };
+  zdarzenia.forEach((n) => window.addEventListener(n, raz, true));
+  _narzedzieCleanup = sprzataj;
+}
+
 /** Przewijanie strony. Fires once per milestone per page navigation. */
 let _scrollCleanup = null;
 export function initScrollTracking() {

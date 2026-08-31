@@ -185,6 +185,7 @@ const ZESTAWY = {
     lejekS: { wizyty: 120, sklep: 60, karta: 24, koszyk: 8, kasa: 5, zlozone: 3, oplacone: 2 },
     lejekW: { kalkulator: 30, formularz: 12, zapytanie: 6, wyceny: 4, oplacone: 1 },
     wybory: [{ kalkulator: "jewelry", pole: "metal", wybor: "silver_925", ile: 22, wizyty: 14 }],
+    narzedzia: [{ narzedzie: "/toolstudio/laser-parameters/", wizyty: 30, uzycia: 11, sredni_czas: 96 }],
     sygnaly: [
       { waga: "uwaga", tresc: "Strona wejscia bez ani jednego zapytania." },
       { waga: "spokoj", tresc: "Nic nie odstaje od poprzedniego okresu." },
