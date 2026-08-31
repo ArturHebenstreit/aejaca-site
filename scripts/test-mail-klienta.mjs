@@ -451,6 +451,14 @@ console.log("\n4m. Prosba o ocene: dwa miejsca, jeden raz, i wyjscie dla niezado
   ok(/napisz do nas zamiast wystawiać ocenę/.test(pl.text),
      "niezadowolony klient dostaje inne wyjscie niz publiczna ocena");
   ok(/jeden raz/.test(pl.text), "mail mowi wprost, ze jest jednorazowy");
+  // Kto ocene juz wystawil, czyta te sama wiadomosc jako ponaglenie, a my nie
+  // wiemy i nie chcemy wiedziec, kto co napisal w Google. Jedno zdanie zamienia
+  // prosbe w podziekowanie i to zdanie musi byc w kazdym jezyku.
+  for (const lang of ["pl", "en", "de"]) {
+    const mail = doKlienta(lang).find(([n]) => n === "ocena")[1];
+    const juz = { pl: /ocena od Ciebie już u nas jest/, en: /already left us a review/, de: /bereits bewertet haben/ };
+    ok(juz[lang].test(mail.text), `${lang}: zdanie dla tych, ktorzy juz ocenili`);
+  }
 }
 
 console.log("\n4l. Autoodpowiedz idzie z chat-api, bez okrazenia przez n8n\n");

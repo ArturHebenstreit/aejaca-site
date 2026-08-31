@@ -140,7 +140,11 @@ const T = {
     ocSubject: "Jak wyszło? Jedno zdanie od Ciebie sporo dla nas znaczy",
     ocIntro: "kilka dni temu zamówienie dotarło na miejsce i mamy nadzieję, że wyrób sprawdza się w codziennym użyciu. Dziękujemy za zaufanie: przy pracy na zamówienie jest to zawsze zaufanie w ciemno, bo rzecz powstaje dopiero po decyzji.",
     ocProsba: "Jeżeli wyrób się sprawdza, jedno zdanie opinii pomoże następnej osobie zdecydować się na małą pracownię zamiast na sklep z półki.",
-    ocGorzej: "A jeżeli cokolwiek jest nie tak, napisz do nas zamiast wystawiać ocenę: poprawimy albo zrobimy od nowa, i dopiero potem porozmawiamy o opinii.",
+    ocGorzej: "Gdyby cokolwiek było nie tak, napisz do nas zamiast wystawiać ocenę: poprawimy albo zrobimy od nowa, i dopiero potem porozmawiamy o opinii.",
+    // Zdanie dla tych, ktorzy ocene juz wystawili. Bez niego ta sama prosba
+    // czyta sie u nich jak ponaglenie, a wiadomosc wychodzi do wszystkich,
+    // bo tego, kto co napisal w Google, nie wiemy i wiedziec nie chcemy.
+    ocJuz: "A jeżeli ocena od Ciebie już u nas jest, potraktuj tę wiadomość po prostu jako podziękowanie: cieszymy się, że mogliśmy zrobić coś dla Ciebie.",
     ocRaz: "Piszemy w tej sprawie jeden raz.",
     ocGoogle: "Ocenę w Google wystawisz pod adresem ",
     ocGuzikGoogle: "Oceń nas w Google",
@@ -247,7 +251,8 @@ const T = {
     ocSubject: "How did it turn out? One sentence from you means a lot to us",
     ocIntro: "your order arrived a few days ago and we hope the piece is working out in daily use. Thank you for the trust: with made to order work it is always trust in advance, because the piece comes into being only after the decision.",
     ocProsba: "If the piece works out, one sentence of review helps the next person choose a small workshop over an off the shelf shop.",
-    ocGorzej: "And if anything is not right, write to us instead of leaving a review: we will fix it or make it again, and only then talk about a review.",
+    ocGorzej: "Should anything be wrong, write to us instead of leaving a review: we will fix it or make it again, and only then talk about a review.",
+    ocJuz: "And if you have already left us a review, take this message simply as a thank you: we were glad to make something for you.",
     ocRaz: "We write about this once.",
     ocGoogle: "You can review us on Google at ",
     ocGuzikGoogle: "Review us on Google",
@@ -354,7 +359,8 @@ const T = {
     ocSubject: "Wie ist es geworden? Ein Satz von Ihnen bedeutet uns viel",
     ocIntro: "vor einigen Tagen ist die Bestellung angekommen und wir hoffen, das Stück bewährt sich im Alltag. Danke für Ihr Vertrauen: bei Auftragsarbeit ist es immer Vertrauen im Voraus, denn das Stück entsteht erst nach der Entscheidung.",
     ocProsba: "Wenn das Stück sich bewährt, hilft ein Satz Bewertung der nächsten Person, sich für eine kleine Werkstatt statt für ein Regal zu entscheiden.",
-    ocGorzej: "Und wenn etwas nicht stimmt, schreiben Sie uns, statt eine Bewertung abzugeben: wir bessern nach oder fertigen neu, und erst danach sprechen wir über eine Bewertung.",
+    ocGorzej: "Sollte etwas nicht stimmen, schreiben Sie uns, statt eine Bewertung abzugeben: wir bessern nach oder fertigen neu, und erst danach sprechen wir über eine Bewertung.",
+    ocJuz: "Und wenn Sie uns bereits bewertet haben, nehmen Sie diese Nachricht einfach als Dankeschön: Wir haben gern etwas für Sie gefertigt.",
     ocRaz: "Wir schreiben dazu einmal.",
     ocGoogle: "Bei Google bewerten Sie uns unter ",
     ocGuzikGoogle: "Bei Google bewerten",
@@ -1124,12 +1130,13 @@ export function buildProsbaOOcene(order) {
 
     <div style="margin:0 0 22px">${przyciski}</div>
 
+    <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.ocJuz)}</p>
     <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.ocGorzej)}</p>
     <p style="margin:0;line-height:1.6;font-size:13px;color:#777">${esc(l.ocRaz)}</p>
   ` });
 
   const text = [
-    l.hi, "", l.ocIntro, "", l.ocProsba, "", l.ocGorzej, "", l.ocRaz,
+    l.hi, "", l.ocIntro, "", l.ocProsba, "", l.ocJuz, "", l.ocGorzej, "", l.ocRaz,
     "", `${l.orderNo}: ${order.order_ref}`,
     "", odnosnikiText(lang, odnosniki),
     "", stopkaText(lang),
