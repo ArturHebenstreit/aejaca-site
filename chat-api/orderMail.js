@@ -1124,7 +1124,7 @@ export async function sendTransferInstructions(pool, orderId, tr) {
  *   `content` jest napisem w UTF-8. Base64 zawijamy po 76 znakow, bo dluzsze
  *   linie lamie czesc serwerow poczty.
  */
-export function buildRaw({ to, from, subject, text, html, replyTo, attachments = [] }) {
+export function buildRaw({ to, from, subject, text, html, replyTo, attachments = [], inReplyTo }) {
   const tresc = `bnd_${Math.random().toString(36).slice(2)}`;
   const zewnetrzny = `mix_${Math.random().toString(36).slice(2)}`;
   const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
@@ -1133,6 +1133,11 @@ export function buildRaw({ to, from, subject, text, html, replyTo, attachments =
     `From: ${from}`,
     `To: ${to}`,
     replyTo ? `Reply-To: ${replyTo}` : null,
+    // Odpowiedz W WATKU, a nie osobna wiadomosc obok. Bez tych dwoch naglowkow
+    // Gmail klienta pokazuje nasza odpowiedz jako nowy list, a rozmowa rozpada
+    // sie na dwa kawalki po jego stronie.
+    inReplyTo ? `In-Reply-To: ${inReplyTo}` : null,
+    inReplyTo ? `References: ${inReplyTo}` : null,
     `Subject: ${encodedSubject}`,
     "MIME-Version: 1.0",
     zZalacznikami
@@ -1189,7 +1194,12 @@ async function sendViaGmail(messages) {
   const gmail = createGmailClient();
   if (!gmail) return false;
   for (const m of messages) {
-    await gmail.users.messages.send({ userId: "me", requestBody: { raw: buildRaw(m) } });
+    await gmail.users.messages.send({
+      userId: "me",
+      // `threadId` wpina wiadomosc w istniejaca rozmowe po NASZEJ stronie,
+      // naglowki `In-Reply-To` po stronie klienta. Potrzebne sa oba.
+      requestBody: { raw: buildRaw(m), ...(m.threadId ? { threadId: m.threadId } : {}) },
+    });
   }
   return true;
 }

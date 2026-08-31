@@ -25,6 +25,10 @@ import { readFileSync } from "node:fs";
 // pliku, wiec przypisanie wyzej bylo za pozne i sekcja z plikami do pobrania
 // nie rysowala sie w ogole. Stad wczytanie dynamiczne.
 process.env.API_URL ||= "https://api.aejaca.com";
+const {
+  buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
+  buildKontaktPotwierdzenie, buildNewsletterPowitanie, buildAutoOdpowiedz,
+} = await import("../chat-api/leadMail.js");
 const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
         buildTopUpRequest, buildOrderExpired } =
   await import("../chat-api/orderMail.js");
@@ -239,6 +243,47 @@ const EKRANY = {
       { id: 2, group_key: "pierscionek", title: "Pierścionek, złoto 750", qty: 1, unit_grosze: 198000, line_grosze: 198000, kind: "variant", selected: false, lead_days: 21 },
       { id: 3, title: "Grawer wewnątrz obrączki", qty: 1, unit_grosze: 23000, line_grosze: 23000, kind: "option", selected: true, lead_days: 3, requires_details: true },
     ], ADRES_WYCENY),
+  },
+  // Szesc wiadomosci sprzed zamowienia. Do 2026-08-31 skladal je n8n, kazda
+  // z wlasnym HTML-em; teraz skladamy je my, wiec wchodza tutaj razem z reszta.
+  "14": {
+    nazwa: "Szacunek z kalkulatora",
+    zbuduj: () => buildKalkulatorEstimate({
+      lang: "pl", to: ZAMOWIENIE.customer_email,
+      kalkulator: "Wydruk 3D, FDM", parametry: "PETG czarny, dysza 0,4 mm, 118 g, 2 sztuki",
+      plik: "uchwyt-rowerowy.stl", cenaPln: "180 - 240", cenaEur: "42 - 56",
+    }),
+  },
+  "15": {
+    nazwa: "Przypomnienie po 48 godzinach",
+    zbuduj: () => buildFollowUp48({ lang: "pl", to: ZAMOWIENIE.customer_email }),
+  },
+  "16": {
+    nazwa: "Rabat po siedmiu dniach, ostatnia wiadomosc",
+    zbuduj: () => buildRabat7({
+      lang: "pl", to: ZAMOWIENIE.customer_email,
+      kod: "AE-9K2T-XM", procent: "5%", waznyDo: "14.09.2026",
+    }),
+  },
+  "17": {
+    nazwa: "Potwierdzenie formularza kontaktowego",
+    zbuduj: () => buildKontaktPotwierdzenie({
+      lang: "pl", to: ZAMOWIENIE.customer_email,
+      wiadomosc: "Dzień dobry,\nczy zrobicie sygnet z herbem rodowym, srebro 925, rozmiar 21? Mam rysunek herbu w PDF.",
+    }),
+  },
+  "18": {
+    nazwa: "Powitanie w newsletterze z kodem",
+    zbuduj: () => buildNewsletterPowitanie({
+      lang: "pl", to: ZAMOWIENIE.customer_email, kod: "AE-4H7P-QW", procent: "10%",
+    }),
+  },
+  "19": {
+    nazwa: "Autoodpowiedz na maila, w watku",
+    zbuduj: () => buildAutoOdpowiedz({
+      lang: "pl", to: ZAMOWIENIE.customer_email, temat: "Zapytanie o sygnet z herbem",
+      inReplyTo: "<CAF7x@mail.gmail.com>", threadId: "18f2c",
+    }),
   },
 };
 

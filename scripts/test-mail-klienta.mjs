@@ -18,6 +18,13 @@ const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, b
         buildTopUpRequest, buildOrderExpired } =
   await import("../chat-api/orderMail.js");
 import { SELLER } from "../chat-api/pricing/sellerInfo.js";
+import {
+  buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
+  buildKontaktPotwierdzenie, buildNewsletterPowitanie, buildAutoOdpowiedz,
+} from "../chat-api/leadMail.js";
+
+/** Adres w atrapach maili sprzed zamowienia. */
+const ODBIORCA = "klient@example.com";
 
 /** Adres serwisu. `sellerInfo` go nie niesie, a sklejanie z `SELLER.site`
  *  dawaloby ciche "undefined/order-process/" i sprawdzian zielony na nic. */
@@ -55,6 +62,14 @@ function doKlienta(lang) {
     ["przelew", buildTransferMessage({ ...zam, status: "pending" }, PRZELEW)],
     ["etap", buildStatusUpdate({ ...zam, status: "in_production" })],
     ["wycena", buildQuoteMessage({ ...WYCENA, lang }, POZYCJE_WYCENY, "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4")],
+    // Szesc wiadomosci sprzed zamowienia. Od 2026-08-31 skladamy je my, a nie
+    // n8n, wiec wchodza do tych samych sprawdzianow: podpis, koperta, odnosniki.
+    ["kalkulator", buildKalkulatorEstimate({ lang, to: ODBIORCA, kalkulator: "Wydruk 3D", parametry: "PETG, dysza 0,4 mm", plik: "uchwyt.stl", cenaPln: "180 - 240", cenaEur: "42 - 56" })],
+    ["followup48", buildFollowUp48({ lang, to: ODBIORCA })],
+    ["rabat7", buildRabat7({ lang, to: ODBIORCA, kod: "AE-9K2T-XM", procent: "5%", waznyDo: "12.09.2026" })],
+    ["kontakt", buildKontaktPotwierdzenie({ lang, to: ODBIORCA, wiadomosc: "Dzień dobry, czy zrobicie sygnet z herbem?" })],
+    ["newsletter", buildNewsletterPowitanie({ lang, to: ODBIORCA, kod: "AE-4H7P-QW", procent: "10%" })],
+    ["autoodpowiedz", buildAutoOdpowiedz({ lang, to: ODBIORCA, temat: "Zapytanie o sygnet", inReplyTo: "<abc@mail.gmail.com>", threadId: "t1" })],
   ];
 }
 
@@ -368,6 +383,24 @@ console.log("\n4i. Trzy sytuacje po przelewie w euro\n");
     .find((m) => m.to === ZAMOWIENIE.customer_email);
   ok(!/Nadwyżkę|bierzemy na siebie/.test(caly(rowno)),
      "przy kwocie zgodnej nie ma o czym pisac i nie piszemy");
+}
+
+console.log("\n4j. Adres nie skleja sie ze zdaniem, ktore go zapowiada\n");
+
+// Zdanie z odnosnikiem konczy sie SPACJA, bo blok odnosnikow skleja kawalki bez
+// separatora. Bez niej do klienta idzie "pod adresemhttps://www.aejaca.com/",
+// i to zarowno w tekscie, jak i w HTML.
+{
+  const sklejka = /[a-ząćęłńóśźżA-ZĄĆĘŁŃÓŚŹŻ,.:]https?:\/\//;
+  const wszystkie = [];
+  for (const lang of ["pl", "en", "de"]) {
+    for (const [nazwa, mail] of doKlienta(lang)) {
+      if (mail) wszystkie.push([`${lang}/${nazwa}`, mail]);
+    }
+  }
+  for (const [nazwa, mail] of wszystkie) {
+    ok(!sklejka.test(mail.text), `${nazwa}: adres oddzielony od zdania w wersji tekstowej`);
+  }
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");
