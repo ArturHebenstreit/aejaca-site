@@ -191,6 +191,19 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.
   Decyzja: ADR-0027.
 
+### Kody rabatowe wysyłane mailem (od 2026-08-31)
+
+- **Każdy kod jest jednorazowy i wystawiony na adres klienta.** Kod stały
+  w treści maila jest kodem publicznym w chwili, w której ktokolwiek go
+  przeklei. Wystawia je jedna funkcja, `issueSingleUseCode` w `discounts.js`.
+- **Kod powitalny żyje 45 dni**, rabat doklejony do wyceny 14.
+- **Każdy mail niosący kod podaje datę końca ważności i zapowiada
+  przypomnienie.** Kod bez daty jest obietnicą bez terminu.
+- **Pięć dni przed końcem idzie jedno przypomnienie**, tylko o kodzie
+  nietkniętym, i nigdy tego samego dnia co inna nasza wiadomość. Reguła
+  dotyczy wyłącznie tego, co może poczekać: potwierdzenie zamówienia, dane do
+  przelewu i zmiana etapu idą zawsze i natychmiast. Decyzja: ADR-0030.
+
 ### Czekanie na pieniądze jest częścią kolejki (od 2026-08-30)
 
 - **Kolejka pokazuje wszystko, co czeka na ruch z naszej strony**, razem

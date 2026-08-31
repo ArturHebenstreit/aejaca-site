@@ -80,6 +80,40 @@ inaczej przepływ wgra się bez błędu i będzie zapisywał pliki donikąd.
 Wszystkie przepływy dotykające Dysku i Gmaila wymagają też wskazania poświadczeń
 Google po wgraniu.
 
+## Podział pracy między n8n a chat-api (od 2026-08-31)
+
+Sześć wiadomości do klienta powstawało w węzłach n8n, każda z własnym HTML-em
+wpisanym w pole `message`: szacunek z kalkulatora, dwa przypomnienia do niego,
+potwierdzenie formularza kontaktowego, powitanie w newsletterze i autoodpowiedź
+na maila. Miały ciemną kopertę, znak wstawiony filtrem CSS, którego klient
+pocztowy nie wykonuje, i podpis w trzech linijkach. Klient dostawał w jednym
+tygodniu dwie firmy.
+
+**Treść i wysyłka mieszkają teraz w `chat-api/leadMail.js`** (ADR-0030).
+Przepływy w n8n wołają jedną trasę:
+
+```
+POST https://aejacachatapi-production.up.railway.app/api/mail/lead
+Nagłówek: x-admin-token: <ADMIN_API_TOKEN>
+Ciało:    { "rodzaj": "...", "lang": "pl", "to": "klient@example.com", ... }
+```
+
+| `rodzaj` | zastępuje węzeł | dodatkowe pola |
+|---|---|---|
+| `kalkulator` | Send Quote Email | `kalkulator`, `parametry`, `plik`, `cenaPln`, `cenaEur` |
+| `followup48` | Follow-up 48h | brak |
+| `rabat7` | Discount offer (7d) | `procent` (domyślnie 5), `dni` (domyślnie 14); kod wystawia trasa sama |
+| `kontakt` | Send Confirmation to User | `wiadomosc` |
+| `newsletter` | Send Welcome + Discount | `kod`, `procent`, `waznyDo` |
+| `autoodpowiedz` | Send Thank-You Reply | `temat`, `inReplyTo`, `threadId` |
+
+W n8n zostaje wszystko, co nie jest treścią: webhooki, wgrywanie na Dysk,
+powiadomienia dla pracowni i odliczanie 48 godzin oraz 7 dni.
+
+**Kolejność wdrożenia jest wiążąca.** Railway buduje `chat-api` z gałęzi
+`main`, więc przepływy wolno przestawić dopiero po scaleniu i wdrożeniu.
+Przestawiony wcześniej przepływ przestałby wysyłać cokolwiek.
+
 ## Czego celowo nie ma w kopii
 
 W sierpniu 2026 zarchiwizowano szesnaście przepływów pomocniczych: piętnaście
