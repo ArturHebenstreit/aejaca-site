@@ -22,7 +22,8 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import FaqLista from "../components/FaqLista.jsx";
 import SpisTresci from "../components/SpisTresci.jsx";
-import { faqTematu } from "../data/faq.js";
+import TERMIN from "../data/faq/termin.js";
+import SKLEP from "../data/faq/sklep.js";
 
 const L = {
   pl: {
@@ -42,14 +43,16 @@ const L = {
     stages: [
       ["Zapłacone", "Status zmienia wyłącznie podpisany komunikat od operatora płatności. Powrót do przeglądarki niczego nie zmienia, nasze kliknięcie też nie. Przy przelewie w euro liczy się chwila zaksięgowania."],
       ["Ustalanie szczegółów", "Tylko przy zleceniach, które tego wymagają: rozmiar, wzór, litera na sygnecie, materiał. Czas realizacji w tym czasie NIE biegnie, więc czekanie na Twoją odpowiedź nie zjada Twojego terminu. Na stronie zlecenia widzisz, której pozycji dotyczy pytanie."],
-      ["Przyjęte do realizacji", "Wszystko ustalone, zlecenie stoi w kolejce pracowni, termin już biegnie."],
+      ["Czeka w kolejce", "Wszystko ustalone, zlecenie stoi w kolejce pracowni, a termin już biegnie. Nikt jeszcze nie wziął go do ręki i mówimy o tym wprost, zamiast udawać, że praca trwa."],
       ["W realizacji", "Ktoś wziął zlecenie do ręki i pracuje nad nim."],
-      ["Gotowe", "Praca skończona. Pakujemy albo przygotowujemy do odbioru."],
-      ["Wysłane lub przekazane", "Przy wysyłce numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy godzinę."],
+      ["Gotowe", "Praca skończona. Przy wysyłce pakujemy zamówienie, przy odbiorze osobistym przygotowujemy je i umawiamy godzinę, a przy plikach udostępniamy je do pobrania. Na stronie zlecenia i w wiadomości piszemy o Twojej drodze, a nie o wszystkich naraz."],
+      ["Wysłane lub przekazane", "Przy wysyłce numer przesyłki pojawia się na stronie zlecenia i w wiadomości, razem z nazwą przewoźnika i odnośnikiem do śledzenia. Przy odbiorze osobistym umawiamy godzinę."],
+      ["Dostarczone", "Ostatni przystanek zapala się dopiero wtedy, gdy potwierdzimy doręczenie albo odbiór. Do tej chwili droga na stronie zlecenia nie jest zamknięta, bo paczka włożona do paczkomatu to jeszcze nie paczka odebrana."],
     ],
     stagesNote: "Zamówienia robimy w kolejności wpłat. Kto pierwszy zapłacił, ten pierwszy dostaje.",
     deadlineTitle: "Termin realizacji",
     deadlineRows: [
+      ["Co oznacza ta data", "To planowana finalizacja, czyli dzień, w którym kończymy pracę i przekazujemy paczkę kurierowi albo mamy ją gotową do odbioru. Nie jest to dzień doręczenia: czas przewozu liczy się od niej."],
       ["W dniach kalendarzowych", "Nie w roboczych. Termin, który widzisz, to data, a nie liczba do przeliczania."],
       ["Start", "Od zapłaty, a przy zleceniu wymagającym ustaleń dopiero od chwili, gdy wszystko jest ustalone."],
       ["Kilka rzeczy w jednym zamówieniu", "Obowiązuje najdłuższy z terminów, bo paczka wychodzi jedna."],
@@ -57,7 +60,7 @@ const L = {
       ["Gdzie go zobaczysz", "Na stronie zlecenia, razem z liczbą dni, które zostały. Termin pojawia się w ofercie jeszcze przed zapłatą, przy wybranych pozycjach."],
     ],
     mailsTitle: "Kiedy do Ciebie piszemy",
-    mailsBody: "Przy istotnych etapach: gdy zlecenie wchodzi do realizacji, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo Twoja skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia, o każdej porze.",
+    mailsBody: "Przy istotnych etapach: gdy zlecenie trafia do kolejki i rusza termin, gdy ktoś bierze je do ręki, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo Twoja skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia, o każdej porze.",
     pickupTitle: "Odbiór",
     pickupRows: [
       ["Paczkomat InPost", "Tylko na terenie Polski. Numer paczkomatu wybierasz przy zamówieniu i widzisz go potem na stronie zlecenia."],
@@ -66,7 +69,7 @@ const L = {
     ],
     checkTitle: "Sprawdź swoje zlecenie",
     checkBody: "Prywatny odnośnik do strony zlecenia dostajesz mailem zaraz po zapłacie. Widać na nim oś czasu, termin, ustalenia i numer przesyłki.",
-    checkLost: "Zgubiłeś link? Wejdź na stronę zamówienia i podaj numer zaczynający się od AE razem z adresem e-mail, na który poszło potwierdzenie. Sam numer nie wystarcza, bo strona pokazuje Twój adres i zawartość zamówienia.",
+    checkLost: "Nie ma linku? Wejdź na stronę zamówienia i podaj numer zaczynający się od AE razem z adresem e-mail, na który poszło potwierdzenie. Sam numer nie wystarcza, bo strona pokazuje Twój adres i zawartość zamówienia.",
     checkCta: "Otwórz stronę zamówienia",
     checkOffer: "Ofertę przed zapłatą sprawdzisz tak samo, numerem zaczynającym się od WY.",
     checkOfferCta: "Strona oferty",
@@ -93,14 +96,16 @@ const L = {
     stages: [
       ["Paid", "The status is changed only by a signed message from the payment provider. Returning to the browser changes nothing, and neither does a click of ours. For a euro transfer, what counts is the moment the money clears."],
       ["Agreeing the details", "Only for orders that need it: a size, a pattern, the letters on a signet, a material. The lead time does NOT run during that wait, so answering us does not eat into your date. The order page names the item we are waiting on."],
-      ["Accepted for production", "Everything agreed, the order is in the workshop queue and the clock is running."],
+      ["In the queue", "Everything agreed, the order is in the workshop queue and the clock is running. Nobody has picked it up yet, and we say so rather than pretend the work is under way."],
       ["In the workshop", "Someone has picked the order up and is working on it."],
-      ["Finished", "The work is done. We are packing it or preparing it for collection."],
-      ["Dispatched or handed over", "For a shipment, the tracking number appears on the order page and in the message. For a personal pickup we agree a time."],
+      ["Finished", "The work is done. For a shipment we pack the order, for a personal pickup we get it ready and agree a time, and for files we release the download. Your order page and our message name your own route, not every possible one."],
+      ["Dispatched or handed over", "For a shipment, the tracking number appears on the order page and in the message, with the carrier named and a tracking link. For a personal pickup we agree a time."],
+      ["Delivered", "The last stop lights up only once we confirm the delivery or the collection. Until then the road on your order page is not closed, because a parcel put into a locker is not yet a parcel collected."],
     ],
     stagesNote: "We work in the order payments arrived. Whoever paid first is served first.",
     deadlineTitle: "The delivery date",
     deadlineRows: [
+      ["What the date means", "It is the planned completion: the day we finish the work and hand the parcel to the carrier, or have it ready for collection. It is not the delivery day, because transit starts from it."],
       ["Counted in calendar days", "Not working days. What you see is a date, not a number to convert."],
       ["When it starts", "At payment, or, for an order that needs agreeing, only once everything is agreed."],
       ["Several items in one order", "The longest of their times applies, because one parcel goes out."],
@@ -108,7 +113,7 @@ const L = {
       ["Where you see it", "On your order page, with the days remaining. The time also appears in an offer before payment, next to the selected items."],
     ],
     mailsTitle: "When we write to you",
-    mailsBody: "At the stages that matter: when the order enters the workshop, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page, at any hour.",
+    mailsBody: "At the stages that matter: when the order joins the queue and the clock starts, when someone picks it up, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page, at any hour.",
     pickupTitle: "Collection",
     pickupRows: [
       ["InPost locker", "Inside Poland only. You pick the locker when ordering and see it later on your order page."],
@@ -144,14 +149,16 @@ const L = {
     stages: [
       ["Bezahlt", "Den Status ändert ausschließlich eine signierte Nachricht des Zahlungsanbieters. Die Rückkehr in den Browser ändert nichts, ein Klick von uns ebenso wenig. Bei einer Euro-Überweisung zählt der Moment der Gutschrift."],
       ["Details klären", "Nur bei Aufträgen, die es brauchen: eine Größe, ein Muster, die Buchstaben auf einem Siegelring, ein Material. Die Lieferzeit läuft in dieser Zeit NICHT, Ihre Antwort geht also nicht von Ihrem Termin ab. Die Auftragsseite nennt die betroffene Position."],
-      ["Zur Fertigung angenommen", "Alles geklärt, der Auftrag steht in der Werkstattschlange und die Zeit läuft."],
+      ["In der Warteschlange", "Alles geklärt, der Auftrag steht in der Werkstattschlange und die Zeit läuft. In die Hand genommen hat ihn noch niemand, und das sagen wir offen, statt Arbeit vorzutäuschen."],
       ["In Arbeit", "Jemand hat den Auftrag in die Hand genommen."],
-      ["Fertig", "Die Arbeit ist getan. Wir verpacken oder bereiten die Abholung vor."],
-      ["Versandt oder übergeben", "Beim Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht. Bei Selbstabholung stimmen wir eine Uhrzeit ab."],
+      ["Fertig", "Die Arbeit ist getan. Beim Versand verpacken wir die Bestellung, bei Selbstabholung bereiten wir sie vor und vereinbaren eine Uhrzeit, bei Dateien geben wir den Download frei. Auftragsseite und Nachricht nennen Ihren Weg, nicht alle auf einmal."],
+      ["Versandt oder übergeben", "Beim Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht, zusammen mit dem Namen des Zustellers und einem Link zur Sendungsverfolgung. Bei Selbstabholung stimmen wir eine Uhrzeit ab."],
+      ["Zugestellt", "Der letzte Halt leuchtet erst, wenn wir die Zustellung oder die Abholung bestätigen. Bis dahin ist der Weg auf Ihrer Auftragsseite nicht geschlossen, denn ein Paket in der Paketstation ist noch kein abgeholtes Paket."],
     ],
     stagesNote: "Wir arbeiten in der Reihenfolge der Zahlungseingänge. Wer zuerst zahlt, kommt zuerst dran.",
     deadlineTitle: "Der Liefertermin",
     deadlineRows: [
+      ["Was dieses Datum bedeutet", "Es ist die geplante Fertigstellung: der Tag, an dem wir die Arbeit beenden und das Paket dem Zusteller übergeben oder es zur Abholung bereithalten. Es ist nicht der Zustelltag, denn die Laufzeit beginnt erst danach."],
       ["In Kalendertagen", "Nicht in Werktagen. Was Sie sehen, ist ein Datum und keine Zahl zum Umrechnen."],
       ["Beginn", "Ab der Zahlung, bei Aufträgen mit Absprachen erst, wenn alles geklärt ist."],
       ["Mehrere Positionen in einer Bestellung", "Es gilt die längste Zeit, denn es geht ein Paket raus."],
@@ -159,7 +166,7 @@ const L = {
       ["Wo Sie ihn sehen", "Auf Ihrer Auftragsseite, samt den verbleibenden Tagen. Die Zeit erscheint auch im Angebot vor der Zahlung, bei den gewählten Positionen."],
     ],
     mailsTitle: "Wann wir Ihnen schreiben",
-    mailsBody: "Bei den wichtigen Etappen: wenn der Auftrag in die Werkstatt geht, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie jederzeit auf der Auftragsseite.",
+    mailsBody: "Bei den wichtigen Etappen: wenn der Auftrag in die Warteschlange kommt und die Frist beginnt, wenn ihn jemand in die Hand nimmt, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie jederzeit auf der Auftragsseite.",
     pickupTitle: "Erhalt",
     pickupRows: [
       ["InPost-Paketstation", "Nur innerhalb Polens. Sie wählen die Station bei der Bestellung und sehen sie später auf der Auftragsseite."],
@@ -214,7 +221,7 @@ export default function OrderProcess() {
   const odbiorRef = useScrollReveal();
   const sprawdzRef = useScrollReveal();
 
-  const pytania = [...faqTematu("realizacja"), ...faqTematu("dostawa")];
+  const pytania = [...SKLEP.filter((f) => f.temat === "realizacja" || f.temat === "dostawa"), ...TERMIN];
   const pageUrl = `${SITE.url}/order-process/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),

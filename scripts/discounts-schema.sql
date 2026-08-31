@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS discount_codes (
 
   valid_from         TIMESTAMPTZ,
   valid_to           TIMESTAMPTZ,
+  -- Chwila, w ktorej przypomnielismy o zblizajacym sie koncu waznosci. JEDNO
+  -- przypomnienie na kod (decyzja wlasciciela, 2026-08-31): bez tego stempla
+  -- cron uruchomiony drugi raz tego samego dnia wyslalby je ponownie, a kazde
+  -- kolejne zamienia opieke w nagabywanie.
+  reminded_at        TIMESTAMPTZ,
   active             BOOLEAN      NOT NULL DEFAULT TRUE,
 
   campaign           VARCHAR(60),  -- nazwa akcji, np. "Dzien Matki 2026"

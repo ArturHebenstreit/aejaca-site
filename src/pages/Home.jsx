@@ -1,6 +1,9 @@
 import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import pytania from "../data/faq/marka.js";
+import { odpowiedz } from "../data/faq/pomoc.js";
+import { kwotyPln } from "../data/kwotyWysylki.js";
 import { trackCTA } from "../utils/analytics.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPostsMeta } from "../blog/postsMeta.js";
@@ -59,6 +62,9 @@ function TrustpilotPill({ lang, className = "" }) {
 
 export default function Home() {
   const { t, lang } = useLanguage();
+  // Kwoty wysylki biora sie z cennika, a nie z tekstu odpowiedzi: wpisana
+  // recznie cena zostaje stara i nikt tego nie zauwaza, bo nic sie nie psuje.
+  const kwoty = kwotyPln(lang);
   const h = t.home;
 
   const brandRef = useScrollReveal();
@@ -80,7 +86,7 @@ export default function Home() {
     buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
     buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
     buildLocalBusinessSchema(),
-    buildFAQSchema(h.faq),
+    buildFAQSchema(pytania.map((f) => ({ q: f.q[lang] || f.q.pl, a: odpowiedz(f, lang, kwoty) }))),
   ];
 
   return (
@@ -380,16 +386,17 @@ export default function Home() {
             {h.faqHeading}
           </h2>
           <div className="space-y-3">
-            {h.faq.map((item, i) => (
+            {pytania.map((item) => (
               <details
-                key={i}
+                key={item.id}
+                id={`pytanie-${item.id}`}
                 className="group bg-neutral-900/50 border border-neutral-800 rounded-xl px-6 py-4 [&_summary]:cursor-pointer"
               >
                 <summary className="flex items-center justify-between text-base font-medium text-neutral-100 list-none">
-                  <span>{item.q}</span>
+                  <span>{item.q[lang] || item.q.pl}</span>
                   <span className="text-amber-400 ml-4 shrink-0 transition-transform group-open:rotate-45">+</span>
                 </summary>
-                <p className="text-neutral-400 text-sm leading-relaxed mt-3">{item.a}</p>
+                <p className="text-neutral-400 text-sm leading-relaxed mt-3">{odpowiedz(item, lang, kwoty)}</p>
               </details>
             ))}
           </div>

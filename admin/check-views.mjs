@@ -137,8 +137,25 @@ const ZESTAWY = {
         { id: 2, title: "Polerowanie", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null,
           requiresDetails: false, detailsSettledAt: null },
       ],
+    }, {
+      // Zamowienie czekajace na przelew stoi w TEJ SAMEJ tabeli, z pierwszym
+      // krokiem, czyli potwierdzeniem wplaty. Bez niego w atrapie kontrola
+      // renderowala wylacznie sciezke zlecenia juz oplaconego.
+      orderRef: "ZAM-EUR", quoteRef: null, status: "awaiting_transfer", kind: "instant", lang: "de",
+      name: "Muster", email: "kunde@example.com", phone: null, totalPLN: "1200.00",
+      paidAt: null, waitingDays: 2,
+      leadDays: null, deadlineAt: null, daysLeft: null, requiresDetails: false,
+      detailsAt: null, queuedAt: null, readyAt: null,
+      productionStartedAt: null, shippedAt: null, completedAt: null,
+      trackingNumber: null, carrier: null, carrierHint: "DHL", productionNote: null,
+      paymentMethod: "bank_transfer", paymentStatus: "PENDING", currency: "EUR",
+      amountEurCents: 28000, paymentReviewReason: null, createdAt: new Date("2026-08-28"),
+      delivery: { method: "courier", point: null, addressLine1: "Hauptstr. 1", addressLine2: null, postalCode: "10115", city: "Berlin", country: "DE" },
+      statusUrl: null, accessToken: null, leadDaysAgreedAt: null,
+      items: [{ id: 3, title: "Sygnet", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null, requiresDetails: false, detailsSettledAt: null }],
     }],
-    counts: { queued: 1 }, stan: "", sort: "newest", msg: null, err: null,
+    counts: { queued: 1, awaiting_transfer: 1 }, stan: "", sort: "newest", msg: null, err: null,
+    przewoznicy: ["InPost", "DHL", "FedEx"],
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },

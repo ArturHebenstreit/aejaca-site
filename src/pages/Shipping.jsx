@@ -8,7 +8,11 @@ import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../se
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
-import { ZONES, HANDLING_GROSZE, FREE_SHIPPING_FROM_GROSZE, MAX_PARCEL_G, leadDaysLabel } from "../pricing/shipping.js";
+import { ZONES, HANDLING_GROSZE, MAX_PARCEL_G, leadDaysLabel } from "../pricing/shipping.js";
+import { kwotyWysylki, DARMOWA_OD, UE_OD } from "../data/kwotyWysylki.js";
+import TERMIN from "../data/faq/termin.js";
+import PYTANIA from "../data/faq/wysylka.js";
+import { odpowiedz } from "../data/faq/pomoc.js";
 
 // All shipping costs are stored in PLN (base). For en/de the EUR amount is
 // computed live from the NBP rate (pln_per_eur) via useMarketRates - never
@@ -16,13 +20,7 @@ import { ZONES, HANDLING_GROSZE, FREE_SHIPPING_FROM_GROSZE, MAX_PARCEL_G, leadDa
 // Liczby pochodza z tego samego pliku, ktory liczy wysylke w kasie. Zanim
 // tu byly wpisane recznie i rozjechaly sie z tym, co klient realnie placil.
 const pln = (grosze) => Math.round(grosze / 100);
-const DOMESTIC_FROM_PLN = { courier: pln(ZONES.pl.courierGrosze), locker: pln(ZONES.pl.lockerGrosze) };
-const FREE_SHIP = { pln: pln(FREE_SHIPPING_FROM_GROSZE), eur: 100 };
-const EU_FROM_PLN = pln(ZONES.eu_near.courierGrosze + HANDLING_GROSZE);
-const EU_TO_PLN = pln(ZONES.eu_far.courierGrosze + HANDLING_GROSZE);
-const UK_PLN = pln(ZONES.eur_non_eu.courierGrosze + HANDLING_GROSZE);
-const USA_PLN = pln(ZONES.world_am.courierGrosze + HANDLING_GROSZE);
-const ASIA_PLN = pln(ZONES.world_rest.courierGrosze + HANDLING_GROSZE);
+const FREE_SHIP = DARMOWA_OD;
 
 const ZONE_ROWS = Object.values(ZONES)
   .filter((z) => z.id !== "pl")
@@ -73,14 +71,6 @@ const LABELS = {
     customsTitle: "Cło poza Unią Europejską",
     customsDesc: "Przesyłki poza UE (w tym Wielka Brytania, USA, Azja) mogą podlegać cłu i podatkom importowym naliczanym przez kraj odbiorcy. Koszty te ponosi odbiorca i nie są wliczone w cenę wysyłki.",
     faqTitle: "Najczęstsze pytania o wysyłkę",
-    faq: [
-      { q: "Ile kosztuje wysyłka w Polsce?", a: (f) => `W Polsce: kurier InPost od ${f.courier}, paczkomat InPost od ${f.locker}, a odbiór osobisty w Warszawie i okolicach jest bezpłatny. Przy zamówieniu od ${f.free} wysyłka w Polsce jest darmowa.` },
-      { q: "Czy wysyłacie do krajów Unii Europejskiej?", a: (f) => `Tak. Wysyłka do UE od ${f.eu}, dostawa zwykle 5–10 dni roboczych. Korzystamy z InPost tam, gdzie jest dostępny, a w pozostałych krajach z DHL.` },
-      { q: "Ile kosztuje wysyłka do Wielkiej Brytanii?", a: (f) => `Kurierem ekspresowym (DHL, UPS, FedEx) zwykle 5–10 dni roboczych. Koszt zależy od wagi: do 5 kg ${f.uk5}, do 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Od czasu Brexitu przesyłki podlegają odprawie celnej.` },
-      { q: "Ile kosztuje wysyłka do USA i innych krajów świata?", a: (f) => `DHL Express lotniczo na cały świat, w tym USA i Azja, zwykle 5–18 dni roboczych. Koszt: do 1 kg ${f.usa1}, do 10 kg ${f.usa10}.` },
-      { q: "Czy muszę zapłacić cło?", a: () => `Przesyłki poza UE (m.in. Wielka Brytania, USA, Azja) mogą podlegać cłu i podatkom importowym naliczanym przez kraj odbiorcy. Koszty te ponosi odbiorca i nie są wliczone w cenę wysyłki.` },
-      { q: "Jak długo trwa realizacja zamówienia?", a: () => `Biżuteria: do 7 dni roboczych przy materiałach na stanie, 10–14 dni przy zamawianiu materiałów. Studio (druk 3D, laser): 3–5 dni na stanie, 6–12 dni przy zamawianiu materiałów. Czas realizacji jest niezależny od czasu transportu i potwierdzamy go indywidualnie.` },
-    ],
   },
   en: {
     tag: "Shipping",
@@ -126,14 +116,6 @@ const LABELS = {
     customsTitle: "Customs outside the EU",
     customsDesc: "Shipments outside the EU (including the UK, USA, Asia) may be subject to customs duties and import taxes charged by the destination country. These are paid by the recipient and are not included in the shipping price.",
     faqTitle: "Shipping - frequently asked questions",
-    faq: [
-      { q: "How much does shipping cost within Poland?", a: (f) => `Within Poland: InPost courier from ${f.courier}, InPost parcel locker from ${f.locker}, and personal pickup in the Warsaw area is free. Orders over ${f.free} ship free within Poland.` },
-      { q: "Do you ship to EU countries?", a: (f) => `Yes. Shipping to the EU from ${f.eu}, usually 5–10 business days. We use InPost where available, otherwise DHL.` },
-      { q: "How much does shipping to the United Kingdom cost?", a: (f) => `By express courier (DHL, UPS, FedEx), typically 5–10 business days. Cost depends on weight: up to 5 kg ${f.uk5}, up to 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Since Brexit, parcels clear customs.` },
-      { q: "How much does shipping to the USA and the rest of the world cost?", a: (f) => `DHL Express by air worldwide, including the USA and Asia, typically 5–18 business days. Cost: up to 1 kg ${f.usa1}, up to 10 kg ${f.usa10}.` },
-      { q: "Will I have to pay customs duty?", a: () => `Shipments outside the EU (including the UK, USA, Asia) may be subject to customs duties and import taxes charged by the destination country. These are paid by the recipient and are not included in the shipping price.` },
-      { q: "How long does an order take to make?", a: () => `Jewelry: up to 7 business days when materials are in stock, 10–14 days if materials must be ordered. Studio (3D printing, laser): 3–5 days in stock, 6–12 days if materials must be ordered. Fulfillment time is separate from shipping transit time and is confirmed individually.` },
-    ],
   },
   de: {
     tag: "Versand",
@@ -179,14 +161,6 @@ const LABELS = {
     customsTitle: "Zoll außerhalb der EU",
     customsDesc: "Sendungen außerhalb der EU (inkl. Großbritannien, USA, Asien) können Zöllen und Einfuhrsteuern unterliegen, die vom Bestimmungsland erhoben werden. Diese trägt der Empfänger und sind nicht im Versandpreis enthalten.",
     faqTitle: "Häufige Fragen zum Versand",
-    faq: [
-      { q: "Wie viel kostet der Versand innerhalb Polens?", a: (f) => `Innerhalb Polens: InPost Kurier ab ${f.courier}, InPost Paketautomat ab ${f.locker}, persönliche Abholung im Raum Warschau kostenlos. Bestellungen ab ${f.free} werden innerhalb Polens kostenlos versandt.` },
-      { q: "Versenden Sie in EU-Länder?", a: (f) => `Ja. Versand in die EU ab ${f.eu}, in der Regel 5–10 Werktage. Wir nutzen InPost, wo verfügbar, sonst DHL.` },
-      { q: "Wie viel kostet der Versand nach Großbritannien?", a: (f) => `Per Express-Kurier (DHL, UPS, FedEx), in der Regel 3–5 Werktage. Die Kosten richten sich nach dem Gewicht: bis 5 kg ${f.uk5}, bis 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Seit dem Brexit werden Pakete verzollt.` },
-      { q: "Wie viel kostet der Versand in die USA und den Rest der Welt?", a: (f) => `DHL Express per Luftfracht weltweit, inkl. USA und Asien, in der Regel 2–5 Werktage. Kosten: bis 1 kg ${f.usa1}, bis 10 kg ${f.usa10}.` },
-      { q: "Muss ich Zoll bezahlen?", a: () => `Sendungen außerhalb der EU (inkl. Großbritannien, USA, Asien) können Zöllen und Einfuhrsteuern unterliegen, die vom Bestimmungsland erhoben werden. Diese trägt der Empfänger und sind nicht im Versandpreis enthalten.` },
-      { q: "Wie lange dauert die Anfertigung einer Bestellung?", a: () => `Schmuck: bis zu 7 Werktage bei Material auf Lager, 10–14 Tage bei Materialbestellung. Studio (3D-Druck, Laser): 3–5 Tage auf Lager, 6–12 Tage bei Materialbestellung. Die Bearbeitungszeit ist unabhängig von der Transportzeit und wird individuell bestätigt.` },
-    ],
   },
 };
 
@@ -203,32 +177,25 @@ export default function Shipping() {
   const showEur = lang === "en" || lang === "de";
   const rate = rates.pln_per_eur || 4.25;
   const fmtFrom = (pln) => (showEur ? `€${Math.round(pln / rate)}` : `${pln} zł`);
-  const fmtRange = (min, max) =>
-    showEur
-      ? `€${Math.round(min / rate)}–${Math.round(max / rate)}`
-      : `${min}–${max} zł`;
+  const faqValues = kwotyWysylki({ lang, rates });
   const domesticItems = [
-    { label: l.courierLabel, price: `${l.from} ${fmtFrom(DOMESTIC_FROM_PLN.courier)}` },
-    { label: l.lockerLabel, price: `${l.from} ${fmtFrom(DOMESTIC_FROM_PLN.locker)}` },
+    // Krajowe kwoty maja grosze i tu ich nie zaokraglamy. "Od 19 zl" przy
+    // cenniku, ktory mowi 19,49 zl, nie jest uproszczeniem tylko obietnica
+    // kwoty, ktorej nikt nie zaplaci.
+    { label: l.courierLabel, price: `${l.from} ${faqValues.kurierDokladnie}` },
+    { label: l.lockerLabel, price: `${l.from} ${faqValues.paczkomatDokladnie}` },
     { label: l.pickupLabel, price: l.freeLabel },
   ];
 
   // Shared formatted values - used by BOTH the visible FAQ section and the
   // FAQPage JSON-LD, so the structured data always matches what users see.
-  const freeDisp = showEur ? `€${FREE_SHIP.eur}` : `${FREE_SHIP.pln} zł`;
-  const faqValues = {
-    courier: fmtFrom(DOMESTIC_FROM_PLN.courier),
-    locker: fmtFrom(DOMESTIC_FROM_PLN.locker),
-    free: freeDisp,
-    eu: fmtRange(EU_FROM_PLN, EU_TO_PLN),
-    uk5: fmtFrom(UK_PLN),
-    uk10: fmtFrom(UK_PLN),
-    uk2030: fmtFrom(UK_PLN),
-    usa1: fmtFrom(USA_PLN),
-    usa10: fmtFrom(USA_PLN),
-    asia: fmtFrom(ASIA_PLN),
-  };
-  const faqItems = l.faq.map(({ q, a }) => ({ q, a: a(faqValues) }));
+  // Pytania stoja we wspolnym zbiorze, wiec `/faq/` pokazuje te SAME
+  // odpowiedzi, razem z kwotami policzonymi z tego samego cennika.
+  const faqItems = [...PYTANIA, ...TERMIN].map((f) => ({
+    q: f.q[lang] || f.q.pl,
+    a: odpowiedz(f, lang, faqValues),
+    id: f.id,
+  }));
 
   const pageUrl = `${SITE.url}/shipping/`;
   const schemas = [
@@ -312,7 +279,7 @@ export default function Shipping() {
                   <h2 className="text-white font-semibold">{l.europe}</h2>
                 </div>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  {l.euPrefix} {fmtFrom(EU_FROM_PLN)}, {l.euSuffix}
+                  {l.euPrefix} {fmtFrom(UE_OD)}, {l.euSuffix}
                 </p>
               </div>
 
@@ -402,7 +369,8 @@ export default function Shipping() {
               <div className="space-y-3">
                 {faqItems.map((item, i) => (
                   <details
-                    key={i}
+                    key={item.id}
+                    id={`pytanie-${item.id}`}
                     className="group bg-neutral-900/60 border border-neutral-800 rounded-xl px-6 py-4 [&_summary]:cursor-pointer"
                   >
                     <summary className="flex items-center justify-between text-sm font-medium text-neutral-200 list-none">

@@ -319,9 +319,19 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
     if (iDomyslna > 0) ok("stan domyslny nadal istnieje dla zamowienia wczytanego");
   }
   ma(STATUS, /noRefTitle/, "strona ma wlasny komunikat dla adresu bez numeru");
+  // Blok jezyka wycinamy DO POCZATKU NASTEPNEGO, a nie na sztywna liczbe
+  // znakow. Slownik rosnie przy kazdym nowym napisie i okno liczone w znakach
+  // przestaje obejmowac to, czego szuka, choc w kodzie wszystko jest na miejscu.
+  const blokJezyka = (jezyk) => {
+    const od = STATUS.indexOf(`\n  ${jezyk}: {`);
+    if (od < 0) return "";
+    const dalsze = ["pl", "en", "de"]
+      .map((j) => STATUS.indexOf(`\n  ${j}: {`, od + 1))
+      .filter((i) => i > 0);
+    return STATUS.slice(od, dalsze.length ? Math.min(...dalsze) : undefined);
+  };
   for (const jezyk of ["pl", "en", "de"]) {
-    const slownik = STATUS.slice(STATUS.indexOf(`\n  ${jezyk}: {`));
-    ma(slownik.slice(0, 4000), /noRefTitle:/, `komunikat bez numeru jest po ${jezyk}`);
+    ma(blokJezyka(jezyk), /noRefTitle:/, `komunikat bez numeru jest po ${jezyk}`);
   }
 
   // Podsumowanie: te same wiersze, co w mailu potwierdzajacym.

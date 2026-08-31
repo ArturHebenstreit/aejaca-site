@@ -333,8 +333,20 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   for (const etap of ETAPY_KOLEJNO) {
     ma(KOLEJKA, new RegExp(`\\n\\s*${etap}: \\{ label:`), `kolejka umie nazwac etap ${etap}`);
   }
-  ma(SERWER, /DOZWOLONE_STANY = \["paid", "details", "queued", "in_production", "ready"/, "kolejka wpuszcza nowe etapy");
-  ma(SERWER, /: \["paid", "details", "queued", "in_production", "ready"\]/, "domyslny widok kolejki pokazuje nowe etapy");
+  // Czekanie na pieniadze stoi w tej samej tabeli co praca (ADR-0029). Bez
+  // tych dwoch stanow zamowienie w euro nie pojawialo sie w kolejce w ogole,
+  // a jego pierwszy krok, potwierdzenie wplaty, mial osobna strone.
+  ma(SERWER, /DOZWOLONE_STANY = \["awaiting_transfer", "payment_review", "paid", "details", "queued",/,
+     "kolejka wpuszcza etapy pracy i oba stany czekania na pieniadze");
+  ma(SERWER, /: \["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready"\]/,
+     "domyslny widok kolejki pokazuje takze to, co czeka na wplate");
+  for (const stan of ["awaiting_transfer", "payment_review"]) {
+    ma(KOLEJKA, new RegExp(`\\n\\s*${stan}: \\{ label:`), `kolejka umie nazwac stan ${stan}`);
+  }
+  // Potwierdzenie wplaty jest PIERWSZYM KROKIEM kolejki, a nie osobnym
+  // formularzem gdzie indziej: formularz stoi pod przystankiem "Zapłata".
+  ma(KOLEJKA, /k\.id === "paid" && o\.status === "awaiting_transfer"/,
+     "formularz wplaty stoi pod pierwszym przystankiem kolejki");
   // Sortowanie idzie do `ORDER BY` przez interpolacje, bo Postgres nie
   // przyjmuje tam parametru. Bez bialej listy panel bylby droga wstrzykniecia.
   ma(SERWER, /SORTOWANIA = \{[\s\S]{0,400}?\};[\s\S]{0,300}?Object\.hasOwn\(SORTOWANIA/,

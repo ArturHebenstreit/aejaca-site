@@ -6,6 +6,12 @@
   // informacje: bursztyn znaczy "czeka na nas", blekit "robimy", zielen
   // "zrobione", szarosc "juz nie nasze".
   const STAN = {
+    // Czekanie na pieniadze JEST czescia kolejki (decyzja wlasciciela,
+    // 2026-08-30). Zamowienie w euro stalo dotad na osobnej stronie i w tej
+    // tabeli nie bylo go wcale, wiec pierwszy krok zlecenia dzial sie gdzie
+    // indziej niz reszta.
+    awaiting_transfer: { label: "Czeka na wpłatę", klasa: "text-orange-300 border-orange-400/30 bg-orange-400/10" },
+    payment_review: { label: "Płatność do sprawdzenia", klasa: "text-red-300 border-red-400/30 bg-red-400/10" },
     paid: { label: "Zapłacone", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
     // Zaplacone, ale zegar STOI: czekamy na ustalenia z klientem. Ten etap
     // nie ma terminu, wiec bez wlasnego miejsca w kolejce nie odezwalby sie
@@ -14,11 +20,15 @@
     // Ustalenia domkniete, praca jeszcze nie ruszyla, ZEGAR JUZ BIEGNIE.
     queued: { label: "Gotowe do pobrania", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
     in_production: { label: "W realizacji", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
-    ready: { label: "Gotowe do wysyłki", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
+    ready: { label: "Gotowe", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
     shipped: { label: "Wysłane / przekazane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
-    completed: { label: "Zamknięte", klasa: "text-neutral-300 border-white/15 bg-white/5" },
+    completed: { label: "Dostarczone", klasa: "text-neutral-300 border-white/15 bg-white/5" },
     cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
+    expired: { label: "Wygasłe", klasa: "text-neutral-400 border-white/15 bg-white/5" },
   };
+  // Stany, w ktorych czekamy na pieniadze, a nie na prace. Zegar nie biegnie,
+  // termin nie istnieje, a jedyna akcja to potwierdzenie wplaty.
+  const PRZED_ZAPLATA = ["awaiting_transfer", "payment_review"];
   // Adres powrotu niosa wszystkie formularze, zeby po zapisie nie wypasc
   // z filtra i z sortowania na domyslna liste i nie szukac wiersza od nowa.
   const PYTANIE = [stan ? "status=" + encodeURIComponent(stan) : "", sort && sort !== "newest" ? "sort=" + encodeURIComponent(sort) : ""].filter(Boolean).join("&");
@@ -29,10 +39,11 @@
   };
   const FILTRY = [
     { stan: "", label: "W toku" },
+    { stan: "awaiting_transfer,payment_review", label: "Czeka na wpłatę" },
     { stan: "shipped", label: "Wysłane" },
-    { stan: "completed", label: "Zamknięte" },
-    { stan: "cancelled", label: "Anulowane" },
-    { stan: "paid,details,queued,in_production,ready,shipped,completed,cancelled", label: "Wszystko" },
+    { stan: "completed", label: "Dostarczone" },
+    { stan: "cancelled,expired", label: "Zamknięte bez zapłaty" },
+    { stan: "awaiting_transfer,payment_review,paid,details,queued,in_production,ready,shipped,completed,cancelled,expired", label: "Wszystko" },
   ];
   const SORTY = [
     { id: "newest", label: "Najnowsze" },
@@ -223,12 +234,23 @@
                       // tam, gdzie bylo wymagane: pusty przystanek na kazdej
                       // osi uczylby, ze zawsze cos pomijamy.
                       const wysylkowy = o.delivery.method === "pickup" ? "Przekazane" : "Wysłane";
-                      const KROKI = [{ id: "paid", label: "Zapłacone", data: o.paidAt }];
+                      // Dopoki wplata nie jest zaksiegowana, przystanek nazywa
+                      // sie "Zapłata" i nie ma stempla. "Zapłacone" bez daty
+                      // przy zamowieniu czekajacym na przelew byloby zdaniem
+                      // nieprawdziwym, a to wlasnie ten wiersz ma o tym mowic.
+                      const KROKI = [{ id: "paid", label: o.paidAt ? "Zapłacone" : "Zapłata", data: o.paidAt }];
                       if (o.requiresDetails) KROKI.push({ id: "details", label: "Ustalanie szczegółów", data: o.detailsAt });
                       KROKI.push({ id: "queued", label: "Gotowe do pobrania", data: o.queuedAt });
                       KROKI.push({ id: "in_production", label: "W realizacji", data: o.productionStartedAt });
-                      KROKI.push({ id: "ready", label: "Gotowe do wysyłki", data: o.readyAt });
+                      KROKI.push({ id: "ready", label: "Gotowe", data: o.readyAt });
                       KROKI.push({ id: "shipped", label: wysylkowy, data: o.shippedAt });
+                      // Doreczenie to OSOBNY przystanek, ten sam co u klienta.
+                      // Bez niego panel i strona zamowienia pokazywalyby dwie
+                      // rozne drogi, a klient pytajacy "czy doszlo" nie mialby
+                      // gdzie tego zobaczyc. Id celowo nie rowna sie zadnemu
+                      // statusowi: przystanek ma zzieleniec po potwierdzeniu,
+                      // a nie swiecic na bursztynowo jako "trwa".
+                      KROKI.push({ id: "delivered", label: o.delivery.method === "pickup" ? "Odebrane" : "Dostarczone", data: o.completedAt });
                       // Termin domyka os, bo jest tym, do czego ona zmierza.
                       // Pojawia sie sam, w chwili gdy zegar rusza: przy zaplacie
                       // albo po domknieciu ustalen.
@@ -239,7 +261,10 @@
                       <% KROKI.forEach(function (k, i) { %>
                         <%
                           const zrobiony = k.termin ? Boolean(o.deadlineAt) : Boolean(k.data);
-                          const teraz = !k.termin && k.id === o.status;
+                          // Zamowienie czekajace na pieniadze stoi na PIERWSZYM
+                          // przystanku, choc zaden stan nie nazywa sie "paid".
+                          const teraz = !k.termin && (k.id === o.status
+                            || (k.id === "paid" && PRZED_ZAPLATA.includes(o.status)));
                           const kropka = teraz ? "border-amber-400 bg-amber-400/20"
                                        : zrobiony ? (k.termin ? "border-amber-400 bg-amber-400" : "border-emerald-400 bg-emerald-400")
                                        : "border-white/20 bg-transparent";
@@ -267,6 +292,85 @@
                               pod przystankiem docelowym, co czytalo sie jako
                               "co juz sie stalo", a nie "co zrobic teraz". %>
                           <div class="mt-2">
+                            <%# Pierwszy krok kolejki: potwierdzenie wplaty.
+                                Stoi POD przystankiem "Zapłata", tak samo jak
+                                kazda inna akcja, zamiast na osobnej stronie.
+                                Potwierdzenie robi doslownie to samo, co udana
+                                platnosc bramka: wpuszcza zlecenie do kolejki,
+                                wydaje pliki, zdejmuje towar ze stanu i wysyla
+                                klientowi potwierdzenie. %>
+                            <% if (k.id === "paid" && o.status === "awaiting_transfer") { %>
+                              <form method="post" action="/transfers/<%= encodeURIComponent(o.orderRef) %>/confirm" class="space-y-2">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <%# Po prosbie o doplate na koncie leza JUZ jakies pieniadze, wiec
+                                    pole pyta o kwote LACZNA, a nie o sama doplate. Jedna liczba,
+                                    jedno znaczenie: dwie kwoty w jednym polu konczylyby sie
+                                    zamowieniem oplaconym na papierze i nieoplaconym w banku. %>
+                                <% if (o.transferAskedAt) { %>
+                                  <p class="text-orange-300 text-[10px] leading-tight mb-2">
+                                    Poproszono o dopłatę <%= fmtDateShort(o.transferAskedAt) %>.
+                                    Wpłynęło dotąd <%= ((o.transferReceivedCents || 0) / 100).toFixed(2) %> EUR.
+                                    <span class="text-neutral-500 block">Wpisz kwotę ŁĄCZNĄ, razem z pierwszą wpłatą.</span>
+                                  </p>
+                                <% } %>
+                                <label class="block">
+                                  <span class="text-neutral-500 text-[10px] block mb-1">
+                                    <%= o.transferAskedAt ? "Wpłynęło łącznie" : "Wpłynęło" %><% if (o.amountEurCents != null) { %>, oczekujemy <%= (o.amountEurCents / 100).toFixed(2) %> EUR<% } %>
+                                  </span>
+                                  <input type="number" step="0.01" name="receivedEur"
+                                         placeholder="<%= o.amountEurCents != null ? (o.amountEurCents / 100).toFixed(2) : 'kwota w EUR' %>"
+                                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                                </label>
+                                <button name="force" value="false"
+                                        class="w-full px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                                  Potwierdzam wpływ
+                                </button>
+                                <%# Drobna roznica (do 5 EUR albo 2%, co mniejsze) przechodzi sama:
+                                    prowizja banku posredniczacego nie jest wina klienta. Wieksza
+                                    wymaga decyzji, i to sa te dwa przyciski nizej. %>
+                                <button name="force" value="true"
+                                        class="w-full px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[10px] hover:bg-amber-400/10 transition-colors">
+                                  Potwierdzam mimo różnicy
+                                </button>
+                                <%# Trzecia droga: wplynelo za malo i prosimy klienta o doplate.
+                                    Zamowienie zostaje na tym przystanku, dostaje trzy dni, a po
+                                    nich wygasa samo razem z mailem do klienta.
+
+                                    Przycisk siedzi w TYM SAMYM formularzu i zmienia tylko adres
+                                    (`formaction`). Drugie pole na te sama kwote byloby dwoma
+                                    miejscami na jedna liczbe, a wpisanie jej nie w to okienko
+                                    konczyloby sie prosba o doplate na przypadkowa kwote. %>
+                                <button formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall"
+                                        class="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-orange-400/40 text-orange-300 text-[10px] hover:bg-orange-400/10 transition-colors">
+                                  Napisz o dopłatę, 3 dni
+                                </button>
+                              </form>
+                              <%# Rezygnacja stoi osobno od potwierdzenia, bo to ruch w druga strone
+                                  i nie ma prawa wyjsc z omylkowego klikniecia obok. %>
+                              <form method="post" action="/transfers/<%= encodeURIComponent(o.orderRef) %>/cancel" class="mt-2 pt-2 border-t border-white/5"
+                                    onsubmit="return confirm('Zrezygnować z <%= o.orderRef %>? Towar i kod rabatowy wrócą do sprzedaży, zamówienie zostanie w historii.')">
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <input type="text" name="reason" maxlength="200" placeholder="Powód (opcjonalnie)"
+                                       class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[10px] text-neutral-300 mb-1" />
+                                <button class="w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[10px] hover:border-white/35 transition-colors">
+                                  Rezygnacja, zwolnij towar
+                                </button>
+                              </form>
+                            <% } %>
+
+                            <%# Platnosc do recznej decyzji nie ma tu przycisku i to jest celowe:
+                                pieniadze pobrano, ale zlecenia nie uruchomiono, wiec najpierw
+                                sprawdza sie platnosc i stan magazynu, a dopiero potem decyduje. %>
+                            <% if (k.id === "paid" && o.status === "payment_review") { %>
+                              <p class="text-[11px] text-red-300 leading-tight">
+                                Pobrano pieniądze, zlecenie nie ruszyło.
+                                <% if (o.paymentReviewReason) { %>
+                                  <span class="text-neutral-500 block">Powód: <%= o.paymentReviewReason %></span>
+                                <% } %>
+                                <span class="text-neutral-500 block">Sprawdź płatność i stan magazynu, zanim ruszysz dalej.</span>
+                              </p>
+                            <% } %>
+
                             <% if (k.id === "details" && o.status === "details") { %>
                               <p class="text-[11px] text-purple-300 leading-tight">
                                 <%= o.items.filter(function (i) { return i.requiresDetails && !i.detailsSettledAt; }).length %>
@@ -307,7 +411,7 @@
                                   <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
                                 </label>
                                 <button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
-                                  <%- IKONY.fistaszek %> Zakończone
+                                  <%- IKONY.fistaszek %> Dostarczone
                                 </button>
                               </form>
                             <% } %>
@@ -341,6 +445,24 @@
                                   <input name="trackingNumber" placeholder="numer przesyłki"
                                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white font-mono" />
                                 </label>
+                                <%# Przewoznik idzie do klienta z nazwy i buduje odnosnik do
+                                    sledzenia, wiec jest wyborem z listy, a nie polem tekstowym.
+                                    Lista przychodzi z API razem z kolejka: druga kopia tutaj
+                                    rozjechalaby sie przy pierwszym nowym przewozniku. Strefa
+                                    podpowiada, kto zwykle wozi w tamta strone, ale strefy
+                                    swiatowe nosza dwie nazwy naraz, a paczka jedzie jedna. %>
+                                <% if ((przewoznicy || []).length) { %>
+                                  <label class="block" data-przesylka="<%= o.orderRef %>">
+                                    <span class="text-neutral-500 text-[10px] block mb-1">Przewoźnik</span>
+                                    <select name="carrier"
+                                            class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white">
+                                      <option value="">nie podaję</option>
+                                      <% przewoznicy.forEach(function (kto) { %>
+                                        <option value="<%= kto %>" <%= (o.carrier || o.carrierHint) === kto ? "selected" : "" %>><%= kto %></option>
+                                      <% }); %>
+                                    </select>
+                                  </label>
+                                <% } %>
                                 <label class="block">
                                   <span class="text-neutral-500 text-[10px] block mb-1">Data wysyłki lub przekazania</span>
                                   <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
@@ -674,11 +796,14 @@
       var osobiscie = e.target.closest("[data-osobiscie]");
       if (osobiscie) {
         var ref = osobiscie.getAttribute("data-osobiscie");
-        var blok = document.querySelector('[data-przesylka="' + ref + '"]');
-        if (blok) {
-          blok.classList.toggle("hidden", osobiscie.checked);
-          var input = blok.querySelector("input");
-          if (input && osobiscie.checked) input.value = "";
+        // Bloków przesylkowych jest dwa, numer i przewoznik, wiec chowamy
+        // WSZYSTKIE. `querySelector` brał pierwszy i przewoznik zostawal na
+        // ekranie przy przekazaniu osobistym, czyli tam, gdzie nikt nie wiezie.
+        var bloki = document.querySelectorAll('[data-przesylka="' + ref + '"]');
+        for (var b = 0; b < bloki.length; b++) {
+          bloki[b].classList.toggle("hidden", osobiscie.checked);
+          var pole = bloki[b].querySelector("input, select");
+          if (pole && osobiscie.checked) pole.value = "";
         }
       }
     });

@@ -12,6 +12,7 @@ import { sciezkaJezyka } from "../routes.js";
 import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
+import { przewoznicyZNazwy, sledzenieUrl } from "../pricing/shipping.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
   forgetOrderAccessToken,
@@ -36,6 +37,10 @@ const STANY_USTALONE = [
   "ready",
   "shipped",
   "completed",
+  // Zamowienie zamkniete tez sie juz nie zmieni. Bez tych dwoch strona
+  // odpytywala baze piec razy o zamowienie, ktore wygaslo tydzien temu.
+  "expired",
+  "cancelled",
 ];
 
 /** Wiersz danych do przelewu. Numer rachunku i tytul musza byc latwe do
@@ -55,9 +60,11 @@ function TransferRow({ label, value, mono, highlight }) {
 // ============================================================
 // OS CZASU ZLECENIA
 // ============================================================
-// To samo, co widzi pracownia w panelu, tylko jezykiem klienta i bez etapow,
-// ktore sa nasza sprawa: "gotowe do pobrania" i "w realizacji" to dla niego
-// jeden stan, bo w obu zaplacil, przyjelismy i termin biegnie.
+// To samo, co widzi pracownia w panelu, tylko jezykiem klienta. Od 2026-08-30
+// "czeka w kolejce" i "w realizacji" to DWA przystanki, a nie jeden: zlecenie
+// lezace w kolejce przedstawialo sie wczesniej jako juz robione, a dwa
+// powiadomienia pod rzad rysowaly ten sam obrazek. Wolimy powiedziec wprost,
+// ze nikt jeszcze nie wzial zlecenia do reki.
 //
 // Daty formatujemy z napisu, a nie przez `Intl`: dane ICU w Node i w
 // przegladarce bywaja z roznych wersji, a rozjazd na prerenderze wyrzuca cale
@@ -70,7 +77,7 @@ function dzienZeStempla(wartosc) {
   return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 }
 
-function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
+function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   if (!order) return null;
 
   // Pozycje, na ktorych ustalenia jeszcze czekamy. Klient ma prawo wiedziec,
@@ -83,21 +90,43 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   // Pozycje z ustaleniami juz domknietymi, do wypisania pod terminem.
   const ustalone = (order.items || []).filter((i) => i.requiresDetails && i.detailsSettled);
 
-  const kroki = [{ id: "paid", label: u.tlPaid, data: order.paidAt }];
+  // Przewoznik przychodzi z API: pracownia wybiera go przy nadaniu, a gdy nie
+  // wybrala, API podstawia przewoznika ze strefy wysylkowej.
+  const sledzenieKlienta = przewoznicyZNazwy(order.carrier)
+    .map((kto) => ({ kto, href: sledzenieUrl(kto, order.trackingNumber, lang) }))
+    .filter((sl) => sl.href);
+
+  // Dopoki wplata nie jest zaksiegowana, przystanek nazywa sie "Zapłata"
+  // i nie ma stempla: "Zapłacone" bez daty czytaloby sie jak zaprzeczenie
+  // ekranu stojacego wyzej, ktory prosi o przelew.
+  const kroki = [{ id: "paid", label: order.paidAt ? u.tlPaid : u.tlPayment, data: order.paidAt }];
   if (order.requiresDetails) {
     kroki.push({ id: "details", label: u.tlDetails, data: order.detailsAt, pozycje: doUstalenia });
   }
-  kroki.push({ id: "work", label: u.tlProduction, data: order.queuedAt || order.productionStartedAt });
+  // "Czeka w kolejce" i "w realizacji" to OSOBNE przystanki (decyzja
+  // wlasciciela, 2026-08-30). Wczesniej dzielily jeden, wiec zlecenie lezace
+  // w kolejce pokazywalo sie klientowi jako juz robione, a dwa powiadomienia
+  // pod rzad rysowaly ten sam obrazek i drugie wygladalo na pomylke.
+  kroki.push({ id: "queued", label: u.tlQueued, data: order.queuedAt });
+  kroki.push({ id: "work", label: u.tlProduction, data: order.productionStartedAt });
   kroki.push({ id: "ready", label: u.tlReady, data: order.readyAt });
   kroki.push({ id: "shipped", label: odbiorOsobisty ? u.tlHanded : u.tlShipped, data: order.shippedAt });
+  // Doreczenie jest OSOBNYM przystankiem (decyzja wlasciciela, 2026-08-30).
+  // Wczesniej "wyslane" i "zamkniete" dzielily ostatnia kropke, wiec paczka
+  // wlozona do paczkomatu wygladala tak samo jak paczka odebrana, a droga
+  // klienta nigdy nie konczyla sie na zielono.
+  kroki.push({ id: "delivered", label: odbiorOsobisty ? u.tlCollected : u.tlDelivered, data: order.completedAt });
 
   // Numer etapu, na ktorym stoi zlecenie. Jedna liczba zamiast piatki warunkow
   // rozsianych po widoku: dzieki niej "przebyte" i "przed nami" liczy sie samo.
-  const gdzie = { paid: 0, details: 0, queued: 1, in_production: 1, ready: 2, shipped: 3, completed: 3 };
+  const gdzie = { awaiting_transfer: 0, payment_review: 0, paid: 0, details: 0, queued: 1, in_production: 2, ready: 3, shipped: 4, completed: 5 };
   const teraz = order.requiresDetails
-    ? { paid: 0, details: 1, queued: 2, in_production: 2, ready: 3, shipped: 4, completed: 4 }[order.status]
+    ? { awaiting_transfer: 0, payment_review: 0, paid: 0, details: 1, queued: 2, in_production: 3, ready: 4, shipped: 5, completed: 6 }[order.status]
     : gdzie[order.status];
-  const naEtapie = Number.isInteger(teraz) ? teraz : 0;
+  // Potwierdzone doreczenie zamyka cala droge, wiec KAZDA kropka jest przebyta.
+  // Ostatni przystanek jako "biezacy" swiecilby na bursztynowo, czyli mowilby
+  // "trwa" o czymkolwiek, co juz sie stalo.
+  const naEtapie = order.status === "completed" ? kroki.length : Number.isInteger(teraz) ? teraz : 0;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-5 mb-4 text-left">
@@ -237,7 +266,18 @@ function OsCzasu({ order, u, odbiorOsobisty, zaplacone, nazwaDostawy }) {
           {order.trackingNumber && (
             <div className="flex items-baseline justify-between gap-3 text-xs">
               <span className="text-neutral-500">{u.trackingLabel}</span>
-              <span className="text-neutral-200 font-mono text-right">{order.trackingNumber}</span>
+              <span className="text-right">
+                <span className="text-neutral-200 font-mono block">{order.trackingNumber}</span>
+                {/* Sam numer jest dla klienta ciagiem cyfr. Adres sledzenia
+                    budujemy tym samym pomocnikiem co mail, zeby jedno miejsce
+                    zmieniane po stronie przewoznika poprawialo oba. */}
+                {sledzenieKlienta.map((sl) => (
+                  <a key={sl.href} href={sl.href} target="_blank" rel="noopener noreferrer"
+                     className="text-amber-300 hover:text-amber-200 underline underline-offset-2 ml-2">
+                    {sl.kto}
+                  </a>
+                ))}
+              </span>
             </div>
           )}
         </div>
@@ -257,11 +297,30 @@ const UI = {
     paidTitle: "Dziękujemy, płatność przyjęta",
     paidDesc: "Potwierdzenie wysłaliśmy na Twój adres email. Zabieramy się do pracy i odezwiemy się, gdy zamówienie będzie gotowe.",
     productionTitle: "Status realizacji zamówienia",
-    productionDesc: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki. Nie musisz nic robić.",
+    // Zdania o wydaniu zalezą od tego, co klient wybral przy zamowieniu.
+    // Jedno zdanie dla wszystkich mowilo o paczce w drodze komus, kto odbiera
+    // osobiscie, i o wysylce komus, kto kupil plik.
+    productionDesc: {
+      ship: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie spakowane i pojedzie do Ciebie. Nie musisz nic robić.",
+      pickup: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie gotowe do odbioru, i umówimy godzinę. Nie musisz nic robić.",
+      digital: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy pliki będą gotowe do pobrania. Nie musisz nic robić.",
+    },
     shippedTitle: "Zamówienie wysłane",
-    shippedDesc: "Paczka jest w drodze. Jeżeli przesyłka ma numer do śledzenia, znajdziesz go poniżej.",
-    completedTitle: "Zamówienie zakończone",
-    completedDesc: "Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+    shippedDesc: {
+      ship: "Paczka jest w drodze. Jeżeli przesyłka ma numer do śledzenia, znajdziesz go poniżej.",
+      pickup: "Zamówienie czeka na Ciebie w Józefosławiu, o umówionej godzinie.",
+      digital: "Pliki są przekazane. Link do pobrania jest w mailu z potwierdzeniem zamówienia.",
+    },
+    expiredTitle: "Zamówienie wygasło",
+    expiredDesc: "Wpłata nie dotarła w terminie, więc zamówienie zostało zamknięte, a zarezerwowany towar wrócił do sprzedaży. Jeżeli pieniądze wyszły po terminie, wrócą na rachunek, z którego przyszły. Zamówienie możesz złożyć ponownie w każdej chwili.",
+    cancelledTitle: "Zamówienie anulowane",
+    cancelledDesc: "To zamówienie zostało anulowane, a zarezerwowany towar wrócił do sprzedaży. Jeżeli to pomyłka, napisz do nas, odpowiadamy na każdą wiadomość.",
+    completedTitle: "Zamówienie dostarczone",
+    completedDesc: {
+      ship: "Potwierdzamy dostarczenie przesyłki. Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+      pickup: "Potwierdzamy odbiór zamówienia. Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+      digital: "Zamówienie jest zamknięte. Dziękujemy. Jeżeli coś jest nie tak z plikami, napisz do nas, odpowiadamy na każdą wiadomość.",
+    },
     shippedAtLabel: "Data wysyłki",
     trackingLabel: "Numer przesyłki",
     pendingTitle: "Czekamy na potwierdzenie płatności",
@@ -286,12 +345,16 @@ const UI = {
     stageTitle: "Realizacja",
     tlTitle: "Postęp zlecenia",
     tlPaid: "Zapłacone",
+    tlPayment: "Zapłata",
     tlDetails: "Ustalamy szczegóły",
+    tlQueued: "Czeka w kolejce",
     tlProduction: "W realizacji",
     tlReady: "Gotowe",
     tlShipped: "Wysłane",
     tlHanded: "Przekazane",
-    tlDeadline: "Termin realizacji",
+    tlDelivered: "Dostarczone",
+    tlCollected: "Odebrane",
+    tlDeadline: "Planowana finalizacja",
     tlAfterDetails: "po dokonaniu wszystkich ustaleń",
     tlUpTo: "do",
     tlWaitingFor: "Czekamy na ustalenia do:",
@@ -302,10 +365,12 @@ const UI = {
     stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich.",
     stageRunning: "Zlecenie w realizacji",
     stageReady: "Zrealizowane",
-    stageReadyDesc: "Praca skończona. Pakujemy albo przygotowujemy do odbioru.",
+    stageReadyDesc: {
+      ship: "Praca skończona. Pakujemy zamówienie i przygotowujemy je do wysyłki.",
+      pickup: "Praca skończona. Przygotowujemy zamówienie do odbioru osobistego, odezwiemy się, żeby umówić godzinę.",
+      digital: "Praca skończona. Pliki do pobrania są w mailu z potwierdzeniem zamówienia.",
+    },
     stageHanded: "Przekazane",
-    deadlineLabel: "Planowana wysyłka",
-    daysLeftLabel: "Do wysyłki zostało",
     daysUnit: "dni",
     dayUnit: "dzień",
     daysToday: "dzisiaj",
@@ -332,6 +397,9 @@ const UI = {
     transferTitle: "Zamówienie przyjęte, czekamy na przelew",
     transferDesc: "Nic nie zostało pobrane. Poniżej masz dane do przelewu. Ten sam komplet wysłaliśmy Ci mailem.",
     transferAmount: "Kwota do przelewu",
+    transferShortfall: "Do dopłaty",
+    transferReceived: "Wpłynęło",
+    transferOf: "z",
     transferIban: "Numer rachunku (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Odbiorca",
@@ -347,11 +415,27 @@ const UI = {
     paidTitle: "Thank you, payment received",
     paidDesc: "We have sent a confirmation to your email address. We are starting work and will get in touch once your order is ready.",
     productionTitle: "Order progress",
-    productionDesc: "We have your payment and the work has started. We will get in touch once the order is ready to ship. You do not need to do anything.",
+    productionDesc: {
+      ship: "We have your payment and the work has started. We will write once your order is packed and on its way to you. You do not need to do anything.",
+      pickup: "We have your payment and the work has started. We will write once your order is ready for collection, and we will agree a time. You do not need to do anything.",
+      digital: "We have your payment and the work has started. We will write once your files are ready to download. You do not need to do anything.",
+    },
     shippedTitle: "Your order has been shipped",
-    shippedDesc: "The parcel is on its way. If the shipment has a tracking number, you will find it below.",
-    completedTitle: "Order completed",
-    completedDesc: "Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+    shippedDesc: {
+      ship: "The parcel is on its way. If the shipment has a tracking number, you will find it below.",
+      pickup: "Your order is waiting for you in Józefosław, at the time we agreed.",
+      digital: "Your files have been handed over. The download link is in your order confirmation e-mail.",
+    },
+    expiredTitle: "The order has expired",
+    expiredDesc: "The payment did not arrive in time, so the order was closed and the reserved goods went back on sale. If the money left after that date, it will return to the account it came from. You can place the order again at any time.",
+    cancelledTitle: "Order cancelled",
+    cancelledDesc: "This order was cancelled and the reserved goods went back on sale. If that is a mistake, write to us, we answer every message.",
+    completedTitle: "Order delivered",
+    completedDesc: {
+      ship: "We confirm your parcel has been delivered. Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+      pickup: "We confirm your order has been collected. Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+      digital: "Your order is now closed. Thank you. If anything is wrong with the files, write to us, we answer every message.",
+    },
     shippedAtLabel: "Shipping date",
     trackingLabel: "Tracking number",
     pendingTitle: "Waiting for payment confirmation",
@@ -376,12 +460,16 @@ const UI = {
     stageTitle: "Progress",
     tlTitle: "Order progress",
     tlPaid: "Paid",
+    tlPayment: "Payment",
     tlDetails: "Agreeing details",
+    tlQueued: "In the queue",
     tlProduction: "In the workshop",
     tlReady: "Finished",
     tlShipped: "Dispatched",
     tlHanded: "Handed over",
-    tlDeadline: "Delivery date",
+    tlDelivered: "Delivered",
+    tlCollected: "Collected",
+    tlDeadline: "Planned completion",
     tlAfterDetails: "once everything is agreed",
     tlUpTo: "up to",
     tlWaitingFor: "Waiting to agree:",
@@ -392,10 +480,13 @@ const UI = {
     stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that.",
     stageRunning: "In the workshop",
     stageReady: "Finished",
-    stageReadyDesc: "The work is done. We are packing it or getting it ready for collection.",
+    stageReadyDesc: {
+      ship: "The work is done. We are packing your order and getting it ready for dispatch.",
+      pickup: "The work is done. We are getting your order ready for collection and will write to agree a time.",
+      digital: "The work is done. The download links are in your order confirmation e-mail.",
+    },
     stageHanded: "Handed over",
-    deadlineLabel: "Planned dispatch",
-    daysLeftLabel: "Days to dispatch",
+
     daysUnit: "days",
     dayUnit: "day",
     daysToday: "today",
@@ -422,6 +513,9 @@ const UI = {
     transferTitle: "Order received, waiting for your transfer",
     transferDesc: "Nothing has been charged. Below are the transfer details. We sent you the same set by email.",
     transferAmount: "Amount to transfer",
+    transferShortfall: "Still due",
+    transferReceived: "Received",
+    transferOf: "of",
     transferIban: "Account number (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Beneficiary",
@@ -437,11 +531,27 @@ const UI = {
     paidTitle: "Vielen Dank, Zahlung erhalten",
     paidDesc: "Die Bestätigung haben wir an Ihre E-Mail-Adresse gesendet. Wir beginnen mit der Arbeit und melden uns, sobald Ihre Bestellung fertig ist.",
     productionTitle: "Status Ihrer Bestellung",
-    productionDesc: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald die Bestellung versandfertig ist. Sie müssen nichts tun.",
+    productionDesc: {
+      ship: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Bestellung verpackt ist und zu Ihnen unterwegs geht. Sie müssen nichts tun.",
+      pickup: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Bestellung zur Abholung bereit ist, und vereinbaren eine Uhrzeit. Sie müssen nichts tun.",
+      digital: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald Ihre Dateien zum Download bereitstehen. Sie müssen nichts tun.",
+    },
     shippedTitle: "Ihre Bestellung wurde versandt",
-    shippedDesc: "Das Paket ist unterwegs. Sofern die Sendung eine Sendungsnummer hat, finden Sie sie unten.",
-    completedTitle: "Bestellung abgeschlossen",
-    completedDesc: "Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+    shippedDesc: {
+      ship: "Das Paket ist unterwegs. Sofern die Sendung eine Sendungsnummer hat, finden Sie sie unten.",
+      pickup: "Ihre Bestellung wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
+      digital: "Ihre Dateien wurden übergeben. Der Download-Link steht in Ihrer Bestellbestätigung.",
+    },
+    expiredTitle: "Die Bestellung ist abgelaufen",
+    expiredDesc: "Die Zahlung ist nicht rechtzeitig eingegangen, daher wurde die Bestellung geschlossen und die reservierte Ware ging zurück in den Verkauf. Sollte das Geld nach diesem Termin herausgegangen sein, kommt es auf das Konto zurück, von dem es kam. Sie können jederzeit erneut bestellen.",
+    cancelledTitle: "Bestellung storniert",
+    cancelledDesc: "Diese Bestellung wurde storniert und die reservierte Ware ging zurück in den Verkauf. Sollte das ein Versehen sein, schreiben Sie uns, wir beantworten jede Nachricht.",
+    completedTitle: "Bestellung zugestellt",
+    completedDesc: {
+      ship: "Wir bestätigen die Zustellung Ihrer Sendung. Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+      pickup: "Wir bestätigen die Abholung Ihrer Bestellung. Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+      digital: "Ihre Bestellung ist abgeschlossen. Vielen Dank. Falls mit den Dateien etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+    },
     shippedAtLabel: "Versanddatum",
     trackingLabel: "Sendungsnummer",
     pendingTitle: "Wir warten auf die Zahlungsbestätigung",
@@ -466,12 +576,16 @@ const UI = {
     stageTitle: "Fortschritt",
     tlTitle: "Auftragsfortschritt",
     tlPaid: "Bezahlt",
+    tlPayment: "Zahlung",
     tlDetails: "Details klären",
+    tlQueued: "In der Warteschlange",
     tlProduction: "In Arbeit",
     tlReady: "Fertig",
     tlShipped: "Versandt",
     tlHanded: "Übergeben",
-    tlDeadline: "Liefertermin",
+    tlDelivered: "Zugestellt",
+    tlCollected: "Abgeholt",
+    tlDeadline: "Geplante Fertigstellung",
     tlAfterDetails: "nach allen Absprachen",
     tlUpTo: "bis zu",
     tlWaitingFor: "Wir warten auf Absprachen zu:",
@@ -482,10 +596,12 @@ const UI = {
     stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach.",
     stageRunning: "In der Werkstatt",
     stageReady: "Fertiggestellt",
-    stageReadyDesc: "Die Arbeit ist fertig. Wir verpacken sie oder bereiten sie zur Abholung vor.",
+    stageReadyDesc: {
+      ship: "Die Arbeit ist fertig. Wir verpacken Ihre Bestellung und bereiten den Versand vor.",
+      pickup: "Die Arbeit ist fertig. Wir bereiten Ihre Bestellung zur Abholung vor und melden uns, um eine Uhrzeit zu vereinbaren.",
+      digital: "Die Arbeit ist fertig. Die Download-Links stehen in Ihrer Bestellbestätigung.",
+    },
     stageHanded: "Übergeben",
-    deadlineLabel: "Geplanter Versand",
-    daysLeftLabel: "Tage bis zum Versand",
     daysUnit: "Tage",
     dayUnit: "Tag",
     daysToday: "heute",
@@ -512,6 +628,9 @@ const UI = {
     transferTitle: "Bestellung eingegangen, wir warten auf Ihre Überweisung",
     transferDesc: "Es wurde nichts abgebucht. Unten finden Sie die Überweisungsdaten. Dieselben Angaben haben wir Ihnen per E-Mail geschickt.",
     transferAmount: "Zu überweisender Betrag",
+    transferShortfall: "Noch offen",
+    transferReceived: "Eingegangen",
+    transferOf: "von",
     transferIban: "Kontonummer (IBAN)",
     transferBic: "BIC / SWIFT",
     transferHolder: "Empfänger",
@@ -663,9 +782,9 @@ export default function OrderStatus() {
   // spadalo na galaz domyslna i mowilo oplaconemu klientowi, ze czekamy na
   // jego platnosc. Stoja w lancuchu PRZED `failed`, bo pozniejsza nieudana
   // proba platnosci nie cofa zamowienia, ktore juz jest w robocie.
-  // "Gotowe do pobrania" i "w robocie" to dla klienta jedno i to samo zdanie:
-  // zaplacil, przyjelismy, termin biegnie. Roznica miedzy nimi jest wewnetrzna
-  // i dotyczy tego, czy ktos w pracowni wzial juz zlecenie do reki.
+  // Naglowek strony jest dla obu etapow ten sam, bo mowi o stanie zamowienia
+  // jako calosci. Roznice miedzy "czeka w kolejce" a "w realizacji" pokazuje
+  // os czasu wyzej, i tam sa to osobne przystanki.
   const inProduction = order?.status === "queued" || order?.status === "in_production";
   const shipped = order?.status === "shipped";
   const completed = order?.status === "completed";
@@ -675,6 +794,12 @@ export default function OrderStatus() {
   // Przelew czeka na nasze reczne potwierdzenie, wiec ta strona nie jest
   // "czekamy na bank", tylko instrukcja, co klient ma teraz zrobic.
   const awaitingTransfer = order?.status === "awaiting_transfer";
+  // Zamowienie zamkniete bez zaplaty spadalo do galezi domyslnej i mowilo
+  // "bank jeszcze nie potwierdzil przelewu, to zwykle kwestia kilku minut"
+  // komus, kogo zamowienie wygaslo tydzien temu. Od 2026-08-30 mail o wygasnieciu
+  // wprost zaprasza na te strone, wiec klamstwo bylo widoczne dla kazdego.
+  const expired = order?.status === "expired";
+  const cancelledOrder = order?.status === "cancelled";
   // "Zaplacone" znaczy tu: pieniadze u nas. Stany dalsze (produkcja, wysylka,
   // zakonczone) tez sa oplacone i bez tej listy strona mowilaby oplaconemu
   // klientowi, ze czeka na jego wplate.
@@ -682,12 +807,22 @@ export default function OrderStatus() {
   // mowiace "do zaplaty" komus, kto zaplacil, i to jest dokladnie ten sam
   // blad, ktory strona popelniala przy adresie bez numeru.
   const zaplacone = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"].includes(order?.status);
+  // Os czasu zaczyna sie przy zaplacie, a nie po niej (decyzja wlasciciela,
+  // 2026-08-30). Zamowienie w euro czeka na zaksiegowanie przelewu i klient
+  // pytal wtedy "czy potwierdziliscie", bo widzial sam ekran oczekiwania.
+  // Pierwsza kropka swieci, dopoki pieniadze nie doszly, i to jest odpowiedz.
+  const czekaNaPieniadze = ["awaiting_transfer", "payment_review"].includes(order?.status);
+  const zOsia = zaplacone || czekaNaPieniadze;
   const etapSzczegolow = order?.status === "details";
   const etapGotowe = order?.status === "ready";
   // Odbior osobisty konczy sie przekazaniem, a nie wysylka. To samo pole
   // `shipped_at`, inne zdanie: paczka, ktora nigdzie nie jechala, nie jest
   // "w drodze" i klient nie ma na co czekac pod drzwiami.
   const odbiorOsobisty = order?.deliveryMethod === "pickup";
+  // Droga wydania rozstrzyga zdania o pakowaniu, odbiorze i pobraniu plikow.
+  // Pole znamy od zamowienia, wiec nie ma powodu, zeby strona wyliczala klientowi
+  // wszystkie mozliwosci naraz.
+  const droga = order?.deliveryMethod === "pickup" ? "pickup" : order?.deliveryMethod === "digital" ? "digital" : "ship";
   // Kwoty formatuje strona, a nie serwer, bo ten sam wiersz musi umiec pokazac
   // pozycje, dostawe i rabat, a nie tylko sume.
   const zlote = (grosze) =>
@@ -743,19 +878,19 @@ export default function OrderStatus() {
   } else if (inProduction) {
     icon = <Hammer className="w-12 h-12 text-amber-400" />;
     title = u.productionTitle;
-    desc = u.productionDesc;
+    desc = u.productionDesc[droga];
   } else if (etapGotowe) {
     icon = <PackageCheck className="w-12 h-12 text-emerald-400" />;
     title = u.stageReady;
-    desc = u.stageReadyDesc;
+    desc = u.stageReadyDesc[droga];
   } else if (shipped) {
     icon = <Truck className="w-12 h-12 text-blue-400" />;
     title = odbiorOsobisty ? u.stageHanded : u.shippedTitle;
-    desc = u.shippedDesc;
+    desc = u.shippedDesc[droga];
   } else if (completed) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.completedTitle;
-    desc = u.completedDesc;
+    desc = u.completedDesc[droga];
   } else if (paid) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.paidTitle;
@@ -764,6 +899,14 @@ export default function OrderStatus() {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
     title = u.failedTitle;
     desc = u.failedDesc;
+  } else if (expired) {
+    icon = <XCircle className="w-12 h-12 text-neutral-500" />;
+    title = u.expiredTitle;
+    desc = u.expiredDesc;
+  } else if (cancelledOrder) {
+    icon = <XCircle className="w-12 h-12 text-neutral-500" />;
+    title = u.cancelledTitle;
+    desc = u.cancelledDesc;
   } else if (paymentReview) {
     icon = <Clock className="w-12 h-12 text-amber-400" />;
     title = u.reviewTitle;
@@ -858,9 +1001,21 @@ export default function OrderStatus() {
               {awaitingTransfer && (
                 tr?.iban ? (
                   <div className="rounded-xl border border-blue-400/25 bg-blue-400/[0.05] p-4 mb-6 text-left">
+                    {/* Po czesciowej wplacie liczy sie kwota BRAKUJACA, a nie
+                        kwota zamowienia: klient ma doplacic roznice, a nie
+                        przelac wszystkiego jeszcze raz. */}
                     <div className="text-center pb-3 mb-3 border-b border-white/10">
-                      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">{u.transferAmount}</div>
-                      <div className="text-3xl font-extrabold text-white tabular-nums">{tr.amountEur} EUR</div>
+                      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
+                        {tr.shortfallEur ? u.transferShortfall : u.transferAmount}
+                      </div>
+                      <div className="text-3xl font-extrabold text-white tabular-nums">
+                        {tr.shortfallEur || tr.amountEur} EUR
+                      </div>
+                      {tr.shortfallEur && (
+                        <div className="text-neutral-500 text-xs mt-1 tabular-nums">
+                          {u.transferReceived} {tr.receivedEur} EUR {u.transferOf} {tr.amountEur} EUR
+                        </div>
+                      )}
                     </div>
                     <TransferRow label={u.transferIban} value={tr.iban} mono />
                     {tr.bic && <TransferRow label={u.transferBic} value={tr.bic} mono />}
@@ -890,8 +1045,8 @@ export default function OrderStatus() {
                   wychodzi inna przy buildzie i inna u klienta, React uznaje to
                   za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
                   zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
-              {order && zaplacone && (
-                <OsCzasu order={order} u={u} odbiorOsobisty={odbiorOsobisty}
+              {order && zOsia && (
+                <OsCzasu order={order} u={u} lang={lang} odbiorOsobisty={odbiorOsobisty}
                          zaplacone={zaplacone} nazwaDostawy={nazwaDostawy} />
               )}
 

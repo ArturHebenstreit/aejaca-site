@@ -6,9 +6,15 @@
 // w jednym miejscu i daje dwa narzedzia, ktorych lista bez nich nie zastapi:
 // wyszukiwanie po tresci i filtr tematow.
 //
-// Tresc pytan mieszka w `src/data/faq.js`, wspolnie ze stronami tematycznymi.
-// Trzy kopie tego samego pytania rozjechalyby sie przy pierwszej poprawce,
-// a klient dostalby dwie rozne odpowiedzi zaleznie od tego, gdzie trafil.
+// Tresc pytan mieszka w `src/data/faq/`, wspolnie ze stronami tematycznymi:
+// pytanie o bizuterie widac na stronie bizuterii, pytanie o sTuDiO na stronie
+// sTuDiO, a wyszukac da sie KAZDE tutaj (ustalenie wlasciciela, 2026-08-30).
+// Druga kopia tekstu rozjechalaby sie przy pierwszej poprawce, i to po cichu.
+//
+// Ta strona NIE oglasza schematu FAQPage. Kazde pytanie ma juz strone, ktora
+// je posiada i ktora ten schemat niesie, a ten sam zestaw pytan ogloszony
+// dwa razy pod dwoma adresami jest dla wyszukiwarki duplikatem. Tu liczy sie
+// czlowiek z jednym pytaniem, nie drugi komplet danych strukturalnych.
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -16,18 +22,20 @@ import { Search, HelpCircle, X } from "lucide-react";
 import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
-import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
+import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import FaqLista from "../components/FaqLista.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
-import { FAQ, FAQ_TEMATY, szukajFaq } from "../data/faq.js";
+import { FAQ_TEMATY, szukajFaq } from "../data/faq/index.js";
+import { kwotyWysylki, kwotyPln } from "../data/kwotyWysylki.js";
+import { useMarketRates } from "../hooks/useMarketRates.js";
 
 const L = {
   pl: {
     tag: "Pomoc",
     title: "Najczęściej zadawane pytania",
-    description: "Odpowiedzi na pytania o płatność, oferty, termin realizacji, dostawę i odbiór zamówienia w AEJaCA. Z wyszukiwarką i podziałem na tematy.",
+    description: "Wszystkie pytania i odpowiedzi AEJaCA w jednym miejscu: biżuteria, sTuDiO, płatność, oferty, realizacja, dostawa i narzędzia. Z wyszukiwarką i filtrami.",
     szukaj: "Szukaj w pytaniach",
     wyczysc: "Wyczyść",
     wszystkie: "Wszystkie",
@@ -44,7 +52,7 @@ const L = {
   en: {
     tag: "Help",
     title: "Frequently asked questions",
-    description: "Answers about payment, offers, lead times, delivery and collecting an AEJaCA order. With search and topic filters.",
+    description: "Every AEJaCA question and answer in one place: jewelry, sTuDiO, payment, offers, lead times, delivery and the tools. With search and topic filters.",
     szukaj: "Search the questions",
     wyczysc: "Clear",
     wszystkie: "All",
@@ -55,13 +63,13 @@ const L = {
     kontaktLink: "Write to us",
     procesy: "Two pages describe the whole process step by step:",
     linkPlatnosci: "How payment works",
-    linkRealizacji: "How your order is made",
+    linkRealizacji: "How we make your order",
     linkZamowienie: "Check your order",
   },
   de: {
     tag: "Hilfe",
     title: "Häufige Fragen",
-    description: "Antworten zu Zahlung, Angeboten, Lieferzeit, Versand und Abholung einer AEJaCA-Bestellung. Mit Suche und Themenfiltern.",
+    description: "Alle Fragen und Antworten von AEJaCA an einer Stelle: Schmuck, sTuDiO, Zahlung, Angebote, Fertigung, Lieferung und Werkzeuge. Mit Suche und Filtern.",
     szukaj: "In den Fragen suchen",
     wyczysc: "Löschen",
     wszystkie: "Alle",
@@ -72,21 +80,62 @@ const L = {
     kontaktLink: "Schreiben Sie uns",
     procesy: "Zwei Seiten beschreiben den gesamten Ablauf Schritt für Schritt:",
     linkPlatnosci: "Zahlungsablauf",
-    linkRealizacji: "Ablauf der Auftragsabwicklung",
+    linkRealizacji: "Ablauf der Fertigung",
     linkZamowienie: "Bestellung prüfen",
+  },
+};
+
+// Nazwa strony, na ktorej pytanie stoi w swoim kontekscie. Sam odnosnik
+// "zobacz" nic nie mowi, a "Biżuteria" od razu tlumaczy, czego dotyczy reszta
+// tamtej strony. Sciezki sa te same, ktore niosa wpisy w `src/data/faq/`.
+const STRONY = {
+  pl: {
+    "/": "Strona główna", "/jewelry/": "Biżuteria", "/studio/": "AEJaCA sTuDiO",
+    "/payments/": "Proces płatności", "/order-process/": "Proces realizacji",
+    "/shipping/": "Wysyłka i dostawa", "/b2b/": "Współpraca B2B",
+    "/toolsjewelry/ring-sizer/": "Miarka do pierścionków",
+    "/toolsjewelry/metal-pricing/": "Wycena kruszcu",
+    "/toolstudio/printability/": "Sprawdzenie modelu do druku",
+    "/toolstudio/shrinkage/": "Skurcz odlewniczy",
+    "/toolstudio/resin-settings/": "Ustawienia druku z żywicy",
+  },
+  en: {
+    "/": "Home", "/jewelry/": "Jewelry", "/studio/": "AEJaCA sTuDiO",
+    "/payments/": "How payment works", "/order-process/": "How we make your order",
+    "/shipping/": "Shipping and delivery", "/b2b/": "B2B",
+    "/toolsjewelry/ring-sizer/": "Printable ring sizer",
+    "/toolsjewelry/metal-pricing/": "Metal value calculator",
+    "/toolstudio/printability/": "Printability check",
+    "/toolstudio/shrinkage/": "Casting shrinkage",
+    "/toolstudio/resin-settings/": "Resin print settings",
+  },
+  de: {
+    "/": "Startseite", "/jewelry/": "Schmuck", "/studio/": "AEJaCA sTuDiO",
+    "/payments/": "Zahlungsablauf", "/order-process/": "Ablauf der Fertigung",
+    "/shipping/": "Versand und Lieferung", "/b2b/": "B2B",
+    "/toolsjewelry/ring-sizer/": "Ringmaß zum Ausdrucken",
+    "/toolsjewelry/metal-pricing/": "Metallwert-Rechner",
+    "/toolstudio/printability/": "Druckbarkeitsprüfung",
+    "/toolstudio/shrinkage/": "Gussschwindung",
+    "/toolstudio/resin-settings/": "Harzdruck-Einstellungen",
   },
 };
 
 export default function Faq() {
   const { lang } = useLanguage();
   const l = L[lang] || L.pl;
+  const nazwaStrony = (sciezka) => (STRONY[lang] || STRONY.pl)[sciezka] || null;
   // Temat w adresie, zeby dalo sie wyslac odnosnik do jednej grupy pytan,
   // a odswiezenie strony nie kasowalo wyboru.
   const [params, setParams] = useSearchParams();
   const temat = params.get("temat");
   const [fraza, setFraza] = useState("");
+  // Czesc odpowiedzi o wysylce niesie kwoty z cennika, wiec szukanie musi
+  // widziec je tak samo jak czytelnik: "400" ma znalezc prog darmowej wysylki.
+  const { rates } = useMarketRates();
+  const wartosci = useMemo(() => ({ ...kwotyWysylki({ lang, rates }), ...kwotyPln(lang) }), [lang, rates]);
 
-  const wynik = useMemo(() => szukajFaq(fraza, lang, temat), [fraza, lang, temat]);
+  const wynik = useMemo(() => szukajFaq(fraza, lang, temat, wartosci), [fraza, lang, temat, wartosci]);
 
   const pageUrl = `${SITE.url}/faq/`;
   const schemas = [
@@ -95,9 +144,6 @@ export default function Faq() {
       { name: "Home", url: SITE.url },
       { name: l.title, url: pageUrl },
     ]),
-    // Do schematu ida WSZYSTKIE pytania, niezaleznie od filtra: wyszukiwarka
-    // czyta strone raz i nie klika w kafelki tematow.
-    buildFAQSchema(FAQ.map((f) => ({ q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }))),
   ];
 
   const ustawTemat = (id) => {
@@ -176,7 +222,7 @@ export default function Faq() {
 
           {wynik.length > 0 ? (
             <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-8">
-              <FaqLista pytania={wynik} />
+              <FaqLista pytania={wynik} wartosci={wartosci} nazwaStrony={nazwaStrony} />
             </div>
           ) : (
             <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-8 text-center">

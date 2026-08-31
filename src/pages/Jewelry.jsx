@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import TERMIN from "../data/faq/termin.js";
+import pytania from "../data/faq/bizuteria.js";
+import { odpowiedz } from "../data/faq/pomoc.js";
+import { kwotyPln } from "../data/kwotyWysylki.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
@@ -80,6 +84,12 @@ const FLOATING_CTA_LABELS = {
 
 export default function Jewelry() {
   const { t, lang } = useLanguage();
+  // Pytania stoja we wspolnym zbiorze, wiec te same odpowiedzi znajduja sie
+  // takze przez wyszukiwarke na `/faq/`, bez drugiej kopii tekstu.
+  const kwoty = kwotyPln(lang);
+  // Pytanie "ile to trwa" ma JEDNA odpowiedz na caly serwis: cztery rozne
+  // liczby na jedno pytanie widac bylo obok siebie w `/faq/` (2026-08-30).
+  const pozycjeFaq = [...pytania, ...TERMIN].map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: odpowiedz(f, lang, kwoty) }));
   const j = t.jewelry;
   const L = LABELS[lang] || LABELS.pl;
 
@@ -117,7 +127,7 @@ export default function Jewelry() {
       image: `${SITE.url}/og-jewelry.jpg`,
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
-    j.faq?.items && buildFAQSchema(j.faq.items),
+    buildFAQSchema(pozycjeFaq.map((f) => ({ q: f.q, a: f.a }))),
     buildItemListSchema({
       name: "AEJaCA Handcrafted Jewelry Collection",
       url: pageUrl,
@@ -286,7 +296,7 @@ export default function Jewelry() {
       {/* FAQ, moved right after calculator so users get answers
           before they need to scroll through portfolio / reviews.
           AI assistants also rank FAQ above-the-fold higher. */}
-      <FAQ data={j.faq} accent="amber" id="faq" />
+      <FAQ data={{ ...j.faq, items: pozycjeFaq }} accent="amber" id="faq" />
 
       <div className="gradient-divider" />
 

@@ -13,6 +13,7 @@
 
 import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import PYTANIA from "../data/faq/miarka.js";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingSizerPrint from "../components/calculators/RingSizerPrint.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -96,33 +97,6 @@ const SEO_META = {
   },
 };
 
-const FAQ = {
-  pl: [
-    { q: "Czy miarka do wydruku jest dokładna?", a: "Tak, pod jednym warunkiem: wydruk musi być w skali 100%. Opcja „Dopasuj do strony” zmniejsza kartkę o kilka procent, co przy obwodzie palca oznacza pomyłkę o jeden do dwóch rozmiarów. Dlatego na arkuszu jest prostokąt w rozmiarze karty płatniczej i linijka 100 mm do sprawdzenia." },
-    { q: "O jakiej porze dnia mierzyć palec?", a: "Wieczorem. Rano palce są węższe nawet o pół rozmiaru, a po wysiłku, w upale albo po zmarznięciu różnica dochodzi do całego rozmiaru." },
-    { q: "Czy rozmiar EU to obwód palca?", a: "Tak. W systemie europejskim rozmiar równa się obwodowi palca w milimetrach. Obwód 54 mm to rozmiar 54, czyli średnica wewnętrzna 17,2 mm." },
-    { q: "Czy szeroka obrączka wymaga innego rozmiaru?", a: "Tak. Obrączka szersza niż 6 mm siedzi ciaśniej, bo dotyka większej powierzchni palca. Weź pół rozmiaru więcej niż zmierzony." },
-    { q: "Mam dużą kostkę, co wtedy?", a: "Zmierz osobno kostkę i nasadę palca, a potem wybierz wartość pośrednią. Pierścionek musi przejść przez kostkę, ale nie może obracać się luźno na nasadzie." },
-    { q: "Czy da się zmienić rozmiar gotowego pierścionka?", a: "Zwykle tak, ale nie zawsze bez śladu. Przy pierścionku z kamieniami na całym obwodzie albo z grawerem wewnątrz zmiana rozmiaru oznacza ingerencję w zdobienie. Dlatego lepiej ustalić rozmiar przed wykonaniem." },
-  ],
-  en: [
-    { q: "Is a printable ring sizer accurate?", a: "Yes, on one condition: the sheet has to print at 100% scale. „Fit to page” shrinks it by a few percent, which on a finger circumference is worth one to two sizes. That is why the sheet carries a payment-card rectangle and a 100 mm ruler to check against." },
-    { q: "What time of day should I measure?", a: "In the evening. Fingers are up to half a size slimmer in the morning, and after exercise, in heat or in the cold the swing reaches a full size." },
-    { q: "Is the EU size the finger circumference?", a: "Yes. In the European system the size equals the circumference in millimetres. A 54 mm circumference is size 54, which is a 17.2 mm inner diameter." },
-    { q: "Does a wide band need a different size?", a: "Yes. A band wider than 6 mm sits tighter because it touches more of the finger. Take half a size up from the measurement." },
-    { q: "My knuckle is large, what then?", a: "Measure the knuckle and the base of the finger separately, then pick a value in between. The ring has to pass the knuckle without spinning loosely at the base." },
-    { q: "Can a finished ring be resized?", a: "Usually yes, but not always invisibly. On a ring set with stones all around, or engraved inside, resizing means touching the decoration. Settling the size before making it is the safer route." },
-  ],
-  de: [
-    { q: "Ist ein ausgedrucktes Ringmaßband genau?", a: "Ja, unter einer Bedingung: der Ausdruck muss in 100% erfolgen. „An Seite anpassen” verkleinert das Blatt um einige Prozent, beim Fingerumfang entspricht das ein bis zwei Größen. Deshalb enthält das Blatt ein Bankkarten-Rechteck und ein 100-mm-Lineal zur Kontrolle." },
-    { q: "Zu welcher Tageszeit sollte man messen?", a: "Abends. Morgens sind Finger bis zu einer halben Größe schlanker, nach Sport, bei Hitze oder Kälte erreicht der Unterschied eine ganze Größe." },
-    { q: "Ist die EU-Größe der Fingerumfang?", a: "Ja. Im europäischen System entspricht die Größe dem Umfang in Millimetern. 54 mm Umfang ist Größe 54, also 17,2 mm Innendurchmesser." },
-    { q: "Braucht ein breiter Ring eine andere Größe?", a: "Ja. Ein Ring breiter als 6 mm sitzt enger, weil er mehr Fingerfläche berührt. Nehmen Sie eine halbe Größe mehr als gemessen." },
-    { q: "Ich habe einen großen Knöchel, was nun?", a: "Messen Sie Knöchel und Fingeransatz getrennt und wählen Sie einen Wert dazwischen. Der Ring muss über den Knöchel passen, darf am Ansatz aber nicht lose drehen." },
-    { q: "Lässt sich ein fertiger Ring in der Größe ändern?", a: "Meistens ja, aber nicht immer spurlos. Bei rundum gefassten Steinen oder einer Innengravur greift die Änderung in den Schmuck ein. Die Größe vorher festzulegen ist der sicherere Weg." },
-  ],
-};
-
 const HOWTO_STEPS = {
   pl: [
     { title: "Sprawdź skalę wydruku", desc: "Wydrukuj arkusz w skali 100% i przyłóż kartę płatniczą do prostokąta na kartce. Musi go zakryć co do milimetra." },
@@ -148,7 +122,9 @@ export default function RingSizerPage() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
   const seo = SEO_META[lang] || SEO_META.pl;
-  const faq = FAQ[lang] || FAQ.pl;
+  // Pytania stoja we wspolnym zbiorze danych, wiec te same odpowiedzi da sie
+  // znalezc przez wyszukiwarke na `/faq/`, bez drugiej kopii tekstu.
+  const faq = PYTANIA.map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
 
   const introRef = useScrollReveal();
   const faqRef = useScrollReveal();

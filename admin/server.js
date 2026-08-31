@@ -1630,6 +1630,9 @@ app.get("/queue", requireAuth, async (req, res) => {
     }));
     res.render("queue", {
       user: req.user, orders, counts: dane.counts,
+      // Lista przewoznikow jest API, nie panelu. Gdy jej nie ma (starsze API),
+      // pole wyboru sie nie rysuje, a mail wraca do podpowiedzi ze strefy.
+      przewoznicy: dane.przewoznicy || [],
       stan, sort: dane.sort || "newest", msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
@@ -1710,6 +1713,9 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         // Powiadomienie klienta idzie tylko wtedy, gdy pracownia je zaznaczyla.
         notify: req.body.notify === "1",
         trackingNumber: (req.body.trackingNumber || "").trim() || undefined,
+        // Przewoznik wybrany przy nadaniu. Puste znaczy "nie podaje", i wtedy
+        // mail wraca do podpowiedzi ze strefy wysylkowej.
+        carrier: (req.body.carrier || "").trim() || undefined,
         note: (req.body.note || "").trim() || undefined,
         // Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj, a zaznaczona
         // dzisiaj, i wtedy termin realizacji wygladalby na przekroczony o dzien.
@@ -1720,13 +1726,13 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
   } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
-app.get("/transfers", requireAuth, async (req, res) => {
-  try {
-    const { orders, reviews = [], closed = [] } = await shopApi("/api/orders/awaiting-transfer");
-    res.render("transfers", { user: req.user, orders, reviews, closed, msg: req.query.msg, err: req.query.err });
-  } catch (err) {
-    res.render("transfers", { user: req.user, orders: [], reviews: [], closed: [], msg: null, err: err.message });
-  }
+// Przelewy NIE maja juz wlasnej strony (decyzja wlasciciela, 2026-08-30).
+// Zamowienie w euro stalo tutaj, a w kolejce nie bylo go w ogole, wiec droga
+// zlecenia zaczynala sie w jednym miejscu, a toczyla w drugim. Potwierdzenie
+// wplaty jest PIERWSZYM KROKIEM kolejki i stoi tam, gdzie reszta etapow.
+// Adres zostaje jako przekierowanie: jest w zakladkach i w starych mailach.
+app.get("/transfers", requireAuth, (req, res) => {
+  res.redirect("/queue?status=awaiting_transfer,payment_review");
 });
 
 app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
@@ -1738,8 +1744,24 @@ app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
         force: req.body.force === "true",
       },
     });
-    back(res, "/transfers", { msg: `${req.params.ref}: potwierdzony` });
-  } catch (err) { back(res, "/transfers", { err: err.message }); }
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: potwierdzony` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+});
+
+// Wplynelo mniej: piszemy do klienta o doplate i dajemy trzy dni. Zamowienie
+// zostaje w kolejce na przystanku "Zapłata", a po terminie wygasa samo.
+app.post("/transfers/:ref/shortfall", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/transfer-shortfall`, {
+      method: "POST",
+      body: {
+        receivedEur: req.body.receivedEur ? Number(req.body.receivedEur) : undefined,
+        by: req.user.email,
+      },
+    });
+    const mail = r.mailed ? "mail poszedl" : "MAIL NIE POSZEDL";
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: prosba o doplate ${r.shortfallEur} EUR, ${mail}` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
 // Rezygnacja: towar i kod wracaja do puli od razu, wiersz zostaje z adnotacja.
@@ -1753,8 +1775,8 @@ app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
       ? `, towar wrocil do sprzedazy (${r.releasedReservations})`
       : "";
     const kod = r.releasedCodes ? ", kod rabatowy zwolniony" : "";
-    back(res, "/transfers", { msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
-  } catch (err) { back(res, "/transfers", { err: err.message }); }
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
 // Kasowanie: tylko pomylki i testy. Backend odmawia, gdy cokolwiek sie wydarzylo,
@@ -1762,8 +1784,8 @@ app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
 app.post("/transfers/:ref/delete", requireAuth, async (req, res) => {
   try {
     await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}`, { method: "DELETE" });
-    back(res, "/transfers", { msg: `${req.params.ref}: skasowane` });
-  } catch (err) { back(res, "/transfers", { err: err.message }); }
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: skasowane` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

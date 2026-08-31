@@ -776,9 +776,12 @@ z kodem, a odpowiedź złożona z pamięci bywa nieaktualna.
 Płatność i realizacja mają OSOBNE strony (od 2026-08-30), bo to dwie różne sprawy i szukanie
 terminu nie ma oznaczać przewijania opisu przelewów. Na stronie realizacji stoją: etapy pracy
 (zapłacone, ustalanie szczegółów, przyjęte do realizacji, w realizacji, gotowe, wysłane albo
-przekazane), reguły terminu, kiedy piszemy, sposoby odbioru i wejście na własne zlecenie.
+przekazane, dostarczone), reguły terminu, kiedy piszemy, sposoby odbioru i wejście na własne zlecenie.
 
 Reguły, które musisz znać na pamięć, bo pytają o nie najczęściej:
+- **Data terminu to PLANOWANA FINALIZACJA**, czyli dzien konca pracy i przekazania
+  paczki kurierowi albo gotowosci do odbioru. To NIE jest dzien doreczenia: czas
+  przewozu liczy sie od niej.
 - **Termin liczymy w dniach KALENDARZOWYCH**, nie roboczych.
 - **Zegar rusza od zapłaty, a przy zleceniu wymagającym ustaleń dopiero od ich domknięcia.**
   Czekanie na odpowiedź klienta nie zjada jego terminu.
@@ -789,11 +792,18 @@ Reguły, które musisz znać na pamięć, bo pytają o nie najczęściej:
 
 ### Najczęściej zadawane pytania, jedno miejsce: https://www.aejaca.com/faq/
 
-Wszystkie pytania i odpowiedzi o płatność, oferty, realizację i dostawę, z wyszukiwarką treści
-i filtrami po tematach. Każda odpowiedź ma własną kotwicę, więc da się podać odnośnik do
-KONKRETNEJ odpowiedzi, a nie do strony, na której trzeba jej szukać. Gdy pytanie jest krótkie
-i typowe, odpowiedz i dorzuć ten adres; gdy dotyczy szczegółu jednej ze stron procesu,
-odeślij na tamtą stronę.
+**Komplet pytań serwisu w jednym miejscu**, z wyszukiwarką treści (odporną na ogonki)
+i filtrami po tematach: o marce, o biżuterii na zamówienie, o sTuDiO, o płatności, o ofertach,
+o realizacji, o wysyłce i odbiorze, o darmowych narzędziach i o współpracy B2B. Każda odpowiedź
+ma własną kotwicę w adresie (#pytanie-...), więc da się podać odnośnik do KONKRETNEJ odpowiedzi,
+a nie do strony, na której trzeba jej szukać.
+
+Każde pytanie stoi RÓWNIEŻ na swojej stronie tematycznej: pytanie o biżuterię na stronie
+biżuterii, pytanie o drukowalność przy narzędziu do sprawdzania modelu. Tekst jest jeden,
+oba miejsca go czytają, więc to samo pytanie nigdy nie dostaje dwóch różnych odpowiedzi.
+
+Gdy pytanie jest krótkie i typowe, odpowiedz i dorzuć ten adres; gdy dotyczy szczegółu jednej
+ze stron, odeślij na tamtą stronę.
 
 ### Oferta ustalona z człowiekiem i zapłata za nią: https://www.aejaca.com/oferta/
 
@@ -812,7 +822,7 @@ silnik, tylko ustalił ją człowiek.
 - **Oferta bywa do skonfigurowania.** Pozycja jest wtedy jednym z trzech: składnikiem rachunku (zawsze w kwocie), wariantem w grupie wyboru (z jednej grupy klient bierze DOKŁADNIE JEDEN) albo dodatkiem (klient dokłada go albo nie). Grup wyboru może być kilka obok siebie, na przykład "pierścionek albo sygnet albo obrączka" i osobno "figurka albo szkatułka", a przy grupie mogą stać dodatki, na przykład polerowanie. Kwota do zapłaty dopasowuje się do zaznaczenia, wybór da się zmieniać aż do zapłaty, a do zamówienia trafiają WYŁĄCZNIE pozycje zaznaczone. Rabat liczy się od zaznaczonego układu, nie od sumy propozycji, a każda zmiana układu kasuje podgląd zniżki, więc kod trzeba wpisać jeszcze raz. Termin ważności jest wspólny dla całej oferty. NIE zgaduj, co konkretna oferta zawiera ani ile kosztuje: klient widzi to na swojej stronie.
 - **Za ofertę da się zapłacić na raty rzeczowe, czyli po kawałku** (od 2026-08-29). Zapłata zamyka POZYCJE, których dotyczy, a nie całą ofertę, więc klient może kupić jeden dodatek dziś, wrócić pod ten sam link i dokupić kolejny, dopóki oferta jest ważna. Pozycja już zlecona pokazuje się wtedy jako opłacona, razem z numerem swojego zamówienia, i nie da się jej wybrać drugi raz; kwota do zapłaty dotyczy wyłącznie reszty. Jest jeden wyjątek: **zapłata za wariant zamyka całą jego grupę wyboru**, bo warianty były alternatywami ("klucz 56 albo 68 mm"), a nie rzeczami do dokupienia. Dodatki stojące przy tej grupie zostają dostępne. Z jednej oferty powstaje wtedy kilka zamówień, każde z własnym numerem i własnym tytułem płatności, a numer oferty zostaje jeden. Gdy nie zostanie już nic do wzięcia, strona oferty mówi, że jest opłacona i zlecona. **Termin ważności NIE przedłuża się po częściowej zapłacie**: po jego upływie na resztę wystawiamy nową ofertę.
 - **Każda pozycja oferty ma termin realizacji w dniach kalendarzowych** (od 2026-08-29). Grupa wyboru bierze najdłuższy termin ze swoich pozycji, a całe zamówienie najdłuższy spośród zaznaczonych, bo paczka wychodzi jedna; zmiana zaznaczenia zmienia termin razem z kwotą. Termin ZAMRAŻA się przy zapłacie. Pozycja może nosić znacznik "wymaga ustalenia szczegółów realizacji" i wtedy po zapłacie zlecenie staje w "Ustalanie szczegółów zlecenia", a **czas realizacji NIE biegnie**, dopóki szczegółów nie ustalimy: klient nic przez to nie traci. NIE zgaduj terminu konkretnej oferty ani zamówienia, klient widzi go na swojej stronie.
-- **Stan zlecenia po zapłacie ma cztery etapy**: Ustalanie szczegółów zlecenia (zegar stoi), Zlecenie w realizacji (zegar biegnie), Zrealizowane (gotowe, czeka na wydanie), Wysłane/Przekazane. Klient widzi je razem ze stanem płatności i z liczbą dni pozostałych do wysyłki na https://www.aejaca.com/order/status/. Wchodzi tam **numerem zamówienia albo numerem oferty razem z adresem e-mail**, na który poszło potwierdzenie; to samo pole stoi w sklepie i w koszyku. Sam numer nie wystarcza, bo zamówienie niesie nazwisko, telefon i adres. Klientowi, który pyta "co z moim zamówieniem", podaj tę drogę zamiast prosić o kontakt.
+- **Stan zlecenia po zapłacie ma sześć etapów**: Ustalanie szczegółów zlecenia (zegar stoi), Czeka w kolejce (zegar biegnie, ale nikt jeszcze nie wziął zlecenia do ręki, i mówimy o tym wprost), Zlecenie w realizacji, Zrealizowane (gotowe, czeka na wydanie drogą, którą klient wybrał), Wysłane/Przekazane, Dostarczone (ostatni przystanek zapala się dopiero po potwierdzeniu doręczenia albo odbioru). Klient widzi je razem ze stanem płatności i z liczbą dni pozostałych do planowanej finalizacji na https://www.aejaca.com/order/status/. Wchodzi tam **numerem zamówienia albo numerem oferty razem z adresem e-mail**, na który poszło potwierdzenie; to samo pole stoi w sklepie i w koszyku. Sam numer nie wystarcza, bo zamówienie niesie nazwisko, telefon i adres. Klientowi, który pyta "co z moim zamówieniem", podaj tę drogę zamiast prosić o kontakt.
 - **Każda wycena i każda oferta jest domyślnie ważna 7 dni**, licząc od założenia numeru, i termin widnieje na stronie oferty. Dotyczy to tak samo wyceny zapisanej z kalkulatora, jak oferty ułożonej ręcznie. Administrator może na konkretnej ofercie ustawić własny termin, więc obowiązuje data z jej strony, nie ta liczba; NIE zgaduj daty ani liczby dni dla konkretnej oferty.
 - **Strona oferty podaje zakres**, czyli opis tego, co wchodzi w kwotę, a czego w niej nie ma. Jeżeli klient mówi, że zakres się nie zgadza, ma napisać przed zapłatą; nie zgaduj, co obejmuje konkretna oferta, bo widzi to na swojej stronie.
 - **Walutę zapłaty wybiera klient, a język ją tylko podpowiada** (od 2026-08-26). Polski zaczyna od złotych, angielski i niemiecki od euro, ale przestawić ją może każdy: w menu języka, w kasie i na stronie oferty. Wybór zostaje zapamiętany w przeglądarce. Waluta rozstrzyga o DRODZE ZAPŁATY: złotówki idą bramką (BLIK, szybki przelew online, potwierdzenie w sekundy), euro przelewem SEPA na nasz rachunek walutowy, z ręcznym księgowaniem, zwykle następnego dnia roboczego. Kwota w euro liczy się z ceny w złotych po kursie NBP z narzutem i zamraża się razem z kursem w chwili składania zamówienia. Oferta ma JEDNĄ walutę dla całej siebie. Cały przebieg, krok po kroku i z terminami, stoi na https://www.aejaca.com/payments/ - odsyłaj tam zamiast opowiadać go z pamięci.
@@ -928,15 +938,26 @@ https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
    nie zjada jego terminu. Na stronie zamowienia widzi, KTOREJ pozycji dotyczy
    pytanie, a po ustaleniach zapisujemy jednym zdaniem, na czym stanelo, i klient
    widzi to samo zdanie.
-3. **Gotowe do pobrania**, dla klienta "przyjete do realizacji". Wszystkie ustalenia
-   domkniete, zlecenie stoi w kolejce, TERMIN JUZ BIEGNIE.
-4. **W realizacji.** Ktos wzial zlecenie do reki. Dla klienta to ten sam stan co
-   wyzej: zaplacil, przyjelismy, termin biegnie.
-5. **Gotowe do wysylki.** Praca skonczona, pakujemy.
+3. **Gotowe do pobrania**, dla klienta "czeka w kolejce". Wszystkie ustalenia
+   domkniete, zlecenie stoi w kolejce, TERMIN JUZ BIEGNIE, ale NIKT GO JESZCZE
+   NIE WZIAL DO REKI i mowimy o tym wprost.
+4. **W realizacji.** Ktos wzial zlecenie do reki. Od 2026-08-30 to OSOBNY
+   przystanek na osi czasu klienta, a nie ten sam co wyzej: zlecenie lezace
+   w kolejce nie ma sie przedstawiac jako juz robione.
+5. **Gotowe.** Praca skonczona. Przy wysylce pakujemy, przy odbiorze osobistym
+   przygotowujemy i umawiamy godzine, przy plikach udostepniamy pobranie. Mail
+   i strona zlecenia mowia o DRODZE WYBRANEJ PRZEZ KLIENTA, nie o obu naraz.
 6. **Wyslane albo przekazane.** Przy wysylce numer przesylki pojawia sie na stronie
-   zamowienia i w wiadomosci. Przy odbiorze osobistym umawiamy godzine.
+   zamowienia i w wiadomosci, razem z NAZWA PRZEWOZNIKA i odnosnikiem do
+   sledzenia (InPost w Polsce, DHL w Europie). Przy odbiorze osobistym umawiamy
+   godzine.
+7. **Dostarczone albo odebrane.** Ostatni przystanek zapala sie dopiero po
+   POTWIERDZENIU doreczenia. Paczka wlozona do paczkomatu to jeszcze nie paczka
+   odebrana, wiec do tej chwili droga na stronie zlecenia nie jest zamknieta.
 
 **Termin realizacji:**
+- data to PLANOWANA FINALIZACJA, czyli koniec pracy i przekazanie paczki, a nie
+  dzien doreczenia
 - liczymy w dniach KALENDARZOWYCH, nie roboczych
 - biegnie od zaplaty, a przy zleceniu z ustaleniami dopiero od ich domkniecia
 - przy kilku pozycjach obowiazuje NAJDLUZSZY z terminow, bo paczka wychodzi jedna
@@ -947,6 +968,21 @@ https://www.aejaca.com/order-process/ (co dalej), gdzie stoi to samo w calosci.
 **Powiadomienia:** klient dostaje maila przy istotnych etapach (wejscie do
 realizacji, gotowe, wyslane). Nie piszemy przy kazdym ruchu w warsztacie.
 Aktualny stan zawsze jest na stronie zamowienia.
+
+**Wplata inna niz kwota zamowienia** (przelew w euro): drobna roznica na minus,
+zwykle prowizja banku posredniczacego, przechodzi bez pytania i pokrywamy ja my
+(prog: 5 EUR albo 2% kwoty, co mniejsze). Przy wiekszej roznicy piszemy z prosba
+o doplate i czekamy TRZY DNI; bez doplaty zamowienie wygasa, a otrzymana kwota
+wraca na rachunek nadawcy. Nadwyzke zwracamy, a realizacja rusza od razu.
+Zamowienie, ktore wygaslo bez wplaty, TEZ dostaje wiadomosc: przelew wyslany po
+terminie wroci do klienta. Klientowi pytajacemu "co z moja wplata" podaj te
+droge zamiast obiecywac sprawdzenie.
+
+**Zamowienie platne przelewem w euro** ma te sama strone zamowienia co kazde
+inne i te sama os czasu (od 2026-08-30). Pierwszy przystanek nazywa sie wtedy
+"Zapłata" i swieci, dopoki nie zaksiegujemy wplaty. Klientowi, ktory pyta "czy
+dostaliscie przelew", podaj wlasnie ten adres: po potwierdzeniu przystanek
+dostaje date i zielen, a zlecenie wchodzi do kolejki.
 
 **Strona zamowienia:** https://www.aejaca.com/order/status/ . Prywatny odnosnik
 przychodzi mailem po zaplacie. Kto go zgubil, wchodzi tam numerem zamowienia

@@ -146,10 +146,10 @@ Strona zamowienia pokazywala termin i nic wiecej, a klient pyta przede
 wszystkim "co sie dzieje". Os stoi w pionie, bo strona zamowienia jest waska
 kolumna, a piec przystankow w poziomie lamalo podpisy na dwie linie.
 
-Etapy "gotowe do pobrania" i "w realizacji" sa dla klienta JEDNYM stanem:
-w obu zaplacil, przyjelismy i termin biegnie. Roznica jest wewnetrzna. Daty
-formatujemy z napisu, a nie przez `Intl`, bo dane ICU w Node i w przegladarce
-bywaja z roznych wersji, a rozjazd wyrzuca cale poddrzewo (ADR-0022).
+Etapy "gotowe do pobrania" i "w realizacji" byly dla klienta JEDNYM stanem.
+Punkt 13 to odwoluje. Daty formatujemy z napisu, a nie przez `Intl`, bo dane
+ICU w Node i w przegladarce bywaja z roznych wersji, a rozjazd wyrzuca cale
+poddrzewo (ADR-0022).
 
 ### 11. Link do zamowienia stoi w kolejce
 
@@ -164,8 +164,77 @@ a zdarza sie tez, ze rzecz wymagajaca rozmowy przeszla przez oferte bez niego.
 Bez pola w kolejce takie zlecenie na zawsze mowiloby "ustalenia nie byly
 wymagane" i nigdy nie stanelo by na wlasciwym przystanku osi.
 
+### 13. Klient widzi kolejke osobno, a data nazywa sie planowana finalizacja
+
+Decyzja wlasciciela z 2026-08-30, poprawka do punktow 10 i 3.
+
+**Kolejka jest osobnym przystankiem.** Punkt 10 chowal przed klientem roznice
+miedzy "czeka" a "robimy", wiec dwa powiadomienia pod rzad rysowaly ten sam
+obrazek, a zlecenie lezace w kolejce przedstawialo sie jako juz robione. Os czasu
+ma teraz "Czeka w kolejce" i "W realizacji" osobno, w mailu i na stronie
+zamowienia, ze zdaniem mowiacym wprost, ze nikt jeszcze nie wzial zlecenia do
+reki, ale termin juz biegnie.
+
+**Data nazywa sie "Planowana finalizacja", nie "Planowana wysylka".** Ta sama
+data stala pod nazwa mowiaca o wysylce przy zamowieniu odbieranym osobiscie
+i przy zamowieniu, ktore w calosci jest plikiem. Nazwa neutralna jest prawdziwa
+we wszystkich trzech drogach i nie kaze rozgalezac etykiety. Mowi tez, czego
+data NIE obejmuje: to dzien konca pracy i przekazania paczki, a nie dzien
+doreczenia. Angielski: "Planned completion", niemiecki: "Geplante
+Fertigstellung".
+
+**Zdanie o wydaniu bierze sie z `delivery_method`.** Wczesniej mail i strona
+wyliczaly klientowi obie mozliwosci naraz ("do wysylki albo do odbioru"), choc
+sposob dostawy znamy od zamowienia, a przy etapie "wyslane" kod podmienial
+fragmenty gotowego zdania, osobno dla kazdego jezyka. Zdania stoja teraz jako
+`{ ship, pickup, digital }` i wybiera je jedna funkcja. Podmiana slow wymagala
+trzech regulek na jezyk i milczaco przestawala dzialac przy kazdej poprawce
+stylistycznej.
+
+**Karta z terminem znika na etapie "gotowe".** Praca jest skonczona, wiec
+"planowana finalizacja" z data w przyszlosci przeczylaby zdaniu stojacemu wyzej
+w tym samym mailu. Zegar przypomnien to osobna sprawa i dalej obejmuje `ready`
+(punkt 3): pracownia ma wiedziec, ze spakowana paczka nie jedzie.
+
+### 14. Doreczenie jest przystankiem, a przewoznika wybiera pracownia
+
+Decyzja wlasciciela z 2026-08-30, poprawka do punktu 5.
+
+**Ostatnia kropka zapala sie dopiero po potwierdzeniu.** "Wyslane" i
+"zamkniete" dzielily jeden przystanek, wiec paczka wlozona do paczkomatu
+wygladala tak samo jak paczka odebrana, a droga klienta nigdy nie konczyla sie
+na zielono. Doreczenie ma wlasny przystanek ("Dostarczone", przy odbiorze
+osobistym "Odebrane") ze stemplem `completed_at`, na osi klienta, w mailu
+i w panelu. Potwierdzenie zapala CALA os: ostatni przystanek jako "biezacy"
+swiecilby na bursztynowo, czyli mowilby "trwa" o czyms, co juz sie stalo.
+Przycisk w panelu nazywa sie "Dostarczone", a nie "Zakonczone": pracownia ma
+wiedziec, co potwierdza, bo to jest widoczne dla klienta.
+
+**Przewoznika wybiera sie przy nadaniu.** Sam numer przesylki jest dla klienta
+ciagiem dwudziestu czterech cyfr. Strefa wysylkowa mowi, kto zwykle wozi w tamta
+strone, ale strefy swiatowe nosza dwie nazwy naraz ("DHL / FedEx"), a paczka
+jedzie jedna. Kolumna `carrier` trzyma nazwe wybrana w panelu, biala lista stoi
+przy strefach (`pricing/shipping.js`), a adres sledzenia buduje jeden pomocnik
+uzywany i przez mail, i przez strone zamowienia. Bez wyboru wraca podpowiedz ze
+strefy, a przy dwoch nazwach odsylamy do obu: numer w reku i zadnego miejsca do
+jego wklejenia jest gorsze niz dwa adresy.
+
+Cofniecie sprzed wysylki kasuje przewoznika razem z numerem: obie rzeczy opisuja
+przesylke, ktorej juz nie ma.
+
 ## Alternatywy i powody odrzucenia
 
+- **Przewoznik z samej strefy wysylkowej, bez pola w panelu.** Dziala dla
+  Polski i Europy, ale strefy swiatowe nosza dwie nazwy naraz i klient
+  z Australii dostawalby dwa adresy sledzenia zamiast jednego wlasciwego.
+  Zostaje jako droga zapasowa, gdy pracownia nie wybrala nic.
+- **Przewoznik jako pole tekstowe.** Napis wpisany z reki przechodzi zapis
+  i po cichu nie daje zadnego odnosnika, bo z nazwy budujemy adres. Biala lista
+  odrzuca literowke od razu.
+- **Rozgalezienie samej etykiety terminu** ("Planowana wysylka" przy kurierze,
+  "Gotowe do odbioru" przy odbiorze). Dwie nazwy jednej daty w mailu, na stronie
+  zamowienia i w panelu, a przy zamowieniu cyfrowym zadna z nich nie pasuje.
+  Jedna nazwa neutralna zalatwia wszystkie trzy drogi.
 - **Zegar startuje przy pobraniu do pracy.** Wtedy oferta nie moze obiecywac
   daty, tylko "14 dni od przyjecia do realizacji", i trzeba to zmienic w ofercie,
   mailu i na stronie zamowienia. Uczciwe, ale slabsze dla klienta: data jest
@@ -223,6 +292,6 @@ wymagane" i nigdy nie stanelo by na wlasciwym przystanku osi.
 
 ## Synchronizacja
 
-- `scripts/orders-schema.sql`: kolumna `queued_at`, status `queued`, indeksy.
+- `scripts/orders-schema.sql`: kolumny `queued_at` i `carrier`, status `queued`, indeksy.
 - `PROJECT_RULES.md`: sekcja o terminie realizacji.
 - `CLAUDE.md`, `AGENTS.md`: regula zglaszania nielogicznosci przed kodem.

@@ -1,32 +1,24 @@
 // ============================================================
-// NAJCZESCIEJ ZADAWANE PYTANIA, JEDNO ZRODLO
+// PYTANIA O ZAKUP, OFERTE I REALIZACJE
 // ============================================================
-// Pytania stoja tutaj, a nie w tresci stron, bo czyta je kilka miejsc naraz:
-// strona platnosci bierze swoj temat, strona procesu swoj, a `/faq/` wszystkie
-// razem z wyszukiwarka. Trzy kopie tego samego pytania rozjechalyby sie przy
-// pierwszej poprawce, i to po cichu: klient dostalby dwie rozne odpowiedzi
-// w zaleznosci od tego, na ktora strone trafil.
+// Pytania stoja w danych, a nie w pliku strony, bo czyta je DWOJE: strona,
+// ktorej dotycza, i wspolna sekcja `/faq/` z wyszukiwarka. Kopia w drugim
+// miejscu rozjechalaby sie przy pierwszej poprawce, i to po cichu: klient
+// dostalby dwie rozne odpowiedzi zaleznie od tego, gdzie trafil.
 //
-// `temat` decyduje, gdzie pytanie sie pokaze i jak filtruje sie na `/faq/`.
 // `id` jest kotwica w adresie, wiec ZOSTAJE, nawet gdy zmieni sie tresc:
-// odnosnik wyslany klientowi mailem ma dzialac za rok.
+// odnosnik do konkretnej odpowiedzi ma dzialac za rok.
 
-import { EUR_FX_MARGIN } from "../pricing/currency.js";
+import { EUR_FX_MARGIN } from "../../pricing/currency.js";
 
 /** Narzut kursowy jako procent, liczony z tej samej stalej co kasa. */
 const FX_PCT = Math.round((EUR_FX_MARGIN - 1) * 100);
 
-export const FAQ_TEMATY = [
-  { id: "platnosc", label: { pl: "Płatność", en: "Payment", de: "Zahlung" } },
-  { id: "oferta", label: { pl: "Oferty i wyceny", en: "Offers and quotes", de: "Angebote" } },
-  { id: "realizacja", label: { pl: "Realizacja", en: "Order process", de: "Ablauf" } },
-  { id: "dostawa", label: { pl: "Dostawa i odbiór", en: "Delivery", de: "Lieferung" } },
-];
-
-export const FAQ = [
+export default [
   {
     id: "karta",
     temat: "platnosc",
+    strona: "/payments/",
     q: {
       pl: "Czy mogę zapłacić kartą?",
       en: "Can I pay by card?",
@@ -41,6 +33,7 @@ export const FAQ = [
   {
     id: "numer-oferty",
     temat: "oferta",
+    strona: "/payments/",
     q: {
       pl: "Gdzie wpisuję numer oferty?",
       en: "Where do I enter the offer number?",
@@ -55,6 +48,7 @@ export const FAQ = [
   {
     id: "kod-rabatowy",
     temat: "platnosc",
+    strona: "/payments/",
     q: {
       pl: "Gdzie wpisuję kod rabatowy?",
       en: "Where do I enter a discount code?",
@@ -69,6 +63,7 @@ export const FAQ = [
   {
     id: "rabat-dostawa",
     temat: "platnosc",
+    strona: "/payments/",
     q: {
       pl: "Czy rabat obejmuje dostawę?",
       en: "Does a discount cover delivery?",
@@ -83,6 +78,7 @@ export const FAQ = [
   {
     id: "cena-euro",
     temat: "platnosc",
+    strona: "/payments/",
     q: {
       pl: "Dlaczego cena w euro nie jest ceną w złotych podzieloną przez kurs?",
       en: "Why is the euro price not the złoty price divided by the rate?",
@@ -97,6 +93,7 @@ export const FAQ = [
   {
     id: "waluta-jezyk",
     temat: "platnosc",
+    strona: "/payments/",
     q: {
       pl: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?",
       en: "I am in Poland but reading the site in English. Which currency will I pay in?",
@@ -111,6 +108,7 @@ export const FAQ = [
   {
     id: "waznosc-oferty",
     temat: "oferta",
+    strona: "/payments/",
     q: {
       pl: "Jak długo ważna jest oferta?",
       en: "How long is an offer valid?",
@@ -125,6 +123,7 @@ export const FAQ = [
   {
     id: "kwota-po-otwarciu",
     temat: "oferta",
+    strona: "/payments/",
     q: {
       pl: "Kwota po otwarciu zapisanej wyceny różni się od tej, którą pamiętam. Dlaczego?",
       en: "The amount on my saved quote differs from the one I remember. Why?",
@@ -137,22 +136,9 @@ export const FAQ = [
     },
   },
   {
-    id: "ile-trwa",
-    temat: "realizacja",
-    q: {
-      pl: "Ile trwa realizacja i skąd wiem, na kiedy?",
-      en: "How long does it take and how do I know the date?",
-      de: "Wie lange dauert es und woher kenne ich den Termin?",
-    },
-    a: {
-      pl: "Termin liczymy w dniach kalendarzowych. Przy zleceniu, które nie wymaga ustaleń, biegnie od zapłaty; przy takim, które ich wymaga, dopiero od chwili, gdy wszystko jest ustalone. Konkretną datę widzisz na stronie zlecenia, razem z liczbą dni, które zostały. Gdy w zamówieniu jest kilka rzeczy, obowiązuje najdłuższy z terminów, bo paczka wychodzi jedna.",
-      en: "We count in calendar days. For an order that needs no agreeing, the clock starts at payment; for one that does, only once everything is agreed. The exact date is on your order page together with the days remaining. With several items in one order, the longest of their times applies, because one parcel goes out.",
-      de: "Wir rechnen in Kalendertagen. Bei einem Auftrag ohne Absprachen läuft die Zeit ab der Zahlung, bei einem mit Absprachen erst, wenn alles geklärt ist. Das genaue Datum steht auf Ihrer Auftragsseite, samt der verbleibenden Tage. Bei mehreren Positionen gilt die längste Zeit, denn es geht ein Paket raus.",
-    },
-  },
-  {
     id: "ustalanie-szczegolow",
     temat: "realizacja",
+    strona: "/order-process/",
     q: {
       pl: "Co znaczy „ustalanie szczegółów”?",
       en: "What does agreeing the details mean?",
@@ -167,20 +153,22 @@ export const FAQ = [
   {
     id: "powiadomienia",
     temat: "realizacja",
+    strona: "/order-process/",
     q: {
       pl: "Czy dostanę wiadomość, gdy coś się zmieni?",
       en: "Will I be told when something changes?",
       de: "Werde ich informiert, wenn sich etwas ändert?",
     },
     a: {
-      pl: "Tak, przy istotnych etapach: gdy zlecenie wchodzi do realizacji, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia.",
-      en: "Yes, at the stages that matter: when the order enters the workshop, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page.",
-      de: "Ja, bei den wichtigen Etappen: wenn der Auftrag in die Werkstatt geht, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie immer auf der Auftragsseite.",
+      pl: "Tak, przy istotnych etapach: gdy zlecenie trafia do kolejki i rusza termin, gdy ktoś bierze je do ręki, gdy jest gotowe i gdy wychodzi. Wiadomość nie idzie z automatu przy każdym ruchu w warsztacie, bo skrzynka nie jest dziennikiem naszej pracy. Aktualny stan masz zawsze na stronie zlecenia.",
+      en: "Yes, at the stages that matter: when the order joins the queue and the clock starts, when someone picks it up, when it is finished and when it leaves. We do not email on every move inside the workshop, because your inbox is not our work log. The current state is always on your order page.",
+      de: "Ja, bei den wichtigen Etappen: wenn der Auftrag in die Warteschlange kommt und die Frist beginnt, wenn ihn jemand in die Hand nimmt, wenn er fertig ist und wenn er hinausgeht. Wir schreiben nicht bei jedem Schritt in der Werkstatt, denn Ihr Postfach ist kein Arbeitsjournal. Den aktuellen Stand finden Sie immer auf der Auftragsseite.",
     },
   },
   {
     id: "zgubiony-link",
     temat: "realizacja",
+    strona: "/order-process/",
     q: {
       pl: "Zgubiłem link do zamówienia. Jak sprawdzę, co się dzieje?",
       en: "I lost the link to my order. How do I check on it?",
@@ -195,6 +183,7 @@ export const FAQ = [
   {
     id: "przesuniety-termin",
     temat: "realizacja",
+    strona: "/order-process/",
     q: {
       pl: "Termin się przesunął. Co wtedy?",
       en: "The date moved. What then?",
@@ -209,13 +198,14 @@ export const FAQ = [
   {
     id: "odbior",
     temat: "dostawa",
+    strona: "/order-process/",
     q: {
       pl: "Jak odbieram gotową rzecz?",
       en: "How do I collect the finished piece?",
       de: "Wie erhalte ich das fertige Stück?",
     },
     a: {
-      pl: "Tak, jak wybrałeś przy zamówieniu: paczkomat InPost, kurier albo odbiór osobisty w Józefosławiu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy się na godzinę.",
+      pl: "Tak, zgodnie z wyborem przy zamówieniu: paczkomat InPost, kurier albo odbiór osobisty w Józefosławiu. Po nadaniu numer przesyłki pojawia się na stronie zlecenia i w wiadomości. Przy odbiorze osobistym umawiamy się na godzinę.",
       en: "However you chose when ordering: an InPost locker, a courier or personal pickup in Józefosław. Once posted, the tracking number appears on your order page and in the message. For a personal pickup we agree a time.",
       de: "So, wie Sie es bei der Bestellung gewählt haben: InPost-Paketstation, Kurier oder Selbstabholung in Józefosław. Nach dem Versand erscheint die Sendungsnummer auf der Auftragsseite und in der Nachricht. Für die Selbstabholung stimmen wir eine Uhrzeit ab.",
     },
@@ -223,6 +213,7 @@ export const FAQ = [
   {
     id: "po-zaplacie",
     temat: "realizacja",
+    strona: "/order-process/",
     q: {
       pl: "Zapłaciłem, i co dalej?",
       en: "I have paid, what now?",
@@ -235,32 +226,3 @@ export const FAQ = [
     },
   },
 ];
-
-/** Pytania jednego tematu, w kolejnosci z tablicy. */
-export function faqTematu(temat) {
-  return FAQ.filter((f) => f.temat === temat);
-}
-
-/**
- * Wyszukiwanie po tresci, bez rozrozniania wielkosci liter i polskich znakow.
- *
- * `normalizuj` sciaga znaki diakrytyczne, bo klient szukajacy "termin
- * realizacji" wpisuje rownie czesto "termin realizacji" bez ogonkow, a pytanie
- * ktore sie nie znajduje jest z jego strony pytaniem, ktorego nie ma.
- */
-export function normalizuj(tekst) {
-  return String(tekst || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\u0142/g, "l")
-    .toLowerCase();
-}
-
-export function szukajFaq(fraza, lang, temat = null) {
-  const szukane = normalizuj(fraza).trim();
-  return FAQ.filter((f) => {
-    if (temat && f.temat !== temat) return false;
-    if (!szukane) return true;
-    return normalizuj(`${f.q[lang] || f.q.pl} ${f.a[lang] || f.a.pl}`).includes(szukane);
-  });
-}

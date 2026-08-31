@@ -174,13 +174,6 @@ export default {
     ctaText: "Ob individueller Schmuck oder technischer Prototyp, wir sind hier, um zu helfen.",
     ctaBtn: "Kontakt aufnehmen",
     faqHeading: "Häufig gestellte Fragen",
-    faq: [
-      { q: "Was ist AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) ist ein unabhängiges polnisches Designstudio, gegründet 2023 in Józefosław bei Warschau. Es verbindet handgefertigten Schmuck (AEJaCA Jewelry) mit digitaler Fertigung auf Bestellung - 3D-Druck, Lasergravur und Harzguss (AEJaCA sTuDiO). Wir betreuen Kunden auf Polnisch, Englisch und Deutsch und versenden weltweit." },
-      { q: "Fertigen Sie individuellen Schmuck an?", a: "Ja. Wir entwerfen und fertigen einzigartigen Schmuck nach Maß - Verlobungsringe, Eheringe, Halsketten, Armbänder und Ohrringe aus 925er Sterlingsilber und 14K/18K-Gold mit echten Edelsteinen. Wir modellieren in 3D (Rhino, Fusion 360) aus einer Skizze oder Idee und fertigen im Wachsausschmelzverfahren mit Handveredelung." },
-      { q: "Was bietet AEJaCA sTuDiO?", a: "AEJaCA sTuDiO ist digitale Fertigung auf Bestellung: 3D-Modellierung / CAD technischer und funktionaler Teile (Rhino, Fusion 360), FDM/SLA-3D-Druck, CO2-Lasergravur und -schnitt, Faserlaser-Markierung, Harzguss und Prototyping. Sie können Ihre eigene STL/SVG-Datei hochladen oder ein Modell von Grund auf entwerfen lassen." },
-      { q: "Was kostet eine Bestellung und wie schnell erhalte ich ein Angebot?", a: "Mit den AEJaCA-Rechnern erhalten Sie online in etwa 30 Sekunden ein Angebot - ohne auf eine E-Mail zu warten. Der einfache Modus liefert eine schnelle Schätzung, der erweiterte Modus volle Kontrolle über Metall, Steine und Veredelung. Zum Beispiel: ein Silberring mit Edelstein ab 95 €, ein 3D-gedruckter Schlüsselanhänger ab 6 €." },
-      { q: "Wo befindet sich AEJaCA und versenden Sie international?", a: "Das Studio befindet sich in Józefosław bei Warschau und versendet weltweit. Innerhalb Polens: InPost-Paketautomat 16,49 PLN, Kurier 19,49 PLN, kostenloser Versand ab 400 PLN. Wir liefern auch in die EU, nach Großbritannien und in die USA per DHL Express." },
-    ],
   },
 
   jewelry: {
@@ -320,18 +313,6 @@ export default {
     faq: {
       tag: "Häufige Fragen",
       title: "Häufig Gestellte Fragen",
-      items: [
-        { q: "Wie lange dauert ein individuelles Schmuckprojekt?", a: "Normalerweise 2–4 Wochen, je nach Komplexität. Nach Besprechung Ihres Designs geben wir einen genauen Zeitrahmen an." },
-        { q: "Kann ich meinen eigenen Edelstein mitbringen?", a: "Selbstverständlich! Wir arbeiten gerne mit Steinen, die Sie bereitstellen. Wir beraten zum besten Fassungsansatz." },
-        { q: "Bieten Sie Größenänderungen oder Modifikationen an?", a: "Ja. Wir können Ringe vergrößern/verkleinern und Designs modifizieren. Kontaktieren Sie uns mit Ihren Wünschen." },
-        { q: "Mit welchen Metallen arbeiten Sie?", a: "Hauptsächlich Sterlingsilber (925) und Gold (14K, 18K). Wir arbeiten auch mit Mischmetallen für einzigartige Designs." },
-        { q: "Wie werden die Preise bestimmt?", a: "Der Preis hängt von Metall, Edelsteinen, Komplexität und Arbeitsaufwand ab. Wir erstellen vor Beginn ein detailliertes Angebot." },
-        { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
-        { q: "Wie lange dauert die Auftragsabwicklung?", a: "Bei vorhandenen Materialien (Metall + Steine) bis zu 7 Werktage. Individuell gefertigte oder gravierte Stücke, bis zu 14 Tage. Sie erhalten eine Sendungsverfolgungsnummer, sobald die Bestellung versandt wird." },
-        { q: "Kann ich Schmuck zurückgeben?", a: "Universalprodukte, ja, innerhalb von 14 Tagen nach Lieferung (ungetragen, Originalverpackung). Maßanfertigungen (Gravur, Sondergröße) sind vom Umtausch ausgeschlossen. Details auf unserer [Rückgabeseite](/returns)." },
-        { q: "Was kostet der Versand?", a: "InPost-Paketautomat 16,49 PLN, Kurier 19,49 PLN, kostenloser Versand ab 400 PLN. International ab 100 PLN (Deutschland, Tschechien, Slowakei, Litauen), übrige EU 140 PLN. Details auf unserer [Versandseite](/shipping)." },
-        { q: "Welche Garantie bieten Sie?", a: "24 Monate auf Herstellungsfehler. Die Garantie deckt strukturelle Mängel, nicht mechanische Beschädigungen oder normalen Verschleiß. Vollständige Details auf unserer [Garantieseite](/warranty)." },
-      ],
     },
 
     tips: {
@@ -558,15 +539,6 @@ export default {
     faq: {
       tag: "Häufige Fragen",
       title: "Häufig Gestellte Fragen",
-      items: [
-        { q: "Gibt es eine Mindestbestellmenge?", a: "Wir nehmen Einzelprototyp-Aufträge ebenso wie Serienproduktion an. Keine Mindestmenge erforderlich." },
-        { q: "Wie lange dauert ein typisches Projekt?", a: "Einfache Projekte: 1–3 Tage. Komplexe Prototypen: 1–2 Wochen. Serienproduktion je nach Menge." },
-        { q: "Können Sie mit meinen eigenen 3D-Dateien arbeiten?", a: "Ja! Wir akzeptieren STL, STEP, OBJ und die meisten gängigen CAD-Formate. Wir können auch von Grund auf designen." },
-        { q: "Mit welchen Materialien arbeiten Sie?", a: "PLA, PETG, ABS, Harz für 3D-Druck. Metalle, Holz, Acryl, Glas, Leder für Laserarbeiten. UV- und Epoxidharze für Guss." },
-        { q: "Bieten Sie Designdienstleistungen an?", a: "Selbstverständlich. Unser Team bietet vollständige CAD-Design-Services, vom Konzept bis zu fertigungsreifen Dateien." },
-        { q: "Wie werden Preise berechnet?", a: "Basierend auf Technologie, Material, Größe, Komplexität und Menge. Wir erstellen immer vorab ein detailliertes Angebot." },
-        { q: "Wie lange dauert die Projektabwicklung?", a: "Bei vorhandenem Material 3–5 Werktage (je nach Menge). Materialbestellung verlängert die Zeit um 3–7 Tage. Wenn die Auftragsausführung die Beschaffung spezialisierter Komponenten gemäß der Spezifikation erfordert (z. B. bestimmte Edelsteine, Spezialfilamente, elektronische Bauteile), kann sich die Lieferzeit um weitere 7–14 Werktage verlängern." },
-      ],
     },
 
     tips: {

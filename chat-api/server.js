@@ -25,7 +25,13 @@ import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
 import { MATERIAL_CORRECTIONS } from "./pricing/materialCorrections.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from "./pricing/currency.js";
-import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
+import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry, PRZEWOZNICY } from "./pricing/shipping.js";
+import { LEAD_MAILE } from "./leadMail.js";
+// Pod wlasna nazwa: w tym pliku `dni` jest juz lokalnym pomocnikiem liczacym
+// dni OD daty, i to w innym zakresie. Wolanie go tutaj przechodzilo kontrole
+// nieznanych funkcji, bo nazwa gdzies istnieje, a wywalilo by sie dopiero
+// w produkcji, przy pierwszym uruchomieniu przypomnien.
+import { dni as dniSlownie } from "./mailSzata.js";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
   listProducts, getProduct, reserveProduct, consumeReservations,
@@ -33,10 +39,11 @@ import {
 } from "./products.js";
 import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
-  releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
+  releaseOrderRedemptions, normalizeCode, randomCode, issueSingleUseCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
+  sendTopUpRequest, sendOrderExpired, sendLeadMail,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
 } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
@@ -406,6 +413,20 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`).catch(() => {});
+  // Przewoznik wybrany przy nadaniu. Strefa mowi tylko, kto zwykle wozi w tamta
+  // strone, a strefy swiatowe nosza dwie nazwy naraz, wiec bez tego pola mail
+  // do klienta z Australii musialby odsylac do dwoch stron sledzenia.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
+  // Chwila prosby o doplate. Od niej biegna trzy dni na uzupelnienie kwoty.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_asked_at TIMESTAMPTZ`).catch(() => {});
+  // Jedno przypomnienie na kod i slad po wiadomosciach sprzed zamowienia.
+  pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS reminded_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`CREATE TABLE IF NOT EXISTS mail_log (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    rodzaj VARCHAR(40) NOT NULL,
+    sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS mail_log_email_idx ON mail_log (LOWER(email), sent_at DESC)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
   // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
@@ -2907,12 +2928,24 @@ async function expireStaleOrders() {
       `UPDATE orders SET status = 'expired'
         WHERE status IN ('awaiting_payment','awaiting_transfer')
           AND paid_at IS NULL AND expires_at IS NOT NULL AND expires_at < NOW()
-        RETURNING id, order_ref`
+        RETURNING id, order_ref, payment_method`
     );
     for (const o of rows) {
       await releaseOrderReservations(pool, o.id);
       // Kod z przeterminowanego zamowienia wraca do puli razem z towarem.
       await releaseOrderRedemptions(pool, o.id);
+      // Zamowienie zamykalo sie PO CICHU (poprawka 2026-08-30). Klient, ktory
+      // przegapil termin, dowiadywal sie o tym dopiero wtedy, gdy sam zajrzal
+      // na strone, a ten, ktory przelal pieniadze dzien po terminie, nie mial
+      // skad wiedziec, ze wracaja do niego. Mail nie blokuje wygaszania: towar
+      // ma wrocic do sprzedazy niezaleznie od tego, czy poczta zadziala.
+      //
+      // TYLKO przy przelewie. Zamowienie kartowe wygasa po siedmiu dniach
+      // najczesciej dlatego, ze klient zamknal karte w koszyku i nigdy nie
+      // wrocil. Wiadomosc "zamowienie zostalo zamkniete" bylaby wtedy poczta
+      // za porzucony koszyk, a zdanie o przelewie wyslanym po terminie nie
+      // mialoby przy niej sensu.
+      if (o.payment_method === "bank_transfer") sendOrderExpired(pool, o.id).catch(() => {});
     }
     if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
   } catch (e) {
@@ -2979,6 +3012,51 @@ async function przypomnijOTerminach() {
   }
 }
 if (pool) cron.schedule("0 7 * * *", przypomnijOTerminach, { timezone: "Europe/Warsaw" });
+
+/**
+ * Przypomnienie o kodzie na piec dni przed koncem waznosci (decyzja
+ * wlasciciela, 2026-08-31).
+ *
+ * Trzy warunki naraz, i kazdy z nich jest po cos:
+ * - kod NIETKNIETY, bo przypominanie o kodzie juz uzytym jest halasem;
+ * - `reminded_at IS NULL`, bo przypomnienie ma byc JEDNO na kod;
+ * - nic innego nie poszlo dzisiaj na ten adres, bo dwie nasze wiadomosci
+ *   w jednej dobie to nie opieka, tylko nagabywanie. Ta czeka do jutra,
+ *   i moze czekac: do konca waznosci zostalo piec dni.
+ */
+async function przypomnijOKodach() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT code, issued_to, value, valid_to
+         FROM discount_codes
+        WHERE active = TRUE AND used_count = 0 AND reminded_at IS NULL
+          AND issued_to IS NOT NULL AND valid_to IS NOT NULL
+          AND valid_to::date - CURRENT_DATE = $1
+        ORDER BY valid_to
+        LIMIT 200`,
+      [DNI_PRZED_KONCEM_KODU]
+    );
+    for (const k of rows) {
+      if (await pisalismyDzisiaj(k.issued_to)) continue;
+      const wiadomosc = LEAD_MAILE.przypomnienieKodu({
+        lang: "pl", to: k.issued_to, kod: k.code,
+        procent: k.value != null ? `${k.value}%` : null,
+        waznyDo: String(k.valid_to).slice(0, 10).split("-").reverse().join("."),
+        dni: dniSlownie(DNI_PRZED_KONCEM_KODU, "pl"),
+      });
+      const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
+      if (!poszlo) continue;
+      // Stempel PO udanej wysylce. Postawiony wczesniej zamknalby przypomnienie
+      // na zawsze przy pierwszej awarii poczty, i to po cichu.
+      await pool.query("UPDATE discount_codes SET reminded_at = NOW() WHERE code = $1", [k.code]);
+      await zapiszSladMaila(k.issued_to, "przypomnienieKodu");
+      console.log(`[rabaty] przypomnienie o kodzie ${k.code} poszlo do ${k.issued_to}`);
+    }
+  } catch (e) {
+    console.error("[rabaty] przypomnienia o kodach:", e.message);
+  }
+}
+if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
 
 // Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
 // bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
@@ -3849,36 +3927,105 @@ app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, r
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
 
   const percent = Number.isInteger(req.body?.percent) ? Math.min(req.body.percent, MAX_PERCENT) : 10;
-  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 90;
+  // 45 dni (decyzja wlasciciela, 2026-08-31). Wczesniej 90: kod wazny kwartal
+  // nie jest zacheta, tylko rzecza zapomniana, a przy kruszcu cena metalu
+  // w dniu zapisu i trzy miesiace pozniej to dwie rozne ceny.
+  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 45;
 
   try {
-    const { rows: existing } = await pool.query(
-      `SELECT code, valid_to FROM discount_codes
-        WHERE campaign = 'newsletter' AND issued_to = $1 AND active = TRUE AND used_count = 0
-          AND (valid_to IS NULL OR valid_to > NOW())
-        ORDER BY created_at DESC LIMIT 1`,
-      [email]
-    );
-    if (existing[0]) return res.json({ ok: true, reused: true, code: existing[0].code, percent, validTo: existing[0].valid_to });
-
-    // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
-    // a nie odmowe wyslania maila, wiec probujemy kilka razy.
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = randomCode("AEJ10");
-      const { rows } = await pool.query(
-        `INSERT INTO discount_codes
-           (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note)
-         VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, 'newsletter', $4, $5)
-         ON CONFLICT (code) DO NOTHING
-         RETURNING code, valid_to`,
-        [code, percent, String(days), email, `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`]
-      );
-      if (rows[0]) return res.json({ ok: true, reused: false, code: rows[0].code, percent, validTo: rows[0].valid_to });
-    }
-    res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
+    // Wystawianie kodu stoi w `discounts.js`, bo ta sama droga rozdaje kod
+    // powitalny i rabat doklejony do wyceny sprzed tygodnia. Dwie kopie tego
+    // zapytania rozjechalyby sie przy pierwszej zmianie regul kodu.
+    const kod = await issueSingleUseCode(pool, {
+      email, percent, days, campaign: "newsletter", prefix: "AEJ10",
+      note: `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`,
+    });
+    if (!kod) return res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
+    res.json({ ok: true, reused: kod.reused, code: kod.code, percent, validTo: kod.validTo });
   } catch (e) {
     console.error("[rabaty] kod powitalny:", e.message);
     res.status(500).json({ error: "Nie udalo sie wystawic kodu" });
+  }
+});
+
+// ------------------------------------------------------------
+// Maile sprzed zamowienia, skladane u nas i wolane przez n8n
+// ------------------------------------------------------------
+// Szesc wiadomosci mialo do 2026-08-31 wlasny HTML w wezlach n8n i klient
+// dostawal w jednym tygodniu dwie firmy. Tresc mieszka teraz w `leadMail.js`,
+// a n8n zostaje przy tym, co robi dobrze: webhooki, Dysk, powiadomienia dla
+// pracowni i odliczanie 48 godzin oraz 7 dni.
+//
+// Trasa chroniona jest tokenem administratora, a nie slabszym tokenem
+// newslettera: kto ja zawola, wysyla poczte NASZYM adresem, wiec wyciek
+// zamienilby ja w otwarty przekaznik spamu.
+/** Slad po wiadomosci sprzed zamowienia. Nigdy nie przerywa wysylki. */
+async function zapiszSladMaila(email, rodzaj) {
+  if (!pool) return;
+  await pool.query("INSERT INTO mail_log (email, rodzaj) VALUES ($1, $2)", [String(email).toLowerCase(), rodzaj])
+    .catch((e) => console.error("[lead-mail] slad nie zapisal sie:", e.message));
+}
+
+/**
+ * Czy dzisiaj poszla juz do tego adresu jakas wiadomosc sprzed zamowienia.
+ *
+ * Regula dotyczy WYLACZNIE tego, co moze poczekac, czyli przypomnienia
+ * o kodzie. Potwierdzenie zamowienia, dane do przelewu i zmiana etapu ida
+ * zawsze i natychmiast, bo klient na nie czeka.
+ */
+async function pisalismyDzisiaj(email) {
+  if (!pool) return false;
+  const { rows } = await pool.query(
+    `SELECT 1 FROM mail_log
+      WHERE LOWER(email) = LOWER($1) AND sent_at > NOW() - INTERVAL '1 day' LIMIT 1`,
+    [email]
+  );
+  return rows.length > 0;
+}
+
+app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const rodzaj = String(req.body?.rodzaj || "");
+  const build = LEAD_MAILE[rodzaj];
+  if (!build) {
+    return res.status(400).json({ error: `Nie znamy maila "${rodzaj}"`, code: "bad_kind", znane: Object.keys(LEAD_MAILE) });
+  }
+  const to = String(req.body?.to || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    return res.status(400).json({ error: "Nieprawidlowy adres odbiorcy", code: "bad_email" });
+  }
+  const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
+
+  try {
+    const dane = { ...req.body, to, lang };
+    // Rabat po tygodniu dostaje kod JEDNORAZOWY, wystawiony na adres tego
+    // klienta. n8n nie musi o niego prosic osobno: jedno wolanie, jeden mail,
+    // jeden kod, ktory w cudzych rekach nie zadziala.
+    if (rodzaj === "rabat7" && !dane.kod) {
+      const procent = Number.isInteger(req.body?.procent) ? Math.min(req.body.procent, MAX_PERCENT) : 5;
+      const dni = Number.isInteger(req.body?.dni) ? Math.min(Math.max(req.body.dni, 7), 365) : 14;
+      const kod = pool ? await issueSingleUseCode(pool, {
+        email: to, percent: procent, days: dni, campaign: "quote-followup", prefix: `AEJ${procent}`,
+        note: `Rabat do wyceny, ${new Date().toISOString().slice(0, 10)}`,
+      }) : null;
+      // Bez kodu ten mail nie ma o czym pisac: zdanie "oto Twoj rabat" bez
+      // rabatu jest gorsze niz brak wiadomosci.
+      if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
+      dane.kod = kod.code;
+      dane.procent = `${procent}%`;
+      dane.waznyDo = kod.validTo ? String(kod.validTo).slice(0, 10).split("-").reverse().join(".") : null;
+    }
+
+    const wiadomosc = build(dane);
+    const poszlo = await sendLeadMail([wiadomosc]);
+    if (!poszlo) return res.status(502).json({ error: "Poczta nie zadzialala", code: "mail_failed" });
+    await zapiszSladMaila(to, rodzaj);
+    console.log(`[lead-mail] ${rodzaj} do ${to}, jezyk ${lang}${dane.kod ? `, kod ${dane.kod}` : ""}`);
+    res.json({ ok: true, rodzaj, to, subject: wiadomosc.subject, ...(dane.kod ? { kod: dane.kod } : {}) });
+  } catch (e) {
+    console.error(`[lead-mail] ${rodzaj} nie poszedl:`, e.message);
+    res.status(500).json({ error: "Nie udalo sie wyslac wiadomosci" });
   }
 });
 
@@ -4087,7 +4234,22 @@ app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (r
 // oglada czlowiek. Ten endpoint jest odpowiednikiem SUCCESS z bramki: ustawia
 // oplacenie, wysyla te same maile i przenosi pliki do Zamowien. Wolno go
 // wykonac raz, bo pilnuje tego fulfilled_at.
-const TRANSFER_TOLERANCE = 0.98;
+// Prog drobnej niedoplaty: 5 EUR albo 2% kwoty, CO MNIEJSZE (decyzja
+// wlasciciela, 2026-08-30). Bank posredniczacy potrafi sciagnac kilka euro po
+// drodze i klient nie ma na to wplywu, wiec drobna roznice pokrywamy sami
+// zamiast zatrzymywac zamowienie na trzy dni. Procent sam nie wystarcza: 2%
+// z duzego zamowienia to juz kwota, ktora powinna wrocic do rozmowy.
+// Ile dni czekamy na doplate, zanim zamowienie wygasnie samo (decyzja
+// wlasciciela, 2026-08-30). Tyle samo, ile trwa rezerwacja przy pierwszym
+// przelewie: klient dostal juz raz trzy dni i drugi raz dostaje tyle samo.
+const DNI_NA_DOPLATE = 3;
+// Ile dni przed koncem waznosci przypominamy o niewykorzystanym kodzie.
+// Piec, bo zostaje jeszcze weekend na decyzje (decyzja wlasciciela, 2026-08-31).
+const DNI_PRZED_KONCEM_KODU = 5;
+const TRANSFER_TOLERANCE_CENTS = 500;
+const TRANSFER_TOLERANCE_RATE = 0.02;
+const tolerancjaPrzelewu = (oczekiwane) =>
+  Math.min(TRANSFER_TOLERANCE_CENTS, Math.round(oczekiwane * TRANSFER_TOLERANCE_RATE));
 
 // ------------------------------------------------------------
 // KOLEJKA PRACOWNI
@@ -4108,14 +4270,19 @@ app.get("/api/orders/queue", async (req, res) => {
   // Domyslnie kolejka pokazuje to, co jeszcze czeka na prace. `?status=`
   // pozwala siegnac po zakonczone i anulowane, bo inaczej omylkowe kliknieciecie
   // "zrobione" znika z ekranu i nie ma czego poprawic.
-  const DOZWOLONE_STANY = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed", "cancelled"];
+  // Czekanie na pieniadze jest CZESCIA kolejki, a nie osobna sprawa (decyzja
+  // wlasciciela, 2026-08-30). Zamowienie w euro stalo dotad wylacznie na
+  // stronie przelewow, wiec w kolejce nie bylo go w ogole, a jego pierwszy
+  // krok, potwierdzenie wplaty, mial wlasny formularz w innym miejscu.
+  const DOZWOLONE_STANY = ["awaiting_transfer", "payment_review", "paid", "details", "queued",
+    "in_production", "ready", "shipped", "completed", "cancelled", "expired"];
   const zadane = String(req.query.status || "").split(",").map((x) => x.trim()).filter(Boolean);
   const stany = zadane.length
     ? zadane.filter((x) => DOZWOLONE_STANY.includes(x))
     // Ustalanie szczegolow i "zrealizowane" stoja w domyslnym widoku, bo to
     // wlasnie one czekaja na RUCH Z NASZEJ STRONY. Zlecenie w ustalaniu nie ma
     // nawet zegara, wiec pominiete tutaj nie odezwaloby sie znikad.
-    : ["paid", "details", "queued", "in_production", "ready"];
+    : ["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready"];
   if (!stany.length) return res.status(400).json({ error: "Nie znamy takiego stanu" });
 
   // Sortowanie z BIALEJ LISTY, a nie z parametru wstawionego do zapytania:
@@ -4139,9 +4306,13 @@ app.get("/api/orders/queue", async (req, res) => {
             o.customer_email, o.customer_name, o.customer_phone,
             o.delivery_method, o.delivery_point, o.address_line1, o.address_line2,
             o.postal_code, o.city, o.country,
-            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.details_at, o.ready_at,
+            o.paid_at, o.queued_at, o.production_started_at, o.shipped_at, o.completed_at, o.carrier,
+            o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
             o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
+            o.payment_method, o.payment_status, o.currency, o.amount_eur_cents,
+            o.transfer_asked_at, o.transfer_received_cents,
+            o.payment_review_reason, o.created_at,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -4206,7 +4377,27 @@ app.get("/api/orders/queue", async (req, res) => {
     waitingDays: dni(o.paid_at),
     productionStartedAt: o.production_started_at,
     shippedAt: o.shipped_at,
+    completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
+    carrier: o.carrier || null,
+    // Zamowienie czekajace na pieniadze stoi w tej samej tabeli, wiec panel
+    // potrzebuje przy nim kwoty i sposobu zaplaty: potwierdzenie wplaty jest
+    // pierwszym krokiem kolejki, a nie osobnym formularzem gdzie indziej.
+    paymentMethod: o.payment_method,
+    paymentStatus: o.payment_status,
+    currency: o.currency,
+    amountEurCents: o.amount_eur_cents,
+    paymentReviewReason: o.payment_review_reason || null,
+    // Slad po prosbie o doplate: bez niego panel pokazywalby ten sam formularz
+    // co przed nia i ta sama prosba wyszlaby do klienta drugi raz.
+    transferAskedAt: o.transfer_asked_at || null,
+    transferReceivedCents: o.transfer_received_cents ?? null,
+    createdAt: o.created_at,
+    // Podpowiedz ze strefy, ktora wycenila przesylke. Paczkomat stoi tylko
+    // w Polsce, wiec tam przewoznik jest znany bez pytania.
+    carrierHint: o.delivery_method === "inpost_locker"
+      ? "InPost"
+      : zoneForCountry(o.country || "PL")?.carrier || null,
     productionNote: o.production_note,
     delivery: {
       method: o.delivery_method, point: o.delivery_point,
@@ -4217,7 +4408,10 @@ app.get("/api/orders/queue", async (req, res) => {
   }));
 
   const counts = orders.reduce((acc, o) => ({ ...acc, [o.status]: (acc[o.status] || 0) + 1 }), {});
-  res.json({ ok: true, orders, counts, sort });
+  // Lista przewoznikow jedzie razem z kolejka, zeby panel nie trzymal wlasnej
+  // kopii. Dwie listy rozjechalyby sie przy pierwszym nowym przewozniku, a
+  // rozjazd widac dopiero wtedy, gdy zapis wraca bledem "przewoznik spoza listy".
+  res.json({ ok: true, orders, counts, sort, przewoznicy: PRZEWOZNICY });
 });
 
 /**
@@ -4248,6 +4442,12 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   }
 
   const numer = req.body?.trackingNumber ? String(req.body.trackingNumber).trim().slice(0, 64) : null;
+  // Przewoznik z bialej listy, bo z nazwy budujemy adres sledzenia. Napis
+  // wpisany z reki przeszedlby zapis i po cichu nie dalby zadnego odnosnika.
+  const kurier = req.body?.carrier ? String(req.body.carrier).trim() : null;
+  if (kurier && !PRZEWOZNICY.includes(kurier)) {
+    return res.status(400).json({ error: `Przewoznik spoza listy: ${PRZEWOZNICY.join(", ")}`, code: "bad_carrier" });
+  }
   const notatka = req.body?.note ? String(req.body.note).slice(0, 2000) : null;
   // Data wysylki podana z reki, bo paczka bywa nadana wczoraj, a zaznaczona
   // dzisiaj. Bez tego termin realizacji wygladalby na przekroczony o dzien.
@@ -4268,11 +4468,12 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
         SET status = $2,
             ${regula.pole} = COALESCE(${regula.pole}, $6::timestamptz, NOW()),
             tracking_number = COALESCE($3, tracking_number),
+            carrier = COALESCE($7, carrier),
             production_note = COALESCE($4, production_note)
             ${rusza ? ", deadline_at = COALESCE(deadline_at, (COALESCE($6::timestamptz, NOW()) + (lead_days || ' days')::interval)::date)" : ""}
       WHERE id = $1 AND status = ANY($5::text[])
       RETURNING status, ${regula.pole} AS stempel, deadline_at`,
-    [order.id, etap, numer, notatka, regula.z, dzien || null]
+    [order.id, etap, numer, notatka, regula.z, dzien || null, kurier]
   );
   if (!zmiana.rowCount) {
     return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
@@ -4411,7 +4612,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     }
     // Cofniecie sprzed wysylki zabiera tez list przewozowy, bo nie ma czego
     // sledzic. Jawny numer w tym samym zadaniu i tak wygra, bo idzie nizej.
-    if (czyszczone.includes("shipped_at")) ustaw("tracking_number", "NULL");
+    if (czyszczone.includes("shipped_at")) { ustaw("tracking_number", "NULL"); ustaw("carrier", "NULL"); }
   }
 
   if (numer !== undefined) ustaw("tracking_number", parametr(numer));
@@ -4606,54 +4807,11 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
   }
 });
 
-app.get("/api/orders/awaiting-transfer", async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const shape = (o) => ({
-    orderRef: o.order_ref,
-    email: o.customer_email,
-    name: o.customer_name,
-    lang: o.lang,
-    status: o.status,
-    totalPLN: (o.total_grosze / 100).toFixed(2),
-    amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
-    eurRate: o.eur_rate,
-    createdAt: o.created_at,
-    expiresAt: o.expires_at,
-    paidAt: o.paid_at,
-    cancelledAt: o.cancelled_at,
-    cancelledBy: o.cancelled_by,
-    cancelReason: o.cancel_reason,
-    paymentStatus: o.payment_status,
-    paymentRemoteId: o.payment_remote_id,
-    paymentReviewAt: o.payment_review_at,
-    paymentReviewReason: o.payment_review_reason,
-    paymentReviewPreviousStatus: o.payment_review_previous_status,
-  });
-
-  const COLS = `order_ref, customer_email, customer_name, lang, status, total_grosze,
-                amount_eur_cents, eur_rate, created_at, expires_at,
-                paid_at, cancelled_at, cancelled_by, cancel_reason,
-                payment_status, payment_remote_id, payment_review_at,
-                payment_review_reason, payment_review_previous_status`;
-
-  // Druga lista, zamowienia zamkniete bez zaplaty, jest tu celowo. Rezygnacja
-  // ma zdejmowac wiersz z listy roboczej, a nie z oczu: to przy niej sprawdza
-  // sie, czy towar faktycznie wrocil do sprzedazy, i stad kasuje sie pomylki.
-  const [pending, reviews, closed] = await Promise.all([
-    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`),
-    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'payment_review'
-                 ORDER BY payment_review_at ASC LIMIT 100`),
-    pool.query(`SELECT ${COLS} FROM orders WHERE status IN ('cancelled','expired')
-                 ORDER BY COALESCE(cancelled_at, created_at) DESC LIMIT 50`),
-  ]);
-
-  res.json({
-    orders: pending.rows.map(shape),
-    reviews: reviews.rows.map(shape),
-    closed: closed.rows.map(shape),
-  });
-});
+// Trasa `/api/orders/awaiting-transfer` zostala USUNIETA 2026-08-30 razem ze
+// strona przelewow (ADR-0029). Te same zamowienia oddaje `/api/orders/queue`,
+// bo czekanie na pieniadze jest czescia kolejki. Druga trasa o tych samych
+// zamowieniach rozjechalaby sie z pierwsza przy pierwszej zmianie ksztaltu
+// odpowiedzi, a rozjazd w panelu konczy sie zleceniem obsluzonym dwa razy.
 
 app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -4677,13 +4835,14 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   // Drobna roznice przyjmujemy, wieksza wymaga swiadomej decyzji.
   const expected = order.amount_eur_cents ?? 0;
   const received = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : expected;
-  if (!force && expected > 0 && received < Math.round(expected * TRANSFER_TOLERANCE)) {
+  const brakuje = expected - received;
+  if (!force && expected > 0 && brakuje > tolerancjaPrzelewu(expected)) {
     return res.status(409).json({
       error: "Kwota nizsza od naleznej",
       code: "underpaid",
       expectedEur: (expected / 100).toFixed(2),
       receivedEur: (received / 100).toFixed(2),
-      shortfallEur: ((expected - received) / 100).toFixed(2),
+      shortfallEur: (brakuje / 100).toFixed(2),
     });
   }
 
@@ -4691,11 +4850,17 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
     `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
        payment_status = 'SUCCESS', payment_status_details = 'manual_transfer',
        transfer_received_cents = $2, transfer_confirmed_at = NOW(),
-       transfer_confirmed_by = $3, transfer_note = $4
+       transfer_confirmed_by = $3, transfer_note = $4,
+       -- Slad po prosbie o doplate znika razem z powodem, dla ktorego powstal.
+       -- Zostawiony kazalby stronie zamowienia liczyc brakujaca kwote takze
+       -- wtedy, gdy juz nic nie brakuje.
+       transfer_asked_at = NULL
      WHERE id = $1`,
     [order.id, received, String(by || "admin").slice(0, 120), note ? String(note).slice(0, 2000) : null]
   );
-  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
+  const roznica = received - expected;
+  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`
+    + (roznica ? `, roznica ${(roznica / 100).toFixed(2)} EUR` : ""));
 
   // Dalej dokladnie to samo, co po SUCCESS z bramki, razem ze startem zegara:
   // przelew jest ta sama zaplata co BLIK, tylko wolniejsza.
@@ -4719,6 +4884,70 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   );
 
   res.json({ ok: true, orderRef: ref, receivedEur: (received / 100).toFixed(2) });
+});
+
+/**
+ * Prosba o doplate: wplynelo mniej, niz wynosi kwota zamowienia.
+ *
+ * Zamowienie ZOSTAJE w `awaiting_transfer`, bo pieniedzy dalej nie ma w pelnej
+ * kwocie. Zapisujemy, ile wplynelo, i przesuwamy `expires_at` o trzy dni:
+ * dalej dziala ten sam mechanizm, ktory wygasza zamowienia nieoplacone, wiec
+ * nie ma drugiego zegara do utrzymania. Brakujacej kwoty NIE zapisujemy
+ * osobno: to roznica dwoch kolumn, ktore juz mamy.
+ */
+app.post("/api/orders/:ref/transfer-shortfall", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { receivedEur, note, by } = req.body || {};
+  const { rows } = await pool.query(
+    `SELECT id, status, amount_eur_cents, fulfilled_at, eur_rate FROM orders WHERE order_ref = $1`,
+    [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.fulfilled_at) return res.status(409).json({ error: "Zamowienie juz zostalo rozliczone" });
+  if (order.status !== "awaiting_transfer") {
+    return res.status(409).json({ error: `Zamowienie ma status ${order.status}, nie czeka na przelew` });
+  }
+
+  const oczekiwane = order.amount_eur_cents ?? 0;
+  const wplynelo = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : 0;
+  if (wplynelo <= 0) return res.status(400).json({ error: "Podaj kwote, ktora wplynela", code: "no_amount" });
+  const brakuje = oczekiwane - wplynelo;
+  if (brakuje <= 0) {
+    return res.status(400).json({
+      error: "Ta kwota nie jest niedoplata, potwierdz wplyw zamiast prosic o doplate",
+      code: "not_underpaid",
+    });
+  }
+
+  const zapis = await pool.query(
+    `UPDATE orders
+        SET transfer_received_cents = $2,
+            transfer_asked_at = NOW(),
+            transfer_note = COALESCE($3, transfer_note),
+            transfer_confirmed_by = $4,
+            expires_at = NOW() + INTERVAL '${DNI_NA_DOPLATE} days'
+      WHERE id = $1 AND status = 'awaiting_transfer'
+      RETURNING expires_at`,
+    [order.id, wplynelo, note ? String(note).slice(0, 2000) : null, String(by || "admin").slice(0, 120)]
+  );
+  if (!zapis.rowCount) {
+    return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
+  }
+
+  console.log(`[doplata] ${ref}: wplynelo ${(wplynelo / 100).toFixed(2)} EUR, brakuje ${(brakuje / 100).toFixed(2)} EUR`);
+  const poszlo = await sendTopUpRequest(pool, order.id, {
+    ...TRANSFER,
+    reference: ref,
+  });
+  res.json({
+    ok: true, orderRef: ref, mailed: poszlo,
+    shortfallEur: (brakuje / 100).toFixed(2),
+    waitUntil: zapis.rows[0].expires_at,
+  });
 });
 
 /**
@@ -5218,8 +5447,8 @@ app.get("/api/orders/:ref", async (req, res) => {
             lang, paid_at, expires_at, delivery_method, delivery_point,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
-            amount_eur_cents, transfer_confirmed_at,
-            shipped_at, tracking_number
+            amount_eur_cents, transfer_confirmed_at, transfer_received_cents, transfer_asked_at,
+            shipped_at, completed_at, tracking_number, carrier, country
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -5291,7 +5520,15 @@ app.get("/api/orders/:ref", async (req, res) => {
     // go w kolejce wracala do galezi domyslnej i mowila oplaconemu klientowi,
     // ze czekamy na jego platnosc.
     shippedAt: o.shipped_at,
+    // Stempel doreczenia jest tym, co zapala ostatnia kropke na osi klienta.
+    // Bez niego droga konczy sie na "wyslane" i nigdy nie robi sie zielona.
+    completedAt: o.completed_at,
     trackingNumber: o.tracking_number,
+    // Sam numer przesylki jest dla klienta ciagiem cyfr. Nazwa przewoznika
+    // pozwala stronie zbudowac odnosnik do sledzenia, tak samo jak robi to mail.
+    carrier: o.delivery_method === "inpost_locker"
+      ? "InPost"
+      : o.carrier || zoneForCountry(o.country || "PL")?.carrier || null,
     ...publicPaymentState(o),
     // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie
     // o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
@@ -5307,6 +5544,14 @@ app.get("/api/orders/:ref", async (req, res) => {
             reference: o.order_ref,
             dueAt: o.expires_at,
             confirmedAt: o.transfer_confirmed_at,
+            // Czesciowa wplata: klient ma widziec, ile doszlo i ile brakuje,
+            // a nie sama kwote zamowienia. Brakujacej kwoty nie trzymamy
+            // w bazie, bo to roznica dwoch kolumn, ktore juz sa.
+            receivedEur: o.transfer_received_cents != null
+              ? (o.transfer_received_cents / 100).toFixed(2) : null,
+            shortfallEur: o.transfer_asked_at && o.transfer_received_cents != null
+              ? ((o.amount_eur_cents - o.transfer_received_cents) / 100).toFixed(2) : null,
+            askedAt: o.transfer_asked_at,
           }
         : null,
   });

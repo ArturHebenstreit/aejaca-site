@@ -93,6 +93,12 @@ CREATE TABLE IF NOT EXISTS orders (
   eur_rate               NUMERIC(10,4),
   eur_rate_locked_at     TIMESTAMPTZ,
   transfer_received_cents INTEGER,
+  -- Chwila, w ktorej poprosilismy klienta o doplate. Od niej biegna trzy dni
+  -- (`expires_at`), po ktorych zamowienie wygasa samo i oddajemy pieniadze.
+  -- Nie trzymamy tu brakujacej kwoty: to roznica `amount_eur_cents` i
+  -- `transfer_received_cents`, a stan wyliczalny zapisany osobno rozjezdza sie
+  -- z reszta przy pierwszej korekcie kwoty.
+  transfer_asked_at      TIMESTAMPTZ,
   transfer_confirmed_at  TIMESTAMPTZ,
   transfer_confirmed_by  VARCHAR(120),
   transfer_note          TEXT,
@@ -109,6 +115,11 @@ CREATE TABLE IF NOT EXISTS orders (
   shipped_at            TIMESTAMPTZ,
   completed_at          TIMESTAMPTZ,
   tracking_number       VARCHAR(64),
+  -- Przewoznik wybrany przy nadaniu. Strefa wysylkowa mowi tylko, kto zwykle
+  -- wozi w tamta strone, a strefy swiatowe nosza dwie nazwy naraz ("DHL /
+  -- FedEx"), wiec bez tego pola mail do klienta spoza Europy musialby odsylac
+  -- do dwoch stron sledzenia naraz. Biala lista: pricing/shipping.js.
+  carrier               VARCHAR(40),
 
   -- TERMIN REALIZACJI (ADR-0027).
   --

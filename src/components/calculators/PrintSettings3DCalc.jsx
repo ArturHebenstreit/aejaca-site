@@ -105,7 +105,7 @@ const LABELS = {
     voteConfirm: "👍 Potwierdzam",
     voteDispute: "👎 Inne parametry",
     voteSuccess: "Głos zapisany!",
-    voteDuplicate: "Już głosowałeś na to zgłoszenie.",
+    voteDuplicate: "Głos na to zgłoszenie jest już oddany.",
     confirms: "potwierdzeń",
     disputes: "głosów sprzeciwu",
     noContribs: "Brak sugestii społeczności dla tego materiału.",

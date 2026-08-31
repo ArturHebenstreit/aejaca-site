@@ -50,7 +50,7 @@ const L10N = {
     machineLabel: "Stół roboczy",
     error: "Nie udało się odczytać pliku. Sprawdź, czy to poprawny STL, OBJ, 3MF albo STEP.",
     handoffWait: "Przenoszę model z konfiguratora...",
-    handoffDone: "Model przeniesiony z konfiguratora. Technologia, dysza i wielkość są takie, jak tam wybrałeś, więc wynik odpowiada dokładnie temu zamówieniu.",
+    handoffDone: "Model przeniesiony z konfiguratora. Technologia, dysza i wielkość są takie jak tam ustawione, więc wynik odpowiada dokładnie temu zamówieniu.",
     handoffScale: (p) => `Wielkość wydruku: ${p}% oryginału.`,
     disclaimer: "Analiza opisuje geometrię, nie zastępuje wydruku próbnego. Przy nietypowych kształtach i przy cienkich detalach na granicy progu odezwij się, sprawdzimy to na maszynie.",
   },

@@ -1,4 +1,5 @@
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import PYTANIA from "../data/faq/skurcz.js";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import ShrinkageCalc from "../components/calculators/ShrinkageCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -30,12 +31,6 @@ const LABELS = {
     seoP2: "Współczynnik skurczu zależy od stopu. Srebro 925 kurczy się mniej (x1,016) niż złoto próby 585/14K (x1,0196), a złoto 9K i 18K mają swoje własne wartości pośrednie, wynikające z odmiennego udziału metali dodatkowych w stopie. Dlatego uniwersalny mnożnik nie istnieje, każdy stop trzeba przeliczać osobno.",
     seoP3: "W AEJaCA stosujemy te dokładne współczynniki przy każdym projekcie odlewanym metodą lost-resin, od pierścionków po elementy scenografii jubilerskiej. Model CAD lub druk 16K trafia do nas w wymiarze docelowym, a wzorzec castable skalujemy automatycznie o właściwy procent, zanim trafi do formy.",
     faqHeading: "Najczęstsze pytania",
-    faqQ1: "Czym jest skurcz odlewniczy?",
-    faqA1: "To zmniejszenie wymiarów metalu podczas krzepnięcia w formie odlewniczej, po stopieniu i wypełnieniu wnęki po spalonym lub wytopionym wzorcu. Efekt widoczny jest zwłaszcza przy precyzyjnych elementach, jak obrączki czy oprawy kamieni.",
-    faqQ2: "Dlaczego współczynnik skurczu jest różny dla każdego stopu?",
-    faqA2: "Każdy stop ma inny skład metali (Au, Ag, Cu, Zn i inne dodatki), a co za tym idzie inną temperaturę krzepnięcia i inną gęstość w stanie stałym względem ciekłego. Dlatego Ag 925, Au 9K, Au 14K (585) i Au 18K kurczą się w innym stopniu.",
-    faqQ3: "Jak zastosować kompensację skurczu w CAD lub slicerze?",
-    faqA3: "Zamodeluj lub zaimportuj wzorzec w wymiarze docelowym, a następnie przeskaluj go jednorodnie (Scale/Skaluj, nie osobno w osiach) o wartość współczynnika dla wybranego stopu, np. x1,016 dla Ag 925. Wynik wydrukuj jako wzorzec castable i przekaż do odlewu.",
   },
   en: {
     heroTag: "Tools for Makers",
@@ -55,12 +50,6 @@ const LABELS = {
     seoP2: "The shrinkage factor depends on the alloy. Sterling silver (925) shrinks less (x1.016) than 14K gold (585, x1.0196), while 9K and 18K gold sit at their own intermediate values based on how much base metal is alloyed in. There is no universal multiplier, each alloy has to be calculated separately.",
     seoP3: "At AEJaCA we apply these exact factors on every lost-resin cast project, from rings to display pieces. A CAD model or 16K-resolution print arrives sized to the final dimension, and we automatically scale the castable pattern by the correct percentage before it goes into the mould.",
     faqHeading: "Frequently asked questions",
-    faqQ1: "What is casting shrinkage?",
-    faqA1: "It is the reduction in metal dimensions as it solidifies inside the casting mould, after melting and filling the cavity left by the burned-out or dissolved pattern. The effect is most visible on precise elements like bands or stone settings.",
-    faqQ2: "Why is the shrinkage factor different for each alloy?",
-    faqA2: "Every alloy has a different metal composition (Au, Ag, Cu, Zn and other additions), which changes its solidification temperature and the density difference between liquid and solid states. That is why Ag 925, Au 9K, Au 14K (585) and Au 18K each shrink by a different amount.",
-    faqQ3: "How do I apply shrinkage compensation in CAD or a slicer?",
-    faqA3: "Model or import the pattern at the final target dimension, then scale it uniformly (Scale, not per-axis) by the factor for the chosen alloy, e.g. x1.016 for Ag 925. Print the result as a castable pattern and send it for casting.",
   },
   de: {
     heroTag: "Tools für Maker",
@@ -80,12 +69,6 @@ const LABELS = {
     seoP2: "Der Schwindungsfaktor hängt von der Legierung ab. Sterlingsilber (925) schwindet weniger (x1,016) als 14-Karat-Gold (585, x1,0196), während 9- und 18-Karat-Gold ihre eigenen Zwischenwerte haben, abhängig vom Anteil der Zusatzmetalle in der Legierung. Es gibt keinen universellen Multiplikator, jede Legierung muss einzeln berechnet werden.",
     seoP3: "Bei AEJaCA wenden wir diese exakten Faktoren bei jedem Lost-Resin-Gussprojekt an, vom Ring bis zum Ausstellungsstück. Ein CAD-Modell oder ein 16K-Druck wird uns im Zielmaß übergeben, und wir skalieren das Castable-Modell automatisch um den korrekten Prozentsatz, bevor es in die Form geht.",
     faqHeading: "Häufig gestellte Fragen",
-    faqQ1: "Was ist Gussschwindung?",
-    faqA1: "Das ist die Verringerung der Metallabmessungen beim Erstarren in der Gussform, nach dem Schmelzen und Füllen des Hohlraums, der vom ausgebrannten oder aufgelösten Modell zurückbleibt. Der Effekt ist besonders bei präzisen Elementen wie Ringschienen oder Fassungen sichtbar.",
-    faqQ2: "Warum ist der Schwindungsfaktor bei jeder Legierung anders?",
-    faqA2: "Jede Legierung hat eine andere Metallzusammensetzung (Au, Ag, Cu, Zn und weitere Zusätze), was die Erstarrungstemperatur und den Dichteunterschied zwischen flüssigem und festem Zustand verändert. Deshalb schwinden Ag 925, Au 9K, Au 14K (585) und Au 18K jeweils unterschiedlich stark.",
-    faqQ3: "Wie wende ich die Schwindungskompensation in CAD oder einem Slicer an?",
-    faqA3: "Modellieren oder importieren Sie das Modell im Zielmaß und skalieren Sie es dann einheitlich (Skalieren, nicht pro Achse) um den Faktor der gewählten Legierung, z. B. x1,016 für Ag 925. Drucken Sie das Ergebnis als Castable-Modell und geben Sie es zum Guss.",
   },
 };
 
@@ -115,11 +98,9 @@ export default function ShrinkagePage() {
   const faqRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
-  const faqItems = [
-    { q: L.faqQ1, a: L.faqA1 },
-    { q: L.faqQ2, a: L.faqA2 },
-    { q: L.faqQ3, a: L.faqA3 },
-  ];
+  // Pytania stoja we wspolnym zbiorze danych, wiec te same odpowiedzi da sie
+  // znalezc przez wyszukiwarke na `/faq/`, bez drugiej kopii tekstu.
+  const faqItems = PYTANIA.map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
 
   const schemas = [
     buildWebPageSchema({

@@ -50,6 +50,21 @@ Shared writing rule: see `PROJECT_RULES.md`, section `Twarde niezmienniki`.
 
 **Always go step by step.** After completing each step in a multi-step process, stop and ask the user "Czy idziemy dalej?" before proceeding to the next step. Never write out multiple steps ahead without confirmation. This applies to: setup instructions, debugging flows, configuration walkthroughs, deployment steps - any sequential process involving the user doing something manually.
 
+### Pytania do właściciela idą formularzem - HARD RULE (polecenie właściciela, 2026-08-30, obowiązuje we wszystkich wątkach)
+
+**Każde pytanie i każda decyzja do właściciela ma postać formularza wyboru
+(`AskUserQuestion`), a nie akapitu w odpowiedzi.** Nagłówek krótki, warianty
+rozłączne, przy każdym jedno zdanie o skutku, a nie o mechanice.
+
+- **Rekomendacja stoi jako pierwsza i jest oznaczona** dopiskiem `(rekom.)`
+  w nazwie wariantu. Właściciel ma widzieć, co proponujemy, zanim przeczyta
+  resztę.
+- **Wariant odrzucony też jest opisany uczciwie**, razem z tym, co się traci.
+  Formularz, w którym tylko jedna odpowiedź brzmi sensownie, jest pozorny.
+- **Pytamy tylko o to, czego nie da się rozstrzygnąć z kodu, z dokumentów
+  i z decyzji już zapisanych.** Reszta to nasza robota, a nie jego.
+- Dotyczy też pytań o kolejność pracy i o to, co bierzemy jako następne.
+
 ## Model routing (cost optimization)
 
 ### Delegowanie - HARD RULE (polecenie właściciela, 2026-08-16, obowiązuje do odwołania)
@@ -156,6 +171,12 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
   `scripts/check-czas-w-renderze.mjs`. To samo dotyczy `Intl.DisplayNames` i
   `localeCompare`: dane ICU w Node i w przeglądarce bywają z różnych wersji
   (nazwy krajów: `src/data/countryNames.js`). Decyzja: ADR-0022.
+
+- **Polski tekst do klienta nie zgaduje płci.** „Wycena, którą zapisałeś"
+  poszła do klientki, a takich miejsc było 23. Nie piszemy „zapisałeś/zapisałaś",
+  tylko przestawiamy zdanie tak, żeby czasownik nie miał rodzaju: „wycena
+  zapisana", „od dnia odebrania przesyłki", „zgodnie z wyborem przy zamówieniu".
+  Pilnuje `scripts/check-rodzaj-meski.mjs`. Pełna reguła: `PROJECT_RULES.md`.
 
 - **Najmniejsze pismo w serwisie to 12 px** (`text-xs`). Bez wyjątków, pilnuje
   `scripts/check-drobny-tekst.mjs`. Nie mieści się? Poszerz kratkę albo skróć

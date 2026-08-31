@@ -27,7 +27,7 @@ const LABELS = {
     excludeTitle: "Wyłączenia z prawa odstąpienia",
     excludeItems: [
       "Wydruki wykonane z pliku przekazanego przez Ciebie",
-      "Wyroby grawerowane lub znakowane treścią, którą wskazałeś",
+      "Wyroby grawerowane lub znakowane treścią wskazaną w zamówieniu",
       "Biżuteria wykonana według indywidualnego projektu, w tym z doborem rozmiaru",
       "Wyroby z kamieniami lub kruszcami sprowadzonymi na Twoje indywidualne życzenie",
       "Usługi projektowe wykonane w całości za Twoją wyraźną zgodą na rozpoczęcie przed upływem terminu odstąpienia",

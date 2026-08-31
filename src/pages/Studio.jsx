@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import TERMIN from "../data/faq/termin.js";
+import pytania from "../data/faq/studio.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
@@ -74,6 +76,7 @@ const B2B_TEASER = {
 
 export default function Studio() {
   const { t, lang } = useLanguage();
+  const pozycjeFaq = [...pytania, ...TERMIN].map((f) => ({ id: f.id, q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }));
   const s = t.studio;
 
   const aboutRef = useScrollReveal();
@@ -111,7 +114,7 @@ export default function Studio() {
       steps: s.processSteps,
       image: `${SITE.url}/og-studio.jpg`,
     }),
-    s.faq?.items && buildFAQSchema(s.faq.items),
+    buildFAQSchema(pozycjeFaq.map((f) => ({ q: f.q, a: f.a }))),
     buildItemListSchema({
       name: "AEJaCA sTuDiO Digital Fabrication Services",
       url: pageUrl,
@@ -264,7 +267,7 @@ export default function Studio() {
 
       {/* FAQ, moved right after calculator (audit recommendation).
           AI assistants rank FAQ near pricing signals higher. */}
-      <FAQ data={s.faq} accent="blue" id="faq" />
+      <FAQ data={{ ...s.faq, items: pozycjeFaq }} accent="blue" id="faq" />
 
       <div className="gradient-divider" />
 

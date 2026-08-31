@@ -50,7 +50,7 @@ async function postJSON(url, body) {
 const UI = {
   pl: {
     title: "Twoja oferta",
-    lead: "Podaj numer oferty, który dostałeś od nas mailem albo w rozmowie. Pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność.",
+    lead: "Podaj numer oferty od nas, z maila albo z rozmowy. Pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność.",
     refLabel: "Numer oferty",
     emailLabel: "Adres e-mail, na który poszła oferta",
     codeLabel: "albo kod odbioru z rozmowy",
@@ -91,7 +91,7 @@ const UI = {
     leadAfterDetails: "po ustaleniu szczegółów wyniesie {n}",
     leadItemNote: "termin realizacji tej pozycji - {n}",
     defaultIncluded: "wybrana domyślnie",
-    leadTotalDetails: "Zaznaczyłeś pozycję, która wymaga ustalenia szczegółów. Najpierw się odezwiemy, a czas realizacji ruszy dopiero po ustaleniach, więc nic Ci nie ucieka. Podana liczba dni to najdłuższy termin spośród zaznaczonych pozycji, bo paczka wychodzi jedna.",
+    leadTotalDetails: "Zaznaczona pozycja wymaga ustalenia szczegółów. Najpierw się odezwiemy, a czas realizacji ruszy dopiero po ustaleniach, więc nic Ci nie ucieka. Podana liczba dni to najdłuższy termin spośród zaznaczonych pozycji, bo paczka wychodzi jedna.",
     leadNone: "Termin ustalimy przy potwierdzeniu.",
     note: "Opis oferty",
     validUntil: "Oferta obowiązuje do",
@@ -102,7 +102,7 @@ const UI = {
     doneDesc: "Nie ma tu już nic do zapłacenia. Stan realizacji sprawdzisz na stronie zamówienia.",
     goToOrder: "Przejdź do zamówienia",
     partialTitle: "Część tej oferty jest już zlecona",
-    partialDesc: "Poniżej został wyłącznie ten zakres, którego jeszcze nie zamawiałeś. Możesz zapłacić za niego teraz albo wrócić tu później, dopóki oferta jest ważna.",
+    partialDesc: "Poniżej został wyłącznie ten zakres, który nie był jeszcze zamawiany. Możesz zapłacić za niego teraz albo wrócić tu później, dopóki oferta jest ważna.",
     yourOrders: "Zamówienia z tej oferty",
     stateSettled: "Zlecone",
     stateReserved: "Czeka na zapłatę",

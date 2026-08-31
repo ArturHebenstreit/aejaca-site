@@ -78,7 +78,7 @@ const UI = {
     materialNotePlaceholder: "Np. sklejka brzozowa 4 mm, akryl bezbarwny 3 mm",
     materialNoteHint: "Napisz konkretnie, z czego mamy wykonać. \u201eCoś z drewna\u201d znaczy wymianę maili, zanim cokolwiek zaczniemy.",
     needEngraving: "Treść graweru",
-    needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
+    needEngravingHint: "Grawer jest wybrany, więc wpisz, co ma zostać wygrawerowane.",
     toQuote: "Wyślij do wyceny",
     showDetails: "Pokaż szczegóły kalkulacji",
     hideDetails: "Ukryj szczegóły",

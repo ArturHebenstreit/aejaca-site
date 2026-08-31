@@ -51,8 +51,9 @@ export default function FAQ({ data, accent = "amber", id }) {
             const isOpen = openIndex === i;
             return (
               <div
-                key={i}
-                className={`rounded-xl border transition-all duration-300 ${
+                key={item.id || i}
+                id={item.id ? `pytanie-${item.id}` : undefined}
+                className={`scroll-mt-24 rounded-xl border transition-all duration-300 ${
                   isOpen ? borderActive + " bg-white/[0.02]" : "border-white/5 bg-white/[0.01]"
                 }`}
               >

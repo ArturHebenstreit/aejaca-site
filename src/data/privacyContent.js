@@ -97,7 +97,7 @@ export const PRIVACY = {
             "sprostowania danych nieprawidłowych i uzupełnienia niekompletnych,",
             "usunięcia danych, o ile nie stoi temu na przeszkodzie obowiązek prawny, na przykład obowiązek przechowywania dokumentacji sprzedaży,",
             "ograniczenia przetwarzania,",
-            "przeniesienia danych, które przekazałeś nam na podstawie zgody albo umowy,",
+            "przeniesienia danych przekazanych nam na podstawie zgody albo umowy,",
             "sprzeciwu wobec przetwarzania opartego na naszym prawnie uzasadnionym interesie,",
             "wycofania zgody w każdej chwili, bez wpływu na zgodność z prawem tego, co zrobiliśmy przed jej wycofaniem.",
           ],

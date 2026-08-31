@@ -180,13 +180,6 @@ export default {
     ctaText: "Niezależnie czy potrzebujesz biżuterii na zamówienie, czy prototypu technicznego, jesteśmy tu, żeby pomóc.",
     ctaBtn: "Skontaktuj się",
     faqHeading: "Najczęściej zadawane pytania",
-    faq: [
-      { q: "Czym jest AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) to niezależne polskie studio projektowe założone w 2023 roku w Józefosławiu pod Warszawą. Łączy ręcznie tworzoną biżuterię artystyczną (AEJaCA Biżuteria) z cyfrową produkcją na zamówienie - drukiem 3D, grawerem laserowym i odlewami żywicznymi (AEJaCA sTuDiO). Obsługujemy klientów po polsku, angielsku i niemiecku, z wysyłką na cały świat." },
-      { q: "Czy tworzycie biżuterię na zamówienie?", a: "Tak. Projektujemy i wykonujemy unikatową biżuterię na zamówienie - pierścionki zaręczynowe, obrączki ślubne, naszyjniki, bransoletki i kolczyki ze srebra 925 oraz złota 14K/18K, z naturalnymi kamieniami szlachetnymi. Modelujemy w 3D (Rhino, Fusion 360) od szkicu lub pomysłu, a całość powstaje w technologii traconego wosku z ręcznym wykończeniem." },
-      { q: "Co oferuje AEJaCA sTuDiO?", a: "AEJaCA sTuDiO to cyfrowa produkcja na zamówienie: modelowanie 3D / CAD części technicznych i funkcjonalnych (Rhino, Fusion 360), druk 3D FDM/SLA, grawerowanie i cięcie laserem CO2, znakowanie laserem fiber, odlewy z żywicy oraz prototypowanie. Możesz przesłać własny plik STL/SVG albo zlecić nam zaprojektowanie modelu od podstaw." },
-      { q: "Ile kosztuje zamówienie i jak szybko dostanę wycenę?", a: "Wycenę otrzymasz online w około 30 sekund dzięki kalkulatorom AEJaCA - bez czekania na e-mail. Tryb prosty daje szybki szacunek, a tryb zaawansowany pełną kontrolę nad metalem, kamieniami i wykończeniem. Przykładowo: srebrny pierścionek z kamieniem od 400 zł, brelok z druku 3D od 25 zł." },
-      { q: "Gdzie znajduje się AEJaCA i czy wysyłacie za granicę?", a: "Studio mieści się w Józefosławiu pod Warszawą i wysyła na cały świat. W Polsce: paczkomat InPost 16,49 zł, kurier 19,49 zł, darmowa wysyłka od 400 zł. Realizujemy też dostawy do UE, Wielkiej Brytanii i USA kurierem DHL Express." },
-    ],
   },
 
   jewelry: {
@@ -330,18 +323,6 @@ export default {
     faq: {
       tag: "Najczęstsze Pytania",
       title: "Często Zadawane Pytania",
-      items: [
-        { q: "Jak długo trwa projekt biżuterii na zamówienie?", a: "Zazwyczaj 2–4 tygodnie, w zależności od złożoności. Po omówieniu projektu podamy dokładny termin." },
-        { q: "Czy mogę dostarczyć własny kamień szlachetny?", a: "Oczywiście! Chętnie pracujemy z kamieniami dostarczonymi przez klientów. Doradzimy najlepszy sposób osadzenia." },
-        { q: "Czy oferujecie zmianę rozmiaru lub modyfikacje?", a: "Tak. Możemy zmienić rozmiar pierścionków i modyfikować projekty. Skontaktuj się z nami, a znajdziemy najlepsze rozwiązanie." },
-        { q: "Z jakimi metalami pracujecie?", a: "Głównie srebro próby 925 i złoto (14K, 18K). Pracujemy też z mieszanymi metalami przy unikalnych projektach." },
-        { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
-        { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
-        { q: "Ile trwa realizacja zamówienia?", a: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych." },
-        { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne, tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie [Zwroty](/returns)." },
-        { q: "Ile kosztuje wysyłka?", a: "Paczkomat InPost 16,49 zł, kurier 19,49 zł, darmowa wysyłka od 400 zł. Za granicę od 100 zł (Niemcy, Czechy, Słowacja, Litwa), reszta Unii 140 zł. Szczegóły na stronie [Wysyłka](/shipping)." },
-        { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie [Gwarancja](/warranty)." },
-      ],
     },
 
     tips: {
@@ -572,15 +553,6 @@ export default {
     faq: {
       tag: "Najczęstsze Pytania",
       title: "Często Zadawane Pytania",
-      items: [
-        { q: "Jaka jest minimalna ilość zamówienia?", a: "Przyjmujemy zamówienia na pojedyncze prototypy oraz produkcję seryjną. Brak minimalnej ilości." },
-        { q: "Jak długo trwa typowy projekt?", a: "Proste projekty: 1–3 dni. Złożone prototypy: 1–2 tygodnie. Terminy produkcji seryjnej zależą od ilości." },
-        { q: "Czy mogę dostarczyć własne pliki 3D?", a: "Tak! Przyjmujemy STL, STEP, OBJ i większość popularnych formatów CAD. Możemy też zaprojektować od zera." },
-        { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
-        { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD, od koncepcji po pliki gotowe do produkcji." },
-        { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
-        { q: "Ile trwa realizacja projektu?", a: "Jeśli materiał jest na stanie, realizacja trwa 3–5 dni roboczych (w zależności od ilości). Zamówienie materiałów wydłuża czas o 3–7 dni. W przypadku, gdy realizacja zamówienia wymaga sprowadzenia specjalistycznych komponentów zgodnych ze specyfikacją (np. konkretne kamienie, nietypowe filamenty, komponenty elektroniczne), czas realizacji może wydłużyć się o dodatkowe 7–14 dni roboczych." },
-      ],
     },
 
     tips: {

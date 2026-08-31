@@ -29,7 +29,7 @@ const SERVICES = [
     label: { pl: "Renowacja / odświeżenie", en: "Renovation / refresh",  de: "Renovierung / Auffrischung" } },
   { id: "repair",      icon: Wrench,     img: "/img/calc/services/repair.webp",
     label: { pl: "Naprawa",                 en: "Repair",                de: "Reparatur" } },
-  { id: "unsure",      icon: HelpCircle, label: { pl: "Nie jestem pewien",        en: "I'm not sure",          de: "Ich bin mir nicht sicher" } },
+  { id: "unsure",      icon: HelpCircle, label: { pl: "Jeszcze nie wiem",        en: "I'm not sure",          de: "Ich bin mir nicht sicher" } },
 ];
 
 const PIECES = [
