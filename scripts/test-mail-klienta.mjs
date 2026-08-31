@@ -17,6 +17,7 @@ process.env.API_URL ||= "https://api.aejaca.com";
 const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
         buildTopUpRequest, buildOrderExpired } =
   await import("../chat-api/orderMail.js");
+import { readFileSync } from "node:fs";
 import { SELLER } from "../chat-api/pricing/sellerInfo.js";
 import {
   buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
@@ -422,6 +423,23 @@ console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n"
   const przyp = buildPrzypomnienieKodu({ lang: "pl", to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" });
   ok(/jedyne przypomnienie/.test(przyp.text), "przypomnienie mowi, ze jest jedyne");
   ok(/AEJ10-4H7PQW/.test(przyp.subject), "temat niesie kod, wiec widac go w skrzynce bez otwierania");
+}
+
+console.log("\n4l. Autoodpowiedz idzie z chat-api, bez okrazenia przez n8n\n");
+
+// To ten kod wykrywa maila od klienta i to on ma polaczenie z Gmailem, wiec
+// droga chat-api -> n8n -> chat-api byla wylacznie droga. Sprawdzamy zrodlo,
+// bo sciezki nie da sie wywolac bez skrzynki i bez bazy.
+{
+  const gmailJs = readFileSync(new URL("../chat-api/gmail.js", import.meta.url), "utf8");
+  ok(/buildAutoOdpowiedz/.test(gmailJs), "autoodpowiedz sklada sie ta sama koperta co reszta");
+  ok(/sendLeadMail/.test(gmailJs), "i idzie tym samym kanalem co reszta");
+  ok(!/N8N_AUTOREPLY_WEBHOOK_URL/.test(gmailJs),
+     "stara droga przez n8n zniknela, a nie zostala obok jako druga");
+  ok(/gmailThreadId: threadId/.test(gmailJs),
+     "odpowiedz wpina sie w istniejacy watek, a nie zaklada nowego");
+  ok(/auto_replied_at IS NULL RETURNING id/.test(gmailJs),
+     "zabezpieczenie przed dwoma odpowiedziami zostaje nietkniete");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");
