@@ -422,6 +422,7 @@
       "id": "6b145e64-6ffa-49ec-90a6-f4dbd7dedb0b",
       "name": "Wait 5 more days",
       "parameters": {
+        "amount": 5,
         "unit": "days"
       },
       "position": [

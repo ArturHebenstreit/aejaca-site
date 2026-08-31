@@ -127,9 +127,11 @@ odpowiedź na pierwszego maila wysyła teraz sam chat-api (ADR-0030).
 Pliki poprawiono **ręcznie**, na danych z połączenia MCP, bo w tej sesji nie było
 klucza API do n8n, a sieć środowiska i tak nie sięga instancji. Przy okazji
 wyszło, ile warte są starsze przepisane kopie: w `Wait 5 more days` kopia miała
-`amount: 5`, a w n8n tego pola nie ma w ogóle (czyli węzeł czeka domyślną dobę),
-i prawie każdy `webhookId` w tym przepływie różnił się od prawdziwego. Struktura
-i parametry się zgadzały, drobne identyfikatory nie. **Przy pierwszej okazji
+`amount: 5`, a w n8n tego pola nie było w ogóle, czyli węzeł czekał domyślną dobę
+i mail o rabacie wychodził trzeciego dnia ze zdaniem o wycenie sprzed tygodnia.
+Pole zostało 31 sierpnia 2026 ustawione na 5 i przepływ opublikowany (decyzja
+właściciela). Prawie każdy `webhookId` w tym przepływie też różnił się od
+prawdziwego. Struktura i parametry się zgadzały, drobne identyfikatory nie. **Przy pierwszej okazji
 z kluczem API uruchom `npm run backup:n8n`**: pusty `git diff` zamyka sprawę,
 a niepusty znaczy, że właściwa jest wersja ze skryptu.
 
