@@ -30,6 +30,18 @@ const INTERAKCJA = `category NOT IN ('page', 'scroll')`;
 const ODSLONA = `category = 'page' AND action = 'view'`;
 
 /**
+ * Ruch wlasciciela. Oznacza go on sam, wejsciem na adres z `?nolicz=1`, bo
+ * adresu IP nie da sie tu uzyc: trzy urzadzenia, trzy sieci i adres zmienny.
+ *
+ * Zdarzenia zapisujemy mimo oznaczenia i ODSIEWAMY DOPIERO TUTAJ. Wyrzucanie
+ * ich przy zapisie byloby prostsze i gorsze: pusta tabela wyglada dokladnie
+ * tak samo, gdy znacznik dziala, i gdy licznik jest zepsuty.
+ */
+function bezWlasnych(zWlasnymi) {
+  return zWlasnymi ? "" : "AND NOT COALESCE(internal, FALSE)";
+}
+
+/**
  * Okres i okres poprzedni tej samej dlugosci.
  *
  * Porownanie z poprzednim okresem jest jedynym sposobem, zeby liczba cokolwiek
@@ -49,10 +61,10 @@ export function okresy(dni) {
  * wynikло biznesowo. Zapytania i zamowienia dolaczamy po `session_id`, ktore
  * serwis dopisuje od 2026-08-31.
  */
-function sesjeCTE(alias = "s") {
+function sesjeCTE(alias = "s", zWlasnymi = false) {
   return `
     zdarzenia AS (
-      SELECT * FROM events WHERE ts >= $1 AND ts < $2
+      SELECT * FROM events WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
     ),
     ${alias} AS (
       SELECT session,
@@ -104,9 +116,9 @@ function sesjeCTE(alias = "s") {
 }
 
 /** Zbiorcze liczby okresu. Wolane dwa razy: dla okresu i dla poprzedniego. */
-export async function kpi(pool, od, doKiedy) {
+export async function kpi(pool, od, doKiedy, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
-    `WITH ${sesjeCTE()}
+    `WITH ${sesjeCTE("s", zWlasnymi)}
      SELECT COUNT(*)                                        AS wizyty,
             COUNT(*) FILTER (WHERE interakcje > 0)          AS zaangazowane,
             COUNT(*) FILTER (WHERE odslony <= 1 AND interakcje = 0) AS odbicia,
@@ -122,9 +134,9 @@ export async function kpi(pool, od, doKiedy) {
 }
 
 /** Dzien po dniu: wizyty, zapytania, zamowienia. Podstawa wykresu. */
-export async function dzienne(pool, od, doKiedy) {
+export async function dzienne(pool, od, doKiedy, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
-    `WITH ${sesjeCTE()}
+    `WITH ${sesjeCTE("s", zWlasnymi)}
      SELECT DATE(start) AS dzien,
             COUNT(*)                          AS wizyty,
             COALESCE(SUM(zapytania), 0)       AS zapytania,
@@ -151,11 +163,11 @@ const WYMIARY = {
   jezyk: "jezyk",
 };
 
-export async function wedlug(pool, wymiar, od, doKiedy, limit = 12) {
+export async function wedlug(pool, wymiar, od, doKiedy, limit = 12, { zWlasnymi = false } = {}) {
   const kolumna = WYMIARY[wymiar];
   if (!kolumna) throw new Error(`nieznany wymiar: ${wymiar}`);
   const { rows } = await pool.query(
-    `WITH ${sesjeCTE()}
+    `WITH ${sesjeCTE("s", zWlasnymi)}
      SELECT COALESCE(${kolumna}, '(brak)') AS wartosc,
             COUNT(*)                                          AS wizyty,
             COUNT(*) FILTER (WHERE interakcje > 0)            AS zaangazowane,
@@ -176,14 +188,14 @@ export async function wedlug(pool, wymiar, od, doKiedy, limit = 12) {
  * liczy TYLKO czas widocznej karty, wiec strona otwarta w tle nie udaje
  * najbardziej wciagajacej w serwisie.
  */
-export async function tresc(pool, od, doKiedy, limit = 15) {
+export async function tresc(pool, od, doKiedy, limit = 15, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
     `SELECT path AS adres,
             COUNT(*) FILTER (WHERE ${ODSLONA})                 AS odslony,
             COUNT(DISTINCT session) FILTER (WHERE ${ODSLONA})  AS wizyty,
             COALESCE(AVG(value) FILTER (WHERE category = 'page' AND action = 'engaged'), 0) AS sredni_czas,
             COALESCE(AVG(value) FILTER (WHERE category = 'scroll'), 0) AS srednie_przewiniecie
-       FROM events WHERE ts >= $1 AND ts < $2
+       FROM events WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
       GROUP BY path HAVING COUNT(*) FILTER (WHERE ${ODSLONA}) > 0
       ORDER BY wizyty DESC LIMIT ${Number(limit) || 15}`,
     [od, doKiedy]
@@ -196,9 +208,9 @@ export async function tresc(pool, od, doKiedy, limit = 15) {
  * interesuje nas, ilu LUDZI doszlo do kolejnego kroku, a nie ile razy ktos
  * kliknąl w koszyk.
  */
-export async function lejekSklepu(pool, od, doKiedy) {
+export async function lejekSklepu(pool, od, doKiedy, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
-    `WITH z AS (SELECT * FROM events WHERE ts >= $1 AND ts < $2)
+    `WITH z AS (SELECT * FROM events WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)})
      SELECT
        COUNT(DISTINCT session)                                                          AS wizyty,
        COUNT(DISTINCT session) FILTER (WHERE path LIKE '%/shop%')                       AS sklep,
@@ -215,9 +227,9 @@ export async function lejekSklepu(pool, od, doKiedy) {
 }
 
 /** Lejek wycen: od kalkulatora do zapytania i dalej do oferty i zaplaty. */
-export async function lejekWycen(pool, od, doKiedy) {
+export async function lejekWycen(pool, od, doKiedy, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
-    `WITH z AS (SELECT * FROM events WHERE ts >= $1 AND ts < $2)
+    `WITH z AS (SELECT * FROM events WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)})
      SELECT
        COUNT(DISTINCT session) FILTER (WHERE category = 'calc')                        AS kalkulator,
        COUNT(DISTINCT session) FILTER (WHERE category = 'funnel' AND action = 'open_inquiry_form') AS formularz,
@@ -235,7 +247,7 @@ export async function lejekWycen(pool, od, doKiedy) {
 }
 
 /** Najczestsze wybory w kalkulatorach, pogrupowane po kalkulatorze. */
-export async function wyboryKalkulatora(pool, od, doKiedy, limit = 20) {
+export async function wyboryKalkulatora(pool, od, doKiedy, limit = 20, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(
     `SELECT split_part(action, ':', 1) AS kalkulator,
             split_part(action, ':', 2) AS pole,
@@ -243,7 +255,7 @@ export async function wyboryKalkulatora(pool, od, doKiedy, limit = 20) {
             COUNT(*)                   AS ile,
             COUNT(DISTINCT session)    AS wizyty
        FROM events
-      WHERE category = 'calc' AND ts >= $1 AND ts < $2
+      WHERE category = 'calc' AND ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
       GROUP BY 1, 2, 3 ORDER BY wizyty DESC LIMIT ${Number(limit) || 20}`,
     [od, doKiedy]
   );
@@ -254,12 +266,12 @@ export async function wyboryKalkulatora(pool, od, doKiedy, limit = 20) {
  * Pojedyncze wizyty za dana liczba. To jest to "zajrzenie pod wykres": kazdy
  * slupek i kazdy wiersz zestawienia prowadzi tutaj z wypelnionym filtrem.
  */
-export async function sesje(pool, { od, do: doKiedy, wymiar, wartosc, limit = 100 }) {
+export async function sesje(pool, { od, do: doKiedy, wymiar, wartosc, limit = 100, zWlasnymi = false }) {
   const kolumna = WYMIARY[wymiar];
   const warunek = kolumna ? `WHERE COALESCE(${kolumna}, '(brak)') = $3` : "";
   const params = kolumna ? [od, doKiedy, wartosc] : [od, doKiedy];
   const { rows } = await pool.query(
-    `WITH ${sesjeCTE()}
+    `WITH ${sesjeCTE("s", zWlasnymi)}
      SELECT session, start, koniec, odslony, interakcje, kanal, zrodlo, kampania,
             kraj, urzadzenie, jezyk, sekundy, wejscie, zapytania, zamowienia, oplacone, przychod
        FROM pelne ${warunek}

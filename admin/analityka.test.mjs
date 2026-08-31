@@ -115,6 +115,41 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
   assert.match(pool.zapytania[1].sql, /split_part\(action, ':', 1\)/, "kalkulator wyciaga sie z nazwy akcji");
 }
 
+// --- Ruch wlasciciela: domyslnie pominiety, na zadanie widoczny -----------
+// Wlasciciel oznacza swoje urzadzenia sam (znacznik `?nolicz=1`), bo adresu IP
+// nie da sie tu uzyc. Zdarzenia zapisujemy mimo oznaczenia i odsiewamy dopiero
+// w zapytaniu: pusta tabela wygladalaby tak samo przy dzialajacym znaczniku
+// i przy zepsutym liczniku.
+{
+  const pool = atrapa();
+  await kpi(pool, new Date(), new Date());
+  assert.match(pool.zapytania[0].sql, /AND NOT COALESCE\(internal, FALSE\)/,
+    "domyslnie kokpit nie liczy ruchu wlasciciela");
+
+  await kpi(pool, new Date(), new Date(), { zWlasnymi: true });
+  assert.doesNotMatch(pool.zapytania[1].sql, /NOT COALESCE\(internal/,
+    "przelacznik pokazuje ruch wlasciciela z powrotem");
+}
+
+{
+  // Odsiewanie musi byc w KAZDYM zapytaniu. Jedno pominiete i kokpit mowi
+  // dwie rozne prawdy na jednym ekranie.
+  for (const [nazwa, wywolaj] of [
+    ["dzienne", (p, o) => dzienne(p, new Date(), new Date(), o)],
+    ["wedlug", (p, o) => wedlug(p, "kanal", new Date(), new Date(), 12, o)],
+    ["tresc", (p, o) => tresc(p, new Date(), new Date(), 15, o)],
+    ["lejekSklepu", (p, o) => lejekSklepu(p, new Date(), new Date(), o)],
+    ["lejekWycen", (p, o) => lejekWycen(p, new Date(), new Date(), o)],
+    ["wyboryKalkulatora", (p, o) => wyboryKalkulatora(p, new Date(), new Date(), 20, o)],
+    ["sesje", (p, o) => sesje(p, { od: new Date(), do: new Date(), ...o })],
+  ]) {
+    const pool = atrapa();
+    await wywolaj(pool, {});
+    assert.match(pool.zapytania[0].sql, /AND NOT COALESCE\(internal, FALSE\)/,
+      `${nazwa} odsiewa ruch wlasciciela`);
+  }
+}
+
 // --- Sygnaly: prog musi dzialac w obie strony -----------------------------
 
 {

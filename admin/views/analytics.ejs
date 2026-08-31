@@ -31,8 +31,9 @@
     return dobra ? "text-emerald-400" : "text-rose-400";
   };
   const strzalka = (d) => (d === null ? "&middot;" : d > 0 ? "&uarr;" : d < 0 ? "&darr;" : "&rarr;");
+  const wew = typeof zWlasnymi !== "undefined" && zWlasnymi;
   const szczegoly = (wymiar, wartosc) =>
-    `/analytics/szczegoly?days=${days}&wymiar=${wymiar}&wartosc=${encodeURIComponent(wartosc)}`;
+    `/analytics/szczegoly?days=${days}&wymiar=${wymiar}&wartosc=${encodeURIComponent(wartosc)}${wew ? "&wew=1" : ""}`;
 
   const wizytyT = n(teraz.wizyty), wizytyP = n(przedtem.wizyty);
   const konwersjaZapytan = proc(teraz.zapytania, teraz.wizyty);
@@ -63,15 +64,24 @@
         <h2 class="text-xl font-semibold text-white">Analityka</h2>
         <p class="text-xs text-neutral-500 mt-1">
           Ostatnie <%= days %> dni wobec poprzednich <%= days %> dni. Klikniecie w wiersz pokazuje pojedyncze wizyty.
+          <%= wew ? "Liczone razem z Twoimi wizytami." : "Twoje oznaczone wizyty sa pominiete." %>
         </p>
       </div>
-      <div class="flex gap-2 text-sm">
+      <div class="flex gap-2 text-sm items-center">
         <% [7, 30, 90, 365].forEach(function(d) { %>
-          <a href="/analytics?days=<%= d %>"
+          <a href="/analytics?days=<%= d %><%= wew ? '&wew=1' : '' %>"
              class="px-3 py-1.5 rounded-lg border transition-colors <%= days == d ? 'bg-emerald-900 border-emerald-600 text-emerald-300' : 'border-white/10 text-neutral-400 hover:text-white hover:border-white/20' %>">
             <%= d %>d
           </a>
         <% }); %>
+        <%# Ruch wlasciciela jest oznaczony w jego przegladarce i domyslnie
+            nie liczy sie tutaj. Przelacznik pokazuje go z powrotem: bez tego
+            nie dalo by sie sprawdzic, czy oznaczenie w ogole dziala. -%>
+        <a href="/analytics?days=<%= days %><%= wew ? '' : '&wew=1' %>"
+           title="Twoje wizyty oznaczasz wchodząc na www.aejaca.com/?nolicz=1"
+           class="px-3 py-1.5 rounded-lg border transition-colors <%= wew ? 'bg-amber-900 border-amber-600 text-amber-200' : 'border-white/10 text-neutral-500 hover:text-white hover:border-white/20' %>">
+          <%= wew ? "z moim ruchem" : "bez mojego ruchu" %>
+        </a>
       </div>
     </div>
 

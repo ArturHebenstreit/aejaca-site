@@ -110,10 +110,30 @@ w urzadzeniu, czyli banera zgody. Decyzja wlasciciela z 2026-08-31: zostajemy
 bez ciasteczek i mierzymy cala populacje odwiedzajacych, zamiast mierzyc
 dokladniej te czesc, ktora klika "zgadzam sie".
 
-**Wlasnego ruchu.** Adresy wlasciciela stoja w `ANALYTICS_IGNORE_IPS`
-(zmienna srodowiskowa chat-api, po przecinku) i nie sa nigdzie zapisywane.
-Przy kilkudziesieciu wizytach dziennie wlasne przegladanie serwisu przesuwa
-kazdy wykres.
+**Wlasnego ruchu, ale przez OZNACZENIE, a nie przez wyrzucanie.** Adres IP
+sie tu nie nadaje: wlasciciel oglada serwis z trzech urzadzen, z domu, z pracy
+i z telefonu, a adres ma zmienny. Przegladarka nie zdradza zadnego
+identyfikatora urzadzenia (podaje system i przegladarke, wspolne dla milionow
+ludzi) i tak ma byc.
+
+Zostaje znacznik, ktory wlasciciel ustawia sobie sam: wejscie na
+`www.aejaca.com/?nolicz=1` zapisuje jeden klucz w tej przegladarce,
+`?nolicz=0` go kasuje. **To jedyna rzecz, ktora licznik zapisuje w urzadzeniu**,
+i jest wyjatkiem uzasadnionym: zapisuje ja swiadomie sam zainteresowany, sluzy
+wylacznie wylaczeniu zliczania i nie niesie zadnej informacji o czlowieku.
+Trzeba go ustawic raz na kazdej przegladarce i powtorzyc po wyczyszczeniu
+danych.
+
+Zdarzenia z oznaczonego urzadzenia **nadal trafiaja do bazy**, z flaga
+`internal`. Kokpit ich domyslnie nie liczy, ale pokazuje je przelacznikiem
+"z moim ruchem". Wyrzucanie ich przy zapisie byloby prostsze i gorsze: brak
+wpisow wyglada dokladnie tak samo, gdy znacznik dziala, i gdy licznik jest
+zepsuty. Odsiewanie musi stac w KAZDYM zapytaniu kokpitu, inaczej jeden ekran
+podaje dwie rozne prawdy (test: `admin/analityka.test.mjs`).
+
+Uzupelniajaco zostaje `ANALYTICS_IGNORE_IPS` (zmienna srodowiskowa chat-api,
+adresy po przecinku, nigdzie niezapisywane) dla stalego adresu, gdyby taki
+kiedys byl.
 
 **Ruchu maszynowego.** Roboty wyszukiwarek nie wykonuja JavaScriptu i tu nie
 docieraja, ale narzedzia do sprawdzania stron i przegladarki sterowane
@@ -178,4 +198,6 @@ skryptem juz tak. Odsiewa je lista wzorcow w `zrodlaRuchu.js`.
 
 - `PROJECT_RULES.md`: zasada, ze nowa sciezka klienta dostaje zdarzenie razem
   z kodem, a nie "kiedys pozniej".
-- Zmienna `ANALYTICS_IGNORE_IPS` w usludze chat-api na Railway.
+- Zmienna `ANALYTICS_IGNORE_IPS` w usludze chat-api na Railway (opcjonalna).
+- Znacznik wlasnego ruchu: wejscie na `www.aejaca.com/?nolicz=1` raz na kazdej
+  przegladarce wlasciciela.

@@ -37,6 +37,13 @@ const ALLOWED = {
   "src/shop/CurrencyContext.jsx": "wybrana waluta zaplaty, czyli ustawienie, o ktore klient sam poprosil klikajac w przelacznik; ta sama polka co jezyk i zaden slad po osobie",
   "src/analysis/modelHandoff.js": "model przenoszony miedzy kartami po kliknieciu odnosnika do pelnej analizy, czyli czynnosc, o ktora klient sam poprosil; rekord kasujemy przy odczycie i odrzucamy po kwadransie",
   "src/shop/orderStatusAccess.js": "prywatny token zamowienia na czas sesji karty, niezbedny do statusu i ponowienia platnosci po F5",
+  // Wyjatek innego rodzaju niz reszta listy: nie sluzy usludze, tylko WYLACZA
+  // zliczanie. Klucz zapisuje sobie sam wlasciciel, wchodzac na adres
+  // z `?nolicz=1`, bo jego wlasne wizyty z trzech urzadzen i zmiennych adresow
+  // IP inaczej wygladaja w statystyce jak zainteresowanie rynku. Nie niesie
+  // zadnej informacji o czlowieku i kasuje sie tym samym adresem z `?nolicz=0`.
+  // Decyzja: ADR-0031.
+  "src/utils/analytics.js": "znacznik wlasciciela wylaczajacy zliczanie jego wizyt, ustawiany przez niego samego adresem ?nolicz=1",
 };
 
 function walk(dir, out = []) {

@@ -482,30 +482,36 @@ app.get("/export/:table", requireAuth, async (req, res) => {
 // sluzy do zgadywania, a nie do podejmowania decyzji.
 app.get("/analytics", requireAuth, async (req, res) => {
   const o = okresy(req.query.days);
+  // Ruch wlasciciela jest oznaczony (znacznik w przegladarce, `?nolicz=1`)
+  // i domyslnie nie liczy sie w kokpicie. Przelacznik pokazuje go z powrotem,
+  // bo inaczej nie dalo by sie sprawdzic, czy oznaczenie w ogole dziala.
+  const zWlasnymi = req.query.wew === "1";
+  const opcje = { zWlasnymi };
   // Kazda sekcja osobno: jedno zapytanie, ktore padnie (bo kolumna dojdzie
   // dopiero z nastepnym wdrozeniem chat-api), nie ma prawa zabrac calego ekranu.
   const bezpiecznie = (p, zapas) => p.catch((e) => { console.error("[analityka]", e.message); return zapas; });
   try {
     const [teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci, kraje, urzadzenia, jezyki, lejekS, lejekW, wybory] =
       await Promise.all([
-        bezpiecznie(kpi(pool, o.od, o.do), {}),
-        bezpiecznie(kpi(pool, o.poprzedniOd, o.poprzedniDo), {}),
-        bezpiecznie(dzienne(pool, o.od, o.do), []),
-        bezpiecznie(wedlug(pool, "kanal", o.od, o.do), []),
-        bezpiecznie(wedlug(pool, "zrodlo", o.od, o.do), []),
-        bezpiecznie(wedlug(pool, "wejscie", o.od, o.do), []),
-        bezpiecznie(tresc(pool, o.od, o.do), []),
-        bezpiecznie(wedlug(pool, "kraj", o.od, o.do, 8), []),
-        bezpiecznie(wedlug(pool, "urzadzenie", o.od, o.do, 5), []),
-        bezpiecznie(wedlug(pool, "jezyk", o.od, o.do, 5), []),
-        bezpiecznie(lejekSklepu(pool, o.od, o.do), {}),
-        bezpiecznie(lejekWycen(pool, o.od, o.do), {}),
-        bezpiecznie(wyboryKalkulatora(pool, o.od, o.do), []),
+        bezpiecznie(kpi(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(kpi(pool, o.poprzedniOd, o.poprzedniDo, opcje), {}),
+        bezpiecznie(dzienne(pool, o.od, o.do, opcje), []),
+        bezpiecznie(wedlug(pool, "kanal", o.od, o.do, 12, opcje), []),
+        bezpiecznie(wedlug(pool, "zrodlo", o.od, o.do, 12, opcje), []),
+        bezpiecznie(wedlug(pool, "wejscie", o.od, o.do, 12, opcje), []),
+        bezpiecznie(tresc(pool, o.od, o.do, 15, opcje), []),
+        bezpiecznie(wedlug(pool, "kraj", o.od, o.do, 8, opcje), []),
+        bezpiecznie(wedlug(pool, "urzadzenie", o.od, o.do, 5, opcje), []),
+        bezpiecznie(wedlug(pool, "jezyk", o.od, o.do, 5, opcje), []),
+        bezpiecznie(lejekSklepu(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(lejekWycen(pool, o.od, o.do, opcje), {}),
+        bezpiecznie(wyboryKalkulatora(pool, o.od, o.do, 20, opcje), []),
       ]);
 
     res.render("analytics", {
       user: req.user,
       days: o.dni,
+      zWlasnymi,
       teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci,
       kraje, urzadzenia, jezyki, lejekS, lejekW, wybory,
       sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }),
@@ -524,6 +530,7 @@ app.get("/analytics/szczegoly", requireAuth, async (req, res) => {
       wymiar: req.query.wymiar || null,
       wartosc: req.query.wartosc || null,
       limit: 200,
+      zWlasnymi: req.query.wew === "1",
     });
     res.render("analytics-szczegoly", {
       user: req.user, days: o.dni,

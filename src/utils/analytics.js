@@ -33,6 +33,39 @@ const MAX_QUEUE = 200;
 let queue = [];
 let sessionId = null;
 
+// --- Wlasny ruch wlasciciela ---------------------------------------------
+// Wlasciciel oglada swoj serwis z trzech urzadzen, z domu, z pracy i z telefonu,
+// a adres IP ma zmienny, wiec wykluczenie po adresie nie ma czego zlapac.
+// Przegladarka nie zdradza zadnego identyfikatora urzadzenia (podaje system
+// i przegladarke, wspolne dla milionow ludzi) i tak ma byc.
+//
+// Zostaje wiec znacznik, ktory wlasciciel ustawia sobie SAM: wejscie na adres
+// z `?nolicz=1` zapisuje jeden klucz w tej przegladarce, `?nolicz=0` go kasuje.
+// To jedyna rzecz, ktora ten plik zapisuje w urzadzeniu, i jest wyjatkiem
+// uzasadnionym: zapisuje ja swiadomie sam zainteresowany, sluzy WYLACZNIE
+// wylaczeniu zliczania i nie niesie zadnej informacji o czlowieku.
+//
+// Zdarzenia z oznaczonego urzadzenia nadal LECA na serwer, tylko z flaga
+// "wewnetrzne". Kokpit ich domyslnie nie liczy, ale da sie je pokazac jednym
+// przelacznikiem. Wyrzucanie ich juz w przegladarce byloby wygodniejsze
+// i gorsze: brak wpisow wyglada dokladnie tak samo jak zepsuty licznik.
+const KLUCZ_WEWNETRZNY = "aejaca_nolicz";
+let ruchWewnetrzny = false;
+
+function ustalZnacznik() {
+  if (typeof window === "undefined") return;
+  try {
+    const q = new URLSearchParams(window.location.search).get("nolicz");
+    if (q === "1") localStorage.setItem(KLUCZ_WEWNETRZNY, "1");
+    else if (q === "0") localStorage.removeItem(KLUCZ_WEWNETRZNY);
+    ruchWewnetrzny = localStorage.getItem(KLUCZ_WEWNETRZNY) === "1";
+  } catch {
+    // Tryb prywatny potrafi zablokowac pamiec przegladarki. Bez znacznika
+    // wizyta liczy sie normalnie, co jest lepsze niz wywrocenie licznika.
+    ruchWewnetrzny = false;
+  }
+}
+
 function getSessionId() {
   if (!sessionId) {
     sessionId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -110,6 +143,7 @@ export function trackEvent(category, action, label = "", value = null) {
     s: getSessionId(),
     p: typeof window !== "undefined" ? window.location.pathname : "/",
     ...skadPrzyszli(),
+    ...(ruchWewnetrzny ? { w: 1 } : {}),
   };
 
   queue.push(event);
@@ -137,6 +171,7 @@ function zamknijPomiar() {
     queue.push({
       c: "page", a: "engaged", l: biezaca.path, v: Math.min(sekundy, 3600),
       t: teraz, s: getSessionId(), p: biezaca.path, ...skadPrzyszli(),
+      ...(ruchWewnetrzny ? { w: 1 } : {}),
     });
   }
   biezaca = null;
@@ -144,6 +179,7 @@ function zamknijPomiar() {
 
 /** Odslona strony. Wolane przy kazdej zmianie trasy. */
 export function trackPageView(path, referrer = "") {
+  ustalZnacznik();
   zamknijPomiar();
   trackEvent("page", "view", path);
   if (typeof window !== "undefined") {
@@ -282,6 +318,7 @@ function flush() {
 }
 
 if (typeof window !== "undefined") {
+  ustalZnacznik();
   setInterval(flush, FLUSH_INTERVAL);
 
   window.addEventListener("visibilitychange", () => {

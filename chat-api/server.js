@@ -155,6 +155,7 @@ if (pool) {
     "channel VARCHAR(30)",        // wyliczony kanal: wyszukiwarki, spolecznosciowe, wprost
     "source VARCHAR(120)",        // zrodlo do zajrzenia, gdy liczba wyglada dziwnie
     "lang VARCHAR(5)",            // z prefiksu adresu, wiec dziala tez wstecz
+    "internal BOOLEAN DEFAULT FALSE", // ruch wlasciciela, oznaczony przez niego samego
   ]) {
     pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS ${kolumna}`).catch(() => {});
   }
@@ -5721,19 +5722,23 @@ app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req
     const utmMedium = String(e.um || "").slice(0, 100) || null;
     const utmCampaign = String(e.uc || "").slice(0, 100) || null;
     const { kanal, zrodlo } = zrodloWizyty(referrer, { source: utmSource, medium: utmMedium });
-    values.push(`(${Array.from({ length: 16 }, () => `$${idx++}`).join(", ")})`);
+    values.push(`(${Array.from({ length: 17 }, () => `$${idx++}`).join(", ")})`);
     params.push(ts, String(e.s).slice(0, 50), sciezka, String(e.c).slice(0, 50),
       String(e.a || "").slice(0, 200), String(e.l || "").slice(0, 500), e.v ?? null,
       country, device,
       referrer, utmSource, utmMedium, utmCampaign,
-      kanal, zrodlo.slice(0, 120), jezykZeSciezki(sciezka));
+      kanal, zrodlo.slice(0, 120), jezykZeSciezki(sciezka),
+      // Wlasciciel oznacza swoje urzadzenia sam, wejsciem na adres z ?nolicz=1.
+      // Zdarzenie zapisujemy mimo to: kokpit go nie liczy, ale da sie pokazac,
+      // a brak wpisu wygladalby identycznie jak zepsuty licznik.
+      e.w === 1 || e.w === true);
   }
 
   if (values.length === 0) return res.json({ ok: true });
 
   pool.query(
     `INSERT INTO events (ts, session, path, category, action, label, value, country, device,
-       referrer, utm_source, utm_medium, utm_campaign, channel, source, lang) VALUES ${values.join(",")}`,
+       referrer, utm_source, utm_medium, utm_campaign, channel, source, lang, internal) VALUES ${values.join(",")}`,
     params
   ).catch(() => {});
 
