@@ -422,7 +422,12 @@ console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n"
   }
   const przyp = buildPrzypomnienieKodu({ lang: "pl", to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" });
   ok(/jedyne przypomnienie/.test(przyp.text), "przypomnienie mowi, ze jest jedyne");
-  ok(/AEJ10-4H7PQW/.test(przyp.subject), "temat niesie kod, wiec widac go w skrzynce bez otwierania");
+  // Temat mowi, ILE i DO KIEDY, a nie jak brzmi kod: ciag znakow zjada cala
+  // szerokosc widoczna na telefonie i nie mowi czytajacemu niczego. Kod stoi
+  // w tresci, po ktora i tak trzeba siegnac, zeby go uzyc.
+  ok(/10%/.test(przyp.subject) && /5 dni/.test(przyp.subject), "temat podaje stawke i termin");
+  ok(!/AEJ10-4H7PQW/.test(przyp.subject), "temat nie niesie samego kodu");
+  ok(/AEJ10-4H7PQW/.test(przyp.text), "kod stoi w tresci wiadomosci");
 }
 
 console.log("\n4l. Autoodpowiedz idzie z chat-api, bez okrazenia przez n8n\n");
