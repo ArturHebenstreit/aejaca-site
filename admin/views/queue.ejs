@@ -762,6 +762,20 @@
       if (blok) blok.classList.toggle("hidden", !czy);
     };
 
+    // Po KAZDEJ akcji wracamy do tego samego wiersza, otwartego. Przyciski
+    // wysylaja formularz, wiec przegladarka laduje liste od nowa i bez tego
+    // zlecenie zamykalo sie za kazdym razem, a przy dluzszej liscie znikalo
+    // takze z ekranu. Numer przychodzi w adresie, bo serwer wie, czego dotyczyla
+    // akcja, a strona po przeladowaniu juz nie.
+    var doOtwarcia = new URLSearchParams(location.search).get("otwarte");
+    if (doOtwarcia) {
+      var wiersz = pokaz(doOtwarcia, true);
+      var kotwica = document.querySelector('[data-wiersz="' + doOtwarcia + '"]');
+      // Zamowienie skasowane albo odsiane filtrem nie ma juz wiersza i to jest
+      // w porzadku: nie przewijamy wtedy donikad.
+      if (kotwica) kotwica.scrollIntoView({ block: "center" });
+    }
+
     document.addEventListener("click", function (e) {
       var otworz = e.target.closest("[data-otworz]");
       if (otworz) {
