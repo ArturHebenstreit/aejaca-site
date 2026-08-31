@@ -66,6 +66,17 @@ CREATE TABLE IF NOT EXISTS orders (
   city              VARCHAR(120),
   country           VARCHAR(2)   DEFAULT 'PL',
 
+  -- Zamkniecie sprawy bez realizacji. `cancel_kind` mowi KTORA z czterech drog
+  -- (chat-api/drogiZamkniecia.js): odstapienie w 14 dni, nasza wina, nasza
+  -- decyzja, rezygnacja z rzeczy na zamowienie. Przy trzech pierwszych zwrot
+  -- jest obowiazkiem z regulaminu, przy czwartej decyzja handlowa, wiec bez
+  -- tej kolumny nie da sie po czasie powiedziec, czemu wrocilo tyle, a nie
+  -- tyle. Kwota stoi osobno od stanu: stan konczy sie na 'cancelled', a to,
+  -- czy pieniadze wrocily, mowia `refund_grosze` i `refunded_at`.
+  cancel_kind       VARCHAR(30),
+  refund_grosze     INTEGER      NOT NULL DEFAULT 0,
+  refunded_at       TIMESTAMPTZ,
+
   -- Zgody, kazda z osobna, bo art. 38 UPK wymaga odrebnego oswiadczenia
   accepted_terms_at       TIMESTAMPTZ,
   waived_withdrawal_at    TIMESTAMPTZ,  -- rzecz wykonywana na zamowienie

@@ -46,7 +46,11 @@
     { stan: "awaiting_transfer,payment_review", label: "Czeka na wpłatę" },
     { stan: "shipped", label: "Przekazane" },
     { stan: "completed", label: "Odebrane" },
-    { stan: "cancelled,expired", label: "Zamknięte bez zapłaty" },
+    // Do 31 sierpnia 2026 filtr nazywal sie "Zamkniete bez zaplaty", bo
+    // anulowac dalo sie wylacznie przed wplata. Teraz sprawa wychodzi czterema
+    // drogami i na kazdym etapie, wiec stara nazwa mowilaby nieprawde
+    // o polowie wierszy.
+    { stan: "cancelled,expired", label: "Zamknięte" },
     { stan: "awaiting_transfer,payment_review,paid,details,queued,in_production,ready,shipped,completed,cancelled,expired", label: "Wszystko" },
   ];
   const SORTY = [
@@ -98,6 +102,17 @@
         ustaleń. Wzięcie zlecenia do ręki terminu już nie przesuwa, bo klient dostał datę wcześniej.
       </p>
     </div>
+
+    <%# Pieniadze do oddania. Sprawa zamknieta nie stoi w domyslnym widoku,
+        wiec bez tego paska zobowiazanie znikaloby z ekranu razem z wierszem,
+        a jest to jedyne miejsce w panelu, w ktorym w ogole je widac. %>
+    <% if ((doZwrotu || {}).ile > 0) { %>
+      <a href="<%= adres("cancelled,expired", sort) %>"
+         class="flex items-center gap-2 mb-4 rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-2.5 text-red-200 text-xs hover:bg-red-400/15 transition-colors">
+        <span class="font-semibold">Do zwrotu: <%= (doZwrotu.grosze / 100).toFixed(2) %> PLN</span>
+        <span class="text-red-200/70"><%= doZwrotu.ile %> <%= doZwrotu.ile === 1 ? "sprawa zamknięta" : "spraw zamkniętych" %> bez oddanych pieniędzy</span>
+      </a>
+    <% } %>
 
     <div class="flex flex-wrap items-center gap-2 mb-3">
       <% FILTRY.forEach(function (f) { %>
@@ -568,6 +583,90 @@
                     <% if (o.productionNote) { %>
                       <p class="text-neutral-500 text-[11px]">Notatka: <%= o.productionNote %></p>
                     <% } %>
+
+                    <%# ZAMKNIECIE SPRAWY BEZ REALIZACJI. Stoi poza osia etapow,
+                        bo nie jest krokiem naprzod: wyjscie zdarza sie na
+                        kazdym przystanku i z czterech roznych powodow, ktore
+                        regulamin rozroznia. Jeden przycisk "anuluj" sklejalby
+                        je w jedno i po pol roku nie dalo by sie powiedziec,
+                        czemu przy jednej sprawie wrocily pieniadze, a przy
+                        drugiej nie. %>
+                    <% if (o.status === "cancelled") { %>
+                      <% var droga = (drogiZamkniecia || []).find(function (d) { return d.id === o.cancelKind; }); %>
+                      <div class="mt-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                        <p class="text-neutral-300 text-[11px] font-semibold">
+                          Zamknięte: <%= droga ? droga.label : (o.cancelKind || "bez podanej drogi") %>
+                        </p>
+                        <% if (o.cancelReason) { %>
+                          <p class="text-neutral-500 text-[10px] mt-0.5">Powód: <%= o.cancelReason %></p>
+                        <% } %>
+                        <% if (o.refundGrosze > 0) { %>
+                          <% if (o.refundedAt) { %>
+                            <p class="text-emerald-300 text-[11px] mt-1">Zwrot <%= o.refundPLN %> PLN wysłany <%= fmtDateShort(o.refundedAt) %>.</p>
+                          <% } else { %>
+                            <%# Sprawa zamknieta z niezwroconymi pieniedzmi jest
+                                zobowiazaniem, ktorego nie widac nigdzie indziej.
+                                Dlatego czerwono i dlatego z przyciskiem. %>
+                            <p class="text-red-300 text-[11px] mt-1 font-semibold">Do zwrotu: <%= o.refundPLN %> PLN</p>
+                            <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/refunded" class="mt-1.5"
+                                  onsubmit="return confirm('Pieniądze <%= o.refundPLN %> PLN naprawdę poszły do klienta?')">
+                              <input type="hidden" name="back" value="<%= POWROT %>" />
+                              <button class="px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                                Zwrot wysłany
+                              </button>
+                            </form>
+                          <% } %>
+                        <% } else { %>
+                          <p class="text-neutral-500 text-[10px] mt-0.5">Bez zwrotu.</p>
+                        <% } %>
+                      </div>
+                    <% } else { %>
+                      <% var mozliwe = (drogiZamkniecia || []).filter(function (d) { return d.etapy.indexOf(o.status) !== -1; }); %>
+                      <% if (mozliwe.length) { %>
+                        <details class="mt-3 rounded-lg border border-white/10 bg-white/[0.02]">
+                          <summary class="cursor-pointer px-3 py-2 text-neutral-400 text-[11px] hover:text-neutral-200">
+                            Zamknij sprawę bez realizacji
+                          </summary>
+                          <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/close" class="px-3 pb-3 space-y-2"
+                                onsubmit="return confirm('Zamknąć <%= o.orderRef %> bez realizacji? Towar i kod wrócą do sprzedaży.')">
+                            <input type="hidden" name="back" value="<%= POWROT %>" />
+                            <%# Zadnej drogi nie zaznaczamy z gory: wybor ma byc
+                                decyzja, a nie skutkiem przeoczenia. %>
+                            <% mozliwe.forEach(function (d) { %>
+                              <label class="flex gap-2 rounded-lg border border-white/10 px-2 py-1.5 cursor-pointer hover:border-white/25">
+                                <input type="radio" name="kind" value="<%= d.id %>" required
+                                       data-zwrot="<%= d.zwrot %>"
+                                       data-zaplacono="<%= o.paidAt ? o.totalPLN : '0.00' %>"
+                                       class="mt-0.5 w-3.5 h-3.5 shrink-0" />
+                                <span class="text-[11px]">
+                                  <span class="text-neutral-200 font-medium block"><%= d.label %></span>
+                                  <span class="text-neutral-500 block leading-snug"><%= d.opis %></span>
+                                  <% if (d.ostrzezenieNaZamowienie) { %>
+                                    <span class="text-amber-300/90 block leading-snug mt-0.5"><%= d.ostrzezenieNaZamowienie %></span>
+                                  <% } %>
+                                </span>
+                              </label>
+                            <% }); %>
+                            <label class="block">
+                              <span class="text-neutral-500 text-[10px] block mb-1">
+                                Do zwrotu w PLN<% if (o.paidAt) { %>, zapłacono <%= o.totalPLN %><% } else { %>, nic nie wpłynęło<% } %>
+                              </span>
+                              <input name="refund" type="text" inputmode="decimal" placeholder="0,00"
+                                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                            </label>
+                            <input type="text" name="reason" maxlength="200" placeholder="Powód, dla nas (opcjonalnie)"
+                                   class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[10px] text-neutral-300" />
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" name="notify" checked class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                              <span class="text-neutral-400 text-[10px]">Napisz do klienta</span>
+                            </label>
+                            <button class="w-full px-2.5 py-1.5 rounded-lg border border-red-400/40 text-red-300 text-[11px] hover:bg-red-400/10 transition-colors">
+                              Zamknij sprawę
+                            </button>
+                          </form>
+                        </details>
+                      <% } %>
+                    <% } %>
                 </div>
 
 
@@ -775,6 +874,20 @@
       // w porzadku: nie przewijamy wtedy donikad.
       if (kotwica) kotwica.scrollIntoView({ block: "center" });
     }
+
+    // Wybor drogi zamkniecia podpowiada kwote zwrotu. Podpowiedz, a nie
+    // przymus: pole zostaje do reki, bo ile materialu poszlo, wie czlowiek.
+    // Przy drodze, w ktorej zwrot jest obowiazkiem, wpisuje sie cala wplate;
+    // przy rezygnacji z rzeczy na zamowienie zero, bo nic sie nie nalezy.
+    document.addEventListener("change", function (e) {
+      var wybor = e.target.closest('input[type="radio"][name="kind"]');
+      if (!wybor) return;
+      var pole = wybor.form && wybor.form.querySelector('input[name="refund"]');
+      if (!pole) return;
+      pole.value = wybor.getAttribute("data-zwrot") === "pelny"
+        ? wybor.getAttribute("data-zaplacono")
+        : "0.00";
+    });
 
     document.addEventListener("click", function (e) {
       var otworz = e.target.closest("[data-otworz]");

@@ -1666,11 +1666,19 @@ app.get("/queue", requireAuth, async (req, res) => {
       // Lista przewoznikow jest API, nie panelu. Gdy jej nie ma (starsze API),
       // pole wyboru sie nie rysuje, a mail wraca do podpowiedzi ze strefy.
       przewoznicy: dane.przewoznicy || [],
+      // Cztery drogi wyjscia ze sprawy przychodza z API razem z kolejka. Gdy
+      // ich nie ma (starsze API), formularz zamkniecia sie nie rysuje, zamiast
+      // wysylac zgloszenie, ktorego backend nie zrozumie.
+      drogiZamkniecia: dane.drogiZamkniecia || [],
+      // Pieniadze do oddania licza sie poza filtrem, bo sprawa zamknieta nie
+      // stoi w domyslnym widoku, a dlug nie ma prawa zniknac razem z wierszem.
+      doZwrotu: dane.doZwrotu || { ile: 0, grosze: 0 },
       stan, sort: dane.sort || "newest", msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
     res.render("queue", {
       user: req.user, orders: [], counts: {}, stan, sort: sort || "newest",
+      przewoznicy: [], drogiZamkniecia: [], doZwrotu: { ile: 0, grosze: 0 },
       msg: null, err: err.message,
     });
   }
@@ -1809,6 +1817,39 @@ app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
       : "";
     const kod = r.releasedCodes ? ", kod rabatowy zwolniony" : "";
     back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
+});
+
+// Zamkniecie sprawy bez realizacji, jedna z czterech drog. Kwota zwrotu idzie
+// w GROSZACH: panel przyjmuje zlotowki, bo tak sie o pieniadzach mysli, ale
+// przelicza je tutaj, zeby dalej w systemie stala jedna jednostka.
+app.post("/queue/:ref/close", requireAuth, async (req, res) => {
+  try {
+    const zlotowki = String(req.body.refund ?? "").replace(",", ".").trim();
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/close`, {
+      method: "POST",
+      body: {
+        kind: req.body.kind,
+        by: req.user.email,
+        reason: req.body.reason || null,
+        refundGrosze: zlotowki === "" ? null : Math.round(Number(zlotowki) * 100),
+        notify: req.body.notify === "on",
+      },
+    });
+    const zwrot = r.refundGrosze > 0
+      ? `, do zwrotu ${(r.refundGrosze / 100).toFixed(2)} PLN`
+      : ", bez zwrotu";
+    const mail = req.body.notify === "on" ? (r.mailSent ? ", mail poszedl" : ", MAIL NIE POSZEDL") : "";
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: sprawa zamknieta${zwrot}${mail}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
+});
+
+// Potwierdzenie, ze pieniadze naprawde poszly. Osobno od decyzji, bo przelew
+// robi czlowiek i bywa, ze nastepnego dnia.
+app.post("/queue/:ref/refunded", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/refunded`, { method: "POST", body: {} });
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: zwrot odnotowany` });
   } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 

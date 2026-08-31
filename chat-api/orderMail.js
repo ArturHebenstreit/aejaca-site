@@ -104,6 +104,32 @@ const T = {
     zdanieStatus: "Sprawdź status swojego zamówienia pod adresem ",
     zdanieStatusAlbo: " lub odwiedź ",
     zdanieStatusPodaj: (ref) => ` i podaj numer ${ref} oraz adres e-mail, na który przyszła ta wiadomość.`,
+    // ZAMKNIECIE SPRAWY BEZ REALIZACJI, czterema roznymi drogami. Kazda ma
+    // inny powod i inna obietnice co do pieniedzy, wiec kazda ma wlasny tekst.
+    // Jeden wspolny brzmialby jak formularz i przy odstapieniu z naszej winy
+    // wygladalby na obojetnosc.
+    zamkniecie: {
+      odstapienie_14: {
+        subject: (ref) => `Odstąpienie od umowy, zamówienie ${ref}`,
+        intro: "przyjmujemy oświadczenie o odstąpieniu od umowy. Zamówienie zostaje zamknięte i nie będziemy go realizować.",
+      },
+      nasza_wina: {
+        subject: (ref) => `Zamówienie ${ref} zamknięte, przepraszamy`,
+        intro: "nie zdołaliśmy wykonać tego zamówienia zgodnie z ustaleniami. Zamykamy sprawę i przepraszamy za kłopot, jaki to sprawia.",
+      },
+      nasza_decyzja: {
+        subject: (ref) => `Nie podejmujemy się, zamówienie ${ref}`,
+        intro: "po przyjrzeniu się zleceniu nie podejmujemy się jego wykonania. Wolimy powiedzieć to teraz, niż oddać rzecz, która nie spełni oczekiwań.",
+      },
+      rezygnacja_klienta: {
+        subject: (ref) => `Rezygnacja z zamówienia ${ref}`,
+        intro: "przyjmujemy rezygnację z zamówienia. Sprawa zostaje zamknięta.",
+      },
+    },
+    zamZwrot: (kwota, dni) => `Zwracamy ${kwota} na rachunek, z którego przyszła płatność, w ciągu ${dni}.`,
+    zamBezZwrotu: "Wpłacona kwota nie wraca. Jeżeli to nieporozumienie, wystarczy odpowiedzieć na tę wiadomość.",
+    zamCzesciowy: (kwota, dni) => `Zwracamy część wpłaty, ${kwota}, na rachunek źródłowy w ciągu ${dni}. Reszta pokrywa pracę i materiał zużyte do chwili rezygnacji.`,
+    zamPytania: "W razie pytań wystarczy odpowiedzieć na tę wiadomość. Odpisujemy tego samego albo następnego dnia roboczego.",
     zdanieProces: "Dowiedz się, jak wygląda proces realizacji zamówienia: ",
     zdanieRegulamin: "Regulamin serwisu znajdziesz pod adresem ",
     zdaniePlatnosci: "Jak przebiega płatność, przeczytasz pod adresem ",
@@ -219,6 +245,28 @@ const T = {
     zdanieStatus: "Check the status of your order at ",
     zdanieStatusAlbo: " or go to ",
     zdanieStatusPodaj: (ref) => ` and enter the number ${ref} together with the e-mail address this message arrived at.`,
+    zamkniecie: {
+      odstapienie_14: {
+        subject: (ref) => `Withdrawal from the contract, order ${ref}`,
+        intro: "we confirm your withdrawal from the contract. The order is closed and will not be made.",
+      },
+      nasza_wina: {
+        subject: (ref) => `Order ${ref} closed, our apologies`,
+        intro: "we were not able to make this order as agreed. We are closing the case and we are sorry for the trouble it causes.",
+      },
+      nasza_decyzja: {
+        subject: (ref) => `We are not taking this on, order ${ref}`,
+        intro: "having looked at the job closely, we are not taking it on. Better to say so now than to hand over a piece nobody would be happy with.",
+      },
+      rezygnacja_klienta: {
+        subject: (ref) => `Cancellation of order ${ref}`,
+        intro: "we confirm the cancellation of your order. The case is now closed.",
+      },
+    },
+    zamZwrot: (kwota, dni) => `We are returning ${kwota} to the account the payment came from, within ${dni}.`,
+    zamBezZwrotu: "The amount paid is not being returned. If this is a misunderstanding, simply reply to this message.",
+    zamCzesciowy: (kwota, dni) => `We are returning part of the payment, ${kwota}, to the source account within ${dni}. The rest covers the work and material used up to the cancellation.`,
+    zamPytania: "Any questions, simply reply to this message. We answer the same or the next working day.",
     zdanieProces: "Read how an order is made: ",
     zdanieRegulamin: "The terms of service are at ",
     zdaniePlatnosci: "How payment works is described at ",
@@ -327,6 +375,28 @@ const T = {
     zdanieStatus: "Den Status Ihrer Bestellung prüfen Sie unter ",
     zdanieStatusAlbo: " oder besuchen Sie ",
     zdanieStatusPodaj: (ref) => ` und geben Sie die Nummer ${ref} sowie die E-Mail-Adresse an, an die diese Nachricht ging.`,
+    zamkniecie: {
+      odstapienie_14: {
+        subject: (ref) => `Widerruf des Vertrags, Bestellung ${ref}`,
+        intro: "wir bestätigen Ihren Widerruf. Die Bestellung wird geschlossen und nicht gefertigt.",
+      },
+      nasza_wina: {
+        subject: (ref) => `Bestellung ${ref} geschlossen, wir bitten um Entschuldigung`,
+        intro: "wir konnten diese Bestellung nicht wie vereinbart ausführen. Wir schließen den Vorgang und bedauern die Umstände.",
+      },
+      nasza_decyzja: {
+        subject: (ref) => `Wir übernehmen den Auftrag nicht, Bestellung ${ref}`,
+        intro: "nach genauer Ansicht übernehmen wir diesen Auftrag nicht. Lieber sagen wir es jetzt, als ein Stück zu liefern, mit dem niemand zufrieden wäre.",
+      },
+      rezygnacja_klienta: {
+        subject: (ref) => `Stornierung der Bestellung ${ref}`,
+        intro: "wir bestätigen die Stornierung Ihrer Bestellung. Der Vorgang ist geschlossen.",
+      },
+    },
+    zamZwrot: (kwota, dni) => `Wir erstatten ${kwota} auf das Konto, von dem die Zahlung kam. Frist: ${dni}.`,
+    zamBezZwrotu: "Der gezahlte Betrag wird nicht erstattet. Sollte das ein Missverständnis sein, genügt eine Antwort auf diese Nachricht.",
+    zamCzesciowy: (kwota, dni) => `Wir erstatten einen Teil der Zahlung, ${kwota}, auf das Ursprungskonto. Frist: ${dni}. Der Rest deckt Arbeit und Material bis zur Stornierung.`,
+    zamPytania: "Bei Fragen genügt eine Antwort auf diese Nachricht. Wir antworten am selben oder am nächsten Werktag.",
     zdanieProces: "So läuft die Fertigung einer Bestellung ab: ",
     zdanieRegulamin: "Die AGB finden Sie unter ",
     zdaniePlatnosci: "Wie die Zahlung abläuft, lesen Sie unter ",
@@ -1143,6 +1213,73 @@ export function buildProsbaOOcene(order) {
   ].join("\n");
 
   return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.ocSubject, text, html };
+}
+
+/**
+ * Zamkniecie sprawy bez realizacji, jedna z czterech drog.
+ *
+ * Kazda droga ma wlasny tekst, bo kazda mowi cos innego: przyjecie
+ * oswiadczenia klienta, przeprosiny za niedowiezienie, odmowe podjecia sie
+ * roboty i przyjecie rezygnacji. Jeden wspolny tekst brzmialby jak formularz,
+ * a przy naszej winie wygladalby na obojetnosc.
+ *
+ * O pieniadzach piszemy TU, a nie w osobnej wiadomosci, bo pierwsze pytanie po
+ * przeczytaniu takiego maila brzmi zawsze tak samo. Trzy przypadki: wraca
+ * calosc, wraca czesc, nie wraca nic. Kazdy ma wlasne zdanie, bo milczenie
+ * o pieniadzach czyta sie jak zla wiadomosc, nawet gdy nia nie jest.
+ */
+export function buildZamkniecieSprawy(order, kind, refundGrosze, terminDni = 14) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const tresc = l.zamkniecie?.[kind];
+  if (!tresc || !order.customer_email) return null;
+
+  const zaplacone = order.paid_at ? Number(order.total_grosze || 0) : 0;
+  const zwrot = Math.max(0, Math.min(Number(refundGrosze || 0), zaplacone));
+  const oPieniadzach = zaplacone === 0
+    ? null
+    : zwrot === 0
+      ? l.zamBezZwrotu
+      : zwrot < zaplacone
+        ? l.zamCzesciowy(money(zwrot), dniSlownie(terminDni, lang))
+        : l.zamZwrot(money(zwrot), dniSlownie(terminDni, lang));
+
+  const subject = tresc.subject(order.order_ref);
+  const odnosniki = odnosnikiZamowienia(order, l, lang);
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <h1 style="margin:0 0 20px;font-size:20px;line-height:1.3;font-weight:700">${esc(subject)}</h1>
+
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 18px;line-height:1.6">${esc(tresc.intro)}</p>
+    ${oPieniadzach ? `<p style="margin:0 0 18px;line-height:1.6;font-weight:600">${esc(oPieniadzach)}</p>` : ""}
+    <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.zamPytania)}</p>
+    <p style="margin:0;line-height:1.6;font-size:13px;color:#777">${esc(l.orderNo)}: ${esc(order.order_ref)}</p>
+  ` });
+
+  const text = [
+    l.hi, "", tresc.intro,
+    ...(oPieniadzach ? ["", oPieniadzach] : []),
+    "", l.zamPytania,
+    "", `${l.orderNo}: ${order.order_ref}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject, text, html };
+}
+
+/** Wysylka powyzszego. Nie rzuca: sprawa jest juz zamknieta w bazie. */
+export async function sendZamkniecieSprawy(pool, orderId, kind, refundGrosze) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const wiadomosc = rows[0] ? buildZamkniecieSprawy(rows[0], kind, refundGrosze) : null;
+    if (!wiadomosc) return false;
+    return await sendViaGmail([wiadomosc]);
+  } catch (e) {
+    console.error("[zamkniecie] wiadomosc nie zostala wyslana:", e.message);
+    return false;
+  }
 }
 
 /**
