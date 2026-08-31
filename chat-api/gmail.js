@@ -1,3 +1,4 @@
+import { generateQuoteRef } from "./quotes.js";
 import { google } from "googleapis";
 import OpenAI from "openai";
 
@@ -247,10 +248,18 @@ export async function processGmailMessage(gmail, pool, messageId) {
       if (leadRes.rows.length > 0) {
         leadId = leadRes.rows[0].id;
       } else if (direction === "inbound") {
-        // Auto-create lead for inbound emails from unknown senders
+        // Mail od nieznanego nadawcy zaklada sprawe. Dostaje NUMER, tak samo
+        // jak zgloszenie z formularza: bez numeru nie da sie odpisac tak, zeby
+        // obie strony wiedzialy, o ktorej sprawie mowia, a wycena zrobiona
+        // pozniej szlaby pod innym oznaczeniem niz korespondencja.
+        //
+        // Tresc pierwszej wiadomosci idzie do opisu, bo to ona jest zapytaniem.
+        // Wczesniej zostawal sam temat i po tygodniu nie bylo wiadomo, o co
+        // czlowiek pytal.
         const newLead = await pool.query(
-          `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, 'pl', 'email', $2, 'new') RETURNING id`,
-          [matchEmail, subject.slice(0, 400)]
+          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
+           VALUES ($1, 'pl', 'email', 'email', $2, $3, $4, 'new') RETURNING id`,
+          [matchEmail, subject.slice(0, 400), String(bodyText || "").slice(0, 8000), generateQuoteRef()]
         );
         leadId = newLead.rows[0].id;
       }

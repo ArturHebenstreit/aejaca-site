@@ -12,7 +12,7 @@ import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyL
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { zrodloWizyty, jezykZeSciezki, toRobot } from "./zrodlaRuchu.js";
-import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { generateQuoteRef, createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -1012,9 +1012,13 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
         const allText = messages.map(m => m.content).join(" ");
         const emailMatch = allText.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
         const userEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
+        // Rozmowa z asystentem, ktora wyglada na zapytanie, tez jest sprawa
+        // i tez dostaje numer. Bez niego byla jedynym rodzajem zgloszenia,
+        // do ktorego nie dalo sie odniesc w odpowiedzi.
         pool.query(
-          `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
-          [userEmail, lang, "chat", lastMsg.slice(0, 400), "new"]
+          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
+           VALUES ($1, $2, 'chat', 'chat', $3, $4, $5, 'new')`,
+          [userEmail, lang, lastMsg.slice(0, 400), allText.slice(-8000), generateQuoteRef()]
         ).catch(() => {});
       }
     }
@@ -1044,12 +1048,9 @@ const upload = multer({
 
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Numer zapytania cytowany w korespondencji, odpowiednik numeru zamowienia */
-function generateQuoteRef() {
-  const d = new Date();
-  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  return `WY${stamp}-${generateToken().slice(0, 8).toUpperCase()}`;
-}
+// Numer sprawy nadaje `quotes.js` i TYLKO on. Do 2026-08-31 stala tutaj druga,
+// wlasna kopia tej samej funkcji: dwa generatory jednego formatu rozjezdzaja sie
+// przy pierwszej zmianie ksztaltu numeru, i to po cichu, bo oba dzialaja.
 
 /**
  * Zapisuje plik przyslany do wyceny tak samo, jak plik z zamowienia:
@@ -2086,6 +2087,81 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
  * telefonicznej bywa, ze mamy tylko numer; wtedy link przekazuje sie ustnie
  * albo SMS-em, a mail po prostu nie wychodzi.
  */
+/**
+ * Wycena ZE ZGLOSZENIA, z zachowaniem jego numeru.
+ *
+ * Zgloszenie z formularza od dawna zapisuje sie jako lead i od dawna dostaje
+ * numer w kolumnie `quote_ref`. Numer ten byl jednak niewidoczny wszedzie:
+ * w panelu, w potwierdzeniu do klienta i przy zakladaniu wyceny, wiec oferta
+ * szla pod NOWYM numerem, a klient zostawal z dwoma, z ktorych jeden niczego
+ * nie otwieral.
+ *
+ * Ta trasa przepisuje zgloszenie do wyceny razem z numerem: opis staje sie
+ * pozycja, plik zostaje podpiety, a lead dostaje stan "quoted", zeby nie dalo
+ * sie zrobic z niego drugiej oferty.
+ */
+app.post("/api/quotes/from-lead", express.json({ limit: "64kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const id = Number(req.body?.leadId);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Brak numeru zgloszenia" });
+
+  try {
+    const { rows } = await pool.query("SELECT * FROM leads WHERE id = $1", [id]);
+    const lead = rows[0];
+    if (!lead) return res.status(404).json({ error: "Nie ma takiego zgloszenia" });
+    if (!lead.email && !lead.params_json?.phone) {
+      return res.status(400).json({ error: "Zgloszenie bez adresu e-mail, nie ma dokad wyslac oferty" });
+    }
+
+    // Numer istniejacej wyceny o tym samym oznaczeniu znaczy, ze ktos juz
+    // klikal. Oddajemy tamten, zamiast zakladac drugi.
+    if (lead.quote_ref) {
+      const { rows: juz } = await pool.query("SELECT quote_ref FROM quotes WHERE quote_ref = $1", [lead.quote_ref]);
+      if (juz[0]) return res.json({ ok: true, quoteRef: juz[0].quote_ref, reused: true });
+    }
+
+    const dane = lead.params_json && typeof lead.params_json === "object" ? lead.params_json : {};
+    const opis = String(lead.description || lead.params || "").trim();
+    const created = await createQuote(pool, {
+      quoteRef: lead.quote_ref || undefined,
+      email: lead.email || null,
+      name: dane.name || null,
+      phone: dane.phone || null,
+      lang: lead.lang || "pl",
+      source: lead.source === "quote" ? SAVED_QUOTE_SOURCE : "contact",
+      message: opis.slice(0, 8000),
+      sessionId: lead.session_id || null,
+      allowAnonymous: true,
+      items: [{
+        // Pozycja bierze nazwe z tematu albo z kalkulatora, bo to ona stoi
+        // w tabeli oferty. Pelna tresc zgloszenia idzie do opisu pozycji.
+        title: String(dane.subject || lead.calculator || "Zapytanie").slice(0, 255),
+        calculator: lead.calculator || null,
+        description: opis || null,
+        upload_id: lead.upload_id || null,
+        qty: Number.isInteger(lead.qty) && lead.qty > 0 ? lead.qty : 1,
+        params: dane.params ?? null,
+      }],
+    });
+
+    // Zgloszenie sprzed wprowadzenia numerow nie ma zadnego, wiec przejmuje
+    // numer swojej wyceny. Inaczej ta sama sprawa mialaby dwa oznaczenia:
+    // jedno w korespondencji i drugie w ofercie.
+    await pool.query(
+      "UPDATE leads SET status = 'quoted', quote_ref = COALESCE(quote_ref, $2) WHERE id = $1",
+      [id, created.quoteRef]
+    );
+    console.log(`[wycena] ze zgloszenia ${lead.quote_ref || "bez numeru"} -> ${created.quoteRef}`);
+    res.json({ ok: true, quoteRef: created.quoteRef, accessToken: created.accessToken });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] ze zgloszenia:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zalozyc wyceny" });
+  }
+});
+
 app.post("/api/quotes/manual", express.json({ limit: "256kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

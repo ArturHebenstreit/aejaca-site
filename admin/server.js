@@ -277,6 +277,8 @@ app.get("/leads", requireAuth, async (req, res) => {
     ]);
     res.render("leads", {
       user: req.user,
+      msg: req.query.msg || null,
+      err: req.query.err || null,
       leads: rows.rows,
       total: parseInt(count.rows[0].total),
       page,
@@ -369,6 +371,22 @@ app.post("/leads/:id/update-status", requireAuth, async (req, res) => {
     [req.params.id, status]
   ).catch(() => {});
   res.redirect("/leads");
+});
+
+/**
+ * Zgloszenie w wycene, jednym klikiem i BEZ ZMIANY NUMERU.
+ *
+ * Przepisywanie recznie konczylo sie tym, ze oferta szla pod nowym numerem,
+ * a klient mial dwa: jeden z potwierdzenia i drugi z oferty. Numer sprawy
+ * zostaje ten sam przez cala droge.
+ */
+app.post("/leads/:id/do-wyceny", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi("/api/quotes/from-lead", { method: "POST", body: { leadId: Number(req.params.id) } });
+    back(res, `/quotes/${r.quoteRef}`, {
+      msg: r.reused ? `Wycena ${r.quoteRef} juz istniala` : `Zalozono wycene ${r.quoteRef}`,
+    });
+  } catch (err) { back(res, "/leads", { err: err.message }); }
 });
 
 app.post("/leads/:id/delete", requireAuth, async (req, res) => {

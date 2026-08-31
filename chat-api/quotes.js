@@ -65,7 +65,12 @@ export async function createQuote(pool, input) {
   // to zbieranie danych na zapas.
   if (!input?.email && !input?.allowAnonymous) throw new QuoteError("no_email", "Brak adresu e-mail");
 
-  const quoteRef = generateQuoteRef();
+  // Numer da sie PODAC z zewnatrz. Sluzy to jednej rzeczy: wycena zrobiona
+  // ze zgloszenia zachowuje numer, ktory klient dostal w potwierdzeniu, wiec
+  // przez cala droge posluguje sie jednym numerem sprawy. Bez tego oferta
+  // przychodzi pod nowym numerem i klient ma dwa, z ktorych jeden nic nie
+  // otwiera.
+  const quoteRef = input.quoteRef || generateQuoteRef();
   const accessToken = generateToken();
   const lang = ["pl", "en", "de"].includes(input.lang) ? input.lang : "pl";
 
