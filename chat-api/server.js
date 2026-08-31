@@ -815,7 +815,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // TRZECIEJ pozycji, zawsze dwucyfrowej: `1.1.01` -> `1.1.02`. Ta sama regula
 // co w `admin/wersja.js`. Numery obu uslug nie musza byc rowne: kazda zmienia
 // sie wtedy, gdy naprawde sie zmienia.
-const WERSJA_API = "1.1.04";
+const WERSJA_API = "1.1.05";
 
 app.get("/api/version", async (req, res) => {
   if (!requireAdmin(req, res)) return;
