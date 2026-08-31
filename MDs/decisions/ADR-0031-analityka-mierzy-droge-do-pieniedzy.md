@@ -142,20 +142,29 @@ gorsza od braku lampki.
 Stad podzial:
 
 - **Serwis** pokazuje plakietke (`src/components/ZnacznikRuchu.jsx`) w rogu, gdy
-  znacznik stoi albo gdy wlasnie uzyto parametru. Ta sama plakietka przelacza
-  stan jednym klikniecem, wiec parametru nie trzeba pamietac. Zwykly
-  odwiedzajacy nie zobaczy jej nigdy, bo bez znacznika i bez parametru
-  komponent nie rysuje niczego. Trzeci stan, "przegladarka nie daje pamieci",
-  nazywamy wprost, zamiast udawac "liczony": inaczej klikanie nie dawaloby
-  zadnego skutku i wygladalo na zepsute.
+  znacznik stoi albo gdy adres o niego pytal. Odpowiedz i przelacznik to
+  JEDEN klawisz, kolorowany stanem: zielony "Ten ruch jest liczony", czerwony
+  "Ten ruch nie jest liczony". Druga linijka na klawiszu mowi, co zrobi
+  klikniecie, bo sam napis na przycisku nie rozstrzyga, czy opisuje stan, czy
+  zapowiada zmiane. Kolor jest tu trescia, wiec napis mowi to samo co kolor:
+  samego koloru nie widzi kazde oko. Zwykly odwiedzajacy nie zobaczy plakietki
+  nigdy: bez znacznika i bez parametru komponent nie rysuje niczego. Trzeci
+  stan, "przegladarka nie daje pamieci", nazywamy wprost i nie dajemy klawisza,
+  zamiast udawac "liczony": inaczej klikanie nie dawaloby zadnego skutku
+  i wygladalo na zepsute.
+- **`?nolicz=stan` tylko pyta.** Wartosci `1` i `0` przestawiaja znacznik, kazda
+  inna wylacznie pokazuje plakietke. Bez tego odpowiedz "liczony czy nie"
+  dawalo sie dostac tylko przez przestawienie tego, o co sie pyta.
 - **Parametr znika z adresu**, gdy zadziala. Zostawiony odwracalby kazde
   pozniejsze przelaczenie z plakietki, bo znacznik ustala sie przy kazdej
   odslonie, a przy okazji adres z parametrem trafialby do zakladek.
 - **Panel** pokazuje na pulpicie to, co naprawde wie: ile oznaczonych zdarzen
   przyszlo w siedem dni, z ilu wizyt i kiedy ostatnie. To jest dowod ze skutku,
   a nie deklaracja, i odpowiada na jedyne pytanie, ktore panel moze rozstrzygnac:
-  czy oznaczanie w ogole dziala. Obok stoja odnosniki otwierajace serwis
-  z parametrem, bo przelaczyc da sie tylko tam.
+  czy oznaczanie w ogole dziala. Obok stoi JEDEN przycisk, otwierajacy serwis
+  z `?nolicz=stan`, bo odpowiedz dla konkretnej przegladarki da sie zobaczyc
+  tylko tam. Przyciski "wlacz" i "wylacz" w panelu byly by wyborem w ciemno:
+  panel nie wie, ktory stan jest teraz.
 
 Skrot analityki na pulpicie panelu liczy **to samo, co pelna analityka**, czyli
 bez wlasnego ruchu. Dwie liczby pod jedna nazwa, rozne o wejscia wlasciciela,

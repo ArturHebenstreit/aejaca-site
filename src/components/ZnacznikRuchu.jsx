@@ -26,31 +26,31 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
-import { stanLiczenia, ustawLiczenie, zadanoPrzelaczenia } from "../utils/analytics.js";
+import { stanLiczenia, ustawLiczenie, pytanoZAdresu } from "../utils/analytics.js";
 
 const TEKSTY = {
   pl: {
-    pominiety: "Ruch z tej przeglądarki nie jest liczony w statystyce.",
-    liczony: "Ruch z tej przeglądarki jest liczony w statystyce.",
+    liczony: "Ten ruch jest liczony",
+    pominiety: "Ten ruch nie jest liczony",
     niedostepny: "Ta przeglądarka nie pozwala zapisać znacznika, więc ruch liczy się normalnie.",
-    wylacz: "Nie licz mnie",
-    wlacz: "Licz z powrotem",
+    zLiczonego: "Kliknij, żeby przestać liczyć",
+    zPominietego: "Kliknij, żeby liczyć",
     zamknij: "Zamknij",
   },
   en: {
-    pominiety: "Traffic from this browser is left out of the statistics.",
-    liczony: "Traffic from this browser counts towards the statistics.",
+    liczony: "This traffic is counted",
+    pominiety: "This traffic is not counted",
     niedostepny: "This browser will not store the marker, so the traffic counts normally.",
-    wylacz: "Do not count me",
-    wlacz: "Count me again",
+    zLiczonego: "Click to stop counting it",
+    zPominietego: "Click to start counting it",
     zamknij: "Close",
   },
   de: {
-    pominiety: "Zugriffe aus diesem Browser zählen nicht zur Statistik.",
-    liczony: "Zugriffe aus diesem Browser zählen zur Statistik.",
+    liczony: "Diese Zugriffe werden gezählt",
+    pominiety: "Diese Zugriffe werden nicht gezählt",
     niedostepny: "Dieser Browser speichert die Markierung nicht, die Zugriffe zählen also normal.",
-    wylacz: "Mich nicht zählen",
-    wlacz: "Wieder zählen",
+    zLiczonego: "Klicken, um nicht mehr zu zählen",
+    zPominietego: "Klicken, um wieder zu zählen",
     zamknij: "Schließen",
   },
 };
@@ -65,7 +65,7 @@ export default function ZnacznikRuchu() {
     // pamiec przegladarki i adres czytamy dopiero po zamontowaniu.
     // Parametru w adresie juz nie ma: licznik zdejmuje go, gdy zadziala, zeby
     // nie odwracal pozniejszych klikniec. Pytamy wiec licznik, a nie adres.
-    const zParametru = zadanoPrzelaczenia();
+    const zParametru = pytanoZAdresu();
     const teraz = stanLiczenia();
     // Plakietka pokazuje sie, gdy ruch jest pomijany (stan trzeba widziec cały
     // czas) albo gdy wlasciciel wlasnie uzyl parametru (potwierdzenie, ze
@@ -79,26 +79,32 @@ export default function ZnacznikRuchu() {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-40 max-w-xs rounded-xl border border-white/15 bg-neutral-900/95 px-4 py-3 text-xs text-neutral-200 shadow-lg backdrop-blur"
+      className="fixed bottom-4 left-4 z-40 max-w-xs rounded-xl border border-white/15 bg-neutral-900/95 px-3 py-3 text-xs text-neutral-200 shadow-lg backdrop-blur"
       role="status"
     >
       <div className="flex items-start gap-2">
-        <span
-          className={`mt-1 h-2 w-2 shrink-0 rounded-full ${pomijany ? "bg-amber-400" : "bg-emerald-400"}`}
-          aria-hidden="true"
-        />
-        <div className="flex-1">
-          <p>{tekst[stan]}</p>
-          {stan !== "niedostepny" && (
-            <button
-              type="button"
-              onClick={() => setStan(ustawLiczenie(pomijany))}
-              className="mt-2 rounded-lg border border-white/20 px-3 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
-            >
-              {pomijany ? tekst.wlacz : tekst.wylacz}
-            </button>
-          )}
-        </div>
+        {stan === "niedostepny" ? (
+          <p className="flex-1 py-1">{tekst.niedostepny}</p>
+        ) : (
+          // JEDEN klawisz na odpowiedz i na przestawienie. Kolor i napis mowia
+          // o stanie TERAZ, druga linijka o tym, co zrobi klikniecie. Osobny
+          // napis obok osobnego przycisku dalo by sie rozjechac, a sam napis
+          // na przycisku nie mowi, czy opisuje stan, czy zapowiada zmiane.
+          <button
+            type="button"
+            onClick={() => setStan(ustawLiczenie(pomijany))}
+            className={`flex-1 rounded-lg px-3 py-2 text-left font-semibold text-white transition-colors ${
+              pomijany
+                ? "bg-red-600 hover:bg-red-500"
+                : "bg-emerald-600 hover:bg-emerald-500"
+            }`}
+          >
+            {tekst[stan]}
+            <span className="mt-0.5 block font-normal text-white/80">
+              {pomijany ? tekst.zPominietego : tekst.zLiczonego}
+            </span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setSchowana(true)}
