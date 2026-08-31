@@ -131,6 +131,36 @@ wpisow wyglada dokladnie tak samo, gdy znacznik dziala, i gdy licznik jest
 zepsuty. Odsiewanie musi stac w KAZDYM zapytaniu kokpitu, inaczej jeden ekran
 podaje dwie rozne prawdy (test: `admin/analityka.test.mjs`).
 
+**Stan znacznika widac na stronie, a nie w panelu, i nie jest to niedorobka.**
+Znacznik nalezy do pamieci przegladarki pod adresem `www.aejaca.com`. Panel
+administracyjny stoi pod innym adresem, wiec tej pamieci nie odczyta, a ramka
+z naszym adresem osadzona w panelu tez nie pomoze: przegladarki dziela pamiec
+osobno dla kazdej strony nadrzednej, wiec taka ramka widzialaby PUSTA polke
+i pokazywalaby "liczony" nawet dla oznaczonego urzadzenia. Falszywa lampka jest
+gorsza od braku lampki.
+
+Stad podzial:
+
+- **Serwis** pokazuje plakietke (`src/components/ZnacznikRuchu.jsx`) w rogu, gdy
+  znacznik stoi albo gdy wlasnie uzyto parametru. Ta sama plakietka przelacza
+  stan jednym klikniecem, wiec parametru nie trzeba pamietac. Zwykly
+  odwiedzajacy nie zobaczy jej nigdy, bo bez znacznika i bez parametru
+  komponent nie rysuje niczego. Trzeci stan, "przegladarka nie daje pamieci",
+  nazywamy wprost, zamiast udawac "liczony": inaczej klikanie nie dawaloby
+  zadnego skutku i wygladalo na zepsute.
+- **Parametr znika z adresu**, gdy zadziala. Zostawiony odwracalby kazde
+  pozniejsze przelaczenie z plakietki, bo znacznik ustala sie przy kazdej
+  odslonie, a przy okazji adres z parametrem trafialby do zakladek.
+- **Panel** pokazuje na pulpicie to, co naprawde wie: ile oznaczonych zdarzen
+  przyszlo w siedem dni, z ilu wizyt i kiedy ostatnie. To jest dowod ze skutku,
+  a nie deklaracja, i odpowiada na jedyne pytanie, ktore panel moze rozstrzygnac:
+  czy oznaczanie w ogole dziala. Obok stoja odnosniki otwierajace serwis
+  z parametrem, bo przelaczyc da sie tylko tam.
+
+Skrot analityki na pulpicie panelu liczy **to samo, co pelna analityka**, czyli
+bez wlasnego ruchu. Dwie liczby pod jedna nazwa, rozne o wejscia wlasciciela,
+bylyby gorsze niz brak skrotu.
+
 Uzupelniajaco zostaje `ANALYTICS_IGNORE_IPS` (zmienna srodowiskowa chat-api,
 adresy po przecinku, nigdzie niezapisywane) dla stalego adresu, gdyby taki
 kiedys byl.
@@ -193,6 +223,9 @@ skryptem juz tak. Odsiewa je lista wzorcow w `zrodlaRuchu.js`.
   domeny przekierowan (`t.co`, `l.instagram.com`) licza sie jak serwis, z
   ktorego pochodza. Test: `chat-api/zrodlaRuchu.test.mjs`.
 - Trzy widoki kokpitu renderuja sie na danych. Test: `admin/check-views.mjs`.
+- Plakietka stanu stoi w serwisie, panel jej nie udaje, a skrot na pulpicie
+  pomija wlasny ruch tak samo jak pelna analityka.
+  Test: `scripts/test-wlasny-ruch.mjs`.
 
 ## Synchronizacja
 
@@ -200,4 +233,5 @@ skryptem juz tak. Odsiewa je lista wzorcow w `zrodlaRuchu.js`.
   z kodem, a nie "kiedys pozniej".
 - Zmienna `ANALYTICS_IGNORE_IPS` w usludze chat-api na Railway (opcjonalna).
 - Znacznik wlasnego ruchu: wejscie na `www.aejaca.com/?nolicz=1` raz na kazdej
-  przegladarce wlasciciela.
+  przegladarce wlasciciela, albo klikniecie w plakietce. Przyciski otwierajace
+  oba adresy stoja na pulpicie panelu.

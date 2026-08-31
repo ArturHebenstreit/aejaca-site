@@ -338,8 +338,12 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
   // a jego pierwszy krok, potwierdzenie wplaty, mial osobna strone.
   ma(SERWER, /DOZWOLONE_STANY = \["awaiting_transfer", "payment_review", "paid", "details", "queued",/,
      "kolejka wpuszcza etapy pracy i oba stany czekania na pieniadze");
-  ma(SERWER, /: \["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready"\]/,
-     "domyslny widok kolejki pokazuje takze to, co czeka na wplate");
+  // Paczka oddana kurierowi nie konczy sprawy: czekamy na potwierdzenie, ze
+  // klient ja dostal. Gdyby "shipped" wypadlo z domyslnej listy, pozycja
+  // znikalaby z widoku w chwili nadania i nie mialby kto odhaczyc odbioru.
+  // Z domyslnego widoku wychodzi dopiero "Odebrane".
+  ma(SERWER, /: \["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready", "shipped"\]/,
+     "domyslny widok kolejki trzyma pozycje az do potwierdzenia odbioru");
   for (const stan of ["awaiting_transfer", "payment_review"]) {
     ma(KOLEJKA, new RegExp(`\\n\\s*${stan}: \\{ label:`), `kolejka umie nazwac stan ${stan}`);
   }

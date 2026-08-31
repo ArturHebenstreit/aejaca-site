@@ -51,6 +51,7 @@ let sessionId = null;
 // i gorsze: brak wpisow wyglada dokladnie tak samo jak zepsuty licznik.
 const KLUCZ_WEWNETRZNY = "aejaca_nolicz";
 let ruchWewnetrzny = false;
+let przelaczonoZAdresu = false;
 
 function ustalZnacznik() {
   if (typeof window === "undefined") return;
@@ -58,6 +59,14 @@ function ustalZnacznik() {
     const q = new URLSearchParams(window.location.search).get("nolicz");
     if (q === "1") localStorage.setItem(KLUCZ_WEWNETRZNY, "1");
     else if (q === "0") localStorage.removeItem(KLUCZ_WEWNETRZNY);
+    if (q === "1" || q === "0") {
+      przelaczonoZAdresu = true;
+      // Parametr znika z adresu zaraz po zadzialaniu, z dwoch powodow.
+      // Pierwszy: zostawiony w adresie odwracalby kazde pozniejsze
+      // przelaczenie z plakietki, bo znacznik ustala sie przy kazdej odslonie.
+      // Drugi: adres z parametrem lubi trafic do zakladek i do cudzych rak.
+      window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+    }
     ruchWewnetrzny = localStorage.getItem(KLUCZ_WEWNETRZNY) === "1";
   } catch {
     // Tryb prywatny potrafi zablokowac pamiec przegladarki. Bez znacznika
@@ -114,6 +123,60 @@ function skadPrzyszli() {
     uc: utm("utm_campaign"),
   };
   return pochodzenie;
+}
+
+/**
+ * Czy ruch z TEJ przegladarki jest liczony.
+ *
+ * Trzy odpowiedzi, bo sa trzy rozne stany, a dwa z nich wygladaja tak samo
+ * z zewnatrz:
+ *   "liczony"     - znacznika nie ma, wizyty licza sie normalnie,
+ *   "pominiety"   - znacznik stoi, zdarzenia ida z flaga i kokpit ich nie liczy,
+ *   "niedostepny" - przegladarka nie daje pamieci (tryb prywatny), wiec
+ *                   znacznika nie da sie ani odczytac, ani postawic.
+ *
+ * Ostatni stan nazywamy wprost, zamiast udawac "liczony": inaczej wlasciciel
+ * klikalby wylaczenie w kolko, widzac ciagle ten sam napis.
+ */
+/**
+ * Czy przelacznik zadzialal z adresu (`?nolicz=1` albo `?nolicz=0`) w tej
+ * odslonie. Plakietka pokazuje sie wtedy takze przy powrocie do liczenia:
+ * inaczej wlaczenie liczenia wygladaloby jak brak reakcji, bo stan "liczony"
+ * jest domyslny i niczego nie rysuje.
+ */
+export function zadanoPrzelaczenia() {
+  return przelaczonoZAdresu;
+}
+
+export function stanLiczenia() {
+  if (typeof window === "undefined") return "liczony";
+  try {
+    return localStorage.getItem(KLUCZ_WEWNETRZNY) === "1" ? "pominiety" : "liczony";
+  } catch {
+    return "niedostepny";
+  }
+}
+
+/**
+ * Wlacza albo wylacza liczenie ruchu z tej przegladarki. Odpowiada nowym
+ * stanem, zeby wywolujacy nie musial zgadywac, czy zapis sie udal.
+ *
+ * Znacznik siedzi w pamieci TEJ przegladarki i TEGO adresu, wiec ustawia sie
+ * go osobno na kazdym urzadzeniu. Panel administracyjny stoi pod innym
+ * adresem i tej pamieci nie widzi, dlatego przelacznik musi byc tutaj.
+ *
+ * @param {boolean} licz - true liczy ruch, false przestaje go liczyc
+ */
+export function ustawLiczenie(licz) {
+  if (typeof window === "undefined") return "liczony";
+  try {
+    if (licz) localStorage.removeItem(KLUCZ_WEWNETRZNY);
+    else localStorage.setItem(KLUCZ_WEWNETRZNY, "1");
+  } catch {
+    return "niedostepny";
+  }
+  ruchWewnetrzny = stanLiczenia() === "pominiety";
+  return stanLiczenia();
 }
 
 /**

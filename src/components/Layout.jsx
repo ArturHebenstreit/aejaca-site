@@ -4,6 +4,7 @@ import Navbar from "./Navbar.jsx";
 import JezykPodpowiedz from "./JezykPodpowiedz.jsx";
 import Footer from "./Footer.jsx";
 import ChatWidget from "./ChatWidget.jsx";
+import ZnacznikRuchu from "./ZnacznikRuchu.jsx";
 import { trackPageView, initScrollTracking, initToolTracking } from "../utils/analytics.js";
 import useScrollToTop from "../hooks/useScrollToTop.js";
 
@@ -29,6 +30,7 @@ export default function Layout() {
       </main>
       <Footer />
       <ChatWidget />
+      <ZnacznikRuchu />
     </div>
   );
 }

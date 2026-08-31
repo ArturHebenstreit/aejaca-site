@@ -4506,7 +4506,13 @@ app.get("/api/orders/queue", async (req, res) => {
     // Ustalanie szczegolow i "zrealizowane" stoja w domyslnym widoku, bo to
     // wlasnie one czekaja na RUCH Z NASZEJ STRONY. Zlecenie w ustalaniu nie ma
     // nawet zegara, wiec pominiete tutaj nie odezwaloby sie znikad.
-    : ["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready"];
+    //
+    // "Przekazane" TEZ tu stoi (decyzja wlasciciela, 2026-08-31). Paczka
+    // oddana kurierowi nie konczy sprawy: czekamy na potwierdzenie odbioru,
+    // a dopoki go nie ma, ktos musi o tym zleceniu pamietac. Wypadanie z listy
+    // zaraz po nadaniu znaczylo, ze zlecenie znikalo z oczu w polowie ostatniego
+    // kroku. Z widoku wychodzi dopiero "Odebrane".
+    : ["awaiting_transfer", "payment_review", "paid", "details", "queued", "in_production", "ready", "shipped"];
   if (!stany.length) return res.status(400).json({ error: "Nie znamy takiego stanu" });
 
   // Sortowanie z BIALEJ LISTY, a nie z parametru wstawionego do zapytania:

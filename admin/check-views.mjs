@@ -87,6 +87,24 @@ const wycena = {
 };
 
 const ZESTAWY = {
+  // Pulpit ciagnie dane z osmiu zapytan naraz, wiec kazde nowe pole widoku to
+  // nowa okazja, zeby trasa go nie podala. Wtedy strona glowna panelu wywala
+  // sie na "wlasnyRuch is not defined", i to dopiero na produkcji.
+  dashboard: {
+    user: uzytkownik,
+    leadStats: { total: 12, today: 1, week: 4 },
+    subStats: { total: 30, today: 0, week: 2 },
+    recentLeads: [{
+      created_at: wycena.createdAt, email: "klient@example.com", calculator: "jewelry",
+      params: { metal: "srebro" }, price_min_pln: 400, price_max_pln: 600, status: "new",
+    }],
+    recentSubs: [{ subscribed_at: wycena.createdAt, email: "zapis@example.com", lang: "pl", source: "popup", discount_code: "AE-TEST" }],
+    analyticsKpi: { visitors_today: 8, visitors_week: 41, pageviews_today: 20, pageviews_week: 130, inquiries_week: 2, top_page_today: "/" },
+    // Oba stany lampki wlasnego ruchu: tutaj znacznik juz cos przyniosl.
+    wlasnyRuch: { zdarzenia_7d: 14, wizyty_7d: 3, ostatnie: wycena.createdAt, ostatnie_urzadzenie: "desktop" },
+    SITE_URL: "https://www.aejaca.com",
+    laserMatrixCount: 120, gemstoneCount: 40, filamentCount: 18, pendingContributions: 1,
+  },
   quotes: {
     user: uzytkownik,
     quotes: [{

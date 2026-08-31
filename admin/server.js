@@ -227,11 +227,14 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, wlasnyRuch, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
       pool.query("SELECT * FROM subscribers ORDER BY subscribed_at DESC LIMIT 10"),
+      // Skrot analityki na pulpicie liczy TO SAMO co pelna analityka, czyli
+      // pomija ruch oznaczony jako wlasny. Dwie liczby pod jedna nazwa, rozne
+      // o wejscia wlasciciela, byly by gorsze niz brak skrotu.
       pool.query(`
         SELECT
           COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE) AS visitors_today,
@@ -239,8 +242,22 @@ app.get("/dashboard", requireAuth, async (req, res) => {
           COUNT(*) FILTER (WHERE category = 'page' AND ts >= CURRENT_DATE) AS pageviews_today,
           COUNT(*) FILTER (WHERE category = 'page' AND ts >= NOW() - INTERVAL '7 days') AS pageviews_week,
           COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '7 days') AS inquiries_week,
-          (SELECT path FROM events WHERE category = 'page' AND ts >= CURRENT_DATE GROUP BY path ORDER BY COUNT(*) DESC LIMIT 1) AS top_page_today
-        FROM events
+          (SELECT path FROM events WHERE category = 'page' AND ts >= CURRENT_DATE AND NOT COALESCE(internal, FALSE)
+             GROUP BY path ORDER BY COUNT(*) DESC LIMIT 1) AS top_page_today
+        FROM events WHERE NOT COALESCE(internal, FALSE)
+      `).catch(() => ({ rows: [{}] })),
+      // Dowod, ze znacznik wlasnego ruchu dziala. Panel stoi pod innym adresem
+      // niz serwis, wiec pamieci przegladarki z aejaca.com nie odczyta i stanu
+      // znacznika NIE ZNA. Zna natomiast to, co przyszlo do bazy: ile zdarzen
+      // z oznaczeniem, z ilu wizyt i kiedy ostatnie. Oznaczone urzadzenie widac
+      // wiec po skutku, a nie po deklaracji.
+      pool.query(`
+        SELECT
+          COUNT(*) FILTER (WHERE ts >= NOW() - INTERVAL '7 days') AS zdarzenia_7d,
+          COUNT(DISTINCT session) FILTER (WHERE ts >= NOW() - INTERVAL '7 days') AS wizyty_7d,
+          MAX(ts) AS ostatnie,
+          (SELECT device FROM events WHERE COALESCE(internal, FALSE) ORDER BY ts DESC LIMIT 1) AS ostatnie_urzadzenie
+        FROM events WHERE COALESCE(internal, FALSE)
       `).catch(() => ({ rows: [{}] })),
       pool.query("SELECT COUNT(*) as total FROM laser_matrix").catch(() => ({ rows: [{ total: '?' }] })),
       pool.query("SELECT COUNT(*) as count FROM gemstone_prices").catch(() => ({ rows: [{ count: '0' }] })),
@@ -254,6 +271,8 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       recentLeads: recentLeads.rows,
       recentSubs: recentSubs.rows,
       analyticsKpi: analyticsKpi.rows[0] || {},
+      wlasnyRuch: wlasnyRuch.rows[0] || {},
+      SITE_URL,
       laserMatrixCount: laserMatrixCount.rows[0].total,
       gemstoneCount: parseInt(gemResult.rows[0].count),
       filamentCount: parseInt(filamentResult.rows[0].count),
@@ -1736,8 +1755,8 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         shippedOn: (req.body.shippedOn || "").trim() || undefined,
       },
     });
-    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: ${r.status}` });
-  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: ${r.status}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
 // Przelewy NIE maja juz wlasnej strony (decyzja wlasciciela, 2026-08-30).
@@ -1758,8 +1777,8 @@ app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
         force: req.body.force === "true",
       },
     });
-    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: potwierdzony` });
-  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: potwierdzony` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
 // Wplynelo mniej: piszemy do klienta o doplate i dajemy trzy dni. Zamowienie
@@ -1774,8 +1793,8 @@ app.post("/transfers/:ref/shortfall", requireAuth, async (req, res) => {
       },
     });
     const mail = r.mailed ? "mail poszedl" : "MAIL NIE POSZEDL";
-    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: prosba o doplate ${r.shortfallEur} EUR, ${mail}` });
-  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: prosba o doplate ${r.shortfallEur} EUR, ${mail}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
 // Rezygnacja: towar i kod wracaja do puli od razu, wiersz zostaje z adnotacja.
@@ -1789,8 +1808,8 @@ app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
       ? `, towar wrocil do sprzedazy (${r.releasedReservations})`
       : "";
     const kod = r.releasedCodes ? ", kod rabatowy zwolniony" : "";
-    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
-  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
 // Kasowanie: tylko pomylki i testy. Backend odmawia, gdy cokolwiek sie wydarzylo,
@@ -1798,8 +1817,8 @@ app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
 app.post("/transfers/:ref/delete", requireAuth, async (req, res) => {
   try {
     await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}`, { method: "DELETE" });
-    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: skasowane` });
-  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: skasowane` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

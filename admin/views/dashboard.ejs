@@ -109,6 +109,55 @@
       </div>
     </section>
 
+    <!-- Moj wlasny ruch -->
+    <section class="mb-10">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-white">Mój ruch na stronie</h3>
+        <a href="/analytics" class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">Analityka &rarr;</a>
+      </div>
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <div class="flex items-start gap-3">
+          <span class="mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 <%= wlasnyRuch.ostatnie ? 'bg-emerald-400' : 'bg-neutral-600' %>"></span>
+          <div class="flex-1">
+            <% if (wlasnyRuch.ostatnie) { %>
+              <p class="text-sm text-neutral-200">
+                Znacznik działa: w ciągu 7 dni przyszło <strong class="text-white"><%= wlasnyRuch.zdarzenia_7d || 0 %></strong>
+                zdarzeń z <strong class="text-white"><%= wlasnyRuch.wizyty_7d || 0 %></strong> Twoich wizyt.
+              </p>
+              <p class="text-xs text-neutral-500 mt-1">
+                Ostatnie oznaczone wejście: <%= fmtDate(wlasnyRuch.ostatnie) %><% if (wlasnyRuch.ostatnie_urzadzenie) { %>, urządzenie: <%= wlasnyRuch.ostatnie_urzadzenie %><% } %>.
+                Analityka tego ruchu nie liczy.
+              </p>
+            <% } else { %>
+              <p class="text-sm text-neutral-200">Żadne wejście nie jest jeszcze oznaczone jako Twoje.</p>
+              <p class="text-xs text-neutral-500 mt-1">
+                Dopóki nie oznaczysz swoich przeglądarek, Twoje wizyty liczą się jako ruch klientów.
+              </p>
+            <% } %>
+
+            <div class="flex flex-wrap gap-2 mt-3">
+              <a href="<%= SITE_URL %>/?nolicz=1" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-medium hover:bg-amber-400/20 transition-colors">
+                Nie licz tej przeglądarki &rarr;
+              </a>
+              <a href="<%= SITE_URL %>/?nolicz=0" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg bg-emerald-400/10 border border-emerald-400/30 text-emerald-300 text-xs font-medium hover:bg-emerald-400/20 transition-colors">
+                Licz ją z powrotem &rarr;
+              </a>
+            </div>
+
+            <p class="text-xs text-neutral-500 mt-3 leading-relaxed">
+              Przycisk otwiera stronę, bo znacznik siedzi w pamięci przeglądarki pod adresem aejaca.com,
+              a panel stoi pod innym adresem i tej pamięci nie widzi. Po otwarciu strona pokaże na dole
+              plakietkę ze stanem i tym samym przełącznikiem.
+              Ustawia się go osobno w każdej przeglądarce i na każdym urządzeniu:
+              Mac Studio, iPhone i Dell to trzy osobne ustawienia. Tryb prywatny kasuje znacznik razem z oknem.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Recent Leads -->
     <section class="mb-10">
       <div class="flex items-center justify-between mb-3">
