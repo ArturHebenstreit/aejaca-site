@@ -815,8 +815,14 @@ podaje się numer, widzi kwotę i płaci.
 To NIE jest to samo co zapisana wycena z kalkulatora. Tędy płaci ktoś, kto dostał kwotę
 od nas mailem albo usłyszał ją w rozmowie telefonicznej, czyli tam, gdzie ceny nie policzył
 silnik, tylko ustalił ją człowiek.
-- **Każde takie zapytanie ma numer** w formacie WY20260825-XXXXXXXX. Ten numer jest jednocześnie
-  tytułem płatności, więc po nim rozpoznajemy, czego dotyczy wpłata.
+- **Każda sprawa ma JEDEN numer, od pierwszej wiadomości do zapłaty** (od 2026-08-31).
+  Zgłoszenie z formularza, z czatu albo mail przysłany na naszą skrzynkę zakłada sprawę
+  w formacie WY20260825-XXXXXXXX. Oferta idzie pod tym samym numerem, a zamówienie pod nim
+  z końcówką mówiącą, która to zapłata z tej oferty: WY20260825-XXXXXXXX-1, potem -2.
+  Kolejna runda poprawek projektu dokłada -R2. Numer sprawy jest jednocześnie tytułem
+  płatności, więc po nim rozpoznajemy, czego dotyczy wpłata. Zamówienie złożone prosto
+  z koszyka nie ma sprawy przed sobą i zostaje przy własnym numerze AE20260825-XXXXXXXX.
+  Strona zamówienia przyjmuje wszystkie te postacie.
 - Wejście dwiema drogami: z linku w ofercie **albo** z samego numeru, podanego na /oferta/
   razem z adresem e-mail, na który poszła oferta. Klient bez adresu (rozmowa telefoniczna)
 - **Oferta bywa do skonfigurowania.** Pozycja jest wtedy jednym z trzech: składnikiem rachunku (zawsze w kwocie), wariantem w grupie wyboru (z jednej grupy klient bierze DOKŁADNIE JEDEN) albo dodatkiem (klient dokłada go albo nie). Grup wyboru może być kilka obok siebie, na przykład "pierścionek albo sygnet albo obrączka" i osobno "figurka albo szkatułka", a przy grupie mogą stać dodatki, na przykład polerowanie. Kwota do zapłaty dopasowuje się do zaznaczenia, wybór da się zmieniać aż do zapłaty, a do zamówienia trafiają WYŁĄCZNIE pozycje zaznaczone. Rabat liczy się od zaznaczonego układu, nie od sumy propozycji, a każda zmiana układu kasuje podgląd zniżki, więc kod trzeba wpisać jeszcze raz. Termin ważności jest wspólny dla całej oferty. NIE zgaduj, co konkretna oferta zawiera ani ile kosztuje: klient widzi to na swojej stronie.

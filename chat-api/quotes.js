@@ -711,6 +711,25 @@ export async function convertQuoteToOrder(
       [quote.id]
     );
 
+    // NUMER ZAMOWIENIA WYPROWADZAMY Z NUMERU SPRAWY (decyzja wlasciciela,
+    // 2026-08-31). Klient posluguje sie jednym numerem od pierwszego zdania:
+    // zgloszenie, oferta i zamowienie noszą to samo oznaczenie, a koncowka
+    // mowi, ktora zaplata z tej oferty. Bez koncowki druga zaplata z jednej
+    // oferty (ADR-0026) nosilaby ten sam numer co pierwsza, a bramka, rachunek
+    // i list przewozowy potrzebuja oznaczenia jednoznacznego.
+    //
+    // Liczymy TU, w transakcji, ktora trzyma juz pozycje tej oferty: dwie
+    // rownolegle zaplaty z jednej oferty nie policza wiec tej samej koncowki,
+    // bo druga czeka na pierwsza.
+    const numerZamowienia = orderRef || await (async () => {
+      const { rows } = await client.query(
+        `SELECT COUNT(*)::int AS ile FROM orders
+          WHERE order_ref = $1 OR order_ref LIKE $1 || '-%'`,
+        [quote.quote_ref]
+      );
+      return `${quote.quote_ref}-${rows[0].ile + 1}`;
+    })();
+
     // Stan wczytany przed transakcja mogl sie w miedzyczasie zestarzec.
     // Nadpisujemy go zablokowanym i liczymy koszyk OD NOWA, zamiast tylko
     // sprawdzac wybrane pozycje: sprzedanie wariantu zamyka cala jego grupe,
@@ -768,7 +787,7 @@ export async function convertQuoteToOrder(
          $21,$22,
          $26,$27)
        RETURNING id`,
-      [orderRef, quote.lang, kwotaPozycji, shipping, total,
+      [numerZamowienia, quote.lang, kwotaPozycji, shipping, total,
        email, name, phone,
        delivery.method || null, delivery.point || null, delivery.addressLine1 || null,
        delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
@@ -888,7 +907,7 @@ export async function convertQuoteToOrder(
 
     await client.query("COMMIT");
     return {
-      orderRef, accessToken, totalGrosze: doZaplaty, orderId,
+      orderRef: numerZamowienia, accessToken, totalGrosze: doZaplaty, orderId,
       quoteStatus: stanOferty,
       settled: stanOferty === "converted",
       remainingGrosze: zostalo,

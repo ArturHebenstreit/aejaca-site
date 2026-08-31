@@ -175,9 +175,9 @@ export default [
       de: "Ich habe den Link zur Bestellung verloren. Wie sehe ich den Stand?",
     },
     a: {
-      pl: "Wejdź na stronę zamówienia i podaj numer razem z adresem e-mail, na który poszło potwierdzenie. Numer zaczyna się od AE. Sam numer nie wystarczy, bo strona pokazuje adres i zawartość zamówienia.",
-      en: "Open the order page and give the number together with the e-mail address the confirmation went to. The number starts with AE. The number alone is not enough, because the page shows your address and what you ordered.",
-      de: "Öffnen Sie die Bestellseite und geben Sie die Nummer zusammen mit der E-Mail-Adresse an, an die die Bestätigung ging. Die Nummer beginnt mit AE. Die Nummer allein genügt nicht, weil die Seite Ihre Adresse und den Inhalt der Bestellung zeigt.",
+      pl: "Wejdź na stronę zamówienia i podaj numer razem z adresem e-mail, na który poszło potwierdzenie. Numer masz w potwierdzeniu zamówienia. Sam numer nie wystarczy, bo strona pokazuje adres i zawartość zamówienia.",
+      en: "Open the order page and give the number together with the e-mail address the confirmation went to. You have the number in your order confirmation. The number alone is not enough, because the page shows your address and what you ordered.",
+      de: "Öffnen Sie die Bestellseite und geben Sie die Nummer zusammen mit der E-Mail-Adresse an, an die die Bestätigung ging. Die Nummer steht in Ihrer Bestellbestätigung. Die Nummer allein genügt nicht, weil die Seite Ihre Adresse und den Inhalt der Bestellung zeigt.",
     },
   },
   {

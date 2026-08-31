@@ -15,17 +15,17 @@ import { useState } from "react";
 import { Link, useNavigate } from "../../i18n/nav.jsx";
 import { ArrowRight, FileText } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
+import { WZOR_OFERTY, WZOR_ZAMOWIENIA, PRZYKLAD_OFERTY, PRZYKLAD_ZAMOWIENIA } from "../../shop/numerySpraw.js";
 
-/** `WY` + data + osiem znakow szesnastkowych, tak jak generuje je backend. */
-const WZOR = /^WY\d{8}-[0-9A-F]{8}$/;
+// Wzorce w jednym miejscu: `src/shop/numerySpraw.js` (ADR-0032).
+const WZOR = WZOR_OFERTY;
 /**
  * Numer potwierdzenia zamowienia. To pole przyjmuje OBA numery, bo klient nie
  * ma powodu pamietac, ktory z nich mu wlasnie zostal: jeden dostal z oferta,
  * drugi z potwierdzeniem zaplaty. Rozroznia je prefiks, wiec rozeslanie ich
  * pod wlasciwe strony jest nasza robota, a nie jego.
  */
-const WZOR_ZAMOWIENIA = /^AE\d{8}-[0-9A-F]{8}$/;
-const PRZYKLAD = "WY20260825-A1B2C3D4";
+const PRZYKLAD = PRZYKLAD_OFERTY;
 
 const UI = {
   pl: {
@@ -34,7 +34,7 @@ const UI = {
     label: "Numer oferty lub zamówienia",
     button: "Sprawdź",
     hint: "Na następnym ekranie potwierdzisz adres e-mail, na który poszła oferta, albo kod odbioru z rozmowy.",
-    bad: `Numer wygląda tak: ${PRZYKLAD} albo AE20260827-1F1AC35C`,
+    bad: `Numer wygląda tak: ${PRZYKLAD} albo ${PRZYKLAD_ZAMOWIENIA}`,
     docs: "Zanim zapłacisz:",
     docTerms: "Regulamin",
     docPayments: "Proces płatności",
@@ -46,7 +46,7 @@ const UI = {
     label: "Offer or order number",
     button: "Check",
     hint: "On the next screen you confirm the e-mail address the offer went to, or the pickup code from our call.",
-    bad: `The number looks like this: ${PRZYKLAD} or AE20260827-1F1AC35C`,
+    bad: `The number looks like this: ${PRZYKLAD} or ${PRZYKLAD_ZAMOWIENIA}`,
     docs: "Before you pay:",
     docTerms: "Terms of Service",
     docPayments: "How payment works",
@@ -58,7 +58,7 @@ const UI = {
     label: "Angebots- oder Bestellnummer",
     button: "Prüfen",
     hint: "Im nächsten Schritt bestätigen Sie die E-Mail-Adresse, an die das Angebot ging, oder den Abholcode aus dem Gespräch.",
-    bad: `Die Nummer sieht so aus: ${PRZYKLAD} oder AE20260827-1F1AC35C`,
+    bad: `Die Nummer sieht so aus: ${PRZYKLAD} oder ${PRZYKLAD_ZAMOWIENIA}`,
     docs: "Vor der Zahlung:",
     docTerms: "AGB",
     docPayments: "Zahlungsablauf",

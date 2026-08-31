@@ -59,7 +59,37 @@ assert.match(server, /quote_ref = COALESCE\(quote_ref, \$2\)/,
 assert.match(server, /UPDATE leads SET status = 'quoted'/,
   "przepisane zgloszenie zmienia stan, zeby nie zrobic z niego drugiej oferty");
 
-// --- 3. Panel: numer widoczny i jedno klikniecie do oferty ----------------
+// --- 3. Zamowienie nosi numer sprawy z koncowka ---------------------------
+// Jedna oferta rodzi wiele zamowien (ADR-0026), wiec sam numer sprawy nie
+// wystarczy: bramka platnicza, rachunek i list przewozowy potrzebuja
+// oznaczenia jednoznacznego. Stad koncowka, ktora mowi, ktora to zaplata.
+{
+  const q = readFileSync(join(KATALOG, "quotes.js"), "utf8");
+  assert.match(q, /\$\{quote\.quote_ref\}-\$\{rows\[0\]\.ile \+ 1\}/,
+    "numer zamowienia wyprowadza sie z numeru sprawy");
+  assert.match(q, /order_ref = \$1 OR order_ref LIKE \$1 \|\| '-%'/,
+    "koncowke liczymy z zamowien tej samej sprawy");
+  // Liczenie stoi W TRANSAKCJI i PO zablokowaniu pozycji oferty. Odwrotna
+  // kolejnosc znaczylaby, ze dwie rownolegle zaplaty z jednej oferty policza
+  // te sama koncowke, a druga wstawka padnie na unikalnosci numeru.
+  assert.ok(q.indexOf("BEGIN") < q.indexOf("const numerZamowienia"),
+    "numer liczy sie w transakcji, a nie przed nia");
+  assert.ok(q.indexOf("FOR UPDATE OF i") < q.indexOf("const numerZamowienia"),
+    "numer liczy sie po zablokowaniu pozycji oferty");
+
+  // Kolejna runda poprawek projektu to TO SAMO zlecenie, wiec nosi numer
+  // rodzica, a nie nowy.
+  assert.match(server, /const childRef = `\$\{order\.order_ref\}-R\$\{round\}`;/,
+    "dodatkowa poprawka projektu nosi numer zamowienia z runda");
+
+  // Zamowienie ze sklepu nie ma sprawy przed soba i zostaje przy wlasnym
+  // numerze. To nie jest niekonsekwencja: nie bylo zgloszenia, ktore mialoby
+  // przekazac numer.
+  assert.match(server, /const orderRef = generateOrderRef\(\);/,
+    "zamowienie prosto z koszyka ma wlasny numer");
+}
+
+// --- 4. Panel: numer widoczny i jedno klikniecie do oferty ----------------
 assert.match(widok, /lead\.quote_ref/, "panel pokazuje numer sprawy");
 assert.match(widok, /\/do-wyceny/, "panel ma przycisk robiacy wycene ze zgloszenia");
 assert.match(widok, /lead\.status !== "quoted"/,

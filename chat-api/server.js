@@ -1619,9 +1619,12 @@ app.post("/api/orders/:ref/revision", express.json({ limit: "16kb" }), async (re
       });
     }
 
-    const childRef = generateOrderRef();
     const childToken = generateToken();
     const round = (order.revisions_included ?? 0) + 1 + (order.revisions_used ?? 0);
+    // Dodatkowa poprawka projektu jest tym samym zleceniem, wiec nosi numer
+    // rodzica z koncowka rundy. Wlasny, niezalezny numer znaczylby dla klienta
+    // nowe zamowienie, a to jest kolejne podejscie do tego samego.
+    const childRef = `${order.order_ref}-R${round}`;
 
     const { rows: created } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
@@ -2614,7 +2617,6 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
     }
 
     const order = await convertQuoteToOrder(pool, quote.quote_ref, {
-      orderRef: generateOrderRef(),
       paymentMethod: przelew ? "bank_transfer" : "autopay",
       eurRate: kursEur,
       // Przy przelewie ta sama data konczy waznosc kwoty i czas na zaplate,
@@ -2755,7 +2757,6 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
     }
 
     const order = await convertQuoteToOrder(pool, req.params.ref, {
-      orderRef: generateOrderRef(),
       delivery: req.body?.delivery || {},
     });
     console.log(
