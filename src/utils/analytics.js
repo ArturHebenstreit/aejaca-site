@@ -51,7 +51,7 @@ let sessionId = null;
 // i gorsze: brak wpisow wyglada dokladnie tak samo jak zepsuty licznik.
 const KLUCZ_WEWNETRZNY = "aejaca_nolicz";
 let ruchWewnetrzny = false;
-let przelaczonoZAdresu = false;
+let pytanoOZnacznik = false;
 
 function ustalZnacznik() {
   if (typeof window === "undefined") return;
@@ -59,8 +59,12 @@ function ustalZnacznik() {
     const q = new URLSearchParams(window.location.search).get("nolicz");
     if (q === "1") localStorage.setItem(KLUCZ_WEWNETRZNY, "1");
     else if (q === "0") localStorage.removeItem(KLUCZ_WEWNETRZNY);
-    if (q === "1" || q === "0") {
-      przelaczonoZAdresu = true;
+    // Kazda inna wartosc (`?nolicz=stan`) tylko PYTA: pokazuje plakietke ze
+    // stanem tej przegladarki i niczego nie zmienia. Bez tego odpowiedz
+    // "liczony czy nie" dawalo sie dostac wylacznie przez przestawienie
+    // znacznika, czyli przez zepsucie tego, o co sie pyta.
+    if (q !== null) {
+      pytanoOZnacznik = true;
       // Parametr znika z adresu zaraz po zadzialaniu, z dwoch powodow.
       // Pierwszy: zostawiony w adresie odwracalby kazde pozniejsze
       // przelaczenie z plakietki, bo znacznik ustala sie przy kazdej odslonie.
@@ -139,13 +143,14 @@ function skadPrzyszli() {
  * klikalby wylaczenie w kolko, widzac ciagle ten sam napis.
  */
 /**
- * Czy przelacznik zadzialal z adresu (`?nolicz=1` albo `?nolicz=0`) w tej
- * odslonie. Plakietka pokazuje sie wtedy takze przy powrocie do liczenia:
- * inaczej wlaczenie liczenia wygladaloby jak brak reakcji, bo stan "liczony"
- * jest domyslny i niczego nie rysuje.
+ * Czy adres pytal o znacznik w tej odslonie: `?nolicz=1` wylacza liczenie,
+ * `?nolicz=0` je wlacza, a `?nolicz=stan` tylko pyta i niczego nie zmienia.
+ * We wszystkich trzech przypadkach plakietka ma sie pokazac, takze gdy ruch
+ * JEST liczony: inaczej odpowiedz "liczony" wygladalaby jak brak reakcji, bo
+ * ten stan jest domyslny i sam z siebie niczego nie rysuje.
  */
-export function zadanoPrzelaczenia() {
-  return przelaczonoZAdresu;
+export function pytanoZAdresu() {
+  return pytanoOZnacznik;
 }
 
 export function stanLiczenia() {

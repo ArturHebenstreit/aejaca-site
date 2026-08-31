@@ -36,8 +36,12 @@ assert.match(licznik, /"niedostepny"/, "pamiec zablokowana jest osobnym stanem, 
 // Zostawiony w adresie odwracalby kazde pozniejsze klikniecie w plakietce, bo
 // znacznik ustala sie przy kazdej odslonie strony.
 assert.match(licznik, /history\.replaceState/, "parametr nolicz znika z adresu, gdy zadziala");
-assert.match(licznik, /export function zadanoPrzelaczenia\(\)/,
-  "plakietka pyta licznik o przelaczenie, bo w adresie parametru juz nie ma");
+assert.match(licznik, /export function pytanoZAdresu\(\)/,
+  "plakietka pyta licznik o parametr, bo w adresie parametru juz nie ma");
+// Odpowiedzi "liczony czy nie" musi dac sie dostac BEZ zmieniania stanu.
+// Inaczej jedyna droga do niej wiedzie przez przestawienie tego, o co pytamy.
+assert.match(licznik, /if \(q !== null\) \{/,
+  "kazda wartosc parametru pokazuje plakietke, a stan zmieniaja tylko 1 i 0");
 
 // --- 3. Plakietka stoi w serwisie i milczy dla zwyklego odwiedzajacego ----
 assert.match(uklad, /<ZnacznikRuchu \/>/, "plakietka jest wpieta w uklad strony");
@@ -46,6 +50,18 @@ assert.match(plakietka, /if \(!stan \|\| schowana\) return null;/,
 for (const jezyk of ["pl", "en", "de"]) {
   assert.match(plakietka, new RegExp(`\\n  ${jezyk}: \\{`), `plakietka ma tekst w jezyku ${jezyk}`);
 }
+// Odpowiedz i przelacznik to JEDEN klawisz. Napis obok osobnego przycisku
+// dalo by sie rozjechac: napis mowilby jedno, przycisk zapowiadal drugie.
+assert.match(plakietka, /onClick=\{\(\) => setStan\(ustawLiczenie\(pomijany\)\)\}/,
+  "ten sam klawisz przestawia znacznik");
+// Kolor jest tu trescia, a nie ozdoba: czerwony znaczy "nie liczymy",
+// zielony "liczymy". Napis mowi to samo, bo sam kolor nie jest dostepny
+// dla kazdego oka.
+assert.match(plakietka, /pomijany[\s\S]{0,120}bg-red-600[\s\S]{0,120}bg-emerald-600/,
+  "czerwony klawisz znaczy: tego ruchu nie liczymy, zielony: liczymy");
+assert.match(plakietka, /\{tekst\[stan\]\}/, "klawisz nazywa stan slowami, nie samym kolorem");
+assert.match(plakietka, /zPominietego : tekst\.zLiczonego/,
+  "druga linijka mowi, co zrobi klikniecie, zeby napis nie mylil sie ze stanem");
 
 // --- 4. Panel nie udaje, ze zna stan znacznika ----------------------------
 // Pamiec przegladarki nalezy do adresu aejaca.com, a panel stoi pod innym.
@@ -54,8 +70,11 @@ for (const jezyk of ["pl", "en", "de"]) {
 // nawet dla oznaczonego urzadzenia. Falszywa lampka jest gorsza od zadnej.
 assert.doesNotMatch(pulpit, /aejaca_nolicz|localStorage/,
   "pulpit panelu nie probuje czytac znacznika z cudzej pamieci");
-assert.match(pulpit, /\/\?nolicz=1/, "pulpit otwiera serwis z wylaczeniem liczenia");
-assert.match(pulpit, /\/\?nolicz=0/, "pulpit otwiera serwis z powrotem do liczenia");
+assert.match(pulpit, /\/\?nolicz=stan/, "pulpit otwiera serwis z podgladem stanu, niczego nie zmieniajac");
+// Jeden przycisk, nie trzy: wybor "wlacz albo wylacz" podjety w panelu byl by
+// wyborem w ciemno, bo panel nie wie, ktory stan jest teraz.
+assert.doesNotMatch(pulpit, /nolicz=1|nolicz=0/,
+  "panel nie przestawia znacznika w ciemno, tylko prowadzi tam, gdzie widac stan");
 assert.match(panel, /COUNT\(\*\) FILTER \(WHERE ts >= NOW\(\) - INTERVAL '7 days'\) AS zdarzenia_7d/,
   "pulpit pokazuje dowod ze skutku: ile oznaczonych zdarzen przyszlo");
 

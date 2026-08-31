@@ -45,8 +45,10 @@ import {
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
   sendTopUpRequest, sendOrderExpired, sendLeadMail,
-  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene } from "./orderMail.js";
+  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
+  sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
+import { DROGI_ZAMKNIECIA, drogaZamkniecia, domyslnyZwrotGrosze } from "./drogiZamkniecia.js";
 import {
   itnAction, paymentStartProblem, publicPaymentState,
 } from "./paymentState.js";
@@ -281,6 +283,17 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_by VARCHAR(120)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT`).catch(() => {});
+  // CZTERY DROGI WYJSCIA ZE SPRAWY (chat-api/drogiZamkniecia.js). "Anulowane"
+  // bylo jednym slowem na cztery zdarzenia, ktore regulamin rozroznia i ktore
+  // roznia sie tym, ile pieniedzy wraca. Bez tej kolumny nie da sie po czasie
+  // powiedziec, czy zwrot byl obowiazkiem, czy naszym gestem.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_kind VARCHAR(30)`).catch(() => {});
+  // Pieniadze stoja OSOBNO od stanu sprawy. Sprawa zamknieta bez realizacji ma
+  // jeden stan, `cancelled`; te dwie kolumny mowia, ile wrocilo i kiedy.
+  // Drugi stan koncowy znaczylby, ze "anulowane" zaczyna znaczyc "anulowane,
+  // ale pieniadze jeszcze wisza", czyli dwie nazwy na jedna rzecz.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS refund_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
 
@@ -4543,6 +4556,7 @@ app.get("/api/orders/queue", async (req, res) => {
             o.payment_method, o.payment_status, o.currency, o.amount_eur_cents,
             o.transfer_asked_at, o.transfer_received_cents,
             o.payment_review_reason, o.created_at,
+            o.cancel_kind, o.cancel_reason, o.cancelled_at, o.refund_grosze, o.refunded_at,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -4623,6 +4637,15 @@ app.get("/api/orders/queue", async (req, res) => {
     transferAskedAt: o.transfer_asked_at || null,
     transferReceivedCents: o.transfer_received_cents ?? null,
     createdAt: o.created_at,
+    // Zamkniecie bez realizacji: ktora droga, ile sie nalezy i czy pieniadze
+    // juz poszly. Sprawa zamknieta z niezwroconymi pieniedzmi jest jedynym
+    // zobowiazaniem, ktorego nie widac nigdzie indziej.
+    cancelKind: o.cancel_kind || null,
+    cancelReason: o.cancel_reason || null,
+    cancelledAt: o.cancelled_at || null,
+    refundGrosze: o.refund_grosze ?? 0,
+    refundPLN: ((o.refund_grosze ?? 0) / 100).toFixed(2),
+    refundedAt: o.refunded_at || null,
     // Podpowiedz ze strefy, ktora wycenila przesylke. Paczkomat stoi tylko
     // w Polsce, wiec tam przewoznik jest znany bez pytania.
     carrierHint: o.delivery_method === "inpost_locker"
@@ -4641,7 +4664,19 @@ app.get("/api/orders/queue", async (req, res) => {
   // Lista przewoznikow jedzie razem z kolejka, zeby panel nie trzymal wlasnej
   // kopii. Dwie listy rozjechalyby sie przy pierwszym nowym przewozniku, a
   // rozjazd widac dopiero wtedy, gdy zapis wraca bledem "przewoznik spoza listy".
-  res.json({ ok: true, orders, counts, sort, przewoznicy: PRZEWOZNICY });
+  // Drogi wyjscia ze sprawy jada razem z kolejka, tak samo jak przewoznicy:
+  // panel trzymajacy wlasna kopie rozjechalby sie przy pierwszej zmianie
+  // regulaminu, a rozjazd widac dopiero wtedy, gdy zapis wraca bledem.
+  // Pieniadze do oddania liczymy POZA filtrem. Sprawa zamknieta z niezwroconymi
+  // pieniedzmi jest zobowiazaniem, a domyslny widok kolejki jej nie pokazuje,
+  // wiec bez tej liczby dlug znikalby z ekranu razem z wierszem.
+  const { rows: dlug } = await pool.query(
+    `SELECT COUNT(*)::int AS ile, COALESCE(SUM(refund_grosze), 0)::int AS grosze
+       FROM orders WHERE status = 'cancelled' AND refund_grosze > 0 AND refunded_at IS NULL`
+  ).catch(() => ({ rows: [{ ile: 0, grosze: 0 }] }));
+
+  res.json({ ok: true, orders, counts, sort, przewoznicy: PRZEWOZNICY,
+             drogiZamkniecia: DROGI_ZAMKNIECIA, doZwrotu: dlug[0] || { ile: 0, grosze: 0 } });
 });
 
 /**
@@ -5230,6 +5265,113 @@ app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, 
   console.log(`[zamowienia] ${ref} anulowane, zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
 
   res.json({ ok: true, orderRef: ref, releasedReservations: stock, releasedCodes: codes });
+});
+
+/**
+ * Zamkniecie sprawy bez realizacji, jedna z CZTERECH DROG.
+ *
+ * Roznica miedzy nimi nie jest formalnoscia: przy odstapieniu klienta, przy
+ * naszym niedowiezieniu i przy naszej odmowie zwrot jest OBOWIAZKIEM
+ * z regulaminu, a przy rezygnacji z rzeczy robionej na zamowienie jest decyzja
+ * handlowa (regulamin par. 11: prawa odstapienia tam nie ma). Bez zapisanej
+ * drogi po pol roku nie da sie powiedziec, czy pieniadze wrocily, bo tak
+ * trzeba bylo, czy dlatego, ze tak chcielismy.
+ *
+ * Trasa NIE wysyla pieniedzy. Zapisuje, ile sie nalezy; `refunded_at` stawia
+ * dopiero potwierdzenie przelewu, bo miedzy decyzja a wykonaniem stoi czlowiek
+ * przy koncie bankowym. Zapisanie obu naraz robiloby z zamiaru fakt.
+ */
+app.post("/api/orders/:ref/close", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const droga = drogaZamkniecia(String(req.body?.kind || ""));
+  if (!droga) return res.status(400).json({ error: "Nie znamy takiej drogi zamkniecia", code: "bad_kind" });
+
+  const ref = String(req.params.ref || "");
+  const { rows } = await pool.query(
+    `SELECT id, status, lang, paid_at, total_grosze, customer_email, order_ref
+       FROM orders WHERE order_ref = $1`, [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.status === "cancelled") {
+    return res.status(409).json({ error: "Sprawa jest juz zamknieta", code: "already_closed" });
+  }
+  if (!droga.etapy.includes(order.status)) {
+    return res.status(409).json({
+      error: `Zamowienie ma status ${order.status}, a ta droga stoi otworem przy: ${droga.etapy.join(", ")}`,
+      code: "bad_stage",
+    });
+  }
+
+  // Kwota z panelu wygrywa z podpowiedzia, bo to czlowiek wie, ile materialu
+  // poszlo. Nie wygrywa jednak z arytmetyka: wiecej, niz klient zaplacil, nie
+  // wraca nigdy, a przy zamowieniu nieoplaconym nie wraca nic.
+  const zaplacone = order.paid_at ? Number(order.total_grosze || 0) : 0;
+  const podane = req.body?.refundGrosze;
+  const zwrot = Math.min(
+    Math.max(0, Number.isFinite(Number(podane)) && podane !== null && podane !== ""
+      ? Math.round(Number(podane))
+      : domyslnyZwrotGrosze(droga, order)),
+    zaplacone
+  );
+
+  const zamkniete = await pool.query(
+    `UPDATE orders SET status = 'cancelled', cancelled_at = NOW(),
+       cancelled_by = $2, cancel_reason = $3, cancel_kind = $4, refund_grosze = $5
+     WHERE id = $1 AND status = $6
+     RETURNING id`,
+    [order.id, String(req.body?.by || "panel").slice(0, 120),
+     req.body?.reason ? String(req.body.reason).slice(0, 2000) : null,
+     droga.id, zwrot, order.status]
+  );
+  if (!zamkniete.rowCount) {
+    return res.status(409).json({ error: "Stan zamowienia zmienil sie przed zamknieciem", code: "state_changed" });
+  }
+
+  // Towar i kod wracaja do puli, ale tylko te, ktorych jeszcze nie zuzyto:
+  // sztuka wydana z magazynu do gotowego wyrobu nie wraca na polke przez zapis
+  // w tabeli.
+  const stock = await releaseOrderReservations(pool, order.id);
+  const codes = await releaseOrderRedemptions(pool, order.id);
+  console.log(`[zamowienia] ${ref} zamkniete droga ${droga.id}, do zwrotu ${zwrot} gr, zwolniono ${stock} rezerwacji i ${codes} kodow`);
+
+  // Mail wychodzi na zyczenie, jak przy kazdym innym ruchu w kolejce: bywa, ze
+  // klient dowiedzial sie tego samego telefonicznie piec minut wczesniej.
+  let mail = false;
+  if (req.body?.notify !== false) {
+    mail = await sendZamkniecieSprawy(pool, order.id, droga.id, zwrot);
+  }
+
+  res.json({ ok: true, orderRef: ref, kind: droga.id, refundGrosze: zwrot, mailSent: mail,
+             releasedReservations: stock, releasedCodes: codes });
+});
+
+/**
+ * Potwierdzenie, ze pieniadze naprawde poszly z powrotem.
+ *
+ * Osobny ruch, bo przelew robi czlowiek, i bywa, ze nastepnego dnia. Dopoki
+ * `refunded_at` jest puste, kolejka pokazuje sprawe jako zamknieta Z DLUGIEM,
+ * co jest jedynym miejscem, w ktorym takie zobowiazanie w ogole widac.
+ */
+app.post("/api/orders/:ref/refunded", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { rowCount } = await pool.query(
+    `UPDATE orders SET refunded_at = NOW()
+      WHERE order_ref = $1 AND status = 'cancelled' AND refund_grosze > 0 AND refunded_at IS NULL`,
+    [ref]
+  );
+  if (!rowCount) {
+    return res.status(409).json({
+      error: "Nie ma czego potwierdzac: sprawa nie jest zamknieta, nic sie nie nalezy albo zwrot juz odnotowano",
+      code: "nothing_to_refund",
+    });
+  }
+  res.json({ ok: true, orderRef: ref });
 });
 
 /**

@@ -171,9 +171,37 @@ const ZESTAWY = {
       delivery: { method: "courier", point: null, addressLine1: "Hauptstr. 1", addressLine2: null, postalCode: "10115", city: "Berlin", country: "DE" },
       statusUrl: null, accessToken: null, leadDaysAgreedAt: null,
       items: [{ id: 3, title: "Sygnet", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null, requiresDetails: false, detailsSettledAt: null }],
+    }, {
+      // Sprawa juz zamknieta, z pieniedzmi jeszcze nieoddanymi. To jedyne
+      // miejsce w panelu, w ktorym takie zobowiazanie w ogole widac, wiec ta
+      // galaz widoku musi sie rysowac tak samo pewnie jak reszta.
+      orderRef: "ZAM-ZAMK", quoteRef: null, status: "cancelled", kind: "instant", lang: "pl",
+      name: "Kowalski", email: "k@example.com", phone: null, totalPLN: "450.00",
+      paidAt: new Date("2026-08-22"), waitingDays: 9,
+      leadDays: null, deadlineAt: null, daysLeft: null, requiresDetails: false,
+      detailsAt: null, queuedAt: null, readyAt: null,
+      productionStartedAt: null, shippedAt: null, completedAt: null,
+      trackingNumber: null, carrier: null, carrierHint: null, productionNote: null,
+      paymentMethod: "autopay", paymentStatus: "SUCCESS", currency: "PLN",
+      amountEurCents: null, paymentReviewReason: null, createdAt: new Date("2026-08-22"),
+      cancelKind: "rezygnacja_klienta", cancelReason: "klient zmienil zdanie",
+      cancelledAt: new Date("2026-08-30"), refundGrosze: 12000, refundPLN: "120.00", refundedAt: null,
+      delivery: { method: "pickup", point: null, addressLine1: null, addressLine2: null, postalCode: null, city: null, country: "PL" },
+      statusUrl: null, accessToken: null, leadDaysAgreedAt: null,
+      items: [{ id: 4, title: "Grawer", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null, requiresDetails: false, detailsSettledAt: null }],
     }],
-    counts: { queued: 1, awaiting_transfer: 1 }, stan: "", sort: "newest", msg: null, err: null,
+    counts: { queued: 1, awaiting_transfer: 1, cancelled: 1 }, stan: "", sort: "newest", msg: null, err: null,
     przewoznicy: ["InPost", "DHL", "FedEx"],
+    doZwrotu: { ile: 1, grosze: 12000 },
+    // Cztery drogi wyjscia ze sprawy przychodza z API razem z kolejka. Atrapa
+    // niesie dwie: jedna z ostrzezeniem i jedna z kwota zwrotu do decyzji.
+    drogiZamkniecia: [
+      { id: "odstapienie_14", label: "Odstąpienie klienta w 14 dni", opis: "Towar z półki.",
+        zwrot: "pelny", terminDni: 14, etapy: ["queued", "shipped"],
+        ostrzezenieNaZamowienie: "Przy rzeczy na zamówienie to prawo nie przysługuje." },
+      { id: "rezygnacja_klienta", label: "Rezygnacja klienta", opis: "Kwota zwrotu jest decyzją.",
+        zwrot: "decyzja", terminDni: 14, etapy: ["queued"] },
+    ],
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
