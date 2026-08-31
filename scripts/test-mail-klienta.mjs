@@ -15,7 +15,7 @@
 // o braku linku do plikow.
 process.env.API_URL ||= "https://api.aejaca.com";
 const { buildRaw, buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
-        buildTopUpRequest, buildOrderExpired } =
+        buildTopUpRequest, buildOrderExpired, buildProsbaOOcene } =
   await import("../chat-api/orderMail.js");
 import { readFileSync } from "node:fs";
 import { SELLER } from "../chat-api/pricing/sellerInfo.js";
@@ -73,6 +73,8 @@ function doKlienta(lang) {
     ["newsletter", buildNewsletterPowitanie({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026" })],
     ["przypomnienieKodu", buildPrzypomnienieKodu({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" })],
     ["autoodpowiedz", buildAutoOdpowiedz({ lang, to: ODBIORCA, temat: "Zapytanie o sygnet", inReplyTo: "<abc@mail.gmail.com>", threadId: "t1" })],
+    // Podziekowanie z prosba o ocene, trzy dni po odbiorze.
+    ["ocena", buildProsbaOOcene({ ...zam, status: "completed", completed_at: "2026-08-28T12:00:00Z" })],
   ];
 }
 
@@ -428,6 +430,27 @@ console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n"
   ok(/10%/.test(przyp.subject) && /5 dni/.test(przyp.subject), "temat podaje stawke i termin");
   ok(!/AEJ10-4H7PQW/.test(przyp.subject), "temat nie niesie samego kodu");
   ok(/AEJ10-4H7PQW/.test(przyp.text), "kod stoi w tresci wiadomosci");
+}
+
+console.log("\n4m. Prosba o ocene: dwa miejsca, jeden raz, i wyjscie dla niezadowolonych\n");
+
+// Prosba o ocene jest mailem, ktory najlatwiej napisac zle: nachalnie, bez
+// wyjscia dla kogos niezadowolonego albo bez adresu, pod ktorym da sie te ocene
+// wystawic. Kazdy z tych trzech bledow kosztuje wiecej niz brak maila.
+{
+  for (const lang of ["pl", "en", "de"]) {
+    const mail = doKlienta(lang).find(([n]) => n === "ocena")[1];
+    ok(/search\.google\.com\/local\/writereview/.test(mail.text), `${lang}: adres do oceny w Google`);
+    ok(/trustpilot\.com\/evaluate/.test(mail.text), `${lang}: adres do oceny na Trustpilocie`);
+    // Zdanie z adresem konczy sie spacja, inaczej w wersji tekstowej powstaje
+    // "pod adresemhttps://...". Ten sam blad zlapalismy juz raz w mailach
+    // sprzed zamowienia, wiec tutaj pilnujemy go od poczatku.
+    ok(!/[a-z]https:\/\//.test(mail.text), `${lang}: adres nie sklei sie ze zdaniem`);
+  }
+  const pl = doKlienta("pl").find(([n]) => n === "ocena")[1];
+  ok(/napisz do nas zamiast wystawiać ocenę/.test(pl.text),
+     "niezadowolony klient dostaje inne wyjscie niz publiczna ocena");
+  ok(/jeden raz/.test(pl.text), "mail mowi wprost, ze jest jednorazowy");
 }
 
 console.log("\n4l. Autoodpowiedz idzie z chat-api, bez okrazenia przez n8n\n");

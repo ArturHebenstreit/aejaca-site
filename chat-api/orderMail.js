@@ -134,6 +134,17 @@ const T = {
     wgPoTerminie: "Gdyby przelew wyszedł po tym terminie, zwrócimy go na rachunek nadawcy. Nie musisz o to prosić.",
     wgPonownie: "Zamówienie możesz złożyć ponownie w każdej chwili, na tych samych zasadach. Ceny kruszcu przeliczymy wtedy na nowo.",
 
+    // Prosba o ocene. Wychodzi TRZY DNI po odbiorze (decyzja wlasciciela,
+    // 2026-08-31), a nie w dniu doreczenia: opinia wystawiona po uzyciu rzeczy
+    // mowi cos komus, kto ja czyta, a opinia w dniu odbioru ocenia opakowanie.
+    ocSubject: "Jak wyszło? Jedno zdanie od Ciebie sporo dla nas znaczy",
+    ocIntro: "kilka dni temu zamówienie dotarło na miejsce i mamy nadzieję, że wyrób sprawdza się w codziennym użyciu. Dziękujemy za zaufanie: przy pracy na zamówienie jest to zawsze zaufanie w ciemno, bo rzecz powstaje dopiero po decyzji.",
+    ocProsba: "Jeżeli wyrób się sprawdza, jedno zdanie opinii pomoże następnej osobie zdecydować się na małą pracownię zamiast na sklep z półki.",
+    ocGorzej: "A jeżeli cokolwiek jest nie tak, napisz do nas zamiast wystawiać ocenę: poprawimy albo zrobimy od nowa, i dopiero potem porozmawiamy o opinii.",
+    ocRaz: "Piszemy w tej sprawie jeden raz.",
+    ocGoogle: "Ocenę w Google wystawisz pod adresem ",
+    ocTrustpilot: "Opinię na Trustpilocie dodasz pod adresem ",
+
     nadplata: (ile) => `Wpłynęło o ${ile} więcej niż kwota zamówienia. Nadwyżkę odsyłamy na rachunek, z którego przyszła.`,
     niedoplataDrobna: (ile) => `Wpłynęło o ${ile} mniej niż kwota zamówienia, zwykle bierze się to z prowizji banku pośredniczącego. Różnicę bierzemy na siebie, zamówienie jest opłacone w całości.`,
     trDue: "Rezerwacja i kwota obowiązują do",
@@ -231,6 +242,14 @@ const T = {
     wgPoTerminie: "Should the transfer leave after that date, we will return it to the sender's account. You do not need to ask.",
     wgPonownie: "You can place the order again at any time, on the same terms. Precious metal will be recalculated then at the current rate.",
 
+    ocSubject: "How did it turn out? One sentence from you means a lot to us",
+    ocIntro: "your order arrived a few days ago and we hope the piece is working out in daily use. Thank you for the trust: with made to order work it is always trust in advance, because the piece comes into being only after the decision.",
+    ocProsba: "If the piece works out, one sentence of review helps the next person choose a small workshop over an off the shelf shop.",
+    ocGorzej: "And if anything is not right, write to us instead of leaving a review: we will fix it or make it again, and only then talk about a review.",
+    ocRaz: "We write about this once.",
+    ocGoogle: "You can review us on Google at ",
+    ocTrustpilot: "You can add a review on Trustpilot at ",
+
     nadplata: (ile) => `That is ${ile} more than the order amount. We are sending the surplus back to the account it came from.`,
     niedoplataDrobna: (ile) => `That is ${ile} less than the order amount, usually a fee taken by an intermediary bank. We are covering the difference, your order is paid in full.`,
     trDue: "Reservation and amount valid until",
@@ -327,6 +346,14 @@ const T = {
     wgIntroCzesc: (kwota) => `die Zahlung wurde nicht rechtzeitig ergänzt, daher schließen wir die Bestellung und die reservierte Ware geht zurück in den Verkauf. Die eingegangenen ${kwota} senden wir an das Konto zurück, von dem sie kamen.`,
     wgPoTerminie: "Sollte die Überweisung nach diesem Termin herausgehen, erstatten wir sie auf das Konto des Absenders. Sie müssen nicht darum bitten.",
     wgPonownie: "Sie können jederzeit erneut bestellen, zu denselben Bedingungen. Edelmetall rechnen wir dann zum aktuellen Kurs neu.",
+
+    ocSubject: "Wie ist es geworden? Ein Satz von Ihnen bedeutet uns viel",
+    ocIntro: "vor einigen Tagen ist die Bestellung angekommen und wir hoffen, das Stück bewährt sich im Alltag. Danke für Ihr Vertrauen: bei Auftragsarbeit ist es immer Vertrauen im Voraus, denn das Stück entsteht erst nach der Entscheidung.",
+    ocProsba: "Wenn das Stück sich bewährt, hilft ein Satz Bewertung der nächsten Person, sich für eine kleine Werkstatt statt für ein Regal zu entscheiden.",
+    ocGorzej: "Und wenn etwas nicht stimmt, schreiben Sie uns, statt eine Bewertung abzugeben: wir bessern nach oder fertigen neu, und erst danach sprechen wir über eine Bewertung.",
+    ocRaz: "Wir schreiben dazu einmal.",
+    ocGoogle: "Bei Google bewerten Sie uns unter ",
+    ocTrustpilot: "Auf Trustpilot bewerten Sie uns unter ",
 
     nadplata: (ile) => `Das sind ${ile} mehr als der Bestellbetrag. Den Überschuss senden wir an das Konto zurück, von dem er kam.`,
     niedoplataDrobna: (ile) => `Das sind ${ile} weniger als der Bestellbetrag, meist eine Gebühr einer Zwischenbank. Die Differenz übernehmen wir, Ihre Bestellung ist vollständig bezahlt.`,
@@ -1037,6 +1064,49 @@ export function buildOrderExpired(order) {
   ].join("\n");
 
   return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.wgSubject(order.order_ref), text, html };
+}
+
+/**
+ * Podziekowanie i prosba o ocene, TRZY DNI po odbiorze.
+ *
+ * Osobna wiadomosc, a nie dopisek do potwierdzenia odbioru, z dwoch powodow.
+ * Pierwszy: w dniu doreczenia klient ocenia paczke, a nie wyrob. Drugi:
+ * potwierdzenie odbioru zamyka sprawe i ma sie tak czytac, a prosba o przysluge
+ * doklejona do zamkniecia sprawy zmienia jego wydzwiek.
+ *
+ * Gdy zaden adres do wystawienia opinii nie jest ustawiony, wiadomosc NIE
+ * powstaje: prosba bez miejsca do klikniecia jest zajmowaniem komus czasu.
+ * Stad `null` zamiast pustego maila.
+ */
+export function buildProsbaOOcene(order) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const gdzie = [
+    SELLER.reviews?.google ? zdanieZAdresem(l.ocGoogle, SELLER.reviews.google) : null,
+    SELLER.reviews?.trustpilot ? zdanieZAdresem(l.ocTrustpilot, SELLER.reviews.trustpilot) : null,
+  ].filter(Boolean);
+  if (!gdzie.length) return null;
+
+  const odnosniki = [...gdzie, zdanieProces(l, lang)];
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <h1 style="margin:0 0 20px;font-size:20px;line-height:1.3;font-weight:700">${esc(l.ocSubject)}</h1>
+
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 18px;line-height:1.6">${esc(l.ocIntro)}</p>
+    <p style="margin:0 0 18px;line-height:1.6">${esc(l.ocProsba)}</p>
+    <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.ocGorzej)}</p>
+    <p style="margin:0;line-height:1.6;font-size:13px;color:#777">${esc(l.ocRaz)}</p>
+  ` });
+
+  const text = [
+    l.hi, "", l.ocIntro, "", l.ocProsba, "", l.ocGorzej, "", l.ocRaz,
+    "", `${l.orderNo}: ${order.order_ref}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.ocSubject, text, html };
 }
 
 /**

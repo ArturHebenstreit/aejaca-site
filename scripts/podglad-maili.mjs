@@ -31,7 +31,7 @@ const {
   buildPrzypomnienieKodu,
 } = await import("../chat-api/leadMail.js");
 const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
-        buildTopUpRequest, buildOrderExpired } =
+        buildTopUpRequest, buildOrderExpired, buildProsbaOOcene } =
   await import("../chat-api/orderMail.js");
 
 const KORZEN = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -286,6 +286,10 @@ const EKRANY = {
       lang: "pl", to: ZAMOWIENIE.customer_email, kod: "AEJ10-4H7PQW", procent: "10%",
       waznyDo: "15.10.2026", dni: "5 dni",
     }),
+  },
+  "20": {
+    nazwa: "Podziekowanie i prosba o ocene, 3 dni po odbiorze",
+    zbuduj: () => buildProsbaOOcene({ ...ZAMOWIENIE, status: "completed", completed_at: "2026-08-28T12:00:00Z" }),
   },
   "19": {
     nazwa: "Autoodpowiedz na maila, w watku",

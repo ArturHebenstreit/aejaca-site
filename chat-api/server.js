@@ -45,8 +45,7 @@ import {
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
   sendTopUpRequest, sendOrderExpired, sendLeadMail,
-  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
-} from "./orderMail.js";
+  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import {
   itnAction, paymentStartProblem, publicPaymentState,
@@ -169,6 +168,11 @@ if (pool) {
   // przynosi PIENIADZE. Identyfikator jest losowy i nie laczy dwoch wizyt.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+
+  // Slad po prosbie o ocene. Bez niego przy kazdym uruchomieniu crona ta sama
+  // osoba dostawalaby te sama prosbe, a to jest dokladnie ten rodzaj maila,
+  // ktory przy drugim powtorzeniu kasuje cala dobra wole.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_asked_at TIMESTAMPTZ`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
   // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
   // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
@@ -3145,6 +3149,57 @@ async function przypomnijOKodach() {
   }
 }
 if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
+
+/** Ile dni po odbiorze prosimy o ocene. Decyzja wlasciciela, 2026-08-31. */
+const DNI_DO_PROSBY_O_OCENE = 3;
+
+/**
+ * Podziekowanie i prosba o ocene, trzy dni po potwierdzeniu odbioru.
+ *
+ * Okno jest SZERSZE niz jeden dzien (od trzech do dziesieciu dni), bo cron,
+ * ktory nie wstal jednego ranka, inaczej pominalby caly dzien zamowien i nikt
+ * by tego nie zauwazyl. Stempel `review_asked_at` pilnuje, zeby szersze okno
+ * nie znaczylo drugiej prosby.
+ *
+ * Prosimy wylacznie o zamowienia ZAMKNIETE ODBIOREM. Zamowienie anulowane albo
+ * zwrocone tez ma date zamkniecia, a prosba o ocene po zwrocie pieniedzy jest
+ * dokladnie tym, czego nikt nie chce dostac.
+ */
+async function prosOOcene() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders
+        WHERE status = 'completed' AND completed_at IS NOT NULL
+          AND review_asked_at IS NULL AND customer_email IS NOT NULL
+          AND completed_at < NOW() - ($1 || ' days')::INTERVAL
+          AND completed_at > NOW() - INTERVAL '10 days'
+        ORDER BY completed_at
+        LIMIT 50`,
+      [String(DNI_DO_PROSBY_O_OCENE)]
+    );
+    for (const zam of rows) {
+      // Jedna nasza wiadomosc na dobe na adres. Prosba o przysluge moze
+      // poczekac do jutra, przypomnienie o terminie nie moze.
+      if (await pisalismyDzisiaj(zam.customer_email)) continue;
+      const wiadomosc = buildProsbaOOcene(zam);
+      // Brak adresow do wystawienia opinii: builder oddaje `null`. Stemplujemy
+      // mimo to, zeby cron nie wracal codziennie do tych samych zamowien.
+      if (!wiadomosc) {
+        await pool.query("UPDATE orders SET review_asked_at = NOW() WHERE id = $1", [zam.id]);
+        continue;
+      }
+      const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
+      if (!poszlo) continue;
+      await pool.query("UPDATE orders SET review_asked_at = NOW() WHERE id = $1", [zam.id]);
+      await zapiszSladMaila(zam.customer_email, "prosbaOOcene");
+      console.log(`[opinie] prosba o ocene poszla do ${zam.customer_email} (${zam.order_ref})`);
+    }
+  } catch (e) {
+    console.error("[opinie] prosby o ocene:", e.message);
+  }
+}
+
+if (pool) cron.schedule("0 8 * * *", prosOOcene, { timezone: "Europe/Warsaw" });
 
 // Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
 // bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
