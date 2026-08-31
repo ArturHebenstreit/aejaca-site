@@ -14,6 +14,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { przewoznicyZNazwy, sledzenieUrl } from "../pricing/shipping.js";
 import SEOHead from "../seo/SEOHead.jsx";
+import { WZOR_ZAMOWIENIA, WZOR_OFERTY, PRZYKLAD_OFERTY, PRZYKLAD_ZAMOWIENIA } from "../shop/numerySpraw.js";
 import {
   forgetOrderAccessToken,
   orderStatusLocationWithoutToken,
@@ -286,9 +287,9 @@ function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   );
 }
 
-/** Numery, tak jak generuje je backend: zamowienie `AE`, oferta `WY`. */
-const WZOR_ZAMOWIENIA = /^AE\d{8}-[0-9A-F]{8}$/;
-const WZOR_OFERTY = /^WY\d{8}-[0-9A-F]{8}$/;
+// Wzorce numerow stoja w `src/shop/numerySpraw.js`. Trzymanie ich tutaj
+// znaczylo, ze zamowienie z oferty (numer sprawy z koncowka) bylo odrzucane
+// jako "zly numer", zanim ktokolwiek zapytal o nie serwer. ADR-0032.
 
 const UI = {
   pl: {
@@ -340,7 +341,7 @@ const UI = {
     lookupRef: "Numer zamówienia lub oferty",
     lookupEmail: "Adres e-mail z potwierdzenia",
     lookupButton: "Sprawdź",
-    lookupBad: "Numer wygląda tak: AE20260827-1F1AC35C albo WY20260825-A1B2C3D4",
+    lookupBad: `Numer wygląda tak: ${PRZYKLAD_ZAMOWIENIA} albo ${PRZYKLAD_OFERTY}`,
     lookupNotFound: "Nie znaleźliśmy zamówienia o tym numerze albo dane się nie zgadzają",
     stageTitle: "Realizacja",
     tlTitle: "Postęp zlecenia",
@@ -455,7 +456,7 @@ const UI = {
     lookupRef: "Order or offer number",
     lookupEmail: "E-mail from the confirmation",
     lookupButton: "Check",
-    lookupBad: "The number looks like this: AE20260827-1F1AC35C or WY20260825-A1B2C3D4",
+    lookupBad: `The number looks like this: ${PRZYKLAD_ZAMOWIENIA} or ${PRZYKLAD_OFERTY}`,
     lookupNotFound: "We found no order with that number, or the details do not match",
     stageTitle: "Progress",
     tlTitle: "Order progress",
@@ -571,7 +572,7 @@ const UI = {
     lookupRef: "Bestell- oder Angebotsnummer",
     lookupEmail: "E-Mail aus der Bestätigung",
     lookupButton: "Prüfen",
-    lookupBad: "Die Nummer sieht so aus: AE20260827-1F1AC35C oder WY20260825-A1B2C3D4",
+    lookupBad: `Die Nummer sieht so aus: ${PRZYKLAD_ZAMOWIENIA} oder ${PRZYKLAD_OFERTY}`,
     lookupNotFound: "Wir haben keine Bestellung mit dieser Nummer gefunden, oder die Daten stimmen nicht überein",
     stageTitle: "Fortschritt",
     tlTitle: "Auftragsfortschritt",
@@ -936,7 +937,7 @@ export default function OrderStatus() {
                   <input
                     value={formRef}
                     onChange={(e) => setFormRef(e.target.value.toUpperCase())}
-                    placeholder="AE20260827-1F1AC35C"
+                    placeholder={PRZYKLAD_ZAMOWIENIA}
                     className="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white font-mono"
                   />
                 </label>

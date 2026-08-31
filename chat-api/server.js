@@ -12,7 +12,7 @@ import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyL
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { zrodloWizyty, jezykZeSciezki, toRobot } from "./zrodlaRuchu.js";
-import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { generateQuoteRef, createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -45,8 +45,7 @@ import {
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
   sendTopUpRequest, sendOrderExpired, sendLeadMail,
-  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
-} from "./orderMail.js";
+  sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import {
   itnAction, paymentStartProblem, publicPaymentState,
@@ -169,6 +168,11 @@ if (pool) {
   // przynosi PIENIADZE. Identyfikator jest losowy i nie laczy dwoch wizyt.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+
+  // Slad po prosbie o ocene. Bez niego przy kazdym uruchomieniu crona ta sama
+  // osoba dostawalaby te sama prosbe, a to jest dokladnie ten rodzaj maila,
+  // ktory przy drugim powtorzeniu kasuje cala dobra wole.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_asked_at TIMESTAMPTZ`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
   // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
   // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
@@ -1008,9 +1012,13 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
         const allText = messages.map(m => m.content).join(" ");
         const emailMatch = allText.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
         const userEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
+        // Rozmowa z asystentem, ktora wyglada na zapytanie, tez jest sprawa
+        // i tez dostaje numer. Bez niego byla jedynym rodzajem zgloszenia,
+        // do ktorego nie dalo sie odniesc w odpowiedzi.
         pool.query(
-          `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
-          [userEmail, lang, "chat", lastMsg.slice(0, 400), "new"]
+          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
+           VALUES ($1, $2, 'chat', 'chat', $3, $4, $5, 'new')`,
+          [userEmail, lang, lastMsg.slice(0, 400), allText.slice(-8000), generateQuoteRef()]
         ).catch(() => {});
       }
     }
@@ -1040,12 +1048,9 @@ const upload = multer({
 
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Numer zapytania cytowany w korespondencji, odpowiednik numeru zamowienia */
-function generateQuoteRef() {
-  const d = new Date();
-  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  return `WY${stamp}-${generateToken().slice(0, 8).toUpperCase()}`;
-}
+// Numer sprawy nadaje `quotes.js` i TYLKO on. Do 2026-08-31 stala tutaj druga,
+// wlasna kopia tej samej funkcji: dwa generatory jednego formatu rozjezdzaja sie
+// przy pierwszej zmianie ksztaltu numeru, i to po cichu, bo oba dzialaja.
 
 /**
  * Zapisuje plik przyslany do wyceny tak samo, jak plik z zamowienia:
@@ -1614,9 +1619,12 @@ app.post("/api/orders/:ref/revision", express.json({ limit: "16kb" }), async (re
       });
     }
 
-    const childRef = generateOrderRef();
     const childToken = generateToken();
     const round = (order.revisions_included ?? 0) + 1 + (order.revisions_used ?? 0);
+    // Dodatkowa poprawka projektu jest tym samym zleceniem, wiec nosi numer
+    // rodzica z koncowka rundy. Wlasny, niezalezny numer znaczylby dla klienta
+    // nowe zamowienie, a to jest kolejne podejscie do tego samego.
+    const childRef = `${order.order_ref}-R${round}`;
 
     const { rows: created } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
@@ -2082,6 +2090,81 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
  * telefonicznej bywa, ze mamy tylko numer; wtedy link przekazuje sie ustnie
  * albo SMS-em, a mail po prostu nie wychodzi.
  */
+/**
+ * Wycena ZE ZGLOSZENIA, z zachowaniem jego numeru.
+ *
+ * Zgloszenie z formularza od dawna zapisuje sie jako lead i od dawna dostaje
+ * numer w kolumnie `quote_ref`. Numer ten byl jednak niewidoczny wszedzie:
+ * w panelu, w potwierdzeniu do klienta i przy zakladaniu wyceny, wiec oferta
+ * szla pod NOWYM numerem, a klient zostawal z dwoma, z ktorych jeden niczego
+ * nie otwieral.
+ *
+ * Ta trasa przepisuje zgloszenie do wyceny razem z numerem: opis staje sie
+ * pozycja, plik zostaje podpiety, a lead dostaje stan "quoted", zeby nie dalo
+ * sie zrobic z niego drugiej oferty.
+ */
+app.post("/api/quotes/from-lead", express.json({ limit: "64kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const id = Number(req.body?.leadId);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Brak numeru zgloszenia" });
+
+  try {
+    const { rows } = await pool.query("SELECT * FROM leads WHERE id = $1", [id]);
+    const lead = rows[0];
+    if (!lead) return res.status(404).json({ error: "Nie ma takiego zgloszenia" });
+    if (!lead.email && !lead.params_json?.phone) {
+      return res.status(400).json({ error: "Zgloszenie bez adresu e-mail, nie ma dokad wyslac oferty" });
+    }
+
+    // Numer istniejacej wyceny o tym samym oznaczeniu znaczy, ze ktos juz
+    // klikal. Oddajemy tamten, zamiast zakladac drugi.
+    if (lead.quote_ref) {
+      const { rows: juz } = await pool.query("SELECT quote_ref FROM quotes WHERE quote_ref = $1", [lead.quote_ref]);
+      if (juz[0]) return res.json({ ok: true, quoteRef: juz[0].quote_ref, reused: true });
+    }
+
+    const dane = lead.params_json && typeof lead.params_json === "object" ? lead.params_json : {};
+    const opis = String(lead.description || lead.params || "").trim();
+    const created = await createQuote(pool, {
+      quoteRef: lead.quote_ref || undefined,
+      email: lead.email || null,
+      name: dane.name || null,
+      phone: dane.phone || null,
+      lang: lead.lang || "pl",
+      source: lead.source === "quote" ? SAVED_QUOTE_SOURCE : "contact",
+      message: opis.slice(0, 8000),
+      sessionId: lead.session_id || null,
+      allowAnonymous: true,
+      items: [{
+        // Pozycja bierze nazwe z tematu albo z kalkulatora, bo to ona stoi
+        // w tabeli oferty. Pelna tresc zgloszenia idzie do opisu pozycji.
+        title: String(dane.subject || lead.calculator || "Zapytanie").slice(0, 255),
+        calculator: lead.calculator || null,
+        description: opis || null,
+        upload_id: lead.upload_id || null,
+        qty: Number.isInteger(lead.qty) && lead.qty > 0 ? lead.qty : 1,
+        params: dane.params ?? null,
+      }],
+    });
+
+    // Zgloszenie sprzed wprowadzenia numerow nie ma zadnego, wiec przejmuje
+    // numer swojej wyceny. Inaczej ta sama sprawa mialaby dwa oznaczenia:
+    // jedno w korespondencji i drugie w ofercie.
+    await pool.query(
+      "UPDATE leads SET status = 'quoted', quote_ref = COALESCE(quote_ref, $2) WHERE id = $1",
+      [id, created.quoteRef]
+    );
+    console.log(`[wycena] ze zgloszenia ${lead.quote_ref || "bez numeru"} -> ${created.quoteRef}`);
+    res.json({ ok: true, quoteRef: created.quoteRef, accessToken: created.accessToken });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] ze zgloszenia:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zalozyc wyceny" });
+  }
+});
+
 app.post("/api/quotes/manual", express.json({ limit: "256kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -2534,7 +2617,6 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
     }
 
     const order = await convertQuoteToOrder(pool, quote.quote_ref, {
-      orderRef: generateOrderRef(),
       paymentMethod: przelew ? "bank_transfer" : "autopay",
       eurRate: kursEur,
       // Przy przelewie ta sama data konczy waznosc kwoty i czas na zaplate,
@@ -2675,7 +2757,6 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
     }
 
     const order = await convertQuoteToOrder(pool, req.params.ref, {
-      orderRef: generateOrderRef(),
       delivery: req.body?.delivery || {},
     });
     console.log(
@@ -3145,6 +3226,57 @@ async function przypomnijOKodach() {
   }
 }
 if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
+
+/** Ile dni po odbiorze prosimy o ocene. Decyzja wlasciciela, 2026-08-31. */
+const DNI_DO_PROSBY_O_OCENE = 3;
+
+/**
+ * Podziekowanie i prosba o ocene, trzy dni po potwierdzeniu odbioru.
+ *
+ * Okno jest SZERSZE niz jeden dzien (od trzech do dziesieciu dni), bo cron,
+ * ktory nie wstal jednego ranka, inaczej pominalby caly dzien zamowien i nikt
+ * by tego nie zauwazyl. Stempel `review_asked_at` pilnuje, zeby szersze okno
+ * nie znaczylo drugiej prosby.
+ *
+ * Prosimy wylacznie o zamowienia ZAMKNIETE ODBIOREM. Zamowienie anulowane albo
+ * zwrocone tez ma date zamkniecia, a prosba o ocene po zwrocie pieniedzy jest
+ * dokladnie tym, czego nikt nie chce dostac.
+ */
+async function prosOOcene() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders
+        WHERE status = 'completed' AND completed_at IS NOT NULL
+          AND review_asked_at IS NULL AND customer_email IS NOT NULL
+          AND completed_at < NOW() - ($1 || ' days')::INTERVAL
+          AND completed_at > NOW() - INTERVAL '10 days'
+        ORDER BY completed_at
+        LIMIT 50`,
+      [String(DNI_DO_PROSBY_O_OCENE)]
+    );
+    for (const zam of rows) {
+      // Jedna nasza wiadomosc na dobe na adres. Prosba o przysluge moze
+      // poczekac do jutra, przypomnienie o terminie nie moze.
+      if (await pisalismyDzisiaj(zam.customer_email)) continue;
+      const wiadomosc = buildProsbaOOcene(zam);
+      // Brak adresow do wystawienia opinii: builder oddaje `null`. Stemplujemy
+      // mimo to, zeby cron nie wracal codziennie do tych samych zamowien.
+      if (!wiadomosc) {
+        await pool.query("UPDATE orders SET review_asked_at = NOW() WHERE id = $1", [zam.id]);
+        continue;
+      }
+      const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
+      if (!poszlo) continue;
+      await pool.query("UPDATE orders SET review_asked_at = NOW() WHERE id = $1", [zam.id]);
+      await zapiszSladMaila(zam.customer_email, "prosbaOOcene");
+      console.log(`[opinie] prosba o ocene poszla do ${zam.customer_email} (${zam.order_ref})`);
+    }
+  } catch (e) {
+    console.error("[opinie] prosby o ocene:", e.message);
+  }
+}
+
+if (pool) cron.schedule("0 8 * * *", prosOOcene, { timezone: "Europe/Warsaw" });
 
 // Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
 // bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.

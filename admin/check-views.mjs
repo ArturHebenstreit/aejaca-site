@@ -163,6 +163,25 @@ const ZESTAWY = {
   "discount-edit": { user: uzytkownik, kod, err: null },
   materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
 
+  // ZGLOSZENIA. Atrapa niesie jedno swieze i jedno juz przepisane do wyceny,
+  // bo to wlasnie te dwa stany decyduja, czy w wierszu stoi przycisk, czy napis.
+  leads: {
+    user: uzytkownik, msg: null, err: null, page: 1, pages: 1, total: 2,
+    contactedCount: 1, newCount: 1,
+    byCalc: [{ calculator: "jewelry", count: 2 }],
+    leads: [
+      { id: 1, created_at: new Date("2026-08-31"), quote_ref: "WY20260831-A1B2C3D4", email: "k@example.com",
+        lang: "pl", calculator: "jewelry", params: null, params_json: { subject: "Sygnet z herbem" },
+        description: "Czy zrobicie sygnet?", price_min_pln: 800, price_max_pln: 1200,
+        price_min_eur: null, price_max_eur: null, qty: 1, discount: null, status: "new",
+        contacted_at: null, contact_note: null },
+      { id: 2, created_at: new Date("2026-08-30"), quote_ref: null, email: "b@example.com",
+        lang: "de", calculator: "studio", params: null, params_json: null, description: null,
+        price_min_pln: null, price_max_pln: null, price_min_eur: null, price_max_eur: null,
+        qty: null, discount: null, status: "quoted", contacted_at: new Date("2026-08-30"), contact_note: "zadzwonilem" },
+    ],
+  },
+
   // KOKPIT ANALITYCZNY. Atrapa niesie po jednym wierszu w kazdym zestawieniu,
   // bo pusty zestaw i tak przechodzi galezia "brak danych" i nie sprawdzilby
   // nic z tego, co naprawde rysuje wykresy i paski.

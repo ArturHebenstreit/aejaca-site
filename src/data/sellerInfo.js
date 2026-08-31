@@ -70,6 +70,20 @@ export const SELLER = {
     cardsAvailable: false,
   },
 
+  // Miejsca, w ktorych klient wystawia opinie. Stoja TUTAJ, a nie w
+  // `googleReviews.js`, bo potrzebuje ich takze backend: mail z prosba o ocene
+  // wychodzi trzy dni po odbiorze i musi znac adres formularza. `googleReviews.js`
+  // bierze je stad, zeby nie powstala druga kopia, ktora rozjedzie sie przy
+  // pierwszej zmianie wizytowki.
+  //
+  // Pusty adres znaczy "nie prosimy tam o opinie" i mail po prostu pominie ten
+  // serwis. Gdy oba sa puste, mail nie wychodzi wcale: prosba bez miejsca do
+  // kliknięcia jest tylko zajmowaniem czasu.
+  reviews: {
+    google: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
+    trustpilot: "https://www.trustpilot.com/evaluate/aejaca.com",
+  },
+
   vatPayer: false,
   salesDocument: "rachunek", // faktura dopiero po rejestracji
 };

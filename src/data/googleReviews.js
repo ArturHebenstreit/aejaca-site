@@ -28,6 +28,8 @@
 //   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 27)
 // ============================================================
 
+import { SELLER } from "./sellerInfo.js";
+
 export const GOOGLE_BUSINESS = {
   // Google Business Profile AEJaCA Warszawa
   name: "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
@@ -38,7 +40,9 @@ export const GOOGLE_BUSINESS = {
   // Uwaga: dla 100% bezpośredniego linku na formularz, właściciel GBP
   // może skopiować "Link do opinii" z panelu Google Business Profile
   // (Home → Get more reviews → Share review form) - wtedy wkleić tutaj.
-  writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
+  // Adres stoi w `sellerInfo.js`, bo potrzebuje go takze mail z prosba o ocene,
+  // a ten sklada sie w backendzie, ktory tego pliku nie widzi.
+  writeReviewUrl: SELLER.reviews.google,
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
   totalReviews: 27,
@@ -60,7 +64,7 @@ export const GOOGLE_BUSINESS = {
 
 export const TRUSTPILOT_BUSINESS = {
   profileUrl: "https://www.trustpilot.com/review/aejaca.com",
-  writeReviewUrl: "https://www.trustpilot.com/evaluate/aejaca.com",
+  writeReviewUrl: SELLER.reviews.trustpilot,
   // TrustScore, nie średnia arytmetyczna. Trustpilot waży ocenę wolumenem i
   // świeżością, więc przy trzech opiniach na 5 gwiazdek wskaźnik wynosi 4,0
   // i będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej liczby jako

@@ -17,6 +17,12 @@
 --     dalo sie odtworzyc, skad wzieta jest kwota na zamowieniu sprzed roku.
 --  3. order_ref jest tym, co leci do Autopay jako OrderID. Nigdy sie nie
 --     powtarza, bo dokumentacja Autopay tego zabrania przez caly okres uslugi.
+--     Od 2026-08-31 (ADR-0032) ma dwie postacie. Zakup prosto z koszyka:
+--     `AE` + data + osiem znakow. Zamowienie z oferty: numer sprawy z koncowka
+--     mowiaca, ktora to zaplata z tej oferty, bo jedna oferta rodzi wiele
+--     zamowien (ADR-0026), na przyklad `WY20260831-A1B2C3D4-2`. Kolejna runda
+--     poprawek projektu dokłada `-R2`. Najdluzsza postac ma 24 znaki i sklada
+--     sie wylacznie z liter, cyfr i lacznika, wiec miesci sie w limicie Autopay.
 
 -- ------------------------------------------------------------
 -- Zamowienia
