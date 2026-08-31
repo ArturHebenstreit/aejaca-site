@@ -246,6 +246,29 @@ export async function lejekWycen(pool, od, doKiedy, { zWlasnymi = false } = {}) 
   return rows[0];
 }
 
+/**
+ * Darmowe narzedzia: ile osob je otworzylo i ile naprawde czegos policzylo.
+ *
+ * Te strony sciagaja z wyszukiwarki najwiecej ludzi, a sama odslona nie mowi
+ * nic poza tym, ze ktos wszedl. Dopiero stosunek uzyc do wejsc mowi, czy
+ * narzedzie odpowiada na pytanie, z ktorym ludzie przychodza.
+ */
+export async function narzedzia(pool, od, doKiedy, { zWlasnymi = false } = {}) {
+  const { rows } = await pool.query(
+    `SELECT path AS narzedzie,
+            COUNT(DISTINCT session) FILTER (WHERE ${ODSLONA})            AS wizyty,
+            COUNT(DISTINCT session) FILTER (WHERE category = 'tool')     AS uzycia,
+            COALESCE(AVG(value) FILTER (WHERE category = 'page' AND action = 'engaged'), 0) AS sredni_czas
+       FROM events
+      WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
+        AND path ~ '^/(en/|de/)?(toolsjewelry|toolstudio)/.'
+      GROUP BY path HAVING COUNT(DISTINCT session) FILTER (WHERE ${ODSLONA}) > 0
+      ORDER BY wizyty DESC LIMIT 20`,
+    [od, doKiedy]
+  );
+  return rows;
+}
+
 /** Najczestsze wybory w kalkulatorach, pogrupowane po kalkulatorze. */
 export async function wyboryKalkulatora(pool, od, doKiedy, limit = 20, { zWlasnymi = false } = {}) {
   const { rows } = await pool.query(

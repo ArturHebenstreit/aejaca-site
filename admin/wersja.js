@@ -16,7 +16,7 @@
 // ktora wersja jest nowsza. Pierwsze dwie liczby zostaja na zmiany, ktore
 // przestawiaja sposob pracy panelu, a nie na kazda poprawke ekranu.
 
-export const PANEL_WERSJA = "1.1.05";
+export const PANEL_WERSJA = "1.1.06";
 
 /** Skrot commita z wdrozenia, jesli platforma go poda. */
 export function wersjaZWdrozenia() {

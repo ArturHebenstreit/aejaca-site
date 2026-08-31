@@ -313,6 +313,31 @@
       <% }); %>
     </div>
 
+    <!-- Darmowe narzedzia -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl p-5 mb-8">
+      <h3 class="text-sm font-semibold text-white mb-1">Darmowe narzedzia</h3>
+      <p class="text-xs text-neutral-500 mb-4">
+        Kolumna "uzyli" liczy wizyty, w ktorych ktos naprawde ruszyl narzedziem, a nie tylko otworzyl strone.
+      </p>
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+          <tr><th class="text-left py-2">Adres</th><th class="text-right">Weszli</th><th class="text-right">Uzyli</th><th class="text-right">Udzial</th><th class="text-right">Czas</th></tr>
+        </thead>
+        <tbody>
+          <% if (!narzedzia.length) { %><tr><td colspan="5" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+          <% narzedzia.forEach(function (nz) { const u = proc(nz.uzycia, nz.wizyty); %>
+            <tr class="border-b border-white/5">
+              <td class="py-2 font-mono text-xs text-neutral-300"><%= nz.narzedzie %></td>
+              <td class="text-right text-white"><%= nz.wizyty %></td>
+              <td class="text-right <%= n(nz.uzycia) ? 'text-emerald-300' : 'text-neutral-600' %>"><%= nz.uzycia %></td>
+              <td class="text-right <%= u >= 50 ? 'text-emerald-300' : u >= 20 ? 'text-neutral-400' : 'text-amber-300' %>"><%= u %>%</td>
+              <td class="text-right text-neutral-400"><%= czas(nz.sredni_czas) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
     <!-- Wybory w kalkulatorach -->
     <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
       <h3 class="text-sm font-semibold text-white mb-1">Co wybieraja w kalkulatorach</h3>

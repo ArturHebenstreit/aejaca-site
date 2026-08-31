@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import {
   okresy, kpi, dzienne, wedlug, tresc, lejekSklepu, lejekWycen,
-  wyboryKalkulatora, sesje, sciezkaSesji, sygnaly,
+  wyboryKalkulatora, narzedzia, sesje, sciezkaSesji, sygnaly,
 } from "./analityka.js";
 
 function atrapa(wiersze = []) {
@@ -115,6 +115,18 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
   assert.match(pool.zapytania[1].sql, /split_part\(action, ':', 1\)/, "kalkulator wyciaga sie z nazwy akcji");
 }
 
+{
+  // Narzedzia: rozroznienie miedzy "wszedl" a "policzyl" jest cala wartoscia
+  // tego zestawienia, wiec obie liczby musza brac sie z ROZNYCH zdarzen.
+  const pool = atrapa();
+  await narzedzia(pool, new Date(), new Date());
+  const sql = pool.zapytania[0].sql;
+  assert.match(sql, /FILTER \(WHERE category = 'tool'\)/, "uzycie liczy sie ze zdarzenia narzedzia");
+  assert.match(sql, /category = 'page' AND action = 'view'/, "wejscie liczy sie z odslony");
+  assert.match(sql, /toolsjewelry\|toolstudio/, "bierzemy wylacznie strony narzedziowe");
+  assert.match(sql, /\(en\/\|de\/\)\?/, "razem z wersjami angielska i niemiecka");
+}
+
 // --- Ruch wlasciciela: domyslnie pominiety, na zadanie widoczny -----------
 // Wlasciciel oznacza swoje urzadzenia sam (znacznik `?nolicz=1`), bo adresu IP
 // nie da sie tu uzyc. Zdarzenia zapisujemy mimo oznaczenia i odsiewamy dopiero
@@ -141,6 +153,7 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
     ["lejekSklepu", (p, o) => lejekSklepu(p, new Date(), new Date(), o)],
     ["lejekWycen", (p, o) => lejekWycen(p, new Date(), new Date(), o)],
     ["wyboryKalkulatora", (p, o) => wyboryKalkulatora(p, new Date(), new Date(), 20, o)],
+    ["narzedzia", (p, o) => narzedzia(p, new Date(), new Date(), o)],
     ["sesje", (p, o) => sesje(p, { od: new Date(), do: new Date(), ...o })],
   ]) {
     const pool = atrapa();

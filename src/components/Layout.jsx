@@ -4,7 +4,7 @@ import Navbar from "./Navbar.jsx";
 import JezykPodpowiedz from "./JezykPodpowiedz.jsx";
 import Footer from "./Footer.jsx";
 import ChatWidget from "./ChatWidget.jsx";
-import { trackPageView, initScrollTracking } from "../utils/analytics.js";
+import { trackPageView, initScrollTracking, initToolTracking } from "../utils/analytics.js";
 import useScrollToTop from "../hooks/useScrollToTop.js";
 
 export default function Layout() {
@@ -13,6 +13,7 @@ export default function Layout() {
   useEffect(() => {
     trackPageView(location.pathname);
     initScrollTracking();
+    initToolTracking(location.pathname);
   }, [location.pathname]);
 
   return (
