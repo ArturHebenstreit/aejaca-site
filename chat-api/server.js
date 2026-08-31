@@ -2914,7 +2914,7 @@ async function expireStaleOrders() {
       `UPDATE orders SET status = 'expired'
         WHERE status IN ('awaiting_payment','awaiting_transfer')
           AND paid_at IS NULL AND expires_at IS NOT NULL AND expires_at < NOW()
-        RETURNING id, order_ref`
+        RETURNING id, order_ref, payment_method`
     );
     for (const o of rows) {
       await releaseOrderReservations(pool, o.id);
@@ -2925,7 +2925,13 @@ async function expireStaleOrders() {
       // na strone, a ten, ktory przelal pieniadze dzien po terminie, nie mial
       // skad wiedziec, ze wracaja do niego. Mail nie blokuje wygaszania: towar
       // ma wrocic do sprzedazy niezaleznie od tego, czy poczta zadziala.
-      sendOrderExpired(pool, o.id).catch(() => {});
+      //
+      // TYLKO przy przelewie. Zamowienie kartowe wygasa po siedmiu dniach
+      // najczesciej dlatego, ze klient zamknal karte w koszyku i nigdy nie
+      // wrocil. Wiadomosc "zamowienie zostalo zamkniete" bylaby wtedy poczta
+      // za porzucony koszyk, a zdanie o przelewie wyslanym po terminie nie
+      // mialoby przy niej sensu.
+      if (o.payment_method === "bank_transfer") sendOrderExpired(pool, o.id).catch(() => {});
     }
     if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
   } catch (e) {
@@ -4174,6 +4180,7 @@ app.get("/api/orders/queue", async (req, res) => {
             o.tracking_number, o.production_note,
             o.lead_days, o.deadline_at, o.requires_details, o.lead_days_agreed_at, o.access_token,
             o.payment_method, o.payment_status, o.currency, o.amount_eur_cents,
+            o.transfer_asked_at, o.transfer_received_cents,
             o.payment_review_reason, o.created_at,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
@@ -4250,6 +4257,10 @@ app.get("/api/orders/queue", async (req, res) => {
     currency: o.currency,
     amountEurCents: o.amount_eur_cents,
     paymentReviewReason: o.payment_review_reason || null,
+    // Slad po prosbie o doplate: bez niego panel pokazywalby ten sam formularz
+    // co przed nia i ta sama prosba wyszlaby do klienta drugi raz.
+    transferAskedAt: o.transfer_asked_at || null,
+    transferReceivedCents: o.transfer_received_cents ?? null,
     createdAt: o.created_at,
     // Podpowiedz ze strefy, ktora wycenila przesylke. Paczkomat stoi tylko
     // w Polsce, wiec tam przewoznik jest znany bez pytania.
@@ -4665,54 +4676,11 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
   }
 });
 
-app.get("/api/orders/awaiting-transfer", async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const shape = (o) => ({
-    orderRef: o.order_ref,
-    email: o.customer_email,
-    name: o.customer_name,
-    lang: o.lang,
-    status: o.status,
-    totalPLN: (o.total_grosze / 100).toFixed(2),
-    amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
-    eurRate: o.eur_rate,
-    createdAt: o.created_at,
-    expiresAt: o.expires_at,
-    paidAt: o.paid_at,
-    cancelledAt: o.cancelled_at,
-    cancelledBy: o.cancelled_by,
-    cancelReason: o.cancel_reason,
-    paymentStatus: o.payment_status,
-    paymentRemoteId: o.payment_remote_id,
-    paymentReviewAt: o.payment_review_at,
-    paymentReviewReason: o.payment_review_reason,
-    paymentReviewPreviousStatus: o.payment_review_previous_status,
-  });
-
-  const COLS = `order_ref, customer_email, customer_name, lang, status, total_grosze,
-                amount_eur_cents, eur_rate, created_at, expires_at,
-                paid_at, cancelled_at, cancelled_by, cancel_reason,
-                payment_status, payment_remote_id, payment_review_at,
-                payment_review_reason, payment_review_previous_status`;
-
-  // Druga lista, zamowienia zamkniete bez zaplaty, jest tu celowo. Rezygnacja
-  // ma zdejmowac wiersz z listy roboczej, a nie z oczu: to przy niej sprawdza
-  // sie, czy towar faktycznie wrocil do sprzedazy, i stad kasuje sie pomylki.
-  const [pending, reviews, closed] = await Promise.all([
-    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`),
-    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'payment_review'
-                 ORDER BY payment_review_at ASC LIMIT 100`),
-    pool.query(`SELECT ${COLS} FROM orders WHERE status IN ('cancelled','expired')
-                 ORDER BY COALESCE(cancelled_at, created_at) DESC LIMIT 50`),
-  ]);
-
-  res.json({
-    orders: pending.rows.map(shape),
-    reviews: reviews.rows.map(shape),
-    closed: closed.rows.map(shape),
-  });
-});
+// Trasa `/api/orders/awaiting-transfer` zostala USUNIETA 2026-08-30 razem ze
+// strona przelewow (ADR-0029). Te same zamowienia oddaje `/api/orders/queue`,
+// bo czekanie na pieniadze jest czescia kolejki. Druga trasa o tych samych
+// zamowieniach rozjechalaby sie z pierwsza przy pierwszej zmianie ksztaltu
+// odpowiedzi, a rozjazd w panelu konczy sie zleceniem obsluzonym dwa razy.
 
 app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -4751,7 +4719,11 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
     `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
        payment_status = 'SUCCESS', payment_status_details = 'manual_transfer',
        transfer_received_cents = $2, transfer_confirmed_at = NOW(),
-       transfer_confirmed_by = $3, transfer_note = $4
+       transfer_confirmed_by = $3, transfer_note = $4,
+       -- Slad po prosbie o doplate znika razem z powodem, dla ktorego powstal.
+       -- Zostawiony kazalby stronie zamowienia liczyc brakujaca kwote takze
+       -- wtedy, gdy juz nic nie brakuje.
+       transfer_asked_at = NULL
      WHERE id = $1`,
     [order.id, received, String(by || "admin").slice(0, 120), note ? String(note).slice(0, 2000) : null]
   );

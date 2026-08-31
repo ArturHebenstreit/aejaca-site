@@ -302,9 +302,20 @@
                             <% if (k.id === "paid" && o.status === "awaiting_transfer") { %>
                               <form method="post" action="/transfers/<%= encodeURIComponent(o.orderRef) %>/confirm" class="space-y-2">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <%# Po prosbie o doplate na koncie leza JUZ jakies pieniadze, wiec
+                                    pole pyta o kwote LACZNA, a nie o sama doplate. Jedna liczba,
+                                    jedno znaczenie: dwie kwoty w jednym polu konczylyby sie
+                                    zamowieniem oplaconym na papierze i nieoplaconym w banku. %>
+                                <% if (o.transferAskedAt) { %>
+                                  <p class="text-orange-300 text-[10px] leading-tight mb-2">
+                                    Poproszono o dopłatę <%= fmtDateShort(o.transferAskedAt) %>.
+                                    Wpłynęło dotąd <%= ((o.transferReceivedCents || 0) / 100).toFixed(2) %> EUR.
+                                    <span class="text-neutral-500 block">Wpisz kwotę ŁĄCZNĄ, razem z pierwszą wpłatą.</span>
+                                  </p>
+                                <% } %>
                                 <label class="block">
                                   <span class="text-neutral-500 text-[10px] block mb-1">
-                                    Wpłynęło<% if (o.amountEurCents != null) { %>, oczekujemy <%= (o.amountEurCents / 100).toFixed(2) %> EUR<% } %>
+                                    <%= o.transferAskedAt ? "Wpłynęło łącznie" : "Wpłynęło" %><% if (o.amountEurCents != null) { %>, oczekujemy <%= (o.amountEurCents / 100).toFixed(2) %> EUR<% } %>
                                   </span>
                                   <input type="number" step="0.01" name="receivedEur"
                                          placeholder="<%= o.amountEurCents != null ? (o.amountEurCents / 100).toFixed(2) : 'kwota w EUR' %>"

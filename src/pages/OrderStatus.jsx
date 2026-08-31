@@ -37,6 +37,10 @@ const STANY_USTALONE = [
   "ready",
   "shipped",
   "completed",
+  // Zamowienie zamkniete tez sie juz nie zmieni. Bez tych dwoch strona
+  // odpytywala baze piec razy o zamowienie, ktore wygaslo tydzien temu.
+  "expired",
+  "cancelled",
 ];
 
 /** Wiersz danych do przelewu. Numer rachunku i tytul musza byc latwe do
@@ -307,6 +311,10 @@ const UI = {
       pickup: "Zamówienie czeka na Ciebie w Józefosławiu, o umówionej godzinie.",
       digital: "Pliki są przekazane. Link do pobrania jest w mailu z potwierdzeniem zamówienia.",
     },
+    expiredTitle: "Zamówienie wygasło",
+    expiredDesc: "Wpłata nie dotarła w terminie, więc zamówienie zostało zamknięte, a zarezerwowany towar wrócił do sprzedaży. Jeżeli pieniądze wyszły po terminie, wrócą na rachunek, z którego przyszły. Zamówienie możesz złożyć ponownie w każdej chwili.",
+    cancelledTitle: "Zamówienie anulowane",
+    cancelledDesc: "To zamówienie zostało anulowane, a zarezerwowany towar wrócił do sprzedaży. Jeżeli to pomyłka, napisz do nas, odpowiadamy na każdą wiadomość.",
     completedTitle: "Zamówienie dostarczone",
     completedDesc: {
       ship: "Potwierdzamy dostarczenie przesyłki. Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
@@ -418,6 +426,10 @@ const UI = {
       pickup: "Your order is waiting for you in Józefosław, at the time we agreed.",
       digital: "Your files have been handed over. The download link is in your order confirmation e-mail.",
     },
+    expiredTitle: "The order has expired",
+    expiredDesc: "The payment did not arrive in time, so the order was closed and the reserved goods went back on sale. If the money left after that date, it will return to the account it came from. You can place the order again at any time.",
+    cancelledTitle: "Order cancelled",
+    cancelledDesc: "This order was cancelled and the reserved goods went back on sale. If that is a mistake, write to us, we answer every message.",
     completedTitle: "Order delivered",
     completedDesc: {
       ship: "We confirm your parcel has been delivered. Thank you. If anything is wrong with the piece, write to us, we answer every message.",
@@ -530,6 +542,10 @@ const UI = {
       pickup: "Ihre Bestellung wartet in Józefosław zur vereinbarten Uhrzeit auf Sie.",
       digital: "Ihre Dateien wurden übergeben. Der Download-Link steht in Ihrer Bestellbestätigung.",
     },
+    expiredTitle: "Die Bestellung ist abgelaufen",
+    expiredDesc: "Die Zahlung ist nicht rechtzeitig eingegangen, daher wurde die Bestellung geschlossen und die reservierte Ware ging zurück in den Verkauf. Sollte das Geld nach diesem Termin herausgegangen sein, kommt es auf das Konto zurück, von dem es kam. Sie können jederzeit erneut bestellen.",
+    cancelledTitle: "Bestellung storniert",
+    cancelledDesc: "Diese Bestellung wurde storniert und die reservierte Ware ging zurück in den Verkauf. Sollte das ein Versehen sein, schreiben Sie uns, wir beantworten jede Nachricht.",
     completedTitle: "Bestellung zugestellt",
     completedDesc: {
       ship: "Wir bestätigen die Zustellung Ihrer Sendung. Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
@@ -778,6 +794,12 @@ export default function OrderStatus() {
   // Przelew czeka na nasze reczne potwierdzenie, wiec ta strona nie jest
   // "czekamy na bank", tylko instrukcja, co klient ma teraz zrobic.
   const awaitingTransfer = order?.status === "awaiting_transfer";
+  // Zamowienie zamkniete bez zaplaty spadalo do galezi domyslnej i mowilo
+  // "bank jeszcze nie potwierdzil przelewu, to zwykle kwestia kilku minut"
+  // komus, kogo zamowienie wygaslo tydzien temu. Od 2026-08-30 mail o wygasnieciu
+  // wprost zaprasza na te strone, wiec klamstwo bylo widoczne dla kazdego.
+  const expired = order?.status === "expired";
+  const cancelledOrder = order?.status === "cancelled";
   // "Zaplacone" znaczy tu: pieniadze u nas. Stany dalsze (produkcja, wysylka,
   // zakonczone) tez sa oplacone i bez tej listy strona mowilaby oplaconemu
   // klientowi, ze czeka na jego wplate.
@@ -877,6 +899,14 @@ export default function OrderStatus() {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
     title = u.failedTitle;
     desc = u.failedDesc;
+  } else if (expired) {
+    icon = <XCircle className="w-12 h-12 text-neutral-500" />;
+    title = u.expiredTitle;
+    desc = u.expiredDesc;
+  } else if (cancelledOrder) {
+    icon = <XCircle className="w-12 h-12 text-neutral-500" />;
+    title = u.cancelledTitle;
+    desc = u.cancelledDesc;
   } else if (paymentReview) {
     icon = <Clock className="w-12 h-12 text-amber-400" />;
     title = u.reviewTitle;

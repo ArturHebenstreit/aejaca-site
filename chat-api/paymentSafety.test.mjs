@@ -41,4 +41,42 @@ assert.match(adminView, /payment_review: \{ label:/,
 assert.match(adminView, /Pobrano pieniądze, zlecenie nie ruszyło/,
   "pracownia ma widziec, ze pieniadze sa, a zlecenie stoi");
 
+// --- Trzy sytuacje po przelewie (ADR-0029, punkt 5) ---
+
+// Wiadomosc o wygasnieciu idzie TYLKO przy przelewie. Zamowienie kartowe wygasa
+// po siedmiu dniach najczesciej dlatego, ze klient zamknal karte w koszyku,
+// a wtedy "zamowienie zostalo zamkniete" jest poczta za porzucony koszyk.
+assert.match(server, /if \(o\.payment_method === "bank_transfer"\) sendOrderExpired/,
+  "mail o wygasnieciu tylko przy przelewie, nie przy porzuconym koszyku");
+assert.match(server, /RETURNING id, order_ref, payment_method/,
+  "wygaszanie musi wiedziec, ktora droga platnosci wybrano");
+
+// Prog drobnej roznicy: kwota ORAZ procent, z mniejszej strony. Sam procent
+// zawodzi w obie strony, zaleznie od wielkosci zamowienia.
+assert.match(server, /Math\.min\(TRANSFER_TOLERANCE_CENTS, Math\.round\(oczekiwane \* TRANSFER_TOLERANCE_RATE\)\)/,
+  "prog niedoplaty bierze mniejsza z dwoch miar");
+
+// Potwierdzenie kasuje slad po prosbie o doplate. Zostawiony kazalby stronie
+// zamowienia liczyc brakujaca kwote takze wtedy, gdy juz nic nie brakuje.
+assert.match(server, /transfer_asked_at = NULL/,
+  "potwierdzenie wplaty zamyka sprawe doplaty");
+
+// Termin na doplate siedzi w tym samym `expires_at`, ktory wygasza zamowienia
+// nieoplacone. Drugi zegar rozjechalby sie z pierwszym.
+assert.match(server, /expires_at = NOW\(\) \+ INTERVAL '\$\{DNI_NA_DOPLATE\} days'/,
+  "termin doplaty korzysta z tego samego zegara co wygasanie");
+
+// Zamowienie zamkniete bez zaplaty ma na stronie WLASNE zdanie. Bez niego
+// spadalo do galezi domyslnej i mowilo "bank jeszcze nie potwierdzil przelewu,
+// to zwykle kwestia kilku minut" komus, kogo zamowienie wygaslo tydzien temu.
+assert.match(statusPage, /const expired = order\?\.status === "expired"/,
+  "strona zamowienia rozpoznaje zamowienie wygasle");
+assert.match(statusPage, /expiredTitle/, "wygasle zamowienie ma wlasny tytul");
+assert.match(statusPage, /cancelledTitle/, "anulowane zamowienie ma wlasny tytul");
+assert.match(statusPage, /"expired",\s*\n\s*"cancelled",\s*\n\];/,
+  "zamkniete zamowienie nie jest odpytywane w kolko, bo sie juz nie zmieni");
+
+assert.match(adminView, /Wpisz kwotę ŁĄCZNĄ/,
+  "po prosbie o doplate panel pyta o kwote laczna, a nie o sama doplate");
+
 console.log("Bezpieczenstwo platnosci i statusu: wszystkie sprawdzenia przeszly");

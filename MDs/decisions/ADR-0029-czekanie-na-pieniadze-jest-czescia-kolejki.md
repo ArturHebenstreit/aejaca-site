@@ -144,6 +144,14 @@ ma wrocic do sprzedazy niezaleznie od tego, czy poczta zadziala.
 
 ## Konsekwencje
 
+- **Trasa `/api/orders/awaiting-transfer` znika razem z widokiem.** Te same
+  zamowienia oddaje `/api/orders/queue`. Druga trasa o tych samych danych
+  rozjechalaby sie z pierwsza przy pierwszej zmianie ksztaltu odpowiedzi.
+- **Zamowienie zamkniete bez zaplaty ma wlasne zdanie na stronie zamowienia.**
+  Dotad spadalo do galezi domyslnej i mowilo "bank jeszcze nie potwierdzil
+  przelewu, to zwykle kwestia kilku minut" komus, kogo zamowienie wygaslo
+  tydzien temu. Mail o wygasnieciu wprost zaprasza na te strone, wiec to
+  klamstwo bylo od 2026-08-30 widoczne dla kazdego.
 - **Domyslna lista kolejki jest dluzsza** o zamowienia, ktore czekaja na wplate.
   To jest cel: dotad nie bylo ich widac nigdzie poza wlasna strona.
 - **Zegar i termin przy tych stanach nie istnieja.** Kolumna terminu jest pusta,

@@ -61,5 +61,6 @@ dotyczy `SUCCESS` z niezgodna kwota albo w innym stanie niz `awaiting_payment`.
 - `MDs/AEJaCA_Autopay_Integration.md`
 - `chat-api/paymentState.js`, `chat-api/server.js`, `chat-api/orderMail.js`
 - `scripts/orders-schema.sql`
-- `admin/views/transfers.ejs`
+- `admin/views/transfers.ejs` (widok USUNIETY 2026-08-30, ADR-0029: platnosci
+  do recznej decyzji stoja od tej pory w kolejce, razem z reszta zamowien)
 - `src/pages/OrderStatus.jsx`
