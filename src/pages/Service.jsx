@@ -21,6 +21,7 @@ import { useMoney } from "../shop/money.js";
 import { getServiceCard } from "../data/serviceCatalog.js";
 import ServiceConfigurator from "../components/shop/ServiceConfigurator.jsx";
 import { SHOP_CATEGORIES } from "../data/shopCatalog.js";
+import { trackProduct } from "../utils/analytics.js";
 import NotFound from "./NotFound.jsx";
 import Obraz from "../components/Obraz.jsx";
 
@@ -112,6 +113,13 @@ export default function Service() {
   const [configuredPrice, setConfiguredPrice] = useState(null);
 
   useEffect(() => setConfiguredPrice(null), [id]);
+
+  // Karta uslugi ogladana jest czesciej niz produkt z polki, bo to od niej
+  // zaczyna sie wiekszosc zlecen. Bez tego zdarzenia w danych widac wejscie na
+  // adres, ale nie widac, KTORA usluga ludzi interesuje.
+  useEffect(() => {
+    if (card) trackProduct("service", card.service || id);
+  }, [card, id]);
 
   if (!card) return <NotFound />;
 

@@ -1,0 +1,81 @@
+<%- include('partials/header', { user: user, title: 'Analityka - wizyty', active: 'analytics' }) %>
+<%#
+  WIERSZE POD LICZBA. Tutaj konczy sie kazde klikniecie w kokpicie: liczba
+  rozklada sie na pojedyncze wizyty, a wizyta na zdarzenia (kolejny ekran).
+  Bez tego kroku wykres jest do wierzenia, a nie do sprawdzenia.
+-%>
+<%
+  const n = (x) => Number(x || 0);
+  const pln = (grosze) => (n(grosze) / 100).toLocaleString("pl-PL", { maximumFractionDigits: 0 }) + " zl";
+  const czas = (s) => { const x = Math.round(n(s)); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
+  const kiedy = (d) => new Date(d).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" });
+  const NAZWY = { kanal: "kanal", zrodlo: "zrodlo", wejscie: "strona wejscia", kraj: "kraj", urzadzenie: "urzadzenie", jezyk: "jezyk", kampania: "kampania" };
+%>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-semibold text-white">
+          Wizyty<% if (wymiar) { %>: <%= NAZWY[wymiar] || wymiar %> = <span class="text-sky-300"><%= wartosc %></span><% } %>
+        </h2>
+        <p class="text-xs text-neutral-500 mt-1">
+          Ostatnie <%= days %> dni, <%= wiersze.length %> wizyt<%= wiersze.length === 200 ? " (pokazane pierwsze 200)" : "" %>.
+        </p>
+      </div>
+      <a href="/analytics?days=<%= days %>" class="text-sm text-neutral-400 hover:text-white">&larr; wroc do kokpitu</a>
+    </div>
+
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase text-neutral-500 bg-white/5">
+          <tr>
+            <th class="text-left px-4 py-3">Kiedy</th>
+            <th class="text-left">Wejscie</th>
+            <th class="text-left">Kanal</th>
+            <th class="text-left">Zrodlo</th>
+            <th class="text-left">Skad</th>
+            <th class="text-right">Strony</th>
+            <th class="text-right">Czas</th>
+            <th class="text-right">Skutek</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!wiersze.length) { %>
+            <tr><td colspan="8" class="px-4 py-6 text-neutral-500">Zadna wizyta nie pasuje do tego filtru w wybranym okresie.</td></tr>
+          <% } %>
+          <% wiersze.forEach(function (w) { %>
+            <tr class="border-t border-white/5 hover:bg-white/5">
+              <td class="px-4 py-2 whitespace-nowrap">
+                <a href="/analytics/sesja/<%= encodeURIComponent(w.session) %>" class="text-sky-300 hover:text-sky-200"><%= kiedy(w.start) %></a>
+              </td>
+              <td class="font-mono text-xs text-neutral-300 max-w-xs truncate"><%= w.wejscie || "?" %></td>
+              <td class="text-neutral-400"><%= w.kanal %></td>
+              <td class="text-neutral-400 max-w-[12rem] truncate"><%= w.zrodlo %></td>
+              <td class="text-neutral-500 text-xs">
+                <%= w.kraj || "?" %> &middot; <%= w.urzadzenie || "?" %> &middot; <%= w.jezyk %>
+              </td>
+              <td class="text-right text-white"><%= w.odslony %></td>
+              <td class="text-right text-neutral-400"><%= czas(w.sekundy) %></td>
+              <td class="text-right pr-4">
+                <% if (n(w.oplacone)) { %>
+                  <span class="text-emerald-300"><%= pln(w.przychod) %></span>
+                <% } else if (n(w.zamowienia)) { %>
+                  <span class="text-amber-300">zamowienie bez zaplaty</span>
+                <% } else if (n(w.zapytania)) { %>
+                  <span class="text-amber-300">zapytanie</span>
+                <% } else if (n(w.interakcje)) { %>
+                  <span class="text-neutral-500">interakcja</span>
+                <% } else { %>
+                  <span class="text-neutral-600">obejrzal i wyszedl</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</body>
+</html>

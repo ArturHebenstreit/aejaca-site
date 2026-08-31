@@ -1,12 +1,72 @@
-<%- include('partials/header', { user: user, title: 'Analytics', active: 'analytics' }) %>
+<%- include('partials/header', { user: user, title: 'Analityka', active: 'analytics' }) %>
+<%#
+  KOKPIT. Trzy zasady, ktore trzymaja ten ekran w ryzach:
+
+  1. Kazda liczba stoi obok tej samej liczby z poprzedniego okresu. Sama liczba
+     nie mowi nic: "82 wizyty" to moze byc sukces albo zapasc.
+  2. Kazde zestawienie prowadzi do wierszy, z ktorych powstalo. Kolumna, pod
+     ktora nie da sie zajrzec, jest do wierzenia, a nie do sprawdzenia.
+  3. Kolor niesie znaczenie i nic wiecej: zielony to wzrost, bursztyn to uwaga,
+     czerwony to prog przekroczony w zla strone.
+-%>
+<%
+  const n = (x) => Number(x || 0);
+  const pln = (grosze) => (n(grosze) / 100).toLocaleString("pl-PL", { maximumFractionDigits: 0 }) + " zl";
+  const proc = (a, b) => (n(b) > 0 ? Math.round((n(a) / n(b)) * 100) : 0);
+  const czas = (s) => {
+    const x = Math.round(n(s));
+    return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`;
+  };
+  // Zmiana wobec poprzedniego okresu. `null` znaczy "nie bylo z czym porownac",
+  // co jest czyms innym niz zero i tak ma byc pokazane.
+  const zmiana = (teraz, przedtem) => {
+    const t = n(teraz), p = n(przedtem);
+    if (!p) return t > 0 ? null : 0;
+    return Math.round(((t - p) / p) * 100);
+  };
+  const kolorZmiany = (d, odwrotnie) => {
+    if (d === null) return "text-neutral-500";
+    const dobra = odwrotnie ? d <= 0 : d >= 0;
+    if (Math.abs(d) < 5) return "text-neutral-400";
+    return dobra ? "text-emerald-400" : "text-rose-400";
+  };
+  const strzalka = (d) => (d === null ? "&middot;" : d > 0 ? "&uarr;" : d < 0 ? "&darr;" : "&rarr;");
+  const szczegoly = (wymiar, wartosc) =>
+    `/analytics/szczegoly?days=${days}&wymiar=${wymiar}&wartosc=${encodeURIComponent(wartosc)}`;
+
+  const wizytyT = n(teraz.wizyty), wizytyP = n(przedtem.wizyty);
+  const konwersjaZapytan = proc(teraz.zapytania, teraz.wizyty);
+  const konwersjaZapytanP = proc(przedtem.zapytania, przedtem.wizyty);
+  const odbiciaProc = proc(teraz.odbicia, teraz.wizyty);
+  const odbiciaProcP = proc(przedtem.odbicia, przedtem.wizyty);
+
+  const KAFLE = [
+    { nazwa: "Wizyty", teraz: wizytyT, przedtem: wizytyP, format: (x) => x.toLocaleString("pl-PL"), opis: "Osobne wejscia na serwis. Bez ciasteczek, wiec ta sama osoba jutro liczy sie drugi raz." },
+    { nazwa: "Z interakcja", teraz: n(teraz.zaangazowane), przedtem: n(przedtem.zaangazowane), format: (x) => x.toLocaleString("pl-PL"), opis: "Wizyty, w ktorych ktos zrobil cokolwiek poza obejrzeniem strony." },
+    { nazwa: "Odbicia", teraz: odbiciaProc, przedtem: odbiciaProcP, format: (x) => x + "%", odwrotnie: true, opis: "Jedna strona, zero interakcji. Im mniej, tym lepiej." },
+    { nazwa: "Zapytania", teraz: n(teraz.zapytania), przedtem: n(przedtem.zapytania), format: (x) => x.toLocaleString("pl-PL"), opis: "Wyslane formularze wyceny powiazane z wizyta." },
+    { nazwa: "Konwersja", teraz: konwersjaZapytan, przedtem: konwersjaZapytanP, format: (x) => x + "%", opis: "Ile wizyt konczy sie zapytaniem." },
+    { nazwa: "Zamowienia", teraz: n(teraz.zamowienia), przedtem: n(przedtem.zamowienia), format: (x) => x.toLocaleString("pl-PL"), opis: "Oplacone, powiazane z wizyta." },
+    { nazwa: "Przychod", teraz: n(teraz.przychod), przedtem: n(przedtem.przychod), format: pln, opis: "Suma oplaconych zamowien z tych wizyt." },
+    { nazwa: "Sredni czas", teraz: Math.round(n(teraz.sredni_czas)), przedtem: Math.round(n(przedtem.sredni_czas)), format: czas, opis: "Czas widocznej karty, a nie karty otwartej w tle." },
+  ];
+
+  // Wykres: skala wspolna dla calego okresu, zeby slupki dalo sie porownywac.
+  const maxWizyt = Math.max(1, ...dni.map((d) => n(d.wizyty)));
+  const szerokoscSlupka = dni.length ? Math.max(2, Math.floor(760 / dni.length) - 2) : 8;
+%>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
 
-    <!-- Header + period selector -->
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-white">Analytics</h2>
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-semibold text-white">Analityka</h2>
+        <p class="text-xs text-neutral-500 mt-1">
+          Ostatnie <%= days %> dni wobec poprzednich <%= days %> dni. Klikniecie w wiersz pokazuje pojedyncze wizyty.
+        </p>
+      </div>
       <div class="flex gap-2 text-sm">
-        <% [7, 30, 90].forEach(function(d) { %>
+        <% [7, 30, 90, 365].forEach(function(d) { %>
           <a href="/analytics?days=<%= d %>"
              class="px-3 py-1.5 rounded-lg border transition-colors <%= days == d ? 'bg-emerald-900 border-emerald-600 text-emerald-300' : 'border-white/10 text-neutral-400 hover:text-white hover:border-white/20' %>">
             <%= d %>d
@@ -15,262 +75,256 @@
       </div>
     </div>
 
-    <!-- KPI Cards -->
+    <!-- Sygnaly: co z tego wynika -->
+    <div class="mb-8 space-y-2">
+      <% sygnaly.forEach(function (s) {
+           const kolor = s.waga === "alarm" ? "border-rose-700/60 bg-rose-950/40 text-rose-200"
+                       : s.waga === "uwaga" ? "border-amber-700/60 bg-amber-950/30 text-amber-200"
+                       : "border-emerald-800/50 bg-emerald-950/20 text-emerald-300";
+           const lampka = s.waga === "alarm" ? "bg-rose-500" : s.waga === "uwaga" ? "bg-amber-400" : "bg-emerald-500";
+      %>
+        <div class="flex items-start gap-3 border rounded-xl px-4 py-3 text-sm <%= kolor %>">
+          <span class="mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 <%= lampka %>"></span>
+          <span><%= s.tresc %></span>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Kafle z porownaniem -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
-        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Dziś - Odwiedziny</p>
-        <p class="text-3xl font-bold text-emerald-400"><%= kpi.visitors_today || 0 %></p>
-        <p class="text-xs text-neutral-500 mt-1"><%= kpi.visitors_week || 0 %> ten tydzień</p>
+      <% KAFLE.forEach(function (k) {
+           const d = zmiana(k.teraz, k.przedtem);
+      %>
+        <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4" title="<%= k.opis %>">
+          <div class="text-xs uppercase tracking-wide text-neutral-500 mb-1"><%= k.nazwa %></div>
+          <div class="text-2xl font-bold text-white"><%- k.format(k.teraz) %></div>
+          <div class="text-xs mt-1 <%= kolorZmiany(d, k.odwrotnie) %>">
+            <%- strzalka(d) %>
+            <% if (d === null) { %>brak porownania<% } else { %><%= Math.abs(d) %>% wobec <%- k.format(k.przedtem) %><% } %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Wykres dzienny -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl p-5 mb-8">
+      <div class="flex items-baseline justify-between mb-4">
+        <h3 class="text-sm font-semibold text-white">Dzien po dniu</h3>
+        <div class="text-xs text-neutral-500 flex gap-4">
+          <span><span class="inline-block w-2 h-2 rounded-sm bg-sky-500 mr-1"></span>wizyty</span>
+          <span><span class="inline-block w-2 h-2 rounded-sm bg-amber-400 mr-1"></span>zapytania</span>
+          <span><span class="inline-block w-2 h-2 rounded-sm bg-emerald-500 mr-1"></span>zamowienia</span>
+        </div>
       </div>
-      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
-        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">30d - Odwiedziny</p>
-        <p class="text-3xl font-bold text-white"><%= kpi.visitors_month || 0 %></p>
-        <p class="text-xs text-neutral-500 mt-1"><%= kpi.pageviews_month || 0 %> pageviews</p>
+      <% if (!dni.length) { %>
+        <p class="text-sm text-neutral-500">Brak danych w tym okresie.</p>
+      <% } else { %>
+        <svg viewBox="0 0 780 180" class="w-full h-44" role="img" aria-label="Wizyty, zapytania i zamowienia dzien po dniu">
+          <% dni.forEach(function (d, i) {
+               const x = 10 + i * (szerokoscSlupka + 2);
+               const hW = Math.round((n(d.wizyty) / maxWizyt) * 130);
+               const hZ = Math.round((n(d.zapytania) / maxWizyt) * 130);
+               const hO = Math.round((n(d.zamowienia) / maxWizyt) * 130);
+               const dzien = new Date(d.dzien).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit" });
+          %>
+            <g>
+              <title><%= dzien %>: <%= d.wizyty %> wizyt, <%= d.zapytania %> zapytan, <%= d.zamowienia %> zamowien</title>
+              <rect x="<%= x %>" y="<%= 150 - hW %>" width="<%= szerokoscSlupka %>" height="<%= hW %>" rx="1" fill="#0ea5e9" opacity="0.65" />
+              <% if (hZ > 0) { %><rect x="<%= x %>" y="<%= 150 - hZ %>" width="<%= szerokoscSlupka %>" height="<%= hZ %>" rx="1" fill="#fbbf24" /><% } %>
+              <% if (hO > 0) { %><rect x="<%= x %>" y="<%= 150 - hO %>" width="<%= szerokoscSlupka %>" height="<%= hO %>" rx="1" fill="#10b981" /><% } %>
+            </g>
+          <% }); %>
+          <line x1="10" y1="150" x2="770" y2="150" stroke="#404040" stroke-width="1" />
+          <text x="10" y="168" fill="#737373" font-size="10"><%= new Date(dni[0].dzien).toLocaleDateString("pl-PL") %></text>
+          <text x="770" y="168" fill="#737373" font-size="10" text-anchor="end"><%= new Date(dni[dni.length - 1].dzien).toLocaleDateString("pl-PL") %></text>
+        </svg>
+      <% } %>
+    </div>
+
+    <!-- Pozyskanie -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Skad przychodza</h3>
+        <p class="text-xs text-neutral-500 mb-4">Kanal ruchu. Klikniecie pokazuje pojedyncze wizyty z tego kanalu.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Kanal</th><th class="text-right">Wizyty</th><th class="text-right">Zapytania</th><th class="text-right">Przychod</th></tr>
+          </thead>
+          <tbody>
+            <% if (!kanaly.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+            <% kanaly.forEach(function (k) { const udzial = proc(k.wizyty, wizytyT); %>
+              <tr class="border-b border-white/5 hover:bg-white/5">
+                <td class="py-2">
+                  <a href="<%= szczegoly('kanal', k.wartosc) %>" class="text-sky-300 hover:text-sky-200"><%= k.wartosc %></a>
+                  <div class="mt-1 h-1 rounded bg-sky-500/70" style="width: <%= Math.max(2, udzial) %>%"></div>
+                </td>
+                <td class="text-right text-white"><%= k.wizyty %></td>
+                <td class="text-right <%= n(k.zapytania) ? 'text-amber-300' : 'text-neutral-600' %>"><%= k.zapytania %></td>
+                <td class="text-right <%= n(k.przychod) ? 'text-emerald-300' : 'text-neutral-600' %>"><%= pln(k.przychod) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
       </div>
-      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
-        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Dziś - Pageviews</p>
-        <p class="text-3xl font-bold text-blue-400"><%= kpi.pageviews_today || 0 %></p>
-      </div>
-      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
-        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Zapytania (30d)</p>
-        <p class="text-3xl font-bold text-amber-400"><%= kpi.inquiries_month || 0 %></p>
-        <p class="text-xs text-neutral-500 mt-1"><%= kpi.inquiries_total || 0 %> łącznie</p>
+
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Konkretne zrodla</h3>
+        <p class="text-xs text-neutral-500 mb-4">Domena albo nazwa kampanii, czyli to, co stoi pod kanalem.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Zrodlo</th><th class="text-right">Wizyty</th><th class="text-right">Z interakcja</th><th class="text-right">Zapytania</th></tr>
+          </thead>
+          <tbody>
+            <% if (!zrodla.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+            <% zrodla.forEach(function (z) { %>
+              <tr class="border-b border-white/5 hover:bg-white/5">
+                <td class="py-2"><a href="<%= szczegoly('zrodlo', z.wartosc) %>" class="text-sky-300 hover:text-sky-200"><%= z.wartosc %></a></td>
+                <td class="text-right text-white"><%= z.wizyty %></td>
+                <td class="text-right text-neutral-400"><%= proc(z.zaangazowane, z.wizyty) %>%</td>
+                <td class="text-right <%= n(z.zapytania) ? 'text-amber-300' : 'text-neutral-600' %>"><%= z.zapytania %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Daily chart + Funnel -->
-    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+    <!-- Strony wejscia i tresc -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Na jakie adresy wchodza</h3>
+        <p class="text-xs text-neutral-500 mb-4">Pierwsza strona wizyty. To ona decyduje, czy ktos zostanie.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Adres</th><th class="text-right">Wizyty</th><th class="text-right">Odbicia</th><th class="text-right">Zapytania</th></tr>
+          </thead>
+          <tbody>
+            <% if (!wejscia.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+            <% wejscia.forEach(function (w) { const odb = proc(w.odbicia, w.wizyty); %>
+              <tr class="border-b border-white/5 hover:bg-white/5">
+                <td class="py-2 font-mono text-xs"><a href="<%= szczegoly('wejscie', w.wartosc) %>" class="text-sky-300 hover:text-sky-200"><%= w.wartosc %></a></td>
+                <td class="text-right text-white"><%= w.wizyty %></td>
+                <td class="text-right <%= odb >= 70 ? 'text-rose-400' : odb >= 50 ? 'text-amber-300' : 'text-neutral-400' %>"><%= odb %>%</td>
+                <td class="text-right <%= n(w.zapytania) ? 'text-amber-300' : 'text-neutral-600' %>"><%= w.zapytania %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
 
-      <!-- Daily visitors chart -->
-      <div class="lg:col-span-2 bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-white mb-4">Odwiedziny dziennie (<%= days %>d)</h3>
-        <% if (daily && daily.length > 0) { %>
-          <% var maxV = Math.max.apply(null, daily.map(function(d){ return parseInt(d.visitors) || 0; })) || 1; %>
-          <div class="flex items-end gap-1 h-32">
-            <% daily.forEach(function(d) { %>
-              <% var h = Math.max(4, Math.round((parseInt(d.visitors) / maxV) * 100)); %>
-              <div class="flex-1 flex flex-col items-center gap-1 group">
-                <div class="relative w-full">
-                  <div class="w-full bg-emerald-500/80 rounded-t hover:bg-emerald-400 transition-colors cursor-default"
-                       style="height: <%= h %>px;"
-                       title="<%= d.day %>: <%= d.visitors %> odwiedzin, <%= d.pageviews %> pageviews"></div>
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Co ogladaja i jak dlugo</h3>
+        <p class="text-xs text-neutral-500 mb-4">Czas liczony tylko wtedy, gdy karta jest widoczna.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Adres</th><th class="text-right">Wizyty</th><th class="text-right">Czas</th><th class="text-right">Przewiniecie</th></tr>
+          </thead>
+          <tbody>
+            <% if (!tresci.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+            <% tresci.forEach(function (t) { %>
+              <tr class="border-b border-white/5 hover:bg-white/5">
+                <td class="py-2 font-mono text-xs text-neutral-300"><%= t.adres %></td>
+                <td class="text-right text-white"><%= t.wizyty %></td>
+                <td class="text-right text-neutral-400"><%= czas(t.sredni_czas) %></td>
+                <td class="text-right text-neutral-400"><%= Math.round(n(t.srednie_przewiniecie)) %>%</td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Lejki -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+      <%
+        const krokiSklep = [
+          ["Wizyty", lejekS.wizyty], ["Sklep", lejekS.sklep], ["Karta rzeczy", lejekS.karta],
+          ["Koszyk", lejekS.koszyk], ["Kasa", lejekS.kasa], ["Zlozone", lejekS.zlozone], ["Oplacone", lejekS.oplacone],
+        ];
+        const krokiWycen = [
+          ["Kalkulator", lejekW.kalkulator], ["Formularz", lejekW.formularz], ["Zapytanie", lejekW.zapytanie],
+          ["Wycena od nas", lejekW.wyceny], ["Oplacone", lejekW.oplacone],
+        ];
+        const lejek = (kroki, tytul, opis) => ({ kroki, tytul, opis });
+      %>
+      <% [lejek(krokiSklep, "Droga przez sklep", "Ilu ludzi doszlo do kolejnego kroku, a nie ile bylo klikniec."),
+          lejek(krokiWycen, "Droga przez wycene", "Od kalkulatora do zaplaty za oferte wystawiona recznie.")].forEach(function (L) {
+           const baza = Math.max(1, n(L.kroki[0][1]));
+      %>
+        <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-white mb-1"><%= L.tytul %></h3>
+          <p class="text-xs text-neutral-500 mb-4"><%= L.opis %></p>
+          <div class="space-y-2">
+            <% L.kroki.forEach(function (k, i) {
+                 const wart = n(k[1]);
+                 const szer = Math.max(1, Math.round((wart / baza) * 100));
+                 const poprz = i > 0 ? n(L.kroki[i - 1][1]) : null;
+                 const spadek = poprz && poprz > 0 ? Math.round((1 - wart / poprz) * 100) : null;
+            %>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-neutral-300"><%= k[0] %></span>
+                  <span class="text-white font-semibold"><%= wart %>
+                    <% if (spadek !== null) { %>
+                      <span class="<%= spadek >= 60 ? 'text-rose-400' : spadek >= 35 ? 'text-amber-300' : 'text-neutral-500' %>">
+                        (-<%= spadek %>%)
+                      </span>
+                    <% } %>
+                  </span>
+                </div>
+                <div class="h-2 rounded bg-white/5">
+                  <div class="h-2 rounded bg-sky-500/80" style="width: <%= szer %>%"></div>
                 </div>
               </div>
             <% }); %>
           </div>
-          <div class="flex justify-between mt-2 text-xs text-neutral-600">
-            <span><%= daily[0] ? daily[0].day : '' %></span>
-            <span><%= daily[daily.length-1] ? daily[daily.length-1].day : '' %></span>
-          </div>
-        <% } else { %>
-          <div class="h-32 flex items-center justify-center text-neutral-600 text-sm">Brak danych</div>
-        <% } %>
-      </div>
+        </div>
+      <% }); %>
+    </div>
 
-      <!-- Calculator funnel -->
-      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-white mb-4">Lejek kalkulatora (<%= days %>d)</h3>
-        <% var funnelSteps = [
-          { label: 'Wejścia na stronę', value: parseInt(calcFunnel.calc_page_visits) || 0, color: 'bg-blue-500' },
-          { label: 'Interakcje z kalk.', value: parseInt(calcFunnel.calc_interactions) || 0, color: 'bg-emerald-500' },
-          { label: 'Wysłane zapytania', value: parseInt(calcFunnel.inquiry_submits) || 0, color: 'bg-amber-500' },
-          { label: 'Leady (z sesją)', value: parseInt(calcFunnel.leads_with_session) || 0, color: 'bg-rose-500' },
-        ]; %>
-        <% var topFunnel = funnelSteps[0].value || 1; %>
-        <div class="space-y-3">
-          <% funnelSteps.forEach(function(step, i) { %>
-            <div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="text-neutral-400"><%= step.label %></span>
-                <span class="text-white font-medium"><%= step.value %></span>
+    <!-- Kraje, jezyki, urzadzenia -->
+    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+      <% [["Kraje", kraje, "kraj"], ["Jezyki", jezyki, "jezyk"], ["Urzadzenia", urzadzenia, "urzadzenie"]].forEach(function (blok) { %>
+        <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-white mb-4"><%= blok[0] %></h3>
+          <% if (!blok[1].length) { %><p class="text-sm text-neutral-500">Brak danych.</p><% } %>
+          <% blok[1].forEach(function (r) { const u = proc(r.wizyty, wizytyT); %>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <a href="<%= szczegoly(blok[2], r.wartosc) %>" class="text-sky-300 hover:text-sky-200"><%= r.wartosc %></a>
+                <span class="text-neutral-400"><%= r.wizyty %>
+                  <% if (n(r.zapytania)) { %><span class="text-amber-300">&middot; <%= r.zapytania %> zap.</span><% } %>
+                </span>
               </div>
-              <div class="h-2 bg-neutral-800 rounded-full overflow-hidden">
-                <div class="h-full <%= step.color %> rounded-full transition-all"
-                     style="width: <%= Math.round(step.value / topFunnel * 100) %>%"></div>
-              </div>
-              <% if (i > 0 && funnelSteps[i-1].value > 0) { %>
-                <p class="text-xs text-neutral-600 mt-0.5"><%= Math.round(step.value / funnelSteps[i-1].value * 100) %>% z poprzedniego</p>
-              <% } %>
+              <div class="h-1.5 rounded bg-white/5"><div class="h-1.5 rounded bg-emerald-500/70" style="width: <%= Math.max(2, u) %>%"></div></div>
             </div>
           <% }); %>
         </div>
-      </div>
+      <% }); %>
     </div>
 
-    <!-- Top pages + Countries + Devices -->
-    <div class="grid lg:grid-cols-3 gap-6 mb-8">
-
-      <!-- Top pages -->
-      <div class="lg:col-span-2 bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-white mb-4">Top strony (<%= days %>d)</h3>
-        <% if (topPages && topPages.length > 0) { %>
-          <% var maxPV = parseInt(topPages[0].visitors) || 1; %>
-          <div class="space-y-2">
-            <% topPages.forEach(function(page) { %>
-              <div class="flex items-center gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-neutral-300 truncate font-mono"><%= page.path %></span>
-                    <span class="text-neutral-400 ml-2 shrink-0"><%= page.visitors %> / <%= page.views %></span>
-                  </div>
-                  <div class="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-500 rounded-full" style="width:<%= Math.round(parseInt(page.visitors)/maxPV*100) %>%"></div>
-                  </div>
-                </div>
-              </div>
-            <% }); %>
-          </div>
-          <p class="text-xs text-neutral-600 mt-3">Odwiedziny / pageviews</p>
-        <% } else { %>
-          <p class="text-neutral-600 text-sm">Brak danych</p>
-        <% } %>
-      </div>
-
-      <!-- Countries + Devices -->
-      <div class="space-y-6">
-        <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-          <h3 class="text-sm font-semibold text-white mb-3">Kraje (<%= days %>d)</h3>
-          <% if (countries && countries.length > 0) { %>
-            <div class="space-y-2">
-              <% var maxC = parseInt(countries[0].visitors) || 1; %>
-              <% countries.forEach(function(c) { %>
-                <div class="flex items-center gap-2 text-xs">
-                  <span class="text-neutral-300 w-8 font-mono"><%= c.country || '?' %></span>
-                  <div class="flex-1 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-emerald-500 rounded-full" style="width:<%= Math.round(parseInt(c.visitors)/maxC*100) %>%"></div>
-                  </div>
-                  <span class="text-neutral-400 w-6 text-right"><%= c.visitors %></span>
-                </div>
-              <% }); %>
-            </div>
-          <% } else { %>
-            <p class="text-neutral-600 text-xs">Brak danych</p>
-          <% } %>
-        </div>
-
-        <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-          <h3 class="text-sm font-semibold text-white mb-3">Urządzenia (<%= days %>d)</h3>
-          <% if (devices && devices.length > 0) { %>
-            <% var totalDev = devices.reduce(function(s,d){ return s + parseInt(d.visitors); }, 0) || 1; %>
-            <div class="space-y-2">
-              <% devices.forEach(function(d) { %>
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-neutral-300 capitalize"><%= d.device %></span>
-                  <div class="flex items-center gap-2">
-                    <span class="text-neutral-400"><%= d.visitors %></span>
-                    <span class="text-neutral-600"><%= Math.round(parseInt(d.visitors)/totalDev*100) %>%</span>
-                  </div>
-                </div>
-              <% }); %>
-            </div>
-          <% } else { %>
-            <p class="text-neutral-600 text-xs">Brak danych</p>
-          <% } %>
-        </div>
-      </div>
+    <!-- Wybory w kalkulatorach -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-white mb-1">Co wybieraja w kalkulatorach</h3>
+      <p class="text-xs text-neutral-500 mb-4">Materialy, techniki i opcje, po ktore ludzie siegaja najczesciej.</p>
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+          <tr><th class="text-left py-2">Kalkulator</th><th class="text-left">Pole</th><th class="text-left">Wybor</th><th class="text-right">Wizyty</th></tr>
+        </thead>
+        <tbody>
+          <% if (!wybory.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+          <% wybory.forEach(function (w) { %>
+            <tr class="border-b border-white/5">
+              <td class="py-2 text-neutral-300"><%= w.kalkulator %></td>
+              <td class="text-neutral-400"><%= w.pole %></td>
+              <td class="text-white"><%= w.wybor %></td>
+              <td class="text-right text-neutral-400"><%= w.wizyty %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
     </div>
-
-    <!-- Top calculator interactions -->
-    <% if (topCalc && topCalc.length > 0) { %>
-    <section class="mb-8">
-      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-white mb-4">Kalkulator - top wybory (<%= days %>d)</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-xs text-neutral-500 uppercase tracking-wider border-b border-white/10">
-                <th class="pb-2 text-left">Akcja</th>
-                <th class="pb-2 text-left">Wybór</th>
-                <th class="pb-2 text-right">Ile razy</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% topCalc.forEach(function(row) { %>
-              <tr class="border-b border-white/5">
-                <td class="py-2 text-neutral-400 font-mono text-xs"><%= row.action %></td>
-                <td class="py-2 text-neutral-200"><%= row.label || ' - ' %></td>
-                <td class="py-2 text-right text-amber-400 font-medium"><%= row.cnt %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-    <% } %>
-
-    <!-- Recent raw events -->
-    <section>
-      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold text-white">Ostatnie zdarzenia</h3>
-          <div class="flex items-center gap-2">
-            <form method="POST" action="/events/bulk-delete" onsubmit="return confirmBulkDeleteEvents(this)">
-              <div class="flex items-center gap-1.5">
-                <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1">
-                  <option value="3">starsze niż 3d</option>
-                  <option value="7">starsze niż 7d</option>
-                  <option value="30" selected>starsze niż 30d</option>
-                  <option value="90">starsze niż 90d</option>
-                  <option value="all">⚠ wyczyść wszystko</option>
-                </select>
-                <button type="submit" class="px-2 py-1 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń</button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs font-mono">
-            <thead>
-              <tr class="text-neutral-500 uppercase tracking-wider border-b border-white/10">
-                <th class="pb-2 text-left pr-4">Czas</th>
-                <th class="pb-2 text-left pr-4">Sesja</th>
-                <th class="pb-2 text-left pr-4">Strona</th>
-                <th class="pb-2 text-left pr-4">Kat.</th>
-                <th class="pb-2 text-left pr-4">Akcja</th>
-                <th class="pb-2 text-left pr-4">Label</th>
-                <th class="pb-2 text-left pr-4">Kraj</th>
-                <th class="pb-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (recentEvents && recentEvents.length > 0) { %>
-                <% recentEvents.forEach(function(e) { %>
-                <tr class="border-b border-white/5 hover:bg-white/[0.02] group">
-                  <td class="py-1.5 pr-4 text-neutral-500 whitespace-nowrap"><%= fmtDate(e.ts) %></td>
-                  <td class="py-1.5 pr-4 text-neutral-500"><%= String(e.session).slice(0,8) %></td>
-                  <td class="py-1.5 pr-4 text-neutral-300 max-w-[150px] truncate"><%= e.path || ' - ' %></td>
-                  <td class="py-1.5 pr-4">
-                    <span class="px-1.5 py-0.5 rounded text-xs <%= e.category === 'page' ? 'bg-blue-950 text-blue-300' : e.category === 'calc' ? 'bg-amber-950 text-amber-300' : e.category === 'inquiry' ? 'bg-emerald-950 text-emerald-300' : e.category === 'cta' ? 'bg-purple-950 text-purple-300' : e.category === 'funnel' ? 'bg-teal-950 text-teal-300' : 'bg-neutral-800 text-neutral-400' %>">
-                      <%= e.category %>
-                    </span>
-                  </td>
-                  <td class="py-1.5 pr-4 text-neutral-400"><%= e.action || ' - ' %></td>
-                  <td class="py-1.5 pr-4 text-neutral-500 max-w-[120px] truncate"><%= e.label || ' - ' %></td>
-                  <td class="py-1.5 pr-4 text-neutral-500"><%= e.country || ' - ' %></td>
-                  <td class="py-1.5 text-right">
-                    <form method="POST" action="/events/<%= e.id %>/delete?days=<%= days %>">
-                      <button type="submit" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-all px-1" title="Usuń">✕</button>
-                    </form>
-                  </td>
-                </tr>
-                <% }); %>
-              <% } else { %>
-              <tr><td colspan="8" class="py-8 text-center text-neutral-600">Brak zdarzeń - dane pojawią się po pierwszych wizytach.</td></tr>
-              <% } %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
 
   </main>
-  <script>
-    function confirmBulkDeleteEvents(form) {
-      const val = form.querySelector('[name="older_than_days"]').value;
-      if (val === 'all') return confirm('UWAGA: Usunąć WSZYSTKIE zdarzenia analityczne?\n\nTej operacji nie można cofnąć.');
-      return confirm('Usunąć zdarzenia starsze niż ' + val + ' dni?');
-    }
-  </script>
 </body>
 </html>

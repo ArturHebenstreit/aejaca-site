@@ -14,6 +14,7 @@
 // wysyla wylacznie parametry.
 
 import { useState } from "react";
+import { idSesji } from "../../utils/analytics.js";
 import { Bookmark, Check, Copy, Loader2, Mail } from "lucide-react";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
@@ -106,6 +107,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
           lang,
           email: email.trim() || null,
           items: [{ calculator, params, uploadToken, fileName, scale, description }],
+          sessionId: idSesji(),
         }),
       });
       const data = await resp.json();

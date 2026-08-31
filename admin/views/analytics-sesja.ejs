@@ -1,0 +1,106 @@
+<%- include('partials/header', { user: user, title: 'Analityka - wizyta', active: 'analytics' }) %>
+<%#
+  JEDNA WIZYTA, KROK PO KROKU. Najnizsze pietro kokpitu: widac tu dokladnie,
+  co ktos otworzyl, co wybral w kalkulatorze, gdzie sie zatrzymal i czym sie
+  to skonczylo. Identyfikator wizyty jest losowy, zyje w pamieci karty i nie
+  laczy sie z zadna inna wizyta, wiec nie stoi za nim zadna osoba.
+-%>
+<%
+  const n = (x) => Number(x || 0);
+  const pln = (grosze) => (n(grosze) / 100).toLocaleString("pl-PL", { maximumFractionDigits: 0 }) + " zl";
+  const godzina = (d) => new Date(d).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const dzien = kroki.length ? new Date(kroki[0].ts).toLocaleDateString("pl-PL") : "";
+  const OPIS = {
+    "page:view": "otwiera strone",
+    "page:engaged": "czyta",
+    "scroll:depth": "przewija",
+    "calc": "wybiera w kalkulatorze",
+    "shop:view_product": "oglada produkt",
+    "shop:view_service": "oglada usluge",
+    "shop:add_to_cart": "wklada do koszyka",
+    "shop:remove_from_cart": "wyjmuje z koszyka",
+    "shop:begin_checkout": "wchodzi do kasy",
+    "shop:place_order": "sklada zamowienie",
+    "inquiry:send": "wysyla zapytanie",
+    "nav:lang_change": "zmienia jezyk",
+    "cta:click": "klika",
+    "funnel": "krok lejka",
+    "offer:view": "oglada oferte",
+    "tool": "uzywa narzedzia",
+  };
+  const opisz = (k) => OPIS[`${k.category}:${k.action}`] || OPIS[k.category] || `${k.category} / ${k.action}`;
+%>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-semibold text-white">Wizyta <span class="font-mono text-sm text-neutral-400"><%= session %></span></h2>
+        <p class="text-xs text-neutral-500 mt-1">
+          <%= dzien %> &middot; <%= kroki.length %> zdarzen
+          <% if (kroki.length) { %>
+            &middot; <%= kroki[0].channel || "wprost" %>
+            <% if (kroki[0].source) { %>(<%= kroki[0].source %>)<% } %>
+            &middot; <%= kroki[0].country || "?" %> &middot; <%= kroki[0].device || "?" %> &middot; <%= kroki[0].lang || "pl" %>
+          <% } %>
+        </p>
+      </div>
+      <a href="javascript:history.back()" class="text-sm text-neutral-400 hover:text-white">&larr; wroc</a>
+    </div>
+
+    <% if (skutki.zapytania.length || skutki.zamowienia.length) { %>
+      <div class="bg-emerald-950/30 border border-emerald-800/50 rounded-xl p-5 mb-6">
+        <h3 class="text-sm font-semibold text-emerald-300 mb-3">Czym sie skonczyla</h3>
+        <% skutki.zapytania.forEach(function (z) { %>
+          <div class="text-sm text-neutral-200 mb-1">
+            Zapytanie <%= z.quote_ref ? z.quote_ref : "#" + z.id %>
+            <span class="text-neutral-500">&middot; <%= z.calculator || z.source || "formularz" %> &middot; <%= z.status %></span>
+          </div>
+        <% }); %>
+        <% skutki.zamowienia.forEach(function (o) { %>
+          <div class="text-sm text-neutral-200 mb-1">
+            Zamowienie <a href="/queue?szukaj=<%= o.order_ref %>" class="text-sky-300 hover:text-sky-200"><%= o.order_ref %></a>
+            <span class="text-neutral-500">&middot; <%= o.status %> &middot; <%= pln(o.total_grosze) %>
+              <%= o.paid_at ? "&middot; zaplacone" : "&middot; bez zaplaty" %></span>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase text-neutral-500 bg-white/5">
+          <tr>
+            <th class="text-left px-4 py-3">Godzina</th>
+            <th class="text-left">Co robi</th>
+            <th class="text-left">Gdzie</th>
+            <th class="text-left">Szczegol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!kroki.length) { %>
+            <tr><td colspan="4" class="px-4 py-6 text-neutral-500">Ta wizyta nie ma juz zdarzen. Zdarzenia kasujemy po dwoch latach.</td></tr>
+          <% } %>
+          <% kroki.forEach(function (k) { %>
+            <tr class="border-t border-white/5">
+              <td class="px-4 py-2 text-neutral-500 whitespace-nowrap"><%= godzina(k.ts) %></td>
+              <td class="text-neutral-200"><%= opisz(k) %></td>
+              <td class="font-mono text-xs text-neutral-400 max-w-xs truncate"><%= k.path %></td>
+              <td class="text-neutral-400 text-xs">
+                <%= k.label || "" %><% if (k.value !== null && k.value !== undefined) { %>
+                  <span class="text-neutral-500">
+                    <%= k.category === "page" && k.action === "engaged" ? Math.round(Number(k.value)) + "s"
+                        : k.category === "scroll" ? Math.round(Number(k.value)) + "%"
+                        : Number(k.value) %>
+                  </span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</body>
+</html>
