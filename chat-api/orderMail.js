@@ -1187,6 +1187,16 @@ export function buildRaw({ to, from, subject, text, html, replyTo, attachments =
     .replace(/=+$/, "");
 }
 
+/**
+ * Wysylka wiadomosci zlozonych gdzie indziej (`leadMail.js`).
+ *
+ * Ten sam kanal Gmaila, ten sam `buildRaw`, ta sama obsluga watku. Drugi
+ * nadawca rozjechalby sie z pierwszym przy pierwszej zmianie naglowkow.
+ */
+export async function sendLeadMail(messages) {
+  return sendViaGmail(messages);
+}
+
 async function sendViaGmail(messages) {
   // Import dynamiczny, zeby brak googleapis nie wywracal calego modulu
   // przy starcie serwera. Poczta ma byc dodatkiem, nie warunkiem dzialania.

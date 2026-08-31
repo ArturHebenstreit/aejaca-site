@@ -28,6 +28,7 @@ process.env.API_URL ||= "https://api.aejaca.com";
 const {
   buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
   buildKontaktPotwierdzenie, buildNewsletterPowitanie, buildAutoOdpowiedz,
+  buildPrzypomnienieKodu,
 } = await import("../chat-api/leadMail.js");
 const { buildOrderMessages, buildTransferMessage, buildStatusUpdate, buildQuoteMessage,
         buildTopUpRequest, buildOrderExpired } =
@@ -275,7 +276,15 @@ const EKRANY = {
   "18": {
     nazwa: "Powitanie w newsletterze z kodem",
     zbuduj: () => buildNewsletterPowitanie({
-      lang: "pl", to: ZAMOWIENIE.customer_email, kod: "AE-4H7P-QW", procent: "10%",
+      lang: "pl", to: ZAMOWIENIE.customer_email, kod: "AEJ10-4H7PQW", procent: "10%",
+      waznyDo: "15.10.2026",
+    }),
+  },
+  "18b": {
+    nazwa: "Przypomnienie o kodzie, 5 dni przed koncem",
+    zbuduj: () => buildPrzypomnienieKodu({
+      lang: "pl", to: ZAMOWIENIE.customer_email, kod: "AEJ10-4H7PQW", procent: "10%",
+      waznyDo: "15.10.2026", dni: "5 dni",
     }),
   },
   "19": {

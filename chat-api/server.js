@@ -26,6 +26,12 @@ import { MATERIAL_CORRECTIONS } from "./pricing/materialCorrections.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry, PRZEWOZNICY } from "./pricing/shipping.js";
+import { LEAD_MAILE } from "./leadMail.js";
+// Pod wlasna nazwa: w tym pliku `dni` jest juz lokalnym pomocnikiem liczacym
+// dni OD daty, i to w innym zakresie. Wolanie go tutaj przechodzilo kontrole
+// nieznanych funkcji, bo nazwa gdzies istnieje, a wywalilo by sie dopiero
+// w produkcji, przy pierwszym uruchomieniu przypomnien.
+import { dni as dniSlownie } from "./mailSzata.js";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
   listProducts, getProduct, reserveProduct, consumeReservations,
@@ -33,11 +39,11 @@ import {
 } from "./products.js";
 import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
-  releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
+  releaseOrderRedemptions, normalizeCode, randomCode, issueSingleUseCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
-  sendTopUpRequest, sendOrderExpired,
+  sendTopUpRequest, sendOrderExpired, sendLeadMail,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate,
 } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
@@ -413,6 +419,14 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
   // Chwila prosby o doplate. Od niej biegna trzy dni na uzupelnienie kwoty.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_asked_at TIMESTAMPTZ`).catch(() => {});
+  // Jedno przypomnienie na kod i slad po wiadomosciach sprzed zamowienia.
+  pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS reminded_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`CREATE TABLE IF NOT EXISTS mail_log (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    rodzaj VARCHAR(40) NOT NULL,
+    sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS mail_log_email_idx ON mail_log (LOWER(email), sent_at DESC)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
   // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
@@ -2999,6 +3013,51 @@ async function przypomnijOTerminach() {
 }
 if (pool) cron.schedule("0 7 * * *", przypomnijOTerminach, { timezone: "Europe/Warsaw" });
 
+/**
+ * Przypomnienie o kodzie na piec dni przed koncem waznosci (decyzja
+ * wlasciciela, 2026-08-31).
+ *
+ * Trzy warunki naraz, i kazdy z nich jest po cos:
+ * - kod NIETKNIETY, bo przypominanie o kodzie juz uzytym jest halasem;
+ * - `reminded_at IS NULL`, bo przypomnienie ma byc JEDNO na kod;
+ * - nic innego nie poszlo dzisiaj na ten adres, bo dwie nasze wiadomosci
+ *   w jednej dobie to nie opieka, tylko nagabywanie. Ta czeka do jutra,
+ *   i moze czekac: do konca waznosci zostalo piec dni.
+ */
+async function przypomnijOKodach() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT code, issued_to, value, valid_to
+         FROM discount_codes
+        WHERE active = TRUE AND used_count = 0 AND reminded_at IS NULL
+          AND issued_to IS NOT NULL AND valid_to IS NOT NULL
+          AND valid_to::date - CURRENT_DATE = $1
+        ORDER BY valid_to
+        LIMIT 200`,
+      [DNI_PRZED_KONCEM_KODU]
+    );
+    for (const k of rows) {
+      if (await pisalismyDzisiaj(k.issued_to)) continue;
+      const wiadomosc = LEAD_MAILE.przypomnienieKodu({
+        lang: "pl", to: k.issued_to, kod: k.code,
+        procent: k.value != null ? `${k.value}%` : null,
+        waznyDo: String(k.valid_to).slice(0, 10).split("-").reverse().join("."),
+        dni: dniSlownie(DNI_PRZED_KONCEM_KODU, "pl"),
+      });
+      const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
+      if (!poszlo) continue;
+      // Stempel PO udanej wysylce. Postawiony wczesniej zamknalby przypomnienie
+      // na zawsze przy pierwszej awarii poczty, i to po cichu.
+      await pool.query("UPDATE discount_codes SET reminded_at = NOW() WHERE code = $1", [k.code]);
+      await zapiszSladMaila(k.issued_to, "przypomnienieKodu");
+      console.log(`[rabaty] przypomnienie o kodzie ${k.code} poszlo do ${k.issued_to}`);
+    }
+  } catch (e) {
+    console.error("[rabaty] przypomnienia o kodach:", e.message);
+  }
+}
+if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
+
 // Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
 // bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
 if (pool) cron.schedule("15 4 * * *", () => runRetention(pool).catch((e) => console.error("[retencja]", e.message)));
@@ -3868,36 +3927,105 @@ app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, r
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
 
   const percent = Number.isInteger(req.body?.percent) ? Math.min(req.body.percent, MAX_PERCENT) : 10;
-  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 90;
+  // 45 dni (decyzja wlasciciela, 2026-08-31). Wczesniej 90: kod wazny kwartal
+  // nie jest zacheta, tylko rzecza zapomniana, a przy kruszcu cena metalu
+  // w dniu zapisu i trzy miesiace pozniej to dwie rozne ceny.
+  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 45;
 
   try {
-    const { rows: existing } = await pool.query(
-      `SELECT code, valid_to FROM discount_codes
-        WHERE campaign = 'newsletter' AND issued_to = $1 AND active = TRUE AND used_count = 0
-          AND (valid_to IS NULL OR valid_to > NOW())
-        ORDER BY created_at DESC LIMIT 1`,
-      [email]
-    );
-    if (existing[0]) return res.json({ ok: true, reused: true, code: existing[0].code, percent, validTo: existing[0].valid_to });
-
-    // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
-    // a nie odmowe wyslania maila, wiec probujemy kilka razy.
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = randomCode("AEJ10");
-      const { rows } = await pool.query(
-        `INSERT INTO discount_codes
-           (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note)
-         VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, 'newsletter', $4, $5)
-         ON CONFLICT (code) DO NOTHING
-         RETURNING code, valid_to`,
-        [code, percent, String(days), email, `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`]
-      );
-      if (rows[0]) return res.json({ ok: true, reused: false, code: rows[0].code, percent, validTo: rows[0].valid_to });
-    }
-    res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
+    // Wystawianie kodu stoi w `discounts.js`, bo ta sama droga rozdaje kod
+    // powitalny i rabat doklejony do wyceny sprzed tygodnia. Dwie kopie tego
+    // zapytania rozjechalyby sie przy pierwszej zmianie regul kodu.
+    const kod = await issueSingleUseCode(pool, {
+      email, percent, days, campaign: "newsletter", prefix: "AEJ10",
+      note: `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`,
+    });
+    if (!kod) return res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
+    res.json({ ok: true, reused: kod.reused, code: kod.code, percent, validTo: kod.validTo });
   } catch (e) {
     console.error("[rabaty] kod powitalny:", e.message);
     res.status(500).json({ error: "Nie udalo sie wystawic kodu" });
+  }
+});
+
+// ------------------------------------------------------------
+// Maile sprzed zamowienia, skladane u nas i wolane przez n8n
+// ------------------------------------------------------------
+// Szesc wiadomosci mialo do 2026-08-31 wlasny HTML w wezlach n8n i klient
+// dostawal w jednym tygodniu dwie firmy. Tresc mieszka teraz w `leadMail.js`,
+// a n8n zostaje przy tym, co robi dobrze: webhooki, Dysk, powiadomienia dla
+// pracowni i odliczanie 48 godzin oraz 7 dni.
+//
+// Trasa chroniona jest tokenem administratora, a nie slabszym tokenem
+// newslettera: kto ja zawola, wysyla poczte NASZYM adresem, wiec wyciek
+// zamienilby ja w otwarty przekaznik spamu.
+/** Slad po wiadomosci sprzed zamowienia. Nigdy nie przerywa wysylki. */
+async function zapiszSladMaila(email, rodzaj) {
+  if (!pool) return;
+  await pool.query("INSERT INTO mail_log (email, rodzaj) VALUES ($1, $2)", [String(email).toLowerCase(), rodzaj])
+    .catch((e) => console.error("[lead-mail] slad nie zapisal sie:", e.message));
+}
+
+/**
+ * Czy dzisiaj poszla juz do tego adresu jakas wiadomosc sprzed zamowienia.
+ *
+ * Regula dotyczy WYLACZNIE tego, co moze poczekac, czyli przypomnienia
+ * o kodzie. Potwierdzenie zamowienia, dane do przelewu i zmiana etapu ida
+ * zawsze i natychmiast, bo klient na nie czeka.
+ */
+async function pisalismyDzisiaj(email) {
+  if (!pool) return false;
+  const { rows } = await pool.query(
+    `SELECT 1 FROM mail_log
+      WHERE LOWER(email) = LOWER($1) AND sent_at > NOW() - INTERVAL '1 day' LIMIT 1`,
+    [email]
+  );
+  return rows.length > 0;
+}
+
+app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const rodzaj = String(req.body?.rodzaj || "");
+  const build = LEAD_MAILE[rodzaj];
+  if (!build) {
+    return res.status(400).json({ error: `Nie znamy maila "${rodzaj}"`, code: "bad_kind", znane: Object.keys(LEAD_MAILE) });
+  }
+  const to = String(req.body?.to || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    return res.status(400).json({ error: "Nieprawidlowy adres odbiorcy", code: "bad_email" });
+  }
+  const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
+
+  try {
+    const dane = { ...req.body, to, lang };
+    // Rabat po tygodniu dostaje kod JEDNORAZOWY, wystawiony na adres tego
+    // klienta. n8n nie musi o niego prosic osobno: jedno wolanie, jeden mail,
+    // jeden kod, ktory w cudzych rekach nie zadziala.
+    if (rodzaj === "rabat7" && !dane.kod) {
+      const procent = Number.isInteger(req.body?.procent) ? Math.min(req.body.procent, MAX_PERCENT) : 5;
+      const dni = Number.isInteger(req.body?.dni) ? Math.min(Math.max(req.body.dni, 7), 365) : 14;
+      const kod = pool ? await issueSingleUseCode(pool, {
+        email: to, percent: procent, days: dni, campaign: "quote-followup", prefix: `AEJ${procent}`,
+        note: `Rabat do wyceny, ${new Date().toISOString().slice(0, 10)}`,
+      }) : null;
+      // Bez kodu ten mail nie ma o czym pisac: zdanie "oto Twoj rabat" bez
+      // rabatu jest gorsze niz brak wiadomosci.
+      if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
+      dane.kod = kod.code;
+      dane.procent = `${procent}%`;
+      dane.waznyDo = kod.validTo ? String(kod.validTo).slice(0, 10).split("-").reverse().join(".") : null;
+    }
+
+    const wiadomosc = build(dane);
+    const poszlo = await sendLeadMail([wiadomosc]);
+    if (!poszlo) return res.status(502).json({ error: "Poczta nie zadzialala", code: "mail_failed" });
+    await zapiszSladMaila(to, rodzaj);
+    console.log(`[lead-mail] ${rodzaj} do ${to}, jezyk ${lang}${dane.kod ? `, kod ${dane.kod}` : ""}`);
+    res.json({ ok: true, rodzaj, to, subject: wiadomosc.subject, ...(dane.kod ? { kod: dane.kod } : {}) });
+  } catch (e) {
+    console.error(`[lead-mail] ${rodzaj} nie poszedl:`, e.message);
+    res.status(500).json({ error: "Nie udalo sie wyslac wiadomosci" });
   }
 });
 
@@ -4115,6 +4243,9 @@ app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (r
 // wlasciciela, 2026-08-30). Tyle samo, ile trwa rezerwacja przy pierwszym
 // przelewie: klient dostal juz raz trzy dni i drugi raz dostaje tyle samo.
 const DNI_NA_DOPLATE = 3;
+// Ile dni przed koncem waznosci przypominamy o niewykorzystanym kodzie.
+// Piec, bo zostaje jeszcze weekend na decyzje (decyzja wlasciciela, 2026-08-31).
+const DNI_PRZED_KONCEM_KODU = 5;
 const TRANSFER_TOLERANCE_CENTS = 500;
 const TRANSFER_TOLERANCE_RATE = 0.02;
 const tolerancjaPrzelewu = (oczekiwane) =>

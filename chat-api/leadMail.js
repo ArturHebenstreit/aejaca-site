@@ -60,6 +60,7 @@ const T = {
     rabatWaznyDo: (data) => `Kod działa do ${data}.`,
     rabatJak: "Kod wpisujesz przy zamówieniu albo podajesz nam w wiadomości, jeżeli wolisz ustalić szczegóły rozmową.",
     rabatKoniec: "To ostatnia wiadomość w tej sprawie. Nie dopisujemy nikogo do newslettera bez zapisu.",
+    kodPrzypomnimy: "Na pięć dni przed końcem ważności przypomnimy o kodzie jedną wiadomością, żeby nie przepadł niezauważony.",
 
     // 4. Potwierdzenie formularza kontaktowego
     kontaktSubject: "Mamy Twoją wiadomość, AEJaCA",
@@ -74,6 +75,12 @@ const T = {
     newsJak: "Kod wpisujesz w koszyku albo na stronie oferty. Obejmuje pozycje zamówienia, nie obejmuje kosztu wysyłki.",
     newsCzegoSieSpodziewac: "Czego się spodziewać",
     newsCzegoTresc: "Piszemy rzadko i tylko wtedy, gdy mamy o czym: nowa technika, nowy materiał, rzecz, którą właśnie skończyliśmy. Wypisujesz się jednym kliknięciem w każdej wiadomości.",
+
+    // 7. Przypomnienie o kodzie, ktory zaraz wygasnie
+    przypSubject: (kod) => `Kod ${kod} traci ważność`,
+    przypIntro: (dni) => `kod od nas jest jeszcze ważny, ale zostało mu ${dni}. Przypominamy raz, bo szkoda, żeby przepadł niezauważony.`,
+    przypJak: "Kod wpisujesz w koszyku albo na stronie oferty. Obejmuje pozycje zamówienia, nie obejmuje kosztu wysyłki.",
+    przypKoniec: "To jedyne przypomnienie o tym kodzie. Jeżeli nie masz teraz na co go wykorzystać, po prostu przepadnie i nic się nie stanie.",
 
     // 6. Autoodpowiedz na maila
     autoSubject: "Mamy Twoją wiadomość, AEJaCA",
@@ -110,6 +117,7 @@ const T = {
     rabatWaznyDo: (data) => `The code works until ${data}.`,
     rabatJak: "Enter the code when ordering, or give it to us in a message if you prefer to settle the details in conversation.",
     rabatKoniec: "This is the last message on the subject. We never add anyone to the newsletter without them signing up.",
+    kodPrzypomnimy: "Five days before it expires we will send one reminder, so the code does not lapse unnoticed.",
 
     kontaktSubject: "We have your message, AEJaCA",
     kontaktIntro: "thank you for writing. We usually answer within one business day, and within two when the question needs calculating.",
@@ -122,6 +130,11 @@ const T = {
     newsJak: "Enter the code in the cart or on the offer page. It covers the items, it does not cover shipping.",
     newsCzegoSieSpodziewac: "What to expect",
     newsCzegoTresc: "We write rarely and only when there is something to say: a new technique, a new material, a piece we have just finished. One click in any message unsubscribes you.",
+
+    przypSubject: (kod) => `Code ${kod} is about to expire`,
+    przypIntro: (dni) => `the code we sent you is still valid, but only for ${dni}. This is a single reminder, so it does not lapse unnoticed.`,
+    przypJak: "Enter the code in the cart or on the offer page. It covers the items, it does not cover shipping.",
+    przypKoniec: "This is the only reminder about this code. If there is nothing you want to use it on right now, it will simply lapse and nothing happens.",
 
     autoSubject: "We have your message, AEJaCA",
     autoIntro: "this confirms your message reached us. A person reads it, not a machine, and will answer within one business day, or within two when the question needs calculating.",
@@ -157,6 +170,7 @@ const T = {
     rabatWaznyDo: (data) => `Der Code gilt bis zum ${data}.`,
     rabatJak: "Den Code geben Sie bei der Bestellung ein oder nennen ihn uns in einer Nachricht, wenn Sie die Details lieber im Gespräch klären.",
     rabatKoniec: "Das ist die letzte Nachricht dazu. Wir tragen niemanden ohne Anmeldung in den Newsletter ein.",
+    kodPrzypomnimy: "Fünf Tage vor Ablauf senden wir eine einzige Erinnerung, damit der Code nicht unbemerkt verfällt.",
 
     kontaktSubject: "Ihre Nachricht ist da, AEJaCA",
     kontaktIntro: "vielen Dank für Ihre Nachricht. Wir antworten in der Regel innerhalb eines Werktages, bei Fragen mit Rechenaufwand innerhalb von zwei.",
@@ -169,6 +183,11 @@ const T = {
     newsJak: "Den Code geben Sie im Warenkorb oder auf der Angebotsseite ein. Er gilt für die Positionen, nicht für den Versand.",
     newsCzegoSieSpodziewac: "Was Sie erwartet",
     newsCzegoTresc: "Wir schreiben selten und nur, wenn es etwas zu sagen gibt: eine neue Technik, ein neues Material, ein gerade fertiggestelltes Stück. Ein Klick in jeder Nachricht meldet Sie wieder ab.",
+
+    przypSubject: (kod) => `Code ${kod} läuft bald ab`,
+    przypIntro: (dni) => `der Code, den Sie von uns erhalten haben, gilt noch, aber nur ${dni}. Wir erinnern einmal daran, damit er nicht unbemerkt verfällt.`,
+    przypJak: "Den Code geben Sie im Warenkorb oder auf der Angebotsseite ein. Er gilt für die Positionen, nicht für den Versand.",
+    przypKoniec: "Das ist die einzige Erinnerung an diesen Code. Wenn Sie ihn gerade nicht brauchen, verfällt er einfach und es passiert nichts.",
 
     autoSubject: "Ihre Nachricht ist da, AEJaCA",
     autoIntro: "wir bestätigen den Eingang Ihrer Nachricht. Sie wird von einem Menschen gelesen, nicht von einem Automaten, und innerhalb eines Werktages beantwortet, bei Fragen mit Rechenaufwand innerhalb von zwei.",
@@ -309,6 +328,7 @@ export function buildRabat7({ lang = "pl", to, kod, procent = "5%", waznyDo }) {
       ${ramkaKodu(l.rabatKod, kod, l.rabatIle(procent))}
       ${waznyDo ? `<p style="margin:14px 0 0;font-size:14px;font-weight:700">${esc(l.rabatWaznyDo(waznyDo))}</p>` : ""}
       <p style="margin:10px 0 0;line-height:1.6;font-size:14px;color:#444">${esc(l.rabatJak)}</p>
+      ${waznyDo ? `<p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.kodPrzypomnimy)}</p>` : ""}
       <p style="margin:14px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.rabatKoniec)}</p>
       ${przycisk(adres(jezyk(lang), "/shop/"), l.ctaSklep)}
     `,
@@ -316,7 +336,9 @@ export function buildRabat7({ lang = "pl", to, kod, procent = "5%", waznyDo }) {
       l.rabatIntro, "",
       `${l.rabatKod}: ${kod} (${l.rabatIle(procent)})`,
       ...(waznyDo ? [l.rabatWaznyDo(waznyDo)] : []),
-      "", l.rabatJak, "", l.rabatKoniec,
+      "", l.rabatJak,
+      ...(waznyDo ? ["", l.kodPrzypomnimy] : []),
+      "", l.rabatKoniec,
     ],
   });
 }
@@ -342,14 +364,19 @@ export function buildKontaktPotwierdzenie({ lang = "pl", to, wiadomosc }) {
 }
 
 /** 5. Powitanie w newsletterze razem z kodem na pierwsze zamowienie. */
-export function buildNewsletterPowitanie({ lang = "pl", to, kod, procent = "10%" }) {
+export function buildNewsletterPowitanie({ lang = "pl", to, kod, procent = "10%", waznyDo }) {
   const l = T[jezyk(lang)];
+  // Data waznosci i zapowiedz przypomnienia stoja przy KAZDYM kodzie (decyzja
+  // wlasciciela, 2026-08-31). Kod bez daty konca jest obietnica bez terminu,
+  // a przypomnienie, ktorego nikt nie zapowiedzial, wyglada jak nagabywanie.
   return zloz({
     lang: jezyk(lang), to, subject: l.newsSubject(procent), naglowek: l.newsSubject(procent),
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.newsIntro)}</p>
       ${ramkaKodu(l.newsKod, kod, l.rabatIle(procent))}
-      <p style="margin:14px 0 0;line-height:1.6;font-size:14px;color:#444">${esc(l.newsJak)}</p>
+      ${waznyDo ? `<p style="margin:14px 0 0;font-size:14px;font-weight:700">${esc(l.rabatWaznyDo(waznyDo))}</p>` : ""}
+      <p style="margin:10px 0 0;line-height:1.6;font-size:14px;color:#444">${esc(l.newsJak)}</p>
+      <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.kodPrzypomnimy)}</p>
       <h3 style="font-size:14px;margin:22px 0 6px">${esc(l.newsCzegoSieSpodziewac)}</h3>
       <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${esc(l.newsCzegoTresc)}</p>
       ${przycisk(adres(jezyk(lang), "/shop/"), l.ctaSklep)}
@@ -357,7 +384,9 @@ export function buildNewsletterPowitanie({ lang = "pl", to, kod, procent = "10%"
     linie: [
       l.newsIntro, "",
       `${l.newsKod}: ${kod} (${l.rabatIle(procent)})`,
+      ...(waznyDo ? [l.rabatWaznyDo(waznyDo)] : []),
       "", l.newsJak,
+      "", l.kodPrzypomnimy,
       "", `${l.newsCzegoSieSpodziewac}: ${l.newsCzegoTresc}`,
     ],
   });
@@ -384,7 +413,35 @@ export function buildAutoOdpowiedz({ lang = "pl", to, temat, inReplyTo, threadId
   });
 }
 
-/** Wszystkie szesc pod jedna nazwa, zeby trasa API nie miala wlasnego switcha. */
+/**
+ * 7. Przypomnienie o kodzie, ktory zaraz wygasnie.
+ *
+ * Idzie RAZ na kod, piec dni przed koncem waznosci, i tylko wtedy, gdy kod
+ * jest nietkniety. Zapowiadamy je w kazdej wiadomosci, ktora niesie kod, wiec
+ * nie jest zaskoczeniem, tylko dotrzymaniem slowa.
+ */
+export function buildPrzypomnienieKodu({ lang = "pl", to, kod, procent, waznyDo, dni }) {
+  const l = T[jezyk(lang)];
+  return zloz({
+    lang: jezyk(lang), to, subject: l.przypSubject(kod), naglowek: l.przypSubject(kod),
+    html: `
+      <p style="margin:0 0 16px;line-height:1.6">${esc(l.przypIntro(dni))}</p>
+      ${ramkaKodu(l.rabatKod, kod, procent ? l.rabatIle(procent) : "")}
+      ${waznyDo ? `<p style="margin:14px 0 0;font-size:14px;font-weight:700">${esc(l.rabatWaznyDo(waznyDo))}</p>` : ""}
+      <p style="margin:10px 0 0;line-height:1.6;font-size:14px;color:#444">${esc(l.przypJak)}</p>
+      <p style="margin:14px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.przypKoniec)}</p>
+      ${przycisk(adres(jezyk(lang), "/shop/"), l.ctaSklep)}
+    `,
+    linie: [
+      l.przypIntro(dni), "",
+      `${l.rabatKod}: ${kod}${procent ? ` (${l.rabatIle(procent)})` : ""}`,
+      ...(waznyDo ? [l.rabatWaznyDo(waznyDo)] : []),
+      "", l.przypJak, "", l.przypKoniec,
+    ],
+  });
+}
+
+/** Wszystkie maile pod jedna nazwa, zeby trasa API nie miala wlasnego switcha. */
 export const LEAD_MAILE = {
   kalkulator: buildKalkulatorEstimate,
   followup48: buildFollowUp48,
@@ -392,4 +449,5 @@ export const LEAD_MAILE = {
   kontakt: buildKontaktPotwierdzenie,
   newsletter: buildNewsletterPowitanie,
   autoodpowiedz: buildAutoOdpowiedz,
+  przypomnienieKodu: buildPrzypomnienieKodu,
 };

@@ -21,6 +21,7 @@ import { SELLER } from "../chat-api/pricing/sellerInfo.js";
 import {
   buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
   buildKontaktPotwierdzenie, buildNewsletterPowitanie, buildAutoOdpowiedz,
+  buildPrzypomnienieKodu,
 } from "../chat-api/leadMail.js";
 
 /** Adres w atrapach maili sprzed zamowienia. */
@@ -68,7 +69,8 @@ function doKlienta(lang) {
     ["followup48", buildFollowUp48({ lang, to: ODBIORCA })],
     ["rabat7", buildRabat7({ lang, to: ODBIORCA, kod: "AE-9K2T-XM", procent: "5%", waznyDo: "12.09.2026" })],
     ["kontakt", buildKontaktPotwierdzenie({ lang, to: ODBIORCA, wiadomosc: "Dzień dobry, czy zrobicie sygnet z herbem?" })],
-    ["newsletter", buildNewsletterPowitanie({ lang, to: ODBIORCA, kod: "AE-4H7P-QW", procent: "10%" })],
+    ["newsletter", buildNewsletterPowitanie({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026" })],
+    ["przypomnienieKodu", buildPrzypomnienieKodu({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" })],
     ["autoodpowiedz", buildAutoOdpowiedz({ lang, to: ODBIORCA, temat: "Zapytanie o sygnet", inReplyTo: "<abc@mail.gmail.com>", threadId: "t1" })],
   ];
 }
@@ -401,6 +403,25 @@ console.log("\n4j. Adres nie skleja sie ze zdaniem, ktore go zapowiada\n");
   for (const [nazwa, mail] of wszystkie) {
     ok(!sklejka.test(mail.text), `${nazwa}: adres oddzielony od zdania w wersji tekstowej`);
   }
+}
+
+console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n");
+
+// Kod bez daty konca jest obietnica bez terminu, a przypomnienie, ktorego nikt
+// nie zapowiedzial, wyglada jak nagabywanie (decyzja wlasciciela, 2026-08-31).
+{
+  const zKodem = [
+    ["newsletter", buildNewsletterPowitanie({ lang: "pl", to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026" })],
+    ["rabat7", buildRabat7({ lang: "pl", to: ODBIORCA, kod: "AEJ5-9K2TXM", procent: "5%", waznyDo: "14.09.2026" })],
+  ];
+  for (const [nazwa, m] of zKodem) {
+    const caly = `${m.html}\n${m.text}`;
+    ok(/Kod działa do \d\d\.\d\d\.\d{4}\./.test(caly), `${nazwa}: podaje date konca waznosci`);
+    ok(/pięć dni przed końcem ważności przypomnimy/i.test(caly), `${nazwa}: zapowiada jedno przypomnienie`);
+  }
+  const przyp = buildPrzypomnienieKodu({ lang: "pl", to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" });
+  ok(/jedyne przypomnienie/.test(przyp.text), "przypomnienie mowi, ze jest jedyne");
+  ok(/AEJ10-4H7PQW/.test(przyp.subject), "temat niesie kod, wiec widac go w skrzynce bez otwierania");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");

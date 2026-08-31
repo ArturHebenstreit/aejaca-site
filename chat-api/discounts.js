@@ -250,3 +250,48 @@ export function randomCode(prefix = "AEJ", length = 6) {
   }
   return `${normalizeCode(prefix)}-${out}`;
 }
+
+/**
+ * Kod JEDNORAZOWY wystawiony na adres klienta.
+ *
+ * Jedna droga dla wszystkich kampanii, ktore rozdaja kody mailem: powitanie
+ * w newsletterze i rabat doklejony do wyceny sprzed tygodnia. Do 2026-08-31 ten
+ * drugi mial kod wpisany w tresc maila na stale, a kod staly jest kodem
+ * publicznym w chwili, w ktorej ktokolwiek go przeklei: wystarczy jedno forum
+ * i procent dostaje kazdy, takze ci, ktorzy niczego nie wyceniali.
+ *
+ * Powtarzalne z zamyslu: drugie wolanie tym samym adresem i ta sama kampania
+ * oddaje ten sam kod, zamiast rozdawac kolejne. Inaczej wystarczyloby zapisac
+ * sie piec razy albo poprosic o piec wycen.
+ *
+ * @returns {Promise<{code: string, validTo: Date|null, reused: boolean}|null>}
+ */
+export async function issueSingleUseCode(pool, { email, percent, days, campaign, prefix, note }) {
+  const adres = String(email || "").trim().toLowerCase();
+  if (!pool || !adres) return null;
+
+  const { rows: istnieje } = await pool.query(
+    `SELECT code, valid_to FROM discount_codes
+      WHERE campaign = $2 AND issued_to = $1 AND active = TRUE AND used_count = 0
+        AND (valid_to IS NULL OR valid_to > NOW())
+      ORDER BY created_at DESC LIMIT 1`,
+    [adres, campaign]
+  );
+  if (istnieje[0]) return { code: istnieje[0].code, validTo: istnieje[0].valid_to, reused: true };
+
+  // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
+  // a nie odmowe wyslania maila, wiec probujemy kilka razy.
+  for (let proba = 0; proba < 5; proba++) {
+    const code = randomCode(prefix);
+    const { rows } = await pool.query(
+      `INSERT INTO discount_codes
+         (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note)
+       VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, $4, $5, $6)
+       ON CONFLICT (code) DO NOTHING
+       RETURNING code, valid_to`,
+      [code, percent, String(days), campaign, adres, note || null]
+    );
+    if (rows[0]) return { code: rows[0].code, validTo: rows[0].valid_to, reused: false };
+  }
+  return null;
+}
