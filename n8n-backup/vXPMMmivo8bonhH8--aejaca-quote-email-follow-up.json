@@ -53,6 +53,11 @@
             "index": 0,
             "node": "Send Quote Email",
             "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Szacunek z kalkulatora",
+            "type": "main"
           }
         ]
       ]
@@ -90,12 +95,23 @@
         ]
       ]
     },
-    "Upload to Drive": {
+    "Strip Binary": {
       "main": [
         [
           {
             "index": 0,
             "node": "Notify Owner — with Drive link",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Strip Binary",
             "type": "main"
           }
         ]
@@ -108,6 +124,11 @@
             "index": 0,
             "node": "Follow-up 48h",
             "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Przypomnienie po 48h",
+            "type": "main"
           }
         ]
       ]
@@ -118,6 +139,11 @@
           {
             "index": 0,
             "node": "Discount offer (7d)",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Rabat po 7 dniach",
             "type": "main"
           }
         ]
@@ -297,21 +323,21 @@
       "id": "2b6eef38-d525-47dd-af03-30cbbf0f11e4",
       "name": "Notify Owner — with Drive link",
       "parameters": {
-        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $('Prepare File for Upload').item.json.body.email }}<br><b>Kalkulator:</b> {{ $('Prepare File for Upload').item.json.body.calculator }}<br><b>Parametry:</b> {{ $('Prepare File for Upload').item.json.body.params }}<br><b>Cena:</b> {{ $('Prepare File for Upload').item.json.body.price.perPcPLN.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcPLN.max }} PLN ({{ $('Prepare File for Upload').item.json.body.price.perPcEUR.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $('Prepare File for Upload').item.json.body.price.qty }}<br><b>Czas:</b> {{ $('Prepare File for Upload').item.json.body.ts }}<br><b>Plik:</b> {{ $('Prepare File for Upload').item.json.body.file.name }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $('Prepare File for Upload').item.json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
+        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b> {{ $json.body.params }}<br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}<br><b>Plik:</b> {{ $json.body.file.name }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
         "operation": "send",
         "options": {
           "appendAttribution": false
         },
         "sendTo": "contact@aejaca.com",
-        "subject": "=🔔 Nowa wycena: {{ $('Prepare File for Upload').item.json.body.calculator }} — {{ $('Prepare File for Upload').item.json.body.price.perPcPLN.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcPLN.max }} PLN"
+        "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} — {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN"
       },
       "position": [
-        1568,
+        1792,
         0
       ],
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "webhookId": "92fb43f8-5dfc-4c4e-ab33-93aa2a301166"
+      "webhookId": "46cfefeb-ae84-4e8f-9d7a-e8655a82d7c4"
     },
     {
       "id": "ca3890bd-2b95-4c4e-9ac1-cefb1ca3b59c",
@@ -334,6 +360,7 @@
       "webhookId": "8ba249b7-0d6c-4b35-91ab-e476dee0b5ca"
     },
     {
+      "disabled": true,
       "id": "dfe07ce7-dd4c-4b37-b2b6-2b30c759accd",
       "name": "Send Quote Email",
       "parameters": {
@@ -370,6 +397,7 @@
       "webhookId": "c34725cb-52c7-4668-952a-63af8f0989e6"
     },
     {
+      "disabled": true,
       "id": "62ea82c8-db7e-493c-ac61-95c6deff4cb5",
       "name": "Follow-up 48h",
       "parameters": {
@@ -394,7 +422,6 @@
       "id": "6b145e64-6ffa-49ec-90a6-f4dbd7dedb0b",
       "name": "Wait 5 more days",
       "parameters": {
-        "amount": 5,
         "unit": "days"
       },
       "position": [
@@ -403,9 +430,10 @@
       ],
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "webhookId": "3c2d63b2-8eed-4950-a8a5-79971d21fee3"
+      "webhookId": "fd65dc39-04a5-4478-8721-ec01aeb8694f"
     },
     {
+      "disabled": true,
       "id": "b5fd1135-198b-4025-a2d4-4caeb4160261",
       "name": "Discount offer (7d)",
       "parameters": {
@@ -425,6 +453,147 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "webhookId": "d013506e-ea80-415a-a529-5dd027c991a8"
+    },
+    {
+      "disabled": false,
+      "id": "05d4fd6d-5960-4f88-817d-f777af8c5288",
+      "name": "Szacunek z kalkulatora",
+      "notes": "Tresc sklada chat-api (leadMail.js). Kalkulator podaje WIDELKI, wiec mail nazywa to szacunkiem, a nie wycena. ADR-0030. PRZED WLACZENIEM podepnij 'AEJaCA admin token'.",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rodzaj",
+              "value": "kalkulator"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $json.body.lang }}"
+            },
+            {
+              "name": "kalkulator",
+              "value": "={{ $json.body.calculator }}"
+            },
+            {
+              "name": "parametry",
+              "value": "={{ typeof $json.body.params === 'object' && $json.body.params ? Object.entries($json.body.params).map(e => e[0] + ': ' + e[1]).join(', ') : ($json.body.params || '') }}"
+            },
+            {
+              "name": "plik",
+              "value": "={{ $json.body.file && $json.body.file.name ? $json.body.file.name : '' }}"
+            },
+            {
+              "name": "cenaPln",
+              "value": "={{ $json.body.price && $json.body.price.perPcPLN ? $json.body.price.perPcPLN.min + ' - ' + $json.body.price.perPcPLN.max : '' }}"
+            },
+            {
+              "name": "cenaEur",
+              "value": "={{ $json.body.price && $json.body.price.perPcEUR ? $json.body.price.perPcEUR.min + ' - ' + $json.body.price.perPcEUR.max : '' }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/mail/lead"
+      },
+      "position": [
+        672,
+        544
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
+    },
+    {
+      "disabled": false,
+      "id": "407745bf-a63f-43b5-b400-37f34a749c50",
+      "name": "Przypomnienie po 48h",
+      "notes": "Tresc sklada chat-api (leadMail.js). Mowi wprost, ze to ostatnie przypomnienie, nie liczac jednej wiadomosci o rabacie. PRZED WLACZENIEM podepnij 'AEJaCA admin token'.",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rodzaj",
+              "value": "followup48"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook — Quote Received').item.json.body.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $('Webhook — Quote Received').item.json.body.lang }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/mail/lead"
+      },
+      "position": [
+        1120,
+        544
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
+    },
+    {
+      "disabled": false,
+      "id": "62164daf-bc47-4d48-9f2e-e6367a059214",
+      "name": "Rabat po 7 dniach",
+      "notes": "Kod wystawia chat-api: jednorazowy, na adres tego klienta, wazny 14 dni. Staly kod AEJACA5 zniknal, bo kod w tresci maila jest kodem publicznym. PRZED WLACZENIEM podepnij 'AEJaCA admin token'.",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rodzaj",
+              "value": "rabat7"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook — Quote Received').item.json.body.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $('Webhook — Quote Received').item.json.body.lang }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/mail/lead"
+      },
+      "position": [
+        1568,
+        544
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
+    },
+    {
+      "id": "1a6678f1-053a-481a-a030-5049083eef73",
+      "name": "Strip Binary",
+      "parameters": {
+        "jsCode": "return [{ json: $('Prepare File for Upload').item.json }];"
+      },
+      "position": [
+        1568,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     }
   ],
   "parentFolderId": null,

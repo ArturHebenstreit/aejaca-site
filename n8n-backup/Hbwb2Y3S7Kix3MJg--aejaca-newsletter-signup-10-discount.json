@@ -42,8 +42,15 @@
             "index": 0,
             "node": "Save to PostgreSQL",
             "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Powitanie z kodem",
+            "type": "main"
           }
-        ]
+        ],
+        null,
+        []
       ]
     },
     "Respond OK": {
@@ -215,6 +222,7 @@
       "typeVersion": 2.5
     },
     {
+      "disabled": true,
       "id": "458e85a8-5f93-4e69-8aa7-b2f30bd56c98",
       "name": "Send Welcome + Discount",
       "parameters": {
@@ -275,6 +283,54 @@
       "position": [
         880,
         192
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
+    },
+    {
+      "disabled": false,
+      "id": "1aabbb15-045f-4537-9b4a-cdf6349cd378",
+      "name": "Powitanie z kodem",
+      "notes": "Tresc maila sklada chat-api (leadMail.js). Data waznosci idzie z kodu, ktory wystawil sklep. ADR-0030. PRZED WLACZENIEM podepnij 'AEJaCA admin token'.",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rodzaj",
+              "value": "newsletter"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook — Newsletter').item.json.body.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $('Webhook — Newsletter').item.json.body.lang }}"
+            },
+            {
+              "name": "kod",
+              "value": "={{ $json.code }}"
+            },
+            {
+              "name": "procent",
+              "value": "={{ $json.percent }}%"
+            },
+            {
+              "name": "waznyDo",
+              "value": "={{ $json.validTo ? String($json.validTo).slice(0,10).split('-').reverse().join('.') : '' }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/mail/lead"
+      },
+      "position": [
+        1104,
+        96
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4

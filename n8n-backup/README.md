@@ -1,6 +1,6 @@
 # Kopia przepływów n8n
 
-Katalog trzyma osiem aktywnych przepływów n8n jako pliki JSON, wersjonowane
+Katalog trzyma siedem aktywnych przepływów n8n jako pliki JSON, wersjonowane
 razem z kodem. Odtworzenie sprowadza się do wgrania pliku w n8n przez
 **Import from File** i uzupełnienia miejsc wypisanych w `ODTWORZENIE.md`.
 
@@ -24,20 +24,21 @@ to nie jest to samo co porównanie znak po znaku z oryginałem.
 z kluczem API. Jeśli `git diff` nic nie pokaże, kopia jest wierna i sprawa
 zamknięta. Jeśli coś pokaże, wersja ze skryptu jest tą właściwą.
 
-## Wyceny: kopia zawiera wersję działającą, nie szkic
+## Wyceny: szkic z edytora poszedł na produkcję (31 sierpnia 2026)
 
-W `AEJaCA — Quote Email Follow-up` `versionId` różni się od `activeVersionId`.
-W n8n leży niewypublikowany szkic, inny niż to, co obsługuje ruch.
+Do 31 sierpnia 2026 w `AEJaCA — Quote Email Follow-up` leżał niewypublikowany
+szkic, inny niż to, co obsługiwało ruch: wstawiał węzeł `Strip Binary` między
+`Upload to Drive` a powiadomienie właściciela i przestawiał to powiadomienie
+z `$('Prepare File for Upload')` na `$json`. Kopia trzymała wtedy wersję
+działającą, bo kopia zapasowa ma odtwarzać stan, który obsługiwał klientów.
 
-Szkic wstawia węzeł `Strip Binary` między `Upload to Drive` a powiadomienie
-właściciela i przestawia to powiadomienie na `$json`. Wersja działająca idzie
-z `Upload to Drive` prosto do powiadomienia i sięga po dane przez
-`$('Prepare File for Upload')`.
-
-W kopii jest **wersja działająca**, bo kopia zapasowa ma odtwarzać stan, który
-obsługiwał klientów, a nie zmianę porzuconą w edytorze. Zdecyduj przy okazji,
-czy szkic wypublikować, czy porzucić. Szkic wiszący bez końca to stan, w którym
-kopia i n8n rozjeżdżają się cicho.
+Publikacja przepływu przy przestawianiu maili na chat-api promowała cały szkic,
+bo `publish_workflow` publikuje bieżącą wersję roboczą, a nie wybrane zmiany.
+Od tej pory `Strip Binary` stoi na produkcji i kopia zawiera właśnie ten układ.
+Zmiana jest w tym przepływie nieszkodliwa: `Prepare File for Upload` oddaje tu
+jedną pozycję, więc zwijanie nie ma czego zwijać, a powiadomienie czyta te same
+dane inną drogą. Wniosek na przyszłość: wiszący szkic to stan, w którym pierwsza
+publikacja wypycha na produkcję cudzą porzuconą zmianę razem z własną.
 
 ## Kontakt: komplet załączników zamiast pierwszego (sierpień 2026)
 
@@ -113,6 +114,24 @@ powiadomienia dla pracowni i odliczanie 48 godzin oraz 7 dni.
 **Kolejność wdrożenia jest wiążąca.** Railway buduje `chat-api` z gałęzi
 `main`, więc przepływy wolno przestawić dopiero po scaleniu i wdrożeniu.
 Przestawiony wcześniej przepływ przestałby wysyłać cokolwiek.
+
+## Sześć maili na chat-api: co zmieniło się w kopii (31 sierpnia 2026)
+
+Przestawienie opisane niżej dotknęło trzech przepływów i wszystkie trzy pliki
+zostały tu zaktualizowane: w każdym doszedł węzeł `httpRequest` wołający
+`/api/mail/lead`, a stary węzeł Gmaila jest wyłączony, nie skasowany. Wyłączony
+węzeł n8n przepuszcza dane dalej, więc odliczanie 48 godzin i 7 dni działa jak
+przedtem. `AEJaCA Auto-reply (thank you)` został zarchiwizowany i znika z kopii:
+odpowiedź na pierwszego maila wysyła teraz sam chat-api (ADR-0030).
+
+Pliki poprawiono **ręcznie**, na danych z połączenia MCP, bo w tej sesji nie było
+klucza API do n8n, a sieć środowiska i tak nie sięga instancji. Przy okazji
+wyszło, ile warte są starsze przepisane kopie: w `Wait 5 more days` kopia miała
+`amount: 5`, a w n8n tego pola nie ma w ogóle (czyli węzeł czeka domyślną dobę),
+i prawie każdy `webhookId` w tym przepływie różnił się od prawdziwego. Struktura
+i parametry się zgadzały, drobne identyfikatory nie. **Przy pierwszej okazji
+z kluczem API uruchom `npm run backup:n8n`**: pusty `git diff` zamyka sprawę,
+a niepusty znaczy, że właściwa jest wersja ze skryptu.
 
 ## Czego celowo nie ma w kopii
 

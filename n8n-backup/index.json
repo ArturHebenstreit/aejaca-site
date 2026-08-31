@@ -1,6 +1,6 @@
 {
   "exportedFrom": "https://primary-fhhi-production.up.railway.app",
-  "count": 8,
+  "count": 7,
   "workflows": [
     {
       "id": "gAfovkoyyUAWz3ho",
@@ -25,12 +25,6 @@
       "name": "AEJaCA Anomaly Alert",
       "active": true,
       "file": "6dw2RcNCSZgP5gxV--aejaca-anomaly-alert.json"
-    },
-    {
-      "id": "Ve9vKUgz3j0iB9Bq",
-      "name": "AEJaCA Auto-reply (thank you)",
-      "active": true,
-      "file": "Ve9vKUgz3j0iB9Bq--aejaca-auto-reply-thank-you.json"
     },
     {
       "id": "drTfUt3JdpdESqZS",

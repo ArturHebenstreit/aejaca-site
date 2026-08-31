@@ -42,8 +42,14 @@
             "index": 0,
             "node": "Send Confirmation to User",
             "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Potwierdzenie dla klienta",
+            "type": "main"
           }
-        ]
+        ],
+        []
       ]
     },
     "Prepare File for Upload": {
@@ -323,6 +329,7 @@
       "webhookId": "e693ef40-7953-463f-ab56-06ed5b7ab3c4"
     },
     {
+      "disabled": true,
       "id": "af503fc8-52a0-4ca8-ad4b-7cbbdc303465",
       "name": "Send Confirmation to User",
       "parameters": {
@@ -344,11 +351,52 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "webhookId": "0c965b94-a866-4501-aaf9-1597ff80f9f7"
+    },
+    {
+      "disabled": false,
+      "id": "2415a367-261d-4c6c-89cd-ccb85b6c92e3",
+      "name": "Potwierdzenie dla klienta",
+      "notes": "Tresc maila sklada chat-api (leadMail.js), nie ten przeplyw: jedna koperta, jeden podpis, jeden znak dla wszystkich wiadomosci. ADR-0030. PRZED WLACZENIEM podepnij dane uwierzytelniajace 'AEJaCA admin token'.",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rodzaj",
+              "value": "kontakt"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "lang",
+              "value": "={{ $json.lang }}"
+            },
+            {
+              "name": "wiadomosc",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/mail/lead"
+      },
+      "position": [
+        672,
+        448
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
     }
   ],
   "parentFolderId": null,
   "settings": {
     "availableInMCP": true,
+    "binaryMode": "separate",
     "executionOrder": "v1"
   },
   "tags": []
