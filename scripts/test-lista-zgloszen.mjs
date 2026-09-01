@@ -75,6 +75,22 @@ assert.match(widok, /formularz\.reset\(\)/, "wycofanie przywraca zapisane wartos
 assert.match(panel, /app\.post\("\/leads\/:id\/edit"/, "jest zapis tego, co nasze");
 assert.match(panel, /SET status = COALESCE\(\$2, status\)/, "zapis nie rusza tresci zapytania");
 
+// --- 3a. Data kontaktu wraca do pola ---------------------------------------
+// `<input type="date">` przyjmuje WYLACZNIE "RRRR-MM-DD". Stala tam data po
+// polsku, ktorej przegladarka nie odczytala, wiec pole wygladalo na puste mimo
+// zapisanej daty, a nastepny zapis wysylal pusta wartosc i kasowal ja w bazie.
+// Bledu nie bylo widac nigdzie: pole po prostu stalo puste.
+assert.match(panel, /res\.locals\.dataPola = \(d\) =>/, "panel ma formater dla POLA daty");
+assert.doesNotMatch(panel, /dataPola[\s\S]{0,300}toISOString/,
+  "data do pola sklada sie z pol lokalnych, bo polnoc lokalna cofnelaby sie o dobe");
+assert.match(widok, /value="<%= dataPola\(lead\.contacted_at\) %>"/,
+  "pole daty kontaktu bierze wartosc w postaci, ktora przegladarka rozumie");
+// Stan "skontaktowano" bez daty to dwa pola opisujace jeden fakt, mowiace co
+// innego: licznik "bez reakcji" liczy po dacie, wiec zgloszenie zalatwione
+// wisialoby dalej jako zaniedbane.
+assert.match(panel, /\["contacted", "quoted", "closed"\]\.includes\(stan\) \? dzisiajISO\(\)/,
+  "stan zalatwiony bez daty stempluje sie dniem dzisiejszym");
+
 // --- 4. Decyzja o watku razem z podpowiedzia ------------------------------
 assert.match(widok, /lead\.watek_sugestia/, "widac, co typuje automat");
 assert.match(widok, /lead\.watek_tag === "unclassified" && lead\.watek_sugestia/,

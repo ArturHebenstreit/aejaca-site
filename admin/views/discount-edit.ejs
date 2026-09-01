@@ -91,12 +91,12 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Ważny od</label>
-          <input type="date" name="validFrom" value="<%= kod.valid_from ? new Date(kod.valid_from).toISOString().slice(0, 10) : '' %>"
+          <input type="date" name="validFrom" value="<%= dataPola(kod.valid_from) %>"
             class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
         </div>
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Ważny do</label>
-          <input type="date" name="validTo" value="<%= kod.valid_to ? new Date(kod.valid_to).toISOString().slice(0, 10) : '' %>"
+          <input type="date" name="validTo" value="<%= dataPola(kod.valid_to) %>"
             class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
         </div>
       </div>
