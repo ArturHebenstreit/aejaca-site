@@ -61,6 +61,26 @@ z trescia pierwszej wiadomosci PRZYCHODZACEJ (nasza wlasna odpowiedz w tym
 samym watku nie jest niczyim pytaniem). Watek od adresu, ktory sprawe juz ma,
 podpina sie do niej zamiast zakladac druga.
 
+Decyzje podejmuja DWIE rzeczy i obie ida ta sama droga (`watkiPoczty.js`):
+klasyfikacja automatyczna przy pierwszej wiadomosci i czlowiek w panelu, ktory
+ja poprawia. Dwie kopie tej decyzji rozjechalyby sie po cichu, bo automat
+zakladalby sprawe inaczej niz klikniecie, a wygladalo by to identycznie.
+
+**Cofniecie decyzji nie kasuje zalozonej sprawy.** Numer moze byc juz
+w korespondencji, a numer raz podany jest obietnica. Oznaczenie watku jako
+"nie lead" albo spam blokuje natomiast zrobienie z tej sprawy oferty, i panel
+mowi to wprost. Ponowne uznanie watku za zapytanie przywraca przycisk: warunek
+czyta znacznik watku, wiec nie ma czego odkrecac osobno.
+
+**Poczta czekajaca na nas jest policzona w dwoch liczbach**, bo "nieobsluzone"
+znaczy dwie rozne rzeczy: `do decyzji` to watki, o ktorych nikt nie
+rozstrzygnal (nie maja numeru i nie da sie z nich zrobic oferty), a
+`bez odpowiedzi` to te, w ktorych OSTATNIA wiadomosc jest przychodzaca, czyli
+ktos napisal i czeka. Spam i "nie lead" nie licza sie do drugiej liczby:
+nieodpisanie na reklame nie jest zaniedbaniem. Obie stoja na pulpicie panelu,
+bo skrzynka jest osobna strona i bez tego nieodpisany mail nie odzywa sie
+znikad.
+
 Wycena zrobiona ze zgloszenia **przejmuje jego numer**, zamiast losowac nowy.
 Zgloszenie sprzed tej zmiany, ktore numeru nie ma, przejmuje numer swojej
 wyceny, zeby nie zostac z dwoma oznaczeniami.

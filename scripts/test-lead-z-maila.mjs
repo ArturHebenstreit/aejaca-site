@@ -24,6 +24,8 @@ const gmail = czytaj("chat-api", "gmail.js");
 const serwer = czytaj("chat-api", "server.js");
 const quotes = czytaj("chat-api", "quotes.js");
 const panel = czytaj("admin", "server.js");
+const watki = czytaj("chat-api", "watkiPoczty.js");
+const pulpit = czytaj("admin", "views", "dashboard.ejs");
 const widokZgloszen = czytaj("admin", "views", "leads.ejs");
 const widokPoczty = czytaj("admin", "views", "email-threads.ejs");
 
@@ -38,10 +40,18 @@ assert.match(gmail, /SELECT id FROM leads WHERE email = \$1/,
 // --- 2. Decyzja zaklada sprawe z numerem ----------------------------------
 assert.match(serwer, /app\.post\("\/api\/email-threads\/:id\/tag"/,
   "jest trasa rozstrzygajaca o watku");
-assert.match(serwer, /tag === "lead" && !leadId/,
+assert.match(watki, /tag === "lead" && !leadId/,
   "sprawe zaklada wylacznie uznanie watku za zapytanie");
-assert.match(serwer, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
+assert.match(watki, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
   "sprawa z watku dostaje numer");
+// Te sama decyzje podejmuja DWIE rzeczy: klasyfikacja automatyczna przy
+// pierwszej wiadomosci i czlowiek w panelu, ktory ja poprawia. Musza isc ta
+// sama droga, inaczej automat zakladalby sprawe inaczej niz klikniecie,
+// a wygladalo by to identycznie.
+assert.match(gmail, /oznaczWatek\(pool, threadDbId, tag/,
+  "klasyfikacja automatyczna idzie ta sama droga co klikniecie");
+assert.doesNotMatch(gmail, /UPDATE email_threads SET tag/,
+  "klasyfikacja nie zapisuje znacznika z pominieciem wspolnej drogi");
 // Numer nadaje WYLACZNIE chat-api (ADR-0032). Panel piszacy po swojemu byl by
 // drugim generatorem numerow, a dwa generatory jednego formatu rozjezdzaja sie
 // po cichu, bo oba dzialaja.
@@ -52,11 +62,36 @@ assert.doesNotMatch(panel, /UPDATE email_threads SET tag/,
 
 // Tresc pierwszej wiadomosci PRZYCHODZACEJ, bo to ona jest zapytaniem.
 // Nasza wlasna odpowiedz w tym samym watku nie jest niczyim pytaniem.
-assert.match(serwer, /direction = 'inbound'\s*\n\s*ORDER BY received_at ASC LIMIT 1/,
+assert.match(watki, /direction = 'inbound'\s*\n\s*ORDER BY received_at ASC LIMIT 1/,
   "sprawa bierze tresc z pierwszej wiadomosci przychodzacej");
 // Ten sam klient piszacy drugi raz to ta sama sprawa, a nie nowa.
-assert.match(serwer, /SELECT id, quote_ref FROM leads WHERE email = \$1 ORDER BY created_at DESC LIMIT 1/,
+assert.match(watki, /SELECT id, quote_ref FROM leads WHERE email = \$1 ORDER BY created_at DESC LIMIT 1/,
   "watek od adresu, ktory sprawe ma, podpina sie do niej");
+
+// --- 2b. Decyzja jest odwracalna, a "nie lead" nie prowadzi do oferty -----
+// Cofniecie decyzji NIE kasuje zalozonej sprawy: numer moze byc juz
+// w korespondencji. Blokuje natomiast zrobienie z niej oferty, i to widac.
+assert.match(panel, /t\.tag IN \('not_lead', 'spam'\)\s*\n?\s*\) AS odrzucony/,
+  "panel wie, ktore zgloszenie stoi przy watku odrzuconym");
+assert.match(widokZgloszen, /if \(lead\.odrzucony\)/, "przy odrzuconym watku oferty nie zrobisz");
+assert.match(widokZgloszen, /nie lead/, "i widac, dlaczego");
+// Odwracalnosc: znacznik czyta sie z watku, wiec oznaczenie go z powrotem
+// jako zapytanie przywraca przycisk bez zadnego dodatkowego ruchu.
+assert.doesNotMatch(panel, /UPDATE leads SET status = 'spam'/,
+  "cofniecie decyzji nie zamyka zgloszenia na stale");
+
+// --- 2c. Widac, ile poczty czeka --------------------------------------------
+// Dwie rozne rzeczy, obie osobno: watki, o ktorych nikt nie rozstrzygnal,
+// i te, gdzie ktos napisal i czeka na odpowiedz. Spam i "nie lead" sie tu nie
+// licza: nieodpisanie na reklame nie jest zaniedbaniem.
+for (const [gdzie, nazwa] of [[panel, "panel"], [pulpit, "pulpit"]]) {
+  assert.match(gdzie, /bez_odpowiedzi/, `${nazwa}: liczy maile bez odpowiedzi`);
+}
+assert.match(panel, /WHERE tag NOT IN \('spam', 'not_lead'\)/,
+  "spam i nie-lead nie licza sie jako nieobsluzone");
+assert.match(panel, /ORDER BY em\.received_at DESC LIMIT 1\) = 'inbound'/,
+  "bez odpowiedzi znaczy: ostatnia wiadomosc jest przychodzaca");
+assert.match(pulpit, /do_decyzji/, "pulpit pokazuje takze watki do rozstrzygniecia");
 
 // --- 3. Skasowanie oferty otwiera droge do nastepnej ----------------------
 assert.match(quotes, /UPDATE leads SET status = 'new' WHERE quote_ref = \$1 AND status = 'quoted'/,

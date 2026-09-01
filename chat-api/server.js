@@ -7,7 +7,8 @@ import cron from "node-cron";
 import { staleRates, ageHours, STARTUP_REFETCH_AFTER_H, fetchCronExpressions, monthlyRequests } from "./rates.js";
 import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
-import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages, extractEmail } from "./gmail.js";
+import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
+import { oznaczWatek } from "./watkiPoczty.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
@@ -2119,86 +2120,24 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
  */
 /**
  * Rozstrzygniecie o watku mailowym: zapytanie, nie zapytanie, spam.
- *
- * Do 1 wrzesnia 2026 dzialaly tu DWA mechanizmy naraz i zaden nie robil tego,
- * co trzeba. Mail od nieznanego nadawcy zakladal sprawe z numerem SAM, bez
- * zadnego sprawdzenia, wiec numer dostawal newsletter i faktura od dostawcy.
- * Rownolegle panel mial przyciski "Lead / Nie lead / Spam", ktore zmienialy
- * wylacznie kolor plakietki. Decyzja zapadala wiec za wlasciciela, a jego
- * wlasna decyzja nie znaczyla nic.
- *
- * Teraz jest jedna droga: watek czeka jako `unclassified`, a oznaczenie go
- * jako zapytanie ZAKLADA sprawe z numerem, z trescia pierwszej wiadomosci.
- * Numer nadaje sie w chwili decyzji, a nie w chwili dostarczenia poczty.
- *
- * Watek od adresu, ktory sprawe juz ma, podpina sie do niej zamiast zakladac
- * druga: ten sam klient piszacy drugi raz to ta sama sprawa, a nie nowa.
+ * Cala mechanika stoi w `watkiPoczty.js`, bo te sama decyzje podejmuje takze
+ * klasyfikacja automatyczna przy pierwszej wiadomosci.
  */
 app.post("/api/email-threads/:id/tag", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
-  const ZNACZNIKI = ["unclassified", "lead", "not_lead", "spam"];
-  const tag = String(req.body?.tag || "");
-  if (!ZNACZNIKI.includes(tag)) return res.status(400).json({ error: "Nie znamy takiego oznaczenia", code: "bad_tag" });
-
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Brak numeru watku" });
 
   try {
-    const { rows } = await pool.query(
-      "SELECT id, lead_id, subject FROM email_threads WHERE id = $1", [id]
-    );
-    const watek = rows[0];
-    if (!watek) return res.status(404).json({ error: "Nie ma takiego watku" });
-
-    let leadId = watek.lead_id;
-    let quoteRef = null;
-    let zalozono = false;
-
-    if (tag === "lead" && !leadId) {
-      // Pierwsza wiadomosc PRZYCHODZACA: to ona jest zapytaniem. Nasza wlasna
-      // odpowiedz w tym samym watku nie zaklada sprawy o niczym.
-      const { rows: wiadomosci } = await pool.query(
-        `SELECT from_addr, subject, body_text FROM email_messages
-          WHERE thread_id = $1 AND direction = 'inbound'
-          ORDER BY received_at ASC LIMIT 1`, [id]
-      );
-      const pierwsza = wiadomosci[0];
-      const adres = extractEmail(pierwsza?.from_addr || "");
-      if (!adres) {
-        return res.status(409).json({
-          error: "Watek nie ma adresu nadawcy, wiec nie ma z czego zrobic sprawy",
-          code: "no_sender",
-        });
-      }
-
-      const { rows: istnieje } = await pool.query(
-        "SELECT id, quote_ref FROM leads WHERE email = $1 ORDER BY created_at DESC LIMIT 1", [adres]
-      );
-      if (istnieje[0]) {
-        leadId = istnieje[0].id;
-        quoteRef = istnieje[0].quote_ref;
-      } else {
-        const temat = String(pierwsza.subject || watek.subject || "Zapytanie mailem").slice(0, 400);
-        const { rows: nowy } = await pool.query(
-          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
-           VALUES ($1, 'pl', 'email', 'email', $2, $3, $4, 'new') RETURNING id, quote_ref`,
-          [adres, temat, String(pierwsza.body_text || "").slice(0, 8000), generateQuoteRef()]
-        );
-        leadId = nowy[0].id;
-        quoteRef = nowy[0].quote_ref;
-        zalozono = true;
-      }
-    }
-
-    await pool.query(
-      "UPDATE email_threads SET tag = $1, lead_id = COALESCE(lead_id, $2) WHERE id = $3",
-      [tag, leadId, id]
-    );
-    if (zalozono) console.log(`[poczta] watek ${id} uznany za zapytanie, sprawa ${quoteRef}`);
-    res.json({ ok: true, tag, leadId: leadId ?? null, quoteRef, zalozono });
+    const wynik = await oznaczWatek(pool, id, String(req.body?.tag || ""));
+    if (wynik.zalozono) console.log(`[poczta] watek ${id} uznany za zapytanie, sprawa ${wynik.quoteRef}`);
+    res.json({ ok: true, ...wynik });
   } catch (e) {
+    if (e.code === "bad_tag") return res.status(400).json({ error: e.message, code: e.code });
+    if (e.code === "not_found") return res.status(404).json({ error: e.message, code: e.code });
+    if (e.code === "no_sender") return res.status(409).json({ error: e.message, code: e.code });
     console.error("[poczta] oznaczenie watku nie powiodlo sie:", e.message);
     res.status(500).json({ error: "Nie udalo sie oznaczyc watku" });
   }

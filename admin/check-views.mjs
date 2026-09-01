@@ -103,6 +103,7 @@ const ZESTAWY = {
     // Oba stany lampki wlasnego ruchu: tutaj znacznik juz cos przyniosl.
     wlasnyRuch: { zdarzenia_7d: 14, wizyty_7d: 3, ostatnie: wycena.createdAt, ostatnie_urzadzenie: "desktop" },
     SITE_URL: "https://www.aejaca.com",
+    poczta: { do_decyzji: 2, bez_odpowiedzi: 1 },
     laserMatrixCount: 120, gemstoneCount: 40, filamentCount: 18, pendingContributions: 1,
   },
   quotes: {
@@ -202,6 +203,25 @@ const ZESTAWY = {
       { id: "rezygnacja_klienta", label: "Rezygnacja klienta", opis: "Kwota zwrotu jest decyzją.",
         zwrot: "decyzja", terminDni: 14, etapy: ["queued"] },
     ],
+  },
+  // Skrzynka: dwie liczby "nieobsluzonych" i wiersz watku, ktory sprawe juz ma.
+  // To ten widok podejmuje decyzje o kazdym mailu, wiec musi sie rysowac takze
+  // wtedy, gdy zadna wiadomosc nie zostala jeszcze rozstrzygnieta.
+  "email-threads": {
+    user: uzytkownik,
+    threads: [{
+      id: 1, gmail_thread_id: "t1", subject: "Zapytanie o sygnet",
+      last_message_at: wycena.createdAt, message_count: 2, tag: "lead",
+      lead_email: "klient@example.com", lead_status: "new", lead_ref: "WY20260901-A1B2C3D4",
+      inbound_count: 1, outbound_count: 1, created_at: wycena.createdAt,
+    }, {
+      id: 2, gmail_thread_id: "t2", subject: "Pozycjonowanie strony",
+      last_message_at: wycena.createdAt, message_count: 1, tag: "unclassified",
+      lead_email: null, lead_status: null, lead_ref: null,
+      inbound_count: 1, outbound_count: 0, created_at: wycena.createdAt,
+    }],
+    total: 2, page: 1, pages: 1, filter: "active",
+    stats: { total: 2, leads: 1, spam: 0, not_lead: 0, unclassified: 1, today: 2, bez_odpowiedzi: 1 },
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },

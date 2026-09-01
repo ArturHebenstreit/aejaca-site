@@ -291,7 +291,19 @@ export async function processGmailMessage(gmail, pool, messageId) {
       if (direction === "inbound") {
         const { tag, lang } = await classifyEmailThreadFull(subject, bodyText);
         if (tag !== "unclassified") {
-          await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, threadDbId]);
+          // Klasyfikacja idzie ta sama droga co klikniecie w panelu, wiec
+          // uznanie za zapytanie zaklada sprawe z numerem tak samo. Dwie kopie
+          // tej decyzji rozjechalyby sie po cichu: automat zakladalby sprawe
+          // inaczej niz czlowiek, a wygladalo by to identycznie.
+          //
+          // Wiadomosci nie ma jeszcze w tabeli (zapisujemy ja nizej), wiec
+          // adres, temat i tresc podajemy wprost.
+          // Wczytanie w locie, bo `watkiPoczty.js` siega po `extractEmail`
+          // z tego pliku: staly import zrobilby z tego kolo.
+          const { oznaczWatek } = await import("./watkiPoczty.js");
+          await oznaczWatek(pool, threadDbId, tag, {
+            from_addr: from, subject, body_text: bodyText,
+          }).catch((e) => console.error("[poczta] klasyfikacja nie zapisala sie:", e.message));
         }
         // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
         // Only for brand-new inbound lead threads - never on ongoing replies,

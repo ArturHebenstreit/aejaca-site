@@ -48,9 +48,10 @@ assert.doesNotMatch(gmail, /INSERT INTO leads/,
   "poczta przychodzaca nie zaklada sprawy sama");
 assert.match(server, /app\.post\("\/api\/email-threads\/:id\/tag"/,
   "jest trasa, ktora z watku robi sprawe");
-assert.match(server, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
+const watkiPoczty = readFileSync(join(KATALOG, "watkiPoczty.js"), "utf8");
+assert.match(watkiPoczty, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
   "sprawa z watku dostaje numer");
-assert.match(server, /INSERT INTO leads[\s\S]{0,200}description/,
+assert.match(watkiPoczty, /INSERT INTO leads[\s\S]{0,200}description/,
   "tresc pierwszej wiadomosci zostaje w zgloszeniu");
 
 // --- 2. Wycena przejmuje numer zgloszenia ---------------------------------

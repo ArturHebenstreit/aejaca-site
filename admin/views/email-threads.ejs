@@ -28,6 +28,13 @@
         <span class="text-xs text-neutral-500 uppercase">Dzisiaj</span>
         <span class="text-lg font-semibold text-blue-400"><%= stats.today %></span>
       </div>
+      <%# Ktos napisal i czeka: ostatnia wiadomosc w watku jest przychodzaca.
+          Spam i "nie lead" sie tu nie licza, bo nieodpisanie na reklame nie
+          jest zaniedbaniem. To jest ta liczba, ktora ma spac spokojnie. %>
+      <div class="bg-neutral-900 border <%= Number(stats.bez_odpowiedzi) > 0 ? 'border-red-900/50' : 'border-white/10' %> rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Bez odpowiedzi</span>
+        <span class="text-lg font-semibold <%= Number(stats.bez_odpowiedzi) > 0 ? 'text-red-400' : 'text-neutral-500' %>"><%= stats.bez_odpowiedzi || 0 %></span>
+      </div>
     </div>
 
     <!-- Filter tabs -->
