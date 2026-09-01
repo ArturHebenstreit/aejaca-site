@@ -49,6 +49,22 @@
         </div>
       </div>
 
+      <%# Poczta czekajaca na nas. "Bez odpowiedzi" to watki, w ktorych
+          OSTATNIA wiadomosc jest przychodzaca: ktos napisal i czeka.
+          Spam i "nie lead" sie tu nie licza, bo nieodpisanie na reklame nie
+          jest zaniedbaniem. "Do decyzji" to watki, o ktorych nikt jeszcze nie
+          rozstrzygnal, czy sa zapytaniem: dopoki tam stoja, nie maja numeru
+          sprawy i nie da sie z nich zrobic oferty. %>
+      <div class="bg-neutral-900 border <%= Number(poczta.bez_odpowiedzi) > 0 ? 'border-red-900/50' : 'border-white/10' %> rounded-xl px-5 py-4">
+        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Poczta</p>
+        <p class="text-3xl font-bold <%= Number(poczta.bez_odpowiedzi) > 0 ? 'text-red-400' : 'text-neutral-500' %>"><%= poczta.bez_odpowiedzi || 0 %></p>
+        <p class="text-xs text-neutral-400 mt-1">bez odpowiedzi</p>
+        <% if (Number(poczta.do_decyzji) > 0) { %>
+          <p class="mt-2 text-xs text-amber-400"><%= poczta.do_decyzji %> do decyzji: lead czy nie</p>
+        <% } %>
+        <a href="/email-threads" class="block mt-3 text-xs text-blue-400 hover:text-blue-300">Skrzynka &rarr;</a>
+      </div>
+
       <!-- Laser Matrix -->
       <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
         <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Laser Matrix</p>

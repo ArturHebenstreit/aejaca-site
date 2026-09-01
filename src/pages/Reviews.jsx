@@ -67,8 +67,8 @@ function TpStar({ filled = true }) {
 // an aggregateRating built from Google reviews, and a second rating for the
 // same entity would misreport it.
 //
-// Nie pokazujemy tu liczby TrustScore. Przy trzech opiniach Trustpilot wylicza
-// 4,0, mimo że wszystkie trzy oceny to 5 gwiazdek, bo wskaźnik jest ważony
+// Nie pokazujemy tu liczby TrustScore. Przy czterech opiniach Trustpilot wylicza
+// 4,0, mimo że wszystkie cztery oceny to 5 gwiazdek, bo wskaźnik jest ważony
 // wolumenem. Wyświetlenie go obok Google "5,0" sugerowałoby klientowi coś, czego nie
 // powiedział ani jeden recenzent. Podajemy więc fakt sprawdzalny na profilu:
 // ile jest opinii i jak się rozkładają. Gwiazdek nie rysujemy, bo rząd pięciu

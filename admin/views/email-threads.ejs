@@ -28,6 +28,13 @@
         <span class="text-xs text-neutral-500 uppercase">Dzisiaj</span>
         <span class="text-lg font-semibold text-blue-400"><%= stats.today %></span>
       </div>
+      <%# Ktos napisal i czeka: ostatnia wiadomosc w watku jest przychodzaca.
+          Spam i "nie lead" sie tu nie licza, bo nieodpisanie na reklame nie
+          jest zaniedbaniem. To jest ta liczba, ktora ma spac spokojnie. %>
+      <div class="bg-neutral-900 border <%= Number(stats.bez_odpowiedzi) > 0 ? 'border-red-900/50' : 'border-white/10' %> rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Bez odpowiedzi</span>
+        <span class="text-lg font-semibold <%= Number(stats.bez_odpowiedzi) > 0 ? 'text-red-400' : 'text-neutral-500' %>"><%= stats.bez_odpowiedzi || 0 %></span>
+      </div>
     </div>
 
     <!-- Filter tabs -->
@@ -80,6 +87,11 @@
                 <td class="px-4 py-3 text-neutral-300 max-w-[160px] truncate">
                   <% if (thread.lead_email) { %>
                     <a href="mailto:<%= thread.lead_email %>" class="hover:text-amber-400 transition-colors"><%= thread.lead_email %></a>
+                    <%# Numer sprawy stoi TU, bo to nim odpisuje sie na tego
+                        maila. Bez niego trzeba go szukac w zgloszeniach. %>
+                    <% if (thread.lead_ref) { %>
+                      <span class="block font-mono text-[10px] text-amber-300"><%= thread.lead_ref %></span>
+                    <% } %>
                   <% } else { %>
                     <span class="text-neutral-600"> - </span>
                   <% } %>
@@ -181,14 +193,22 @@
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `tag=${tag}`,
         });
-        if (!resp.ok) throw new Error('Server error');
+        const wynik = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(wynik.error || 'Server error');
+        // Uznanie watku za zapytanie ZAKLADA sprawe z numerem. Numer trzeba
+        // zobaczyc od razu, bo to nim odpisuje sie na tego maila, wiec po
+        // zalozeniu przeladowujemy liste zamiast przemalowac sama plakietke.
+        if (wynik.zalozono && wynik.quoteRef) {
+          location.reload();
+          return;
+        }
         const badge = document.getElementById(`tag-badge-${id}`);
         if (badge) {
           badge.className = `px-2 py-0.5 rounded text-xs font-medium ${tagColors[tag] || tagColors.unclassified}`;
           badge.textContent = tagLabels[tag] || '?';
         }
       } catch (e) {
-        alert('Błąd zapisu tagu');
+        alert('Nie udało się oznaczyć wątku: ' + e.message);
       }
     }
   </script>

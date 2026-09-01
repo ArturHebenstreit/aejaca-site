@@ -8,6 +8,7 @@ import { staleRates, ageHours, STARTUP_REFETCH_AFTER_H, fetchCronExpressions, mo
 import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
+import { oznaczWatek } from "./watkiPoczty.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
@@ -2117,6 +2118,31 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
  * pozycja, plik zostaje podpiety, a lead dostaje stan "quoted", zeby nie dalo
  * sie zrobic z niego drugiej oferty.
  */
+/**
+ * Rozstrzygniecie o watku mailowym: zapytanie, nie zapytanie, spam.
+ * Cala mechanika stoi w `watkiPoczty.js`, bo te sama decyzje podejmuje takze
+ * klasyfikacja automatyczna przy pierwszej wiadomosci.
+ */
+app.post("/api/email-threads/:id/tag", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Brak numeru watku" });
+
+  try {
+    const wynik = await oznaczWatek(pool, id, String(req.body?.tag || ""));
+    if (wynik.zalozono) console.log(`[poczta] watek ${id} uznany za zapytanie, sprawa ${wynik.quoteRef}`);
+    res.json({ ok: true, ...wynik });
+  } catch (e) {
+    if (e.code === "bad_tag") return res.status(400).json({ error: e.message, code: e.code });
+    if (e.code === "not_found") return res.status(404).json({ error: e.message, code: e.code });
+    if (e.code === "no_sender") return res.status(409).json({ error: e.message, code: e.code });
+    console.error("[poczta] oznaczenie watku nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie oznaczyc watku" });
+  }
+});
+
 app.post("/api/quotes/from-lead", express.json({ limit: "64kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

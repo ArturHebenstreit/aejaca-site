@@ -175,10 +175,21 @@
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">
                   <%# Wycena ze zgloszenia zachowuje JEGO numer, wiec klient
-                      przez cala droge posluguje sie jednym. Zgloszenie juz
-                      przepisane ma stan "quoted" i przycisk znika: druga oferta
-                      na to samo zapytanie to dwie rozne obietnice. %>
-                  <% if (lead.status !== "quoted") { %>
+                      przez cala droge posluguje sie jednym. Przycisk znika, gdy
+                      oferta pod tym numerem ISTNIEJE: druga oferta na to samo
+                      zapytanie to dwie rozne obietnice.
+                      Pytamy o istnienie oferty, a nie o pole `status`. Pole
+                      zostawalo na "quoted" takze po skasowaniu oferty, wiec
+                      zgloszenie ladowalo w slepym zaulku: oferty nie ma,
+                      przycisku tez nie. %>
+                  <%# Watek oznaczony jako "nie lead" albo spam nie prowadzi do
+                      oferty. Decyzja jest odwracalna: wystarczy oznaczyc watek
+                      z powrotem jako zapytanie i przycisk wraca. Zalozonej
+                      sprawy nie kasujemy, bo numer moze byc juz
+                      w korespondencji. %>
+                  <% if (lead.odrzucony) { %>
+                    <span class="text-[10px] text-neutral-500 mr-2" title="Wątek oznaczony jako nie lead. Zmień oznaczenie w Wiadomościach, żeby móc zrobić ofertę.">nie lead</span>
+                  <% } else if (!lead.ma_wycene) { %>
                     <form method="POST" action="/leads/<%= lead.id %>/do-wyceny" class="inline-block mr-2">
                       <button type="submit" class="text-xs px-2 py-1 rounded border border-amber-700 text-amber-400 hover:bg-amber-950 transition-colors whitespace-nowrap">
                         Zrób wycenę

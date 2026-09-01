@@ -227,7 +227,7 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, wlasnyRuch, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, wlasnyRuch, poczta, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
@@ -259,6 +259,19 @@ app.get("/dashboard", requireAuth, async (req, res) => {
           (SELECT device FROM events WHERE COALESCE(internal, FALSE) ORDER BY ts DESC LIMIT 1) AS ostatnie_urzadzenie
         FROM events WHERE COALESCE(internal, FALSE)
       `).catch(() => ({ rows: [{}] })),
+      // Poczta czekajaca na nas. Dwie rozne rzeczy, obie osobno: watki, o
+      // ktorych nikt nie rozstrzygnal, i te, gdzie ktos napisal i czeka na
+      // odpowiedz. Skrzynka jest w panelu osobna strona, wiec bez tej liczby
+      // na pulpicie nieodpisany mail nie odzywa sie znikad.
+      pool.query(`SELECT
+        COUNT(*) FILTER (WHERE tag = 'unclassified') AS do_decyzji,
+        COUNT(*) FILTER (
+          WHERE tag NOT IN ('spam', 'not_lead')
+            AND (SELECT em.direction FROM email_messages em
+                  WHERE em.thread_id = email_threads.id
+                  ORDER BY em.received_at DESC LIMIT 1) = 'inbound'
+        ) AS bez_odpowiedzi
+        FROM email_threads`).catch(() => ({ rows: [{ do_decyzji: 0, bez_odpowiedzi: 0 }] })),
       pool.query("SELECT COUNT(*) as total FROM laser_matrix").catch(() => ({ rows: [{ total: '?' }] })),
       pool.query("SELECT COUNT(*) as count FROM gemstone_prices").catch(() => ({ rows: [{ count: '0' }] })),
       pool.query("SELECT COUNT(*) FROM filament_types WHERE is_active=TRUE").catch(() => ({ rows: [{ count: '0' }] })),
@@ -272,6 +285,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       recentSubs: recentSubs.rows,
       analyticsKpi: analyticsKpi.rows[0] || {},
       wlasnyRuch: wlasnyRuch.rows[0] || {},
+      poczta: poczta.rows[0] || { do_decyzji: 0, bez_odpowiedzi: 0 },
       SITE_URL,
       laserMatrixCount: laserMatrixCount.rows[0].total,
       gemstoneCount: parseInt(gemResult.rows[0].count),
@@ -289,7 +303,18 @@ app.get("/leads", requireAuth, async (req, res) => {
   const offset = (page - 1) * limit;
   try {
     const [rows, count, byCalc, statusCounts] = await Promise.all([
-      pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT $1 OFFSET $2", [limit, offset]),
+      // `ma_wycene` liczy sie z ISTNIENIA oferty, a nie z pola `status`.
+      // Skasowanie oferty zostawialo zgloszenie w stanie "quoted", czyli
+      // w slepym zaulku: oferty juz nie ma, a przycisku do zrobienia nowej
+      // tez nie ma, bo patrzyl na zapamietane pole zamiast na fakt.
+      pool.query(`SELECT l.*, EXISTS (
+                    SELECT 1 FROM quotes q WHERE q.quote_ref = l.quote_ref
+                  ) AS ma_wycene,
+                  EXISTS (
+                    SELECT 1 FROM email_threads t
+                     WHERE t.lead_id = l.id AND t.tag IN ('not_lead', 'spam')
+                  ) AS odrzucony
+                    FROM leads l ORDER BY l.created_at DESC LIMIT $1 OFFSET $2`, [limit, offset]),
       pool.query("SELECT COUNT(*) as total FROM leads"),
       pool.query("SELECT calculator, COUNT(*) as count FROM leads GROUP BY calculator ORDER BY count DESC"),
       pool.query("SELECT COUNT(*) FILTER (WHERE contacted_at IS NOT NULL) as contacted, COUNT(*) FILTER (WHERE status = 'new') as new_count FROM leads"),
@@ -1183,7 +1208,7 @@ app.get("/email-threads", requireAuth, async (req, res) => {
   try {
     const [rows, count, stats] = await Promise.all([
       pool.query(`
-        SELECT et.*, l.email as lead_email, l.status as lead_status,
+        SELECT et.*, l.email as lead_email, l.status as lead_status, l.quote_ref as lead_ref,
           (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'inbound') as inbound_count,
           (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'outbound') as outbound_count
         FROM email_threads et
@@ -1193,13 +1218,24 @@ app.get("/email-threads", requireAuth, async (req, res) => {
         LIMIT $1 OFFSET $2
       `, [limit, offset]),
       pool.query(`SELECT COUNT(*) as total FROM email_threads et ${whereClause}`),
+      // "Nieobsluzone" znaczy dwie rozne rzeczy i obie warto widziec osobno.
+      // `unclassified` to watki, o ktorych nikt jeszcze nie rozstrzygnal.
+      // `bez_odpowiedzi` to te, gdzie OSTATNIA wiadomosc jest przychodzaca,
+      // czyli czlowiek napisal i czeka. Spam i "nie lead" sie tu nie licza:
+      // nieodpisanie na reklame nie jest zaniedbaniem.
       pool.query(`SELECT
         COUNT(*) as total,
         COUNT(*) FILTER (WHERE tag = 'lead') as leads,
         COUNT(*) FILTER (WHERE tag = 'spam') as spam,
         COUNT(*) FILTER (WHERE tag = 'not_lead') as not_lead,
         COUNT(*) FILTER (WHERE tag = 'unclassified') as unclassified,
-        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today,
+        COUNT(*) FILTER (
+          WHERE tag NOT IN ('spam', 'not_lead')
+            AND (SELECT em.direction FROM email_messages em
+                  WHERE em.thread_id = email_threads.id
+                  ORDER BY em.received_at DESC LIMIT 1) = 'inbound'
+        ) as bez_odpowiedzi
         FROM email_threads`),
     ]);
     res.render("email-threads", {
@@ -1216,13 +1252,16 @@ app.get("/email-threads", requireAuth, async (req, res) => {
   }
 });
 
+// Oznaczenie watku idzie przez API, a nie prosto do bazy. Uznanie watku za
+// zapytanie ZAKLADA sprawe z numerem, a numery nadaje wylacznie chat-api
+// (ADR-0032). Panel piszacy tu po swojemu bylby drugim generatorem numerow.
 app.post("/email-threads/:id/tag", requireAuth, async (req, res) => {
-  const { tag } = req.body;
-  const valid = ["spam", "lead", "not_lead", "unclassified"];
-  if (!valid.includes(tag)) return res.status(400).json({ error: "invalid tag" });
   try {
-    await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, req.params.id]);
-    res.json({ ok: true });
+    const r = await shopApi(`/api/email-threads/${encodeURIComponent(req.params.id)}/tag`, {
+      method: "POST",
+      body: { tag: req.body.tag },
+    });
+    res.json(r);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -247,22 +247,17 @@ export async function processGmailMessage(gmail, pool, messageId) {
 
       if (leadRes.rows.length > 0) {
         leadId = leadRes.rows[0].id;
-      } else if (direction === "inbound") {
-        // Mail od nieznanego nadawcy zaklada sprawe. Dostaje NUMER, tak samo
-        // jak zgloszenie z formularza: bez numeru nie da sie odpisac tak, zeby
-        // obie strony wiedzialy, o ktorej sprawie mowia, a wycena zrobiona
-        // pozniej szlaby pod innym oznaczeniem niz korespondencja.
-        //
-        // Tresc pierwszej wiadomosci idzie do opisu, bo to ona jest zapytaniem.
-        // Wczesniej zostawal sam temat i po tygodniu nie bylo wiadomo, o co
-        // czlowiek pytal.
-        const newLead = await pool.query(
-          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
-           VALUES ($1, 'pl', 'email', 'email', $2, $3, $4, 'new') RETURNING id`,
-          [matchEmail, subject.slice(0, 400), String(bodyText || "").slice(0, 8000), generateQuoteRef()]
-        );
-        leadId = newLead.rows[0].id;
       }
+      // Mail od NIEZNANEGO nadawcy NIE zaklada juz sprawy sam (decyzja
+      // wlasciciela, 2026-09-01). Zakladal, i numer sprawy dostawal wtedy
+      // newsletter, faktura od dostawcy i oferta pozycjonowania. Rownolegle
+      // panel mial przyciski "Lead / Nie lead / Spam", ktore zmienialy sam
+      // kolor plakietki: dwie decyzje o jednej rzeczy, jedna automatyczna
+      // i slepa, druga reczna i bezczynna.
+      //
+      // Teraz watek czeka w skrzynce jako `unclassified`, a sprawe z numerem
+      // zaklada dopiero oznaczenie go jako zapytanie:
+      // POST /api/email-threads/:id/tag z tagiem "lead".
     }
 
     // Find or create thread
@@ -296,7 +291,19 @@ export async function processGmailMessage(gmail, pool, messageId) {
       if (direction === "inbound") {
         const { tag, lang } = await classifyEmailThreadFull(subject, bodyText);
         if (tag !== "unclassified") {
-          await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, threadDbId]);
+          // Klasyfikacja idzie ta sama droga co klikniecie w panelu, wiec
+          // uznanie za zapytanie zaklada sprawe z numerem tak samo. Dwie kopie
+          // tej decyzji rozjechalyby sie po cichu: automat zakladalby sprawe
+          // inaczej niz czlowiek, a wygladalo by to identycznie.
+          //
+          // Wiadomosci nie ma jeszcze w tabeli (zapisujemy ja nizej), wiec
+          // adres, temat i tresc podajemy wprost.
+          // Wczytanie w locie, bo `watkiPoczty.js` siega po `extractEmail`
+          // z tego pliku: staly import zrobilby z tego kolo.
+          const { oznaczWatek } = await import("./watkiPoczty.js");
+          await oznaczWatek(pool, threadDbId, tag, {
+            from_addr: from, subject, body_text: bodyText,
+          }).catch((e) => console.error("[poczta] klasyfikacja nie zapisala sie:", e.message));
         }
         // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
         // Only for brand-new inbound lead threads - never on ongoing replies,

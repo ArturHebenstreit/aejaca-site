@@ -66,17 +66,30 @@ export const TRUSTPILOT_BUSINESS = {
   profileUrl: "https://www.trustpilot.com/review/aejaca.com",
   writeReviewUrl: SELLER.reviews.trustpilot,
   // TrustScore, nie średnia arytmetyczna. Trustpilot waży ocenę wolumenem i
-  // świeżością, więc przy trzech opiniach na 5 gwiazdek wskaźnik wynosi 4,0
-  // i będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej liczby jako
-  // nagłówka: zaniża ona to, co klienci faktycznie ocenili, i stoi obok
-  // Google 5,0. Prezentujemy fakt rozkładu gwiazdek, patrz Reviews.jsx.
+  // świeżością, więc przy czterech opiniach na 5 gwiazdek wskaźnik nadal
+  // wynosi 4,0 i będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej
+  // liczby jako nagłówka: zaniża ona to, co klienci faktycznie ocenili, i stoi
+  // obok Google 5,0. Prezentujemy fakt rozkładu gwiazdek, patrz Reviews.jsx.
   rating: 4.0,
-  totalReviews: 3,
+  totalReviews: 4,
   // Udział ocen 5-gwiazdkowych. 1 = wszystkie.
   fiveStarShare: 1,
 };
 
 export const TRUSTPILOT_REVIEWS = [
+  {
+    id: "tp4",
+    author: "Anastasiia Orekhova Nisa",
+    rating: 5,
+    date: "2026-09-01",
+    originalLang: "pl",
+    title: "Polecam",
+    text: "Teraz wspólnie pracujemy nad projektem z AEJaCA: jestem bardzo zadowolona z wysokiej jakości i szybkości wykonania zamówień! Dziękuję bardzo!",
+    translations: {
+      en: "We are working on a project with AEJaCA right now: I am very happy with the high quality and the speed of the work! Thank you very much!",
+      de: "Wir arbeiten gerade gemeinsam mit AEJaCA an einem Projekt: Ich bin mit der hohen Qualität und der schnellen Ausführung sehr zufrieden! Vielen Dank!",
+    },
+  },
   {
     id: "tp3",
     author: "Dorota Wysocka",
