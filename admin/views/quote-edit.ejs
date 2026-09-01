@@ -431,8 +431,8 @@
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <button type="button" data-dodaj
-                  class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
+          <button data-dymek="Dopisz pozycję do oferty. Kwota całości przeliczy się sama" type="button" data-dodaj
+                  class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
             + Dodaj pozycję
           </button>
           <p class="text-neutral-600 text-[10px] max-w-md leading-relaxed">
@@ -528,7 +528,7 @@
 
       <div class="flex flex-wrap items-center gap-3">
         <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/send">
-          <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors"
+          <button data-dymek="Wyślij ofertę na adres klienta razem z odnośnikiem do zapłaty" class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors"
                   <%= quote.totalGrosze ? '' : 'disabled' %>>
             <%= wyslana ? 'Wyślij ponownie' : 'Wyślij ofertę' %>
           </button>
@@ -562,7 +562,7 @@
             Wiem, że stoi za nią zamówienie
           </label>
         <% } %>
-        <button class="px-4 py-2 rounded-lg border border-red-400/30 text-red-300 text-sm hover:border-red-400/60 transition-colors">
+        <button data-dymek="Skasuj ofertę. Zgłoszenie, z którego powstała, wróci do stanu sprzed niej i będzie można zrobić nową" class="dymek px-4 py-2 rounded-lg border border-red-400/30 text-red-300 text-sm hover:border-red-400/60 transition-colors">
           Usuń wycenę
         </button>
       </div>

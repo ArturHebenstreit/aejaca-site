@@ -301,6 +301,43 @@ app.get("/leads", requireAuth, async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = 50;
   const offset = (page - 1) * limit;
+
+  // Filtry z BIALEJ LISTY, a nie sklejane z parametru. Warunek przepisany
+  // wprost do zapytania bylby wstrzyknieciem, i to takim, ktore przechodzi
+  // przez panel. Kazdy kafelek u gory strony ma tu swoj wiersz i to jest cala
+  // jego mechanika: kafelek jest odnosnikiem, nie ozdoba.
+  const FILTRY = {
+    wszystkie: "TRUE",
+    skontaktowane: "l.contacted_at IS NOT NULL",
+    nowe: "l.status = 'new'",
+    // Zgloszenia, ktore czekaja NA NAS: nikt sie nie odezwal i nie ma jeszcze
+    // oferty. To one gina najlatwiej.
+    bez_reakcji: "l.contacted_at IS NULL AND NOT EXISTS (SELECT 1 FROM quotes q WHERE q.quote_ref = l.quote_ref)",
+    wycenione: "EXISTS (SELECT 1 FROM quotes q WHERE q.quote_ref = l.quote_ref)",
+  };
+  const filtr = Object.hasOwn(FILTRY, String(req.query.filtr || "")) ? String(req.query.filtr) : "wszystkie";
+
+  // Kalkulator przychodzi jako WARTOSC parametru, nie jako fragment zapytania,
+  // wiec nie musi stac na bialej liscie. Pusty znaczy "wszystkie".
+  const kalkulator = String(req.query.kalkulator || "").slice(0, 60);
+
+  // Sortowanie tez z bialej listy: ORDER BY nie przyjmuje parametru wiazanego.
+  const SORTY = {
+    najnowsze: "l.created_at DESC",
+    najstarsze: "l.created_at ASC",
+    email: "l.email ASC NULLS LAST",
+    kalkulator: "l.calculator ASC NULLS LAST, l.created_at DESC",
+  };
+  const sort = Object.hasOwn(SORTY, String(req.query.sort || "")) ? String(req.query.sort) : "najnowsze";
+
+  const warunki = [FILTRY[filtr]];
+  const parametry = [];
+  if (kalkulator) {
+    parametry.push(kalkulator);
+    warunki.push(`l.calculator = $${parametry.length}`);
+  }
+  const gdzie = `WHERE ${warunki.join(" AND ")}`;
+
   try {
     const [rows, count, byCalc, statusCounts] = await Promise.all([
       // `ma_wycene` liczy sie z ISTNIENIA oferty, a nie z pola `status`.
@@ -313,11 +350,34 @@ app.get("/leads", requireAuth, async (req, res) => {
                   EXISTS (
                     SELECT 1 FROM email_threads t
                      WHERE t.lead_id = l.id AND t.tag IN ('not_lead', 'spam')
-                  ) AS odrzucony
-                    FROM leads l ORDER BY l.created_at DESC LIMIT $1 OFFSET $2`, [limit, offset]),
-      pool.query("SELECT COUNT(*) as total FROM leads"),
+                  ) AS odrzucony,
+                  w.id AS watek_id, w.tag AS watek_tag, w.tag_sugestia AS watek_sugestia
+                    FROM leads l
+                    -- Watek mailowy, z ktorego zgloszenie powstalo. Bierzemy
+                    -- NAJNOWSZY, bo ten sam klient bywa autorem kilku, a decyzja
+                    -- "lead czy nie" dotyczy tego, ktory wlasnie czytamy.
+                    LEFT JOIN LATERAL (
+                      SELECT t.id, t.tag, t.tag_sugestia FROM email_threads t
+                       WHERE t.lead_id = l.id ORDER BY t.last_message_at DESC NULLS LAST LIMIT 1
+                    ) w ON TRUE
+                    ${gdzie}
+                   ORDER BY ${SORTY[sort]}
+                   LIMIT $${parametry.length + 1} OFFSET $${parametry.length + 2}`,
+        [...parametry, limit, offset]),
+      pool.query(`SELECT COUNT(*) as total FROM leads l ${gdzie}`, parametry),
+      // Liczniki licza CALOSC, a nie przefiltrowana liste: kafelek ma mowic,
+      // ile jest wszystkiego danego rodzaju, takze wtedy, gdy patrzysz na co
+      // innego. Inaczej po kliknieciu w "Skontaktowano 36" wszystkie pozostale
+      // kafelki pokazywalyby zera i nie dalo by sie z nich wrocic.
       pool.query("SELECT calculator, COUNT(*) as count FROM leads GROUP BY calculator ORDER BY count DESC"),
-      pool.query("SELECT COUNT(*) FILTER (WHERE contacted_at IS NOT NULL) as contacted, COUNT(*) FILTER (WHERE status = 'new') as new_count FROM leads"),
+      pool.query(`SELECT
+        COUNT(*) as wszystkie,
+        COUNT(*) FILTER (WHERE contacted_at IS NOT NULL) as contacted,
+        COUNT(*) FILTER (WHERE status = 'new') as new_count,
+        COUNT(*) FILTER (WHERE contacted_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM quotes q WHERE q.quote_ref = leads.quote_ref)) as bez_reakcji,
+        COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM quotes q WHERE q.quote_ref = leads.quote_ref)) as wycenione
+        FROM leads`),
     ]);
     res.render("leads", {
       user: req.user,
@@ -328,114 +388,83 @@ app.get("/leads", requireAuth, async (req, res) => {
       page,
       pages: Math.ceil(count.rows[0].total / limit),
       byCalc: byCalc.rows,
+      filtr, kalkulator, sort,
+      // Liczniki calosci, do kafelkow.
+      wszystkieCount: parseInt(statusCounts.rows[0]?.wszystkie || 0),
       contactedCount: parseInt(statusCounts.rows[0]?.contacted || 0),
       newCount: parseInt(statusCounts.rows[0]?.new_count || 0),
+      bezReakcjiCount: parseInt(statusCounts.rows[0]?.bez_reakcji || 0),
+      wycenioneCount: parseInt(statusCounts.rows[0]?.wycenione || 0),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
   }
 });
 
-app.get("/subscribers", requireAuth, async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const limit = 50;
-  const offset = (page - 1) * limit;
-  try {
-    const [rows, count, byLang] = await Promise.all([
-      pool.query("SELECT * FROM subscribers ORDER BY subscribed_at DESC LIMIT $1 OFFSET $2", [limit, offset]),
-      pool.query("SELECT COUNT(*) as total FROM subscribers WHERE unsubscribed = FALSE"),
-      pool.query("SELECT lang, COUNT(*) as count FROM subscribers WHERE unsubscribed = FALSE GROUP BY lang ORDER BY count DESC"),
-    ]);
-    res.render("subscribers", {
-      user: req.user,
-      subscribers: rows.rows,
-      total: parseInt(count.rows[0].total),
-      page,
-      pages: Math.ceil(count.rows[0].total / limit),
-      byLang: byLang.rows,
-    });
-  } catch (err) {
-    res.status(500).render("error", { message: err.message });
-  }
-});
-
-app.get("/conversations", requireAuth, async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const filter = req.query.filter || "all";
-  const limit = 50;
-  const offset = (page - 1) * limit;
-  try {
-    const whereClause = filter === "hot" ? "WHERE hot_lead = TRUE" : "";
-    const [rows, count, stats] = await Promise.all([
-      pool.query(`SELECT * FROM conversations ${whereClause} ORDER BY created_at DESC LIMIT $1 OFFSET $2`, [limit, offset]),
-      pool.query(`SELECT COUNT(*) as total FROM conversations ${whereClause}`),
-      pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE hot_lead = TRUE) as hot, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today FROM conversations"),
-    ]);
-    res.render("conversations", {
-      user: req.user,
-      conversations: rows.rows,
-      total: parseInt(count.rows[0].total),
-      page,
-      pages: Math.ceil(count.rows[0].total / limit),
-      stats: stats.rows[0],
-      filter,
-    });
-  } catch (err) {
-    res.status(500).render("error", { message: err.message });
-  }
-});
-
-// --- Delete routes ---
-app.post("/leads/:id/mark-contacted", requireAuth, async (req, res) => {
-  const { note } = req.body || {};
-  await pool.query(
-    `UPDATE leads SET contacted_at = NOW(), status = 'contacted', contact_note = $2 WHERE id = $1`,
-    [req.params.id, (note || "").trim().slice(0, 500) || null]
-  ).catch(() => {});
-  res.redirect("/leads");
-});
-
-app.post("/leads/:id/unmark-contacted", requireAuth, async (req, res) => {
-  await pool.query(
-    `UPDATE leads SET contacted_at = NULL, status = 'new', contact_note = NULL WHERE id = $1`,
-    [req.params.id]
-  ).catch(() => {});
-  res.redirect("/leads");
-});
-
-app.post("/leads/:id/update-status", requireAuth, async (req, res) => {
-  const { status } = req.body || {};
-  const valid = ["new", "contacted", "closed", "spam"];
-  if (!valid.includes(status)) return res.redirect("/leads");
-  const extra = status === "contacted"
-    ? ", contacted_at = COALESCE(contacted_at, NOW())"
-    : "";
-  await pool.query(
-    `UPDATE leads SET status = $2${extra} WHERE id = $1`,
-    [req.params.id, status]
-  ).catch(() => {});
-  res.redirect("/leads");
-});
-
-/**
- * Zgloszenie w wycene, jednym klikiem i BEZ ZMIANY NUMERU.
- *
- * Przepisywanie recznie konczylo sie tym, ze oferta szla pod nowym numerem,
- * a klient mial dwa: jeden z potwierdzenia i drugi z oferty. Numer sprawy
- * zostaje ten sam przez cala droge.
- */
+// Wycena ze zgloszenia. Numer nadaje chat-api, wiec panel go tylko wola:
+// dwa generatory jednego formatu rozjezdzaja sie przy pierwszej zmianie
+// ksztaltu numeru, i to po cichu, bo oba dzialaja.
 app.post("/leads/:id/do-wyceny", requireAuth, async (req, res) => {
   try {
     const r = await shopApi("/api/quotes/from-lead", { method: "POST", body: { leadId: Number(req.params.id) } });
     back(res, `/quotes/${r.quoteRef}`, {
       msg: r.reused ? `Wycena ${r.quoteRef} juz istniala` : `Zalozono wycene ${r.quoteRef}`,
     });
-  } catch (err) { back(res, "/leads", { err: err.message }); }
+  } catch (err) { back(res, req.body.back || "/leads", { otwarte: req.params.id, err: err.message }); }
+});
+
+/**
+ * Poprawienie zgloszenia z formularza edycyjnego.
+ *
+ * Tresc, ktora PRZYSZLA OD KLIENTA (adres, opis, parametry zapytania), nie jest
+ * edytowalna i nie ma jej w tym zapisie. To jest zapis tego, co powiedzial
+ * nam czlowiek, a nie nasza notatka: poprawiona bylaby juz czyms innym niz
+ * dowodem, czego dotyczylo zapytanie. Zmieniamy wylacznie to, co nasze:
+ * stan sprawy, slad kontaktu i notatke.
+ */
+app.post("/leads/:id/edit", requireAuth, async (req, res) => {
+  const STANY = ["new", "contacted", "quoted", "closed", "spam"];
+  const stan = STANY.includes(String(req.body.status || "")) ? String(req.body.status) : null;
+  const kiedy = String(req.body.contactedAt || "").trim();
+  if (kiedy && !/^\d{4}-\d{2}-\d{2}$/.test(kiedy)) {
+    return back(res, req.body.back || "/leads", { otwarte: req.params.id, err: "Datę kontaktu podaj jako RRRR-MM-DD" });
+  }
+  const notatka = String(req.body.contactNote || "").slice(0, 4000) || null;
+  try {
+    await pool.query(
+      `UPDATE leads
+          SET status = COALESCE($2, status),
+              contacted_at = $3,
+              contact_note = $4
+        WHERE id = $1`,
+      [req.params.id, stan, kiedy ? `${kiedy}T12:00:00Z` : null, notatka]
+    );
+    back(res, req.body.back || "/leads", { otwarte: req.params.id, msg: "Zgłoszenie zapisane" });
+  } catch (err) {
+    back(res, req.body.back || "/leads", { otwarte: req.params.id, err: err.message });
+  }
+});
+
+// Decyzja "lead czy nie lead" podjeta z listy zgloszen. Ta sama trasa API co
+// w skrzynce, bo to ta sama decyzja: dwie kopie rozjechalyby sie po cichu.
+app.post("/leads/:id/watek-tag", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/email-threads/${encodeURIComponent(req.body.watekId)}/tag`, {
+      method: "POST",
+      body: { tag: req.body.tag },
+    });
+    back(res, req.body.back || "/leads", { otwarte: req.params.id, msg: "Oznaczenie zapisane" });
+  } catch (err) {
+    back(res, req.body.back || "/leads", { otwarte: req.params.id, err: err.message });
+  }
 });
 
 app.post("/leads/:id/delete", requireAuth, async (req, res) => {
   await pool.query("DELETE FROM leads WHERE id = $1", [req.params.id]);
-  res.redirect("/leads");
+  // Wracamy do listy w tym samym ukladzie, z ktorego przyszlo kasowanie:
+  // filtr i kolejnosc gubione przy kazdym usunieciu znaczyly szukanie
+  // wiersza od nowa.
+  back(res, req.body.back || "/leads", { msg: "Zgłoszenie usunięte" });
 });
 
 app.post("/subscribers/:id/delete", requireAuth, async (req, res) => {

@@ -359,7 +359,7 @@
                                     (`formaction`). Drugie pole na te sama kwote byloby dwoma
                                     miejscami na jedna liczbe, a wpisanie jej nie w to okienko
                                     konczyloby sie prosba o doplate na przypadkowa kwote. %>
-                                <button formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall"
+                                <button data-dymek="Wyślij prośbę o brakującą kwotę z terminem trzech dni" class="dymek" formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall"
                                         class="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-orange-400/40 text-orange-300 text-[10px] hover:bg-orange-400/10 transition-colors">
                                   Napisz o dopłatę, 3 dni
                                 </button>
@@ -371,7 +371,7 @@
                                 <input type="hidden" name="back" value="<%= POWROT %>" />
                                 <input type="text" name="reason" maxlength="200" placeholder="Powód (opcjonalnie)"
                                        class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[10px] text-neutral-300 mb-1" />
-                                <button class="w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[10px] hover:border-white/35 transition-colors">
+                                <button data-dymek="Zamknij zamówienie przed wpłatą. Towar i kod rabatowy wracają do sprzedaży" class="dymek w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[10px] hover:border-white/35 transition-colors">
                                   Rezygnacja, zwolnij towar
                                 </button>
                               </form>
@@ -429,7 +429,7 @@
                                          class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
                                   <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
                                 </label>
-                                <button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                                <button data-dymek="Praca skończona, rzecz czeka na wydanie. Klient zobaczy etap „Gotowe”" class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
                                   <%- IKONY.fistaszek %> Prace zakończone
                                 </button>
                               </form>
@@ -490,7 +490,7 @@
                                   <input name="shippedOn" type="date"
                                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
                                 </label>
-                                <button class="w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-[11px] hover:border-white/35 transition-colors">
+                                <button data-dymek="Paczka oddana kurierowi albo wydana do rąk. Pozycja ZOSTAJE na liście do potwierdzenia odbioru" class="dymek w-full px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-200 text-[11px] hover:border-white/35 transition-colors">
                                   Przekazano
                                 </button>
                               </form>
@@ -554,7 +554,7 @@
                                 <%# Odbior potwierdza KLIENT, a my go tu odnotowujemy. Napis
                                     "zamknij i schowaj" mowil o tym, co dzieje sie z wierszem
                                     w tabeli, a nie o tym, co sie stalo ze zleceniem. %>
-                                <button class="px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[11px] hover:border-white/35 transition-colors">
+                                <button data-dymek="Klient potwierdził odbiór. Pozycja schodzi z listy, a trzy dni później wychodzi prośba o opinię" class="dymek px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-400 text-[11px] hover:border-white/35 transition-colors">
                                   Odebrano
                                 </button>
                               </form>
@@ -576,7 +576,7 @@
                                   <input name="leadDaysAgreedAt" type="date" value="<%= o.leadDaysAgreedAt || '' %>"
                                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
                                 </label>
-                                <button class="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                                <button data-dymek="Zapisz liczbę dni i datę ustalenia. Termin przelicza się od startu zegara, nie od dzisiaj" class="dymek w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
                                   <%- IKONY.fistaszek %> Zapisz termin
                                 </button>
                               </form>
@@ -646,7 +646,7 @@
                             <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/refunded" class="mt-1.5"
                                   onsubmit="return confirm('Pieniądze <%= o.refundPLN %> PLN naprawdę poszły do klienta?')">
                               <input type="hidden" name="back" value="<%= POWROT %>" />
-                              <button class="px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                              <button data-dymek="Potwierdź, że pieniądze naprawdę poszły. Sprawa znika z czerwonego paska nad listą" class="dymek px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
                                 Zwrot wysłany
                               </button>
                             </form>
@@ -695,7 +695,7 @@
                               <input type="checkbox" name="notify" checked class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
                               <span class="text-neutral-400 text-[10px]">Napisz do klienta</span>
                             </label>
-                            <button class="w-full px-2.5 py-1.5 rounded-lg border border-red-400/40 text-red-300 text-[11px] hover:bg-red-400/10 transition-colors">
+                            <button data-dymek="Zamknij bez realizacji wybraną drogą. Towar i kod wracają do sprzedaży, kwota zwrotu zapisuje się do oddania" class="dymek w-full px-2.5 py-1.5 rounded-lg border border-red-400/40 text-red-300 text-[11px] hover:bg-red-400/10 transition-colors">
                               Zamknij sprawę
                             </button>
                           </form>

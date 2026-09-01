@@ -112,7 +112,7 @@
         </label>
       </div>
 
-      <button class="mt-4 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium">
+      <button data-dymek="Wystaw kod rabatowy o podanych warunkach" class="dymek mt-4 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium">
         Utwórz
       </button>
       <p class="text-neutral-600 text-[11px] mt-2">
@@ -192,8 +192,8 @@
                     <% if (!c.used_count && !c.pending) { %>
                       <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/delete"
                             onsubmit="return confirm('Skasować kod <%= c.code %>? Tej operacji nie da się cofnąć.')">
-                        <button title="Skasuj kod"
-                                class="px-2 py-1.5 rounded-lg border border-white/10 text-neutral-600 text-[11px]
+                        <button data-dymek="Usuń kod. Kody już użyte zostają w historii zamówień" title="Skasuj kod"
+                                class="dymek px-2 py-1.5 rounded-lg border border-white/10 text-neutral-600 text-[11px]
                                        hover:border-red-400/50 hover:text-red-300 transition-colors">
                           Kasuj
                         </button>

@@ -134,16 +134,16 @@
                         automat: <%= thread.tag_sugestia === 'lead' ? 'lead' : thread.tag_sugestia === 'spam' ? 'spam' : 'nie lead' %>
                       </span>
                     <% } %>
-                    <button onclick="setTag(<%= thread.id %>, 'lead')"
-                      class="px-2 py-0.5 text-xs rounded border border-emerald-800 text-emerald-400 hover:bg-emerald-900 transition-colors">
+                    <button data-dymek="To zapytanie: zakłada sprawę z numerem i wysyła klientowi potwierdzenie odbioru" onclick="setTag(<%= thread.id %>, 'lead')"
+                      class="dymek px-2 py-0.5 text-xs rounded border border-emerald-800 text-emerald-400 hover:bg-emerald-900 transition-colors">
                       Lead
                     </button>
-                    <button onclick="setTag(<%= thread.id %>, 'not_lead')"
-                      class="px-2 py-0.5 text-xs rounded border border-neutral-700 text-neutral-400 hover:bg-neutral-800 transition-colors">
+                    <button data-dymek="Nie zapytanie: zostaje w skrzynce, nie zakłada sprawy i nie liczy się jako nieobsłużone" onclick="setTag(<%= thread.id %>, 'not_lead')"
+                      class="dymek px-2 py-0.5 text-xs rounded border border-neutral-700 text-neutral-400 hover:bg-neutral-800 transition-colors">
                       Nie Lead
                     </button>
-                    <button onclick="setTag(<%= thread.id %>, 'spam')"
-                      class="px-2 py-0.5 text-xs rounded border border-red-900 text-red-400 hover:bg-red-950 transition-colors">
+                    <button data-dymek="Spam: znika z domyślnej listy i nie liczy się jako nieobsłużone" onclick="setTag(<%= thread.id %>, 'spam')"
+                      class="dymek px-2 py-0.5 text-xs rounded border border-red-900 text-red-400 hover:bg-red-950 transition-colors">
                       Spam
                     </button>
                   </div>
