@@ -49,6 +49,7 @@ import {
   sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { DROGI_ZAMKNIECIA, drogaZamkniecia, domyslnyZwrotGrosze } from "./drogiZamkniecia.js";
+import { dataISO, dzisISO } from "./daty.js";
 import {
   itnAction, paymentStartProblem, publicPaymentState,
 } from "./paymentState.js";
@@ -1840,7 +1841,7 @@ app.get("/api/quotes/:ref", async (req, res) => {
   // Kruszec liczy sie z dnia otwarcia, robocizna zostaje ta obiecana.
   // Po terminie waznosci nie przeliczamy juz niczego: wycena wygasla,
   // a pokazywanie swiezej kwoty pod stara data udawaloby, ze nadal obowiazuje.
-  const expired = quote.valid_until && String(quote.valid_until).slice(0, 10) < new Date().toISOString().slice(0, 10);
+  const expired = Boolean(dataISO(quote.valid_until)) && dataISO(quote.valid_until) < dzisISO();
   const ratesNow = !expired && quote.rates_snapshot ? await currentMetalRates() : null;
 
   // Rodzaj pozycji i to, co jest wybrane, licza sie z tej samej reguly, ktora
@@ -1952,7 +1953,7 @@ app.get("/api/quotes/:ref", async (req, res) => {
     // Tresc zapytania zostaje po stronie panelu, bo bywa notatka z rozmowy
     // pisana skrotami dla siebie, a nie dokumentem dla klienta.
     priceNote: quote.price_note,
-    validUntil: quote.valid_until,
+    validUntil: dataISO(quote.valid_until),
     expired: Boolean(expired),
     // Dane kontaktowe wraca WYLACZNIE ta trasa, chroniona tokenem, i wracaja
     // po to, zeby formularz dostawy nie kazal klientowi wpisywac drugi raz
@@ -2045,7 +2046,7 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       currency: normalizeCurrency(quote.currency, quote.lang),
       pickOne: Boolean(quote.pick_one),
       chosenItemId: quote.chosen_item_id != null ? Number(quote.chosen_item_id) : null,
-      validUntil: quote.valid_until, sentAt: quote.sent_at, createdAt: quote.created_at,
+      validUntil: dataISO(quote.valid_until), sentAt: quote.sent_at, createdAt: quote.created_at,
       accessToken: quote.access_token,
       // Kod odbioru ma sens WYLACZNIE przy kliencie bez adresu e-mail: tylko
       // on nie ma czym potwierdzic tozsamosci, gdy wejdzie na strone oferty
@@ -2579,7 +2580,7 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   }
   // Po terminie waznosci kwota przestaje obowiazywac, wiec przyjecie zaplaty
   // znaczyloby zobowiazanie sie do liczby, ktorej juz nie potwierdzamy.
-  if (quote.valid_until && String(quote.valid_until).slice(0, 10) < new Date().toISOString().slice(0, 10)) {
+  if (dataISO(quote.valid_until) && dataISO(quote.valid_until) < dzisISO()) {
     return res.status(410).json({ error: "Ta oferta straciła waznosc, odezwij sie do nas po nowa", code: "expired" });
   }
 
@@ -3223,7 +3224,7 @@ async function przypomnijOKodach() {
       const wiadomosc = LEAD_MAILE.przypomnienieKodu({
         lang: jezyk, to: k.issued_to, kod: k.code,
         procent: k.value != null ? `${k.value}%` : null,
-        waznyDo: String(k.valid_to).slice(0, 10).split("-").reverse().join("."),
+        waznyDo: (dataISO(k.valid_to) || "").split("-").reverse().join("."),
         dni: dniSlownie(DNI_PRZED_KONCEM_KODU, jezyk),
       });
       const poszlo = await sendLeadMail([wiadomosc]).catch(() => false);
@@ -4251,7 +4252,7 @@ app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => 
       if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
       dane.kod = kod.code;
       dane.procent = `${procent}%`;
-      dane.waznyDo = kod.validTo ? String(kod.validTo).slice(0, 10).split("-").reverse().join(".") : null;
+      dane.waznyDo = dataISO(kod.validTo) ? dataISO(kod.validTo).split("-").reverse().join(".") : null;
     }
 
     const wiadomosc = build(dane);
@@ -4606,10 +4607,10 @@ app.get("/api/orders/queue", async (req, res) => {
     // dwa miejsca liczace to samo znaczylyby panel pokazujacy inna liczbe dni
     // niz strona zamowienia, przy tym samym zleceniu.
     leadDays: o.lead_days != null ? Number(o.lead_days) : null,
-    deadlineAt: o.deadline_at ? String(o.deadline_at).slice(0, 10) : null,
+    deadlineAt: dataISO(o.deadline_at),
     daysLeft: dniDoTerminu(o.deadline_at),
     requiresDetails: o.requires_details === true,
-    leadDaysAgreedAt: o.lead_days_agreed_at ? String(o.lead_days_agreed_at).slice(0, 10) : null,
+    leadDaysAgreedAt: dataISO(o.lead_days_agreed_at),
     // Zeton dostepu do strony zamowienia. Panel sklada z niego ten sam adres,
     // ktory klient dostal mailem po zaplacie, zeby dalo sie go wyslac ponownie
     // bez szukania w skrzynce.
@@ -4758,7 +4759,7 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   }
   res.json({
     ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel,
-    deadlineAt: zmiana.rows[0].deadline_at || null,
+    deadlineAt: dataISO(zmiana.rows[0].deadline_at),
   });
 });
 
@@ -4839,7 +4840,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
 
   // Ktore z dwoch pol terminu operator naprawde ruszyl. Panel przysyla oba
   // przy kazdym zapisie, wiec sama ich obecnosc niczego nie znaczy.
-  const terminWBazie = order.deadline_at ? String(order.deadline_at).slice(0, 10) : null;
+  const terminWBazie = dataISO(order.deadline_at);
   const dataZmieniona = termin !== undefined && termin !== terminWBazie;
   const dniZmienione = dni !== undefined && dni !== (order.lead_days == null ? null : Number(order.lead_days));
 
@@ -4948,7 +4949,7 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     productionNote: zapis.rows[0].production_note,
     leadDays: zapis.rows[0].lead_days,
     requiresDetails: zapis.rows[0].requires_details === true,
-    deadlineAt: zapis.rows[0].deadline_at ? String(zapis.rows[0].deadline_at).slice(0, 10) : null,
+    deadlineAt: dataISO(zapis.rows[0].deadline_at),
     cleared: czyszczone,
   });
 });
@@ -5040,7 +5041,7 @@ app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), a
         [order.id, ETAP_STARTU_ZEGARA, t]
       );
       status = r.rows[0].status;
-      termin = r.rows[0].deadline_at ? String(r.rows[0].deadline_at).slice(0, 10) : null;
+      termin = dataISO(r.rows[0].deadline_at);
     } else if (!komplet && order.status === "queued") {
       // Zegar cofa sie razem ze sladem po przypomnieniach. Zostawione progi
       // zamknelyby drugie podejscie: raz wyslane nie odezwaloby sie ponownie.
@@ -5878,7 +5879,7 @@ app.get("/api/orders/:ref", async (req, res) => {
     // uznaje to za rozjazd i wyrzuca cale poddrzewo (ADR-0022). Strona
     // dostaje wiec gotowa liczbe, a nie material do liczenia.
     leadDays: o.lead_days != null ? Number(o.lead_days) : null,
-    deadlineAt: o.deadline_at ? String(o.deadline_at).slice(0, 10) : null,
+    deadlineAt: dataISO(o.deadline_at),
     daysLeft: dniDoTerminu(o.deadline_at),
     requiresDetails: o.requires_details === true,
     detailsAt: o.details_at,

@@ -22,6 +22,7 @@ import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from
 import { selectedQuoteItems, terminGrupy, SAVED_QUOTE_SOURCE } from "./quotes.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
+import { dataISO } from "./daty.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
 import { describeFinding, distortionLine } from "./pricing/quoteSummary.js";
 
@@ -894,7 +895,7 @@ function internalText(order, items, attachments = []) {
     order.requires_details
       ? `TERMIN: zegar STOI, zlecenie czeka na ustalenie szczegolow${order.lead_days ? `. Po ustaleniach: ${order.lead_days} dni` : ""}`
       : order.deadline_at
-      ? `TERMIN: ${order.lead_days} dni, planowana wysylka ${String(order.deadline_at).slice(0, 10)}`
+      ? `TERMIN: ${order.lead_days} dni, planowana wysylka ${dataISO(order.deadline_at) || "?"}`
       : order.lead_days
       ? `TERMIN: ${order.lead_days} dni`
       : "TERMIN: nie ustalony przy pozycjach oferty",
@@ -1511,7 +1512,7 @@ function buildDeadlineReminder(order, items, dniDoTerminu) {
   const text = [
     `TERMIN REALIZACJI ${order.order_ref}: ${kiedy}`,
     "",
-    `Termin: ${String(order.deadline_at || "").slice(0, 10)}`,
+    `Termin: ${dataISO(order.deadline_at) || "-"}`,
     `Praca ruszyla: ${order.production_started_at ? new Date(order.production_started_at).toISOString().slice(0, 10) : "-"}`,
     `Umowiony czas: ${order.lead_days || "-"} dni`,
     `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email || "brak"}>`,
@@ -1759,6 +1760,10 @@ function przewoznik(order, lang) {
  * ramka i zdanie traci to, co miala wzmocnic. Tabela z kolorowymi kropkami
  * wyswietla sie wszedzie, lacznie z Outlookiem.
  */
+// Stemple pod kropkami ida przez `dzien()`, bo sterownik bazy oddaje daty jako
+// OBIEKTY Date. `String(data).slice(0, 10)` dawal tu "Thu Aug 27" w polskim
+// mailu i wygladalo to na date, wiec nikt tego nie sprawdzil. Reguly pilnuje
+// `scripts/check-daty.mjs`.
 function paseczek(order, lang) {
   const n = ETAP_KROKI[lang] || ETAP_KROKI.pl;
   const odbior = order.delivery_method === "pickup";
@@ -1795,7 +1800,7 @@ function paseczek(order, lang) {
     return `<td style="text-align:center;vertical-align:top;padding:0 2px;width:${Math.round(100 / kroki.length)}%">
       <div style="width:12px;height:12px;border-radius:12px;background:${kolor};margin:0 auto 8px"></div>
       <div style="font-size:11px;line-height:1.3;color:${napis};font-weight:${waga}">${esc(k.label)}</div>
-      <div style="font-size:10px;color:#bbb;margin-top:2px">${k.stempel ? esc(String(k.stempel).slice(0, 10).split("-").reverse().join(".")) : "&nbsp;"}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:2px">${k.stempel ? esc(dzien(k.stempel)) : "&nbsp;"}</div>
     </td>`;
   }).join("");
 

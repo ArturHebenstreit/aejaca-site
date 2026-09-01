@@ -14,6 +14,8 @@
 // Osobny plik, a nie stala w `server.js`, wylacznie po to, zeby te regule dalo
 // sie sprawdzic testem bez stawiania serwera i bazy.
 
+import { dataISO } from "./daty.js";
+
 /**
  * Etap pracy: z jakich stanow wolno w niego wejsc i ktora kolumna zapisuje
  * chwile wejscia.
@@ -245,7 +247,10 @@ export function terminRealizacji(start, dni) {
  */
 export function dniDoTerminu(deadline, teraz = new Date()) {
   if (!deadline) return null;
-  const cel = new Date(`${String(deadline).slice(0, 10)}T00:00:00Z`);
+  // Termin przychodzi z bazy jako OBIEKT Date, wiec obcinanie go jak napisu
+  // dawalo "Tue Sep 22T00:00:00Z", czyli date nie do odczytania, czyli `null`
+  // zamiast liczby dni. Klient nie widzial wtedy ani daty, ani odliczania.
+  const cel = new Date(`${dataISO(deadline)}T00:00:00Z`);
   if (Number.isNaN(cel.getTime())) return null;
   const dzis = new Date(`${teraz.toISOString().slice(0, 10)}T00:00:00Z`);
   return Math.round((cel.getTime() - dzis.getTime()) / 86400_000);

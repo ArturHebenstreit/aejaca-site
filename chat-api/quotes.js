@@ -11,6 +11,7 @@
 // w zamowienie do zaplaty.
 
 import { generateToken, priceItem } from "./orders.js";
+import { dataISO } from "./daty.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
 import { defaultCurrency, normalizeCurrency, eurCentsFromGrosze } from "./pricing/currency.js";
 import { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
@@ -1264,7 +1265,7 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       removed: usuniete,
       added: dodane,
       pickOne: Boolean(poZmianie[0].pick_one),
-      validUntil: koniec[0].valid_until ? String(koniec[0].valid_until.toISOString?.().slice(0, 10) ?? koniec[0].valid_until).slice(0, 10) : null,
+      validUntil: dataISO(koniec[0].valid_until),
     };
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});
