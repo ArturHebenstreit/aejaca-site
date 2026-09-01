@@ -289,7 +289,14 @@ app.get("/leads", requireAuth, async (req, res) => {
   const offset = (page - 1) * limit;
   try {
     const [rows, count, byCalc, statusCounts] = await Promise.all([
-      pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT $1 OFFSET $2", [limit, offset]),
+      // `ma_wycene` liczy sie z ISTNIENIA oferty, a nie z pola `status`.
+      // Skasowanie oferty zostawialo zgloszenie w stanie "quoted", czyli
+      // w slepym zaulku: oferty juz nie ma, a przycisku do zrobienia nowej
+      // tez nie ma, bo patrzyl na zapamietane pole zamiast na fakt.
+      pool.query(`SELECT l.*, EXISTS (
+                    SELECT 1 FROM quotes q WHERE q.quote_ref = l.quote_ref
+                  ) AS ma_wycene
+                    FROM leads l ORDER BY l.created_at DESC LIMIT $1 OFFSET $2`, [limit, offset]),
       pool.query("SELECT COUNT(*) as total FROM leads"),
       pool.query("SELECT calculator, COUNT(*) as count FROM leads GROUP BY calculator ORDER BY count DESC"),
       pool.query("SELECT COUNT(*) FILTER (WHERE contacted_at IS NOT NULL) as contacted, COUNT(*) FILTER (WHERE status = 'new') as new_count FROM leads"),
@@ -1183,7 +1190,7 @@ app.get("/email-threads", requireAuth, async (req, res) => {
   try {
     const [rows, count, stats] = await Promise.all([
       pool.query(`
-        SELECT et.*, l.email as lead_email, l.status as lead_status,
+        SELECT et.*, l.email as lead_email, l.status as lead_status, l.quote_ref as lead_ref,
           (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'inbound') as inbound_count,
           (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'outbound') as outbound_count
         FROM email_threads et
@@ -1216,13 +1223,16 @@ app.get("/email-threads", requireAuth, async (req, res) => {
   }
 });
 
+// Oznaczenie watku idzie przez API, a nie prosto do bazy. Uznanie watku za
+// zapytanie ZAKLADA sprawe z numerem, a numery nadaje wylacznie chat-api
+// (ADR-0032). Panel piszacy tu po swojemu bylby drugim generatorem numerow.
 app.post("/email-threads/:id/tag", requireAuth, async (req, res) => {
-  const { tag } = req.body;
-  const valid = ["spam", "lead", "not_lead", "unclassified"];
-  if (!valid.includes(tag)) return res.status(400).json({ error: "invalid tag" });
   try {
-    await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, req.params.id]);
-    res.json({ ok: true });
+    const r = await shopApi(`/api/email-threads/${encodeURIComponent(req.params.id)}/tag`, {
+      method: "POST",
+      body: { tag: req.body.tag },
+    });
+    res.json(r);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

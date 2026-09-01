@@ -32,19 +32,26 @@ const panel = readFileSync(join(ROOT, "admin", "server.js"), "utf8");
 // Szukamy WSZYSTKICH miejsc, ktore wstawiaja wiersz do `leads`, i wymagamy,
 // zeby lista kolumn niosla `quote_ref`. Nowa droga zgloszen dopisana bez numeru
 // zapali sie tutaj, a nie dopiero wtedy, gdy trzeba na nia odpisac.
-for (const [nazwa, kod] of [["server.js", server], ["gmail.js", gmail]]) {
-  const wstawki = [...kod.matchAll(/INSERT INTO leads\s*\(([^)]*)\)/g)];
-  assert.ok(wstawki.length > 0, `${nazwa}: nie znalazlem zadnego zapisu zgloszenia`);
-  for (const w of wstawki) {
-    const kolumny = w[1].replace(/\s+/g, " ");
-    assert.match(kolumny, /quote_ref/, `${nazwa}: zgloszenie zapisywane bez numeru (${kolumny.slice(0, 60)})`);
-  }
+const wstawki = [...server.matchAll(/INSERT INTO leads\s*\(([^)]*)\)/g)];
+assert.ok(wstawki.length > 0, "server.js: nie znalazlem zadnego zapisu zgloszenia");
+for (const w of wstawki) {
+  const kolumny = w[1].replace(/\s+/g, " ");
+  assert.match(kolumny, /quote_ref/, `server.js: zgloszenie zapisywane bez numeru (${kolumny.slice(0, 60)})`);
 }
 
-// Mail od nieznanego nadawcy zaklada sprawe razem z trescia pierwszej
-// wiadomosci. Sam temat nie wystarcza: po tygodniu nie wiadomo, o co pytal.
-assert.match(gmail, /generateQuoteRef\(\)/, "mail przychodzacy nadaje numer sprawy");
-assert.match(gmail, /INSERT INTO leads[\s\S]{0,200}description/, "tresc pierwszej wiadomosci zostaje w zgloszeniu");
+// POCZTA JEST WYJATKIEM I TO JEST DECYZJA, a nie luka (wlasciciel, 2026-09-01).
+// Mail przychodzacy nie jest jeszcze zapytaniem: bywa newsletterem, faktura
+// od dostawcy i oferta pozycjonowania. Zakladanie sprawy z numerem dla kazdego
+// z nich rozdawalo numery reklamie. Sprawe zaklada dopiero uznanie watku za
+// zapytanie, i wtedy dostaje numer razem z trescia pierwszej wiadomosci.
+assert.doesNotMatch(gmail, /INSERT INTO leads/,
+  "poczta przychodzaca nie zaklada sprawy sama");
+assert.match(server, /app\.post\("\/api\/email-threads\/:id\/tag"/,
+  "jest trasa, ktora z watku robi sprawe");
+assert.match(server, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
+  "sprawa z watku dostaje numer");
+assert.match(server, /INSERT INTO leads[\s\S]{0,200}description/,
+  "tresc pierwszej wiadomosci zostaje w zgloszeniu");
 
 // --- 2. Wycena przejmuje numer zgloszenia ---------------------------------
 assert.match(quotes, /const quoteRef = input\.quoteRef \|\| generateQuoteRef\(\);/,
@@ -92,8 +99,12 @@ assert.match(server, /UPDATE leads SET status = 'quoted'/,
 // --- 4. Panel: numer widoczny i jedno klikniecie do oferty ----------------
 assert.match(widok, /lead\.quote_ref/, "panel pokazuje numer sprawy");
 assert.match(widok, /\/do-wyceny/, "panel ma przycisk robiacy wycene ze zgloszenia");
-assert.match(widok, /lead\.status !== "quoted"/,
-  "przy zgloszeniu juz przepisanym przycisku nie ma");
+// Przycisk znika, gdy oferta pod tym numerem ISTNIEJE, a nie gdy pole `status`
+// mowi "quoted". Pole zostawalo na "quoted" takze po skasowaniu oferty, wiec
+// zgloszenie ladowalo w slepym zaulku: oferty nie ma i przycisku tez nie
+// (poprawione 2026-09-01, test: scripts/test-lead-z-maila.mjs).
+assert.match(widok, /if \(!lead\.ma_wycene\)/,
+  "przy zgloszeniu z istniejaca oferta przycisku nie ma");
 assert.match(panel, /app\.post\("\/leads\/:id\/do-wyceny"/, "trasa panelu istnieje");
 assert.match(panel, /\/api\/quotes\/from-lead/, "panel wola backend, zamiast pisac do bazy po swojemu");
 

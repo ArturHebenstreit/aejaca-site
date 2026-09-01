@@ -1372,5 +1372,13 @@ export async function deleteQuote(pool, quoteRef, { force = false } = {}) {
     );
   }
   await pool.query("DELETE FROM quotes WHERE id = $1", [quote.id]);
+  // Zgloszenie, z ktorego ta oferta powstala, wraca do stanu sprzed niej.
+  // Bez tego zostawalo na "quoted", czyli opisywalo cos, czego juz nie ma,
+  // i nie dalo sie zrobic z niego oferty po raz drugi. Numer sprawy zostaje:
+  // raz podany klientowi jest obietnica, a nie danymi do poprawienia.
+  await pool.query(
+    "UPDATE leads SET status = 'new' WHERE quote_ref = $1 AND status = 'quoted'",
+    [quoteRef]
+  ).catch(() => {});
   return { quoteRef, wasConverted: wziete > 0, orderId: quote.converted_order_id ?? null };
 }
