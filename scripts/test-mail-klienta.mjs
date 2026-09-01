@@ -472,10 +472,21 @@ console.log("\n4l. Autoodpowiedz idzie z chat-api, bez okrazenia przez n8n\n");
   ok(/sendLeadMail/.test(gmailJs), "i idzie tym samym kanalem co reszta");
   ok(!/N8N_AUTOREPLY_WEBHOOK_URL/.test(gmailJs),
      "stara droga przez n8n zniknela, a nie zostala obok jako druga");
-  ok(/gmailThreadId: threadId/.test(gmailJs),
-     "odpowiedz wpina sie w istniejacy watek, a nie zaklada nowego");
   ok(/auto_replied_at IS NULL RETURNING id/.test(gmailJs),
      "zabezpieczenie przed dwoma odpowiedziami zostaje nietkniete");
+  // Wysylka przeniosla sie do miejsca, w ktorym zapada DECYZJA czlowieka
+  // (wlasciciel, 2026-09-01): podziekowanie za zapytanie jest samo w sobie
+  // stwierdzeniem, ze to zapytanie, wiec nie wychodzi z samej podpowiedzi
+  // klasyfikatora.
+  const watkiJs = readFileSync(new URL("../chat-api/watkiPoczty.js", import.meta.url), "utf8");
+  ok(!/await maybeSendAutoReply\(/.test(gmailJs),
+     "autoodpowiedz nie wychodzi z samej klasyfikacji");
+  ok(/await maybeSendAutoReply\(pool, \{/.test(watkiJs),
+     "autoodpowiedz wychodzi po potwierdzeniu watku jako zapytania");
+  ok(/gmailThreadId: watek\.gmail_thread_id/.test(watkiJs),
+     "odpowiedz wpina sie w istniejacy watek, a nie zaklada nowego");
+  ok(/messageIdHeader: pierwsza\.message_id_header/.test(watkiJs),
+     "i niesie naglowek wiadomosci klienta, bo potwierdzenie bywa nastepnego dnia");
 }
 
 console.log("\n5. Data i liczba dni po ludzku\n");

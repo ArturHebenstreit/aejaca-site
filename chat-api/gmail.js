@@ -289,38 +289,31 @@ export async function processGmailMessage(gmail, pool, messageId) {
       );
       threadDbId = newThread.rows[0].id;
       if (direction === "inbound") {
+        // Klasyfikator PROPONUJE, a nie rozstrzyga (wlasciciel, 2026-09-01).
+        // Propozycja idzie do osobnej kolumny, a `tag` zostaje przy
+        // `unclassified` do chwili, w ktorej czlowiek kliknie. Automat myli
+        // sie rzadko, ale kazda jego pomylka konczyla sie numerem sprawy dla
+        // faktury od dostawcy albo cisza wobec prawdziwego zapytania, i nie
+        // bylo tego po czym poznac: pole wygladalo tak samo jak decyzja.
         const { tag, lang } = await classifyEmailThreadFull(subject, bodyText);
         if (tag !== "unclassified") {
-          // Klasyfikacja idzie ta sama droga co klikniecie w panelu, wiec
-          // uznanie za zapytanie zaklada sprawe z numerem tak samo. Dwie kopie
-          // tej decyzji rozjechalyby sie po cichu: automat zakladalby sprawe
-          // inaczej niz czlowiek, a wygladalo by to identycznie.
-          //
-          // Wiadomosci nie ma jeszcze w tabeli (zapisujemy ja nizej), wiec
-          // adres, temat i tresc podajemy wprost.
-          // Wczytanie w locie, bo `watkiPoczty.js` siega po `extractEmail`
-          // z tego pliku: staly import zrobilby z tego kolo.
-          const { oznaczWatek } = await import("./watkiPoczty.js");
-          await oznaczWatek(pool, threadDbId, tag, {
-            from_addr: from, subject, body_text: bodyText,
-          }).catch((e) => console.error("[poczta] klasyfikacja nie zapisala sie:", e.message));
+          await pool.query(
+            "UPDATE email_threads SET tag_sugestia = $1, tag_sugestia_at = NOW() WHERE id = $2",
+            [tag, threadDbId]
+          ).catch((e) => console.error("[poczta] propozycja nie zapisala sie:", e.message));
         }
-        // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
-        // Only for brand-new inbound lead threads - never on ongoing replies,
-        // never on not_lead/spam.
-        if (tag === "lead") {
-          await maybeSendAutoReply(pool, {
-            threadDbId,
-            toEmail: matchEmail,
-            subject,
-            lang,
-            messageIdHeader,
-            gmailMessageId: messageId,
-            // Identyfikator ROZMOWY, nie wiadomosci: to on wpina odpowiedz
-            // w istniejacy watek po naszej stronie.
-            gmailThreadId: threadId,
-            snippet,
-          });
+        // Autoodpowiedz wychodzi PO potwierdzeniu przez czlowieka (wlasciciel,
+        // 2026-09-01). Podziekowanie za zapytanie jest samo w sobie
+        // stwierdzeniem, ze to zapytanie, wiec wyslane na podstawie samej
+        // propozycji byloby ta decyzja, ktorej automat juz nie podejmuje.
+        // Wysylke odpala `oznaczWatek` w `watkiPoczty.js`.
+        // Jezyk wykryty przy okazji klasyfikacji zapisujemy, zeby potwierdzenie
+        // nie musialo zgadywac go tydzien pozniej.
+        if (["pl", "en", "de"].includes(lang)) {
+          await pool.query(
+            "UPDATE email_threads SET lang = $1 WHERE id = $2 AND lang IS NULL",
+            [lang, threadDbId]
+          ).catch(() => {});
         }
       }
     }
@@ -328,9 +321,13 @@ export async function processGmailMessage(gmail, pool, messageId) {
     // Save message
     await pool.query(
       `INSERT INTO email_messages
-         (thread_id, gmail_message_id, direction, from_addr, to_addr, cc_addr, subject, body_text, snippet, gmail_labels, received_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [threadDbId, messageId, direction, from.slice(0, 300), to, cc || null, subject.slice(0, 500), bodyText, snippet, labelIds, receivedAt]
+         (thread_id, gmail_message_id, direction, from_addr, to_addr, cc_addr, subject, body_text, snippet, gmail_labels, received_at, message_id_header)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [threadDbId, messageId, direction, from.slice(0, 300), to, cc || null, subject.slice(0, 500), bodyText, snippet, labelIds, receivedAt,
+       // Naglowek wiadomosci klienta. Autoodpowiedz wychodzi teraz PO
+       // potwierdzeniu, czasem nastepnego dnia, wiec musi miec z czego zlozyc
+       // `In-Reply-To`: bez tego otwiera u niego osobna rozmowe.
+       messageIdHeader ? messageIdHeader.slice(0, 500) : null]
     );
 
     // Update lead status for outbound

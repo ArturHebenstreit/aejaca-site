@@ -607,6 +607,21 @@ if (pool) {
     created_at TIMESTAMPTZ DEFAULT NOW()
   )`).catch(() => {});
   pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag VARCHAR(20) DEFAULT 'unclassified'`).catch(() => {});
+  // PROPOZYCJA klasyfikatora, osobno od decyzji (wlasciciel, 2026-09-01).
+  // Do tej pory automat pisal wprost do `tag`, czyli rozstrzygal, a czlowiek
+  // co najwyzej prostowal. Teraz automat podpowiada, a `tag` zmienia sie
+  // wylacznie z reki. Dwa pola, bo to dwie rozne rzeczy: co ktos przypuszcza
+  // i co postanowilismy. Trzymane w jednym rozjezdzalyby sie tak, ze nie da
+  // sie odroznic pomylki automatu od naszej wlasnej.
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag_sugestia VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag_sugestia_at TIMESTAMPTZ`).catch(() => {});
+  // Jezyk watku rozpoznany przy pierwszej wiadomosci. Potwierdzenie przychodzi
+  // pozniej, czasem nastepnego dnia, a autoodpowiedz ma wyjsc w jezyku
+  // nadawcy, nie w naszym.
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS lang VARCHAR(5)`).catch(() => {});
+  // Naglowek Message-ID pierwszej wiadomosci. Bez niego nasza odpowiedz
+  // otwiera u klienta osobna rozmowe zamiast wpiac sie w jego wlasna.
+  pool.query(`ALTER TABLE email_messages ADD COLUMN IF NOT EXISTS message_id_header VARCHAR(500)`).catch(() => {});
   pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS auto_replied_at TIMESTAMPTZ`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_messages (

@@ -219,9 +219,12 @@ const ZESTAWY = {
       last_message_at: wycena.createdAt, message_count: 1, tag: "unclassified",
       lead_email: null, lead_status: null, lead_ref: null,
       inbound_count: 1, outbound_count: 0, created_at: wycena.createdAt,
+      // Automat podpowiada, ale nie rozstrzyga: watek stoi jako
+      // `unclassified` z propozycja obok.
+      tag_sugestia: "not_lead", tag_sugestia_at: wycena.createdAt,
     }],
     total: 2, page: 1, pages: 1, filter: "active",
-    stats: { total: 2, leads: 1, spam: 0, not_lead: 0, unclassified: 1, today: 2, bez_odpowiedzi: 1 },
+    stats: { total: 2, leads: 1, spam: 0, not_lead: 0, unclassified: 1, sugestia_lead: 1, today: 2, bez_odpowiedzi: 1 },
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },

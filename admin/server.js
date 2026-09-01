@@ -1229,6 +1229,7 @@ app.get("/email-threads", requireAuth, async (req, res) => {
         COUNT(*) FILTER (WHERE tag = 'spam') as spam,
         COUNT(*) FILTER (WHERE tag = 'not_lead') as not_lead,
         COUNT(*) FILTER (WHERE tag = 'unclassified') as unclassified,
+        COUNT(*) FILTER (WHERE tag = 'unclassified' AND tag_sugestia = 'lead') as sugestia_lead,
         COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today,
         COUNT(*) FILTER (
           WHERE tag NOT IN ('spam', 'not_lead')
