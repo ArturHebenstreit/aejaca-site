@@ -351,13 +351,24 @@ app.get("/leads", requireAuth, async (req, res) => {
                     SELECT 1 FROM email_threads t
                      WHERE t.lead_id = l.id AND t.tag IN ('not_lead', 'spam')
                   ) AS odrzucony,
-                  w.id AS watek_id, w.tag AS watek_tag, w.tag_sugestia AS watek_sugestia
+                  w.id AS watek_id, w.tag AS watek_tag, w.tag_sugestia AS watek_sugestia,
+                  w.tresc AS watek_tresc, w.wiadomosci AS watek_wiadomosci
                     FROM leads l
                     -- Watek mailowy, z ktorego zgloszenie powstalo. Bierzemy
                     -- NAJNOWSZY, bo ten sam klient bywa autorem kilku, a decyzja
                     -- "lead czy nie" dotyczy tego, ktory wlasnie czytamy.
                     LEFT JOIN LATERAL (
-                      SELECT t.id, t.tag, t.tag_sugestia FROM email_threads t
+                      SELECT t.id, t.tag, t.tag_sugestia,
+                             -- TRESC pierwszej wiadomosci przychodzacej. Stara
+                             -- droga zapisywala w zgloszeniu sam temat, wiec
+                             -- w panelu nie dalo sie przeczytac, o co czlowiek
+                             -- pytal, mimo ze cala wiadomosc lezala obok,
+                             -- w tabeli poczty.
+                             (SELECT em.body_text FROM email_messages em
+                               WHERE em.thread_id = t.id AND em.direction = 'inbound'
+                               ORDER BY em.received_at ASC LIMIT 1) AS tresc,
+                             (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = t.id) AS wiadomosci
+                        FROM email_threads t
                        WHERE t.lead_id = l.id ORDER BY t.last_message_at DESC NULLS LAST LIMIT 1
                     ) w ON TRUE
                     ${gdzie}

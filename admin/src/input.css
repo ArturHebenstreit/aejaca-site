@@ -79,3 +79,11 @@
 }
 .dymek:hover::after,
 .dymek:focus-visible::after { opacity: 1; }
+
+/* Atrybut `hidden` musi wygrywac z klasa uklada. Przycisk schowany przez
+   `hidden`, ale majacy `flex`, byl NADAL widoczny: obie reguly maja te sama
+   wage, wiec decydowala kolejnosc w arkuszu, a ta zalezy od tego, co akurat
+   wygenerowal Tailwind. Chowanie elementu nie moze zalezec od kolejnosci
+   deklaracji, bo blad tego rodzaju nie rzuca niczym: przycisk po prostu stoi
+   tam, gdzie nie powinien. */
+[hidden] { display: none !important; }

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin - Leads</title>
+  <link rel="stylesheet" href="./public/tailwind.css" />
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-6 flex-wrap">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      
+      <span class="text-[10px] font-mono text-neutral-600"
+            title="Panel i backend sklepu wdrażają się osobno">
+        
+        
+      </span>
+      <nav class="flex gap-4 text-sm flex-wrap">
+        
+          <a href="/dashboard"
+             class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        
+          <a href="/products"
+             class="text-neutral-400 hover:text-white transition-colors">Produkty</a>
+        
+          <a href="/queue"
+             class="text-neutral-400 hover:text-white transition-colors">Kolejka</a>
+        
+          <a href="/quotes"
+             class="text-neutral-400 hover:text-white transition-colors">Wyceny</a>
+        
+          <a href="/discounts"
+             class="text-neutral-400 hover:text-white transition-colors">Kody</a>
+        
+          <a href="/analytics"
+             class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        
+          <a href="/leads"
+             class="text-white font-medium border-b border-amber-400 pb-0.5">Leads</a>
+        
+          <a href="/subscribers"
+             class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        
+          <a href="/conversations"
+             class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        
+          <a href="/email-threads"
+             class="text-neutral-400 hover:text-white transition-colors">Email</a>
+        
+          <a href="/laser-matrix"
+             class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        
+          <a href="/gemstone-prices"
+             class="text-neutral-400 hover:text-white transition-colors">Gems</a>
+        
+          <a href="/materials"
+             class="text-neutral-400 hover:text-white transition-colors">Materiały</a>
+        
+          <a href="/filaments"
+             class="text-neutral-400 hover:text-white transition-colors">Filamenty</a>
+        
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      
+        
+        <span class="text-sm text-neutral-400"></span>
+      
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <h2 class="text-xl font-semibold text-white">Leads</h2>
+      <div class="flex items-center gap-3">
+        <form method="POST" action="/leads/bulk-delete" onsubmit="return confirmBulkDeleteLeads(this)">
+          <div class="flex items-center gap-1.5">
+            <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1.5">
+              <option value="3">starsze niż 3d</option>
+              <option value="30">starsze niż 30d</option>
+              <option value="90" selected>starsze niż 90d</option>
+              <option value="180">starsze niż 180d</option>
+              <option value="365">starsze niż rok</option>
+              <option value="all">⚠ wyczyść wszystko</option>
+            </select>
+            <button data-dymek="Usuń zgłoszenia starsze niż wybrany okres, bez możliwości cofnięcia" type="submit" class="dymek px-2 py-1.5 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń stare</button>
+          </div>
+        </form>
+        <a href="/export/leads" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-medium rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export CSV
+        </a>
+      </div>
+    </div>
+
+    
+
+    <!-- Stats summary -->
+    <div class="flex flex-wrap gap-3 mb-3">
+      
+        <a href="/leads"
+           class="bg-neutral-900 border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors border-white/35 bg-white/[0.06]">
+          <span class="text-xs text-neutral-500 uppercase">Wszystkie</span>
+          <span class="text-lg font-semibold text-amber-400">62</span>
+        </a>
+      
+        <a href="/leads?filtr=bez_reakcji"
+           class="bg-neutral-900 border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors border-white/10 hover:border-white/25">
+          <span class="text-xs text-neutral-500 uppercase">Bez reakcji</span>
+          <span class="text-lg font-semibold text-red-400">12</span>
+        </a>
+      
+        <a href="/leads?filtr=nowe"
+           class="bg-neutral-900 border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors border-white/10 hover:border-white/25">
+          <span class="text-xs text-neutral-500 uppercase">Nowych</span>
+          <span class="text-lg font-semibold text-blue-400">26</span>
+        </a>
+      
+        <a href="/leads?filtr=skontaktowane"
+           class="bg-neutral-900 border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors border-white/10 hover:border-white/25">
+          <span class="text-xs text-neutral-500 uppercase">Skontaktowano</span>
+          <span class="text-lg font-semibold text-emerald-400">36</span>
+        </a>
+      
+        <a href="/leads?filtr=wycenione"
+           class="bg-neutral-900 border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors border-white/10 hover:border-white/25">
+          <span class="text-xs text-neutral-500 uppercase">Z ofertą</span>
+          <span class="text-lg font-semibold text-neutral-300">8</span>
+        </a>
+      
+    </div>
+
+    
+    
+      <div class="flex flex-wrap gap-2 mb-6 items-center">
+        <span class="text-neutral-600 text-[10px] uppercase tracking-wide mr-1">Źródło</span>
+        <a href="/leads"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-white/35 text-white bg-white/5">
+          wszystkie
+        </a>
+        
+          <a href="/leads?kalkulator=email"
+             class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-white/10 text-neutral-400 hover:border-white/25">
+            email <span class="text-neutral-500">42</span>
+          </a>
+        
+      </div>
+    
+
+    <div class="flex flex-wrap gap-2 mb-5 items-center">
+      <span class="text-neutral-600 text-[10px] uppercase tracking-wide mr-1">Kolejność</span>
+      
+        <a href="/leads"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-amber-400/40 text-amber-300 bg-amber-400/10">
+          Najnowsze
+        </a>
+      
+        <a href="/leads?sort=najstarsze"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-white/10 text-neutral-500 hover:border-white/25">
+          Najstarsze
+        </a>
+      
+        <a href="/leads?sort=email"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-white/10 text-neutral-500 hover:border-white/25">
+          Adres
+        </a>
+      
+        <a href="/leads?sort=kalkulator"
+           class="px-2.5 py-1 rounded-lg border text-[11px] transition-colors border-white/10 text-neutral-500 hover:border-white/25">
+          Źródło
+        </a>
+      
+      
+      <span class="ml-auto text-neutral-500 text-[11px]">
+        widocznych: <strong class="text-neutral-300">1</strong>
+      </span>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden mb-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm tabela-akcje">
+          <thead>
+            <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 text-left whitespace-nowrap">Data</th>
+              
+              <th class="px-4 py-3 text-left whitespace-nowrap">Numer</th>
+              <th class="px-4 py-3 text-left">Email</th>
+              <th class="px-4 py-3 text-left">Źródło</th>
+              <th class="px-4 py-3 text-left">Temat</th>
+              <th class="px-4 py-3 text-left">Stan</th>
+              <th class="px-4 py-3 text-right">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+              
+              
+              <tr data-wiersz="1" data-otworz="1"
+                  class="border-b border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer ">
+                <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">Mon Aug 17 2026 00:00</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  
+                    <span class="text-neutral-600 text-[11px]">bez numeru</span>
+                  
+                </td>
+                <td class="px-4 py-3 text-neutral-200 max-w-[200px] truncate">info@aethersyzygy.com</td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium whitespace-nowrap">
+                    email
+                  </span>
+                  <span class="text-neutral-600 text-[10px] uppercase ml-1">pl</span>
+                </td>
+                <td class="px-4 py-3 text-neutral-400 text-xs max-w-[280px] truncate" title="Produktionsanfrage">Produktionsanfrage</td>
+                <td class="px-4 py-3">
+                  
+                  <span class="px-2 py-0.5 rounded text-xs font-medium bg-amber-950 text-amber-300">
+                    skontaktowano
+                  </span>
+                  
+                </td>
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  
+                  <button class="dymek text-neutral-500 hover:text-white transition-colors" data-dymek="Otwórz zgłoszenie: pełna treść i wszystkie działania" type="button" data-otworz="1"
+                          title="Otwórz zgłoszenie">
+                    <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 20h9"/></svg>
+                  </button>
+                </td>
+              </tr>
+
+              
+              <tr data-edycja="1" class="hidden border-b border-white/10 bg-neutral-950/60">
+                <td colspan="7" class="px-4 py-4">
+                  
+                  <div data-panel="1" data-tryb="podglad">
+
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                      <h3 class="text-white text-xs font-semibold">Treść zapytania</h3>
+                      <div class="flex items-center gap-2 shrink-0">
+                        
+                          <a href="/email-threads/7"
+                             class="text-[11px] text-blue-400 hover:text-blue-300 transition-colors">
+                            Cały wątek (3 wiadomości) &rarr;
+                          </a>
+                        
+                        <button data-dymek="Włącz edycję: stan, data kontaktu i notatka" data-edytuj="1"
+                                type="button"
+                                class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-[11px] hover:border-white/35 transition-colors">
+                          <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 20h9"/></svg> Edytuj
+                        </button>
+                      </div>
+                    </div>
+
+                    
+                    
+                    <div class="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 max-h-96 overflow-y-auto whitespace-pre-wrap text-neutral-200 text-xs leading-relaxed mb-4"><strong class="text-white">Produktionsanfrage</strong>
+
+Guten Tag,
+
+wir interessieren uns für ein artikuliertes Art-Déco-Statement-Halsband.
+Die Frage betrifft die Machbarkeit und den Preis bei 5 Stück.
+
+Mit freundlichen Grüßen
+Aether Syzygy</div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      <div class="space-y-3">
+                        <form method="POST" action="/leads/1/edit" class="space-y-2" data-formularz="1">
+                          <input type="hidden" name="back" value="/leads" />
+                          <div class="grid grid-cols-2 gap-2">
+                            <label class="block">
+                              <span class="text-neutral-500 text-[10px] block mb-1">Stan</span>
+                              <select name="status" disabled
+                                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white disabled:opacity-60">
+                                
+                                  <option value="new" >nowe</option>
+                                
+                                  <option value="contacted" selected>skontaktowano</option>
+                                
+                                  <option value="quoted" >wyceniane</option>
+                                
+                                  <option value="closed" >zamknięte</option>
+                                
+                                  <option value="spam" >spam</option>
+                                
+                              </select>
+                            </label>
+                            <label class="block">
+                              <span class="text-neutral-500 text-[10px] block mb-1">Skontaktowano dnia</span>
+                              <input type="date" name="contactedAt" disabled
+                                     value=""
+                                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white disabled:opacity-60" />
+                            </label>
+                          </div>
+                          <label class="block">
+                            <span class="text-neutral-500 text-[10px] block mb-1">Notatka, dla nas</span>
+                            <textarea name="contactNote" rows="4" disabled
+                                      placeholder="Co ustalone, co obiecane, kiedy oddzwonić."
+                                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-neutral-200 disabled:opacity-60"></textarea>
+                          </label>
+                          <div class="flex items-center gap-2" data-przyciski-edycji="1" hidden>
+                            <button data-dymek="Zapisz i wróć do podglądu"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                              <svg viewBox="0 0 24 24" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg> Zapisz
+                            </button>
+                            <button data-dymek="Wyjdź z edycji bez zapisywania, pola wracają do zapisanych wartości"
+                                    type="button" data-zamknij="1"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[11px] hover:bg-amber-400/10 transition-colors">
+                              <svg viewBox="0 0 24 24" width="14" height="14"><path d="M20 5v6"/></svg> Wycofaj
+                            </button>
+                          </div>
+                        </form>
+
+                        
+                          <p class="text-neutral-500 text-[10px]">
+                            
+                              <span class="mr-2">subject: Produktionsanfrage</span>
+                            
+                          </p>
+                        
+                        
+                      </div>
+
+                      <div class="space-y-3">
+                        
+                        
+                          <div class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                            <p class="text-neutral-400 text-[11px] mb-1.5">
+                              Wątek mailowy:
+                              <strong class="text-neutral-200">zapytanie</strong>
+                              
+                            </p>
+                            <div class="flex flex-wrap gap-1.5">
+                              
+                                <form method="POST" action="/leads/1/watek-tag" class="inline-block">
+                                  <input type="hidden" name="back" value="/leads" />
+                                  <input type="hidden" name="watekId" value="7" />
+                                  <input type="hidden" name="tag" value="lead" />
+                                  <button data-dymek="Sprawa dostaje numer, a klient potwierdzenie odbioru. Z takiego zgłoszenia robi się ofertę"
+                                          class="dymek px-2.5 py-1 rounded-lg border text-[10px] transition-colors border-white/35 text-white bg-white/5">
+                                    To zapytanie
+                                  </button>
+                                </form>
+                              
+                                <form method="POST" action="/leads/1/watek-tag" class="inline-block">
+                                  <input type="hidden" name="back" value="/leads" />
+                                  <input type="hidden" name="watekId" value="7" />
+                                  <input type="hidden" name="tag" value="not_lead" />
+                                  <button data-dymek="Oferty z tego nie zrobimy. Sprawa zostaje w historii, numer też"
+                                          class="dymek px-2.5 py-1 rounded-lg border text-[10px] transition-colors border-white/10 text-neutral-400 hover:border-white/25">
+                                    Nie zapytanie
+                                  </button>
+                                </form>
+                              
+                                <form method="POST" action="/leads/1/watek-tag" class="inline-block">
+                                  <input type="hidden" name="back" value="/leads" />
+                                  <input type="hidden" name="watekId" value="7" />
+                                  <input type="hidden" name="tag" value="spam" />
+                                  <button data-dymek="Znika z domyślnych widoków i nie liczy się jako nieobsłużone"
+                                          class="dymek px-2.5 py-1 rounded-lg border text-[10px] transition-colors border-white/10 text-neutral-400 hover:border-white/25">
+                                    Spam
+                                  </button>
+                                </form>
+                              
+                            </div>
+                          </div>
+                        
+
+                        <div class="flex items-center gap-2">
+                          
+                            <form method="POST" action="/leads/1/do-wyceny">
+                              <input type="hidden" name="back" value="/leads" />
+                              <button data-dymek="Załóż ofertę pod numerem tego zgłoszenia i przepisz do niej treść"
+                                      class="dymek px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 text-[11px] hover:bg-amber-950 transition-colors">
+                                Zrób wycenę
+                              </button>
+                            </form>
+                          
+                          <form method="POST" action="/leads/1/delete" class="ml-auto"
+                                onsubmit="return confirm('Usunąć zgłoszenie 1? Tego się nie cofa.')">
+                            <input type="hidden" name="back" value="/leads" />
+                            <button data-dymek="Usuń zgłoszenie na stałe, razem z treścią i numerem sprawy"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-400/30 text-red-400 text-[11px] hover:bg-red-400/10 transition-colors">
+                              <svg viewBox="0 0 24 24" width="14" height="14"><path d="M18 6 6 18"/></svg> Usuń
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </td>
+              </tr>
+              
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    
+
+  </main>
+
+  <script>
+    // Rozwijanie wiersza. Wszystko na gotowym drzewie: kazdy formularz stoi
+    // w HTML od poczatku, wiec przy wylaczonym skrypcie widac cala liste,
+    // a nie pusta strone.
+    (function () {
+      var pokaz = function (id, czy) {
+        var wiersz = document.querySelector('[data-edycja="' + id + '"]');
+        if (wiersz) wiersz.classList.toggle("hidden", !czy);
+        return wiersz;
+      };
+
+      // Tryb podgladu i tryb edycji. W podgladzie pola sa WYLACZONE, zeby nie
+      // dalo sie zmienic czegos przypadkiem, przewijajac dluga tresc maila.
+      var tryb = function (id, czy) {
+        var panel = document.querySelector('[data-panel="' + id + '"]');
+        if (!panel) return;
+        panel.setAttribute("data-tryb", czy ? "edycja" : "podglad");
+        panel.querySelectorAll('[data-formularz] select, [data-formularz] input:not([type=hidden]), [data-formularz] textarea')
+          .forEach(function (pole) { pole.disabled = !czy; });
+        var przyciski = panel.querySelector('[data-przyciski-edycji]');
+        if (przyciski) przyciski.hidden = !czy;
+        var olowek = panel.querySelector("[data-edytuj]");
+        if (olowek) olowek.hidden = czy;
+      };
+
+      // Po kazdym zapisie wracamy do tego samego wiersza, otwartego i w trybie
+      // podgladu: praca z tym rekordem zwykle na zapisie sie konczy. Numer
+      // przychodzi w adresie, bo serwer wie, czego dotyczyla akcja, a strona po
+      // przeladowaniu juz nie.
+      var doOtwarcia = new URLSearchParams(location.search).get("otwarte");
+      if (doOtwarcia) {
+        pokaz(doOtwarcia, true);
+        var kotwica = document.querySelector('[data-wiersz="' + doOtwarcia + '"]');
+        if (kotwica) kotwica.scrollIntoView({ block: "center" });
+      }
+
+      document.addEventListener("click", function (e) {
+        var edytuj = e.target.closest("[data-edytuj]");
+        if (edytuj) {
+          tryb(edytuj.getAttribute("data-edytuj"), true);
+          return;
+        }
+
+        // Zawinieta strzalka: zostaw, jak bylo. Formularz wraca do wartosci
+        // z bazy i wychodzimy z edycji, ale wiersz zostaje otwarty do czytania.
+        var zamknij = e.target.closest("[data-zamknij]");
+        if (zamknij) {
+          var idZ = zamknij.getAttribute("data-zamknij");
+          var formularz = document.querySelector('[data-formularz="' + idZ + '"]');
+          if (formularz) formularz.reset();
+          tryb(idZ, false);
+          return;
+        }
+
+        var otworz = e.target.closest("[data-otworz]");
+        if (!otworz) return;
+        // Klikniecie w odnosnik albo w pole w srodku wiersza ma robic to, po co
+        // tam stoi, a nie zwijac wiersz pod palcem. Wyjatkiem jest sam olowek,
+        // ktory JEST przyciskiem otwierajacym: bez tego wyjatku nie dzialalby
+        // jedyny znak, po ktorym widac, ze wiersz da sie otworzyc.
+        var wnetrze = e.target.closest("a, button, form, input, select, textarea");
+        if (wnetrze && wnetrze !== otworz && !otworz.contains(wnetrze)) return;
+        if (wnetrze && wnetrze !== otworz && otworz.contains(wnetrze)) return;
+        var id = otworz.getAttribute("data-otworz");
+        var wiersz = document.querySelector('[data-edycja="' + id + '"]');
+        if (wiersz) pokaz(id, wiersz.classList.contains("hidden"));
+      });
+    })();
+
+    function confirmBulkDeleteLeads(form) {
+      const val = form.querySelector('[name="older_than_days"]').value;
+      if (val === 'all') return confirm('UWAGA: Usunąć WSZYSTKIE zgłoszenia?\n\nTej operacji nie można cofnąć.');
+      return confirm('Usunąć zgłoszenia starsze niż ' + val + ' dni?');
+    }
+  </script>
+
+</body>
+</html>
