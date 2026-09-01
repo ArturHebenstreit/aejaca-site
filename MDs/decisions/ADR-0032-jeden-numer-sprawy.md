@@ -61,10 +61,24 @@ z trescia pierwszej wiadomosci PRZYCHODZACEJ (nasza wlasna odpowiedz w tym
 samym watku nie jest niczyim pytaniem). Watek od adresu, ktory sprawe juz ma,
 podpina sie do niej zamiast zakladac druga.
 
-Decyzje podejmuja DWIE rzeczy i obie ida ta sama droga (`watkiPoczty.js`):
-klasyfikacja automatyczna przy pierwszej wiadomosci i czlowiek w panelu, ktory
-ja poprawia. Dwie kopie tej decyzji rozjechalyby sie po cichu, bo automat
-zakladalby sprawe inaczej niz klikniecie, a wygladalo by to identycznie.
+**Klasyfikator PODPOWIADA, a nie rozstrzyga (wlasciciel, 2026-09-01).**
+Automat ocenia kazda przychodzaca wiadomosc i zapisuje swoja ocene do osobnej
+kolumny `tag_sugestia`. Znacznik `tag`, czyli decyzja, zmienia sie wylacznie
+z reki, w panelu. Dwa pola, bo to dwie rozne rzeczy: co ktos przypuszcza i co
+postanowilismy. Trzymane w jednym nie dalo sie odroznic pomylki automatu od
+naszej wlasnej, bo wygladaly identycznie.
+
+Panel pokazuje propozycje obok przyciskow ("automat: lead") i liczy, ile
+propozycji czeka na potwierdzenie. Propozycja znika z widoku w chwili, gdy
+decyzja zapada: od tego momentu liczy sie tylko ona.
+
+**Podziekowanie za wiadomosc wychodzi PO potwierdzeniu**, a nie po
+klasyfikacji. Napisanie komus "dziekujemy za zapytanie" jest samo w sobie
+stwierdzeniem, ze to zapytanie, czyli dokladnie ta decyzja, ktorej automat juz
+nie podejmuje. Potwierdzenie bywa nastepnego dnia, wiec jezyk nadawcy
+i naglowek `Message-ID` jego wiadomosci zapisujemy przy odbiorze: bez nich
+odpowiedz wyszlaby po polsku do Niemca i otworzyla u niego osobna rozmowe
+zamiast wpiac sie w jego wlasna.
 
 **Cofniecie decyzji nie kasuje zalozonej sprawy.** Numer moze byc juz
 w korespondencji, a numer raz podany jest obietnica. Oznaczenie watku jako

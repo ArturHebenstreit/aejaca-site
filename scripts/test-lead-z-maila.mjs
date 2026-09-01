@@ -40,18 +40,48 @@ assert.match(gmail, /SELECT id FROM leads WHERE email = \$1/,
 // --- 2. Decyzja zaklada sprawe z numerem ----------------------------------
 assert.match(serwer, /app\.post\("\/api\/email-threads\/:id\/tag"/,
   "jest trasa rozstrzygajaca o watku");
-assert.match(watki, /tag === "lead" && !leadId/,
+assert.match(watki, /if \(tag === "lead"\)/,
   "sprawe zaklada wylacznie uznanie watku za zapytanie");
+assert.match(watki, /if \(!leadId\) \{/, "i tylko wtedy, gdy watek sprawy jeszcze nie ma");
 assert.match(watki, /INSERT INTO leads[\s\S]{0,300}generateQuoteRef\(\)/,
   "sprawa z watku dostaje numer");
-// Te sama decyzje podejmuja DWIE rzeczy: klasyfikacja automatyczna przy
-// pierwszej wiadomosci i czlowiek w panelu, ktory ja poprawia. Musza isc ta
-// sama droga, inaczej automat zakladalby sprawe inaczej niz klikniecie,
-// a wygladalo by to identycznie.
-assert.match(gmail, /oznaczWatek\(pool, threadDbId, tag/,
-  "klasyfikacja automatyczna idzie ta sama droga co klikniecie");
-assert.doesNotMatch(gmail, /UPDATE email_threads SET tag/,
-  "klasyfikacja nie zapisuje znacznika z pominieciem wspolnej drogi");
+// KLASYFIKATOR PROPONUJE, A NIE ROZSTRZYGA (wlasciciel, 2026-09-01).
+// Propozycja idzie do osobnej kolumny, a `tag` zmienia sie wylacznie z reki.
+// Jedno pole na oba znaczylo, ze nie da sie odroznic pomylki automatu od
+// naszej wlasnej decyzji, bo wygladaja identycznie.
+assert.match(gmail, /UPDATE email_threads SET tag_sugestia = \$1, tag_sugestia_at = NOW\(\)/,
+  "klasyfikator zapisuje propozycje");
+assert.doesNotMatch(gmail, /UPDATE email_threads SET tag =/,
+  "klasyfikator nie przestawia znacznika, czyli nie rozstrzyga");
+// Wywolanie, a nie wzmianka w komentarzu: klasyfikator nie zaklada sprawy,
+// bo zalozenie sprawy jest juz decyzja.
+assert.doesNotMatch(gmail, /await oznaczWatek\(|oznaczWatek\(pool/,
+  "klasyfikator nie zaklada sprawy, bo to juz jest decyzja");
+
+// Podziekowanie za wiadomosc jest samo w sobie stwierdzeniem "to jest
+// zapytanie", wiec wychodzi PO potwierdzeniu przez czlowieka, a nie na
+// podstawie samej propozycji.
+// Definicja zostaje w gmail.js, ale WYWOLANIA tam juz nie ma: podziekowanie
+// nie wychodzi z samej propozycji automatu.
+assert.doesNotMatch(gmail, /await maybeSendAutoReply\(/,
+  "autoodpowiedz nie wychodzi z samej klasyfikacji");
+assert.match(watki, /await maybeSendAutoReply\(pool, \{/,
+  "autoodpowiedz wychodzi po potwierdzeniu");
+assert.match(watki, /tag === "lead" && watek\.tag !== "lead"/,
+  "i tylko przy PIERWSZYM potwierdzeniu, a nie przy kazdym kliknieciu");
+// Potwierdzenie przychodzi czasem nastepnego dnia, wiec jezyk nadawcy
+// i naglowek jego wiadomosci musza byc zapisane wczesniej.
+assert.match(gmail, /UPDATE email_threads SET lang = \$1/, "jezyk watku zostaje zapisany");
+assert.match(gmail, /message_id_header/, "naglowek wiadomosci klienta zostaje zapisany");
+assert.match(watki, /messageIdHeader: pierwsza\.message_id_header/,
+  "odpowiedz wpina sie w rozmowe klienta, zamiast otwierac nowa");
+
+// Propozycje widac w panelu, obok przyciskow, a nie zamiast nich.
+assert.match(widokPoczty, /thread\.tag_sugestia/, "panel pokazuje propozycje automatu");
+assert.match(widokPoczty, /thread\.tag === "unclassified" && thread\.tag_sugestia/,
+  "propozycja znika, gdy decyzja zapadla");
+assert.match(panel, /tag_sugestia = 'lead'\) as sugestia_lead/,
+  "panel liczy, ile propozycji czeka na potwierdzenie");
 // Numer nadaje WYLACZNIE chat-api (ADR-0032). Panel piszacy po swojemu byl by
 // drugim generatorem numerow, a dwa generatory jednego formatu rozjezdzaja sie
 // po cichu, bo oba dzialaja.

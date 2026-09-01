@@ -177,6 +177,12 @@ if (pool) {
   // osoba dostawalaby te sama prosbe, a to jest dokladnie ten rodzaj maila,
   // ktory przy drugim powtorzeniu kasuje cala dobra wole.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_asked_at TIMESTAMPTZ`).catch(() => {});
+  // Czy o ocene w ogole prosic (wlasciciel, 2026-09-01). Klienci zaczeli
+  // wystawiac opinie sami, z wlasnej woli, jeszcze zanim minely trzy dni.
+  // Prosba wyslana takiej osobie nie jest uprzejmoscia, tylko dopominaniem sie
+  // o cos, co juz dostalismy. Domyslnie prosimy, bo tak bylo do tej pory
+  // i tak jest przy wiekszosci zamowien; wylacza sie to jednym znacznikiem.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_ask BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
   // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
   // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
@@ -607,6 +613,21 @@ if (pool) {
     created_at TIMESTAMPTZ DEFAULT NOW()
   )`).catch(() => {});
   pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag VARCHAR(20) DEFAULT 'unclassified'`).catch(() => {});
+  // PROPOZYCJA klasyfikatora, osobno od decyzji (wlasciciel, 2026-09-01).
+  // Do tej pory automat pisal wprost do `tag`, czyli rozstrzygal, a czlowiek
+  // co najwyzej prostowal. Teraz automat podpowiada, a `tag` zmienia sie
+  // wylacznie z reki. Dwa pola, bo to dwie rozne rzeczy: co ktos przypuszcza
+  // i co postanowilismy. Trzymane w jednym rozjezdzalyby sie tak, ze nie da
+  // sie odroznic pomylki automatu od naszej wlasnej.
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag_sugestia VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag_sugestia_at TIMESTAMPTZ`).catch(() => {});
+  // Jezyk watku rozpoznany przy pierwszej wiadomosci. Potwierdzenie przychodzi
+  // pozniej, czasem nastepnego dnia, a autoodpowiedz ma wyjsc w jezyku
+  // nadawcy, nie w naszym.
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS lang VARCHAR(5)`).catch(() => {});
+  // Naglowek Message-ID pierwszej wiadomosci. Bez niego nasza odpowiedz
+  // otwiera u klienta osobna rozmowe zamiast wpiac sie w jego wlasna.
+  pool.query(`ALTER TABLE email_messages ADD COLUMN IF NOT EXISTS message_id_header VARCHAR(500)`).catch(() => {});
   pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS auto_replied_at TIMESTAMPTZ`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_messages (
@@ -3288,6 +3309,7 @@ async function prosOOcene() {
       `SELECT * FROM orders
         WHERE status = 'completed' AND completed_at IS NOT NULL
           AND review_asked_at IS NULL AND customer_email IS NOT NULL
+          AND COALESCE(review_ask, TRUE)
           AND completed_at < NOW() - ($1 || ' days')::INTERVAL
           AND completed_at > NOW() - INTERVAL '10 days'
         ORDER BY completed_at
@@ -4584,6 +4606,7 @@ app.get("/api/orders/queue", async (req, res) => {
             o.transfer_asked_at, o.transfer_received_cents,
             o.payment_review_reason, o.created_at,
             o.cancel_kind, o.cancel_reason, o.cancelled_at, o.refund_grosze, o.refunded_at,
+            o.review_ask, o.review_asked_at,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -4667,6 +4690,10 @@ app.get("/api/orders/queue", async (req, res) => {
     // Zamkniecie bez realizacji: ktora droga, ile sie nalezy i czy pieniadze
     // juz poszly. Sprawa zamknieta z niezwroconymi pieniedzmi jest jedynym
     // zobowiazaniem, ktorego nie widac nigdzie indziej.
+    // Prosba o ocene: czy ma wyjsc i czy juz wyszla. Decyzje da sie zmienic do
+    // chwili wyslania, bo klient bywa szybszy od nas i wystawia opinie sam.
+    reviewAsk: o.review_ask !== false,
+    reviewAskedAt: o.review_asked_at || null,
     cancelKind: o.cancel_kind || null,
     cancelReason: o.cancel_reason || null,
     cancelledAt: o.cancelled_at || null,
@@ -4777,6 +4804,15 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   // cofnieciu omylkowego klikniecia wysylalby sprostowanie czegos, o czym
   // klient nie zdazyl sie dowiedziec. Nie czekamy na wysylke: etap jest juz
   // zapisany i nieudany mail nie ma prawa cofnac pracy.
+  // Prosba o ocene: znacznik przy odbiorze. Klient, ktory wystawil opinie sam,
+  // nie ma jej dostac, bo to nie jest uprzejmosc, tylko dopominanie sie o cos,
+  // co juz mamy. Pole przychodzi tylko przy "Odebrano", wiec przy innych
+  // etapach nie ruszamy go wcale.
+  if (etap === "completed" && req.body?.reviewAsk !== undefined) {
+    await pool.query("UPDATE orders SET review_ask = $2 WHERE id = $1",
+      [order.id, req.body.reviewAsk === true || req.body.reviewAsk === "1"]);
+  }
+
   const powiadom = req.body?.notify === true || req.body?.notify === "1";
   if (powiadom) {
     sendStatusUpdate(pool, order.id)
@@ -5382,6 +5418,34 @@ app.post("/api/orders/:ref/close", express.json({ limit: "8kb" }), async (req, r
  * `refunded_at` jest puste, kolejka pokazuje sprawe jako zamknieta Z DLUGIEM,
  * co jest jedynym miejscem, w ktorym takie zobowiazanie w ogole widac.
  */
+/**
+ * Wlaczenie albo wylaczenie prosby o ocene, po fakcie.
+ *
+ * Decyzja przy odbiorze zapada, zanim wiadomo, czy klient wystawi opinie sam,
+ * a wlasnie w tych trzech dniach zwykle to robi. Dlatego da sie ja zmienic az
+ * do wyslania. Po wyslaniu nie ma czego przestawiac i mowimy to wprost,
+ * zamiast udawac, ze zapis sie udal.
+ */
+app.post("/api/orders/:ref/review-ask", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ask = req.body?.ask === true || req.body?.ask === "1";
+  const { rows } = await pool.query(
+    `UPDATE orders SET review_ask = $2
+      WHERE order_ref = $1 AND review_asked_at IS NULL
+      RETURNING review_ask`,
+    [String(req.params.ref || ""), ask]
+  );
+  if (!rows.length) {
+    return res.status(409).json({
+      error: "Prosba o ocene juz poszla albo nie ma takiego zamowienia",
+      code: "already_asked",
+    });
+  }
+  res.json({ ok: true, reviewAsk: rows[0].review_ask });
+});
+
 app.post("/api/orders/:ref/refunded", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

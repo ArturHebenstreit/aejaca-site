@@ -36,7 +36,7 @@
           <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Odrzucone</option>
           <option value="all" <%= filters.status === 'all' ? 'selected' : '' %>>Wszystkie</option>
         </select>
-        <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-medium rounded-lg transition-colors">Filtruj</button>
+        <button data-dymek="Zawęź listę do wybranego stanu zgłoszeń" type="submit" class="dymek px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-medium rounded-lg transition-colors">Filtruj</button>
       </form>
     </div>
 
@@ -101,7 +101,7 @@
                     <!-- Approve -->
                     <form method="POST" action="/filaments/contributions/<%= row.id %>/approve"
                       onsubmit="return confirm('Dodać jako markę zweryfikowaną? Zostanie wstawiona do bazy jako nowa marka.')">
-                      <button type="submit" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap">
+                      <button data-dymek="Przyjmij zgłoszony filament do bazy, będzie widoczny w kalkulatorze" type="submit" class="dymek px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap">
                         &#10003; Zatwierdź
                       </button>
                     </form>
@@ -120,7 +120,7 @@
                     <form method="POST" action="/filaments/contributions/<%= row.id %>/reject" class="flex flex-col gap-2">
                       <textarea name="admin_note" rows="2" placeholder="Powód odrzucenia (opcjonalnie)..."
                         class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-red-400/50 resize-none"></textarea>
-                      <button type="submit" class="self-end px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors">
+                      <button data-dymek="Odrzuć zgłoszenie z podanym powodem" type="submit" class="dymek self-end px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors">
                         Potwierdź odrzucenie
                       </button>
                     </form>
