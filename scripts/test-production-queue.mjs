@@ -437,5 +437,36 @@ console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
      "prog zapisuje sie dopiero po udanej wysylce");
 }
 
+console.log("\n14. Prosba o ocene jest decyzja, a nie automatem\n");
+{
+  const SERWER = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
+  const KOLEJKA = readFileSync(join(ROOT, "admin", "views", "queue.ejs"), "utf8");
+  const PANEL = readFileSync(join(ROOT, "admin", "server.js"), "utf8");
+  const SCHEMAT = readFileSync(join(ROOT, "scripts", "orders-schema.sql"), "utf8");
+  const ma = (tekst, wzor, opis) => (wzor.test(tekst) ? ok(opis) : zle(`NIE ${opis}`));
+
+  // Klienci zaczeli wystawiac opinie sami, jeszcze zanim minely trzy dni
+  // (wlasciciel, 2026-09-01). Prosba wyslana takiej osobie nie jest
+  // uprzejmoscia, tylko dopominaniem sie o cos, co juz dostalismy.
+  ma(SCHEMAT, /review_ask\s+BOOLEAN\s+NOT NULL DEFAULT TRUE/,
+     "schemat pamieta, czy o ocene w ogole prosic");
+  ma(SERWER, /AND COALESCE\(review_ask, TRUE\)/,
+     "przeglad wieczorny pomija zamowienia z wylaczona prosba");
+  ma(KOLEJKA, /name="reviewAsk" value="1" checked/,
+     "przy odbiorze stoi znacznik, domyslnie zaznaczony");
+  ma(PANEL, /reviewAsk: req\.body\.reviewAsk === undefined \? undefined : req\.body\.reviewAsk === "1"/,
+     "znacznik jedzie do API tylko wtedy, gdy formularz go mial");
+  ma(SERWER, /etap === "completed" && req\.body\?\.reviewAsk !== undefined/,
+     "inne etapy nie ruszaja tej decyzji");
+
+  // Decyzja przy odbiorze zapada, ZANIM wiadomo, czy klient wystawi opinie sam,
+  // a robi to zwykle wlasnie w tych trzech dniach. Musi dac sie zmienic.
+  ma(SERWER, /app\.post\("\/api\/orders\/:ref\/review-ask"/, "decyzje da sie zmienic po fakcie");
+  ma(SERWER, /WHERE order_ref = \$1 AND review_asked_at IS NULL/,
+     "ale nie po wyslaniu: wtedy nie ma czego przestawiac");
+  ma(KOLEJKA, /Jednak poproś o opinię/, "przelacznik dziala w obie strony");
+  ma(KOLEJKA, /Prośba o opinię wysłana/, "a po wyslaniu widac date zamiast przelacznika");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nKolejka pracowni: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

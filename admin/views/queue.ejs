@@ -539,6 +539,18 @@
                                          class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
                                   <span class="text-neutral-400 text-[10px]">Powiadom klienta mailem</span>
                                 </label>
+                                <%# Prosba o ocene wychodzi trzy dni po odbiorze. Klienci
+                                    zaczeli wystawiac opinie sami, jeszcze zanim minely,
+                                    a prosba wyslana takiej osobie nie jest uprzejmoscia,
+                                    tylko dopominaniem sie o cos, co juz dostalismy.
+                                    Domyslnie zaznaczone, bo przy wiekszosci zamowien
+                                    prosic warto. Decyzje da sie zmienic do chwili
+                                    wyslania, i sluzy do tego przelacznik nizej. %>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                  <input type="checkbox" name="reviewAsk" value="1" checked
+                                         class="w-4 h-4 rounded border-white/20 bg-neutral-900" />
+                                  <span class="text-neutral-400 text-[10px]">Poproś o opinię za 3 dni</span>
+                                </label>
                                 <%# Odbior potwierdza KLIENT, a my go tu odnotowujemy. Napis
                                     "zamknij i schowaj" mowil o tym, co dzieje sie z wierszem
                                     w tabeli, a nie o tym, co sie stalo ze zleceniem. %>
@@ -573,6 +585,29 @@
                         </div>
                       <% }); %>
                     </div>
+
+                    <%# Zamowienie juz odebrane: widac, czy prosba o ocene czeka,
+                        czy zostala wylaczona, czy juz poszla. Trzeci stan jest
+                        osobny, bo po wyslaniu nie ma czego przestawiac
+                        i udawanie, ze sie da, byloby gorsze od milczenia. %>
+                    <% if (o.status === "completed") { %>
+                      <div class="mt-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                        <% if (o.reviewAskedAt) { %>
+                          <p class="text-neutral-400 text-[11px]">Prośba o opinię wysłana <%= fmtDateShort(o.reviewAskedAt) %>.</p>
+                        <% } else { %>
+                          <p class="text-[11px] <%= o.reviewAsk ? 'text-emerald-300' : 'text-neutral-500' %>">
+                            <%= o.reviewAsk ? "Prośba o opinię wyjdzie 3 dni po odbiorze." : "Nie poprosimy o opinię." %>
+                          </p>
+                          <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/prosba-o-ocene" class="mt-1.5">
+                            <input type="hidden" name="back" value="<%= POWROT %>" />
+                            <input type="hidden" name="ask" value="<%= o.reviewAsk ? '0' : '1' %>" />
+                            <button class="px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-[10px] hover:border-white/35 transition-colors">
+                              <%= o.reviewAsk ? "Nie proś o opinię" : "Jednak poproś o opinię" %>
+                            </button>
+                          </form>
+                        <% } %>
+                      </div>
+                    <% } %>
 
                     <% if (o.trackingNumber) { %>
                       <p class="text-neutral-500 text-[11px]">

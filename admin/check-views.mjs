@@ -190,8 +190,25 @@ const ZESTAWY = {
       delivery: { method: "pickup", point: null, addressLine1: null, addressLine2: null, postalCode: null, city: null, country: "PL" },
       statusUrl: null, accessToken: null, leadDaysAgreedAt: null,
       items: [{ id: 4, title: "Grawer", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null, requiresDetails: false, detailsSettledAt: null }],
+    }, {
+      // Zamowienie odebrane, z prosba o ocene jeszcze przed nami. To jedyne
+      // miejsce, w ktorym te decyzje da sie odwrocic, wiec musi sie rysowac.
+      orderRef: "ZAM-ODEB", quoteRef: null, status: "completed", kind: "instant", lang: "pl",
+      name: "Nowak", email: "n@example.com", phone: null, totalPLN: "300.00",
+      paidAt: new Date("2026-08-20"), waitingDays: 12,
+      leadDays: 7, deadlineAt: "2026-08-27", daysLeft: -5, requiresDetails: false,
+      detailsAt: null, queuedAt: new Date("2026-08-20"), readyAt: new Date("2026-08-26"),
+      productionStartedAt: new Date("2026-08-22"), shippedAt: new Date("2026-08-27"),
+      completedAt: new Date("2026-08-30"),
+      trackingNumber: "123", carrier: "InPost", carrierHint: "InPost", productionNote: null,
+      paymentMethod: "autopay", paymentStatus: "SUCCESS", currency: "PLN",
+      amountEurCents: null, paymentReviewReason: null, createdAt: new Date("2026-08-20"),
+      reviewAsk: true, reviewAskedAt: null,
+      delivery: { method: "inpost_locker", point: "WAW01A", addressLine1: null, addressLine2: null, postalCode: null, city: null, country: "PL" },
+      statusUrl: null, accessToken: null, leadDaysAgreedAt: null,
+      items: [{ id: 5, title: "Naprawa", qty: 1, calculator: null, fileName: null, fileUrl: null, description: null, requiresDetails: false, detailsSettledAt: null }],
     }],
-    counts: { queued: 1, awaiting_transfer: 1, cancelled: 1 }, stan: "", sort: "newest", msg: null, err: null,
+    counts: { queued: 1, awaiting_transfer: 1, cancelled: 1, completed: 1 }, stan: "", sort: "newest", msg: null, err: null,
     przewoznicy: ["InPost", "DHL", "FedEx"],
     doZwrotu: { ile: 1, grosze: 12000 },
     // Cztery drogi wyjscia ze sprawy przychodza z API razem z kolejka. Atrapa

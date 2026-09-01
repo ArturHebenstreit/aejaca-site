@@ -73,6 +73,11 @@ CREATE TABLE IF NOT EXISTS orders (
   -- tej kolumny nie da sie po czasie powiedziec, czemu wrocilo tyle, a nie
   -- tyle. Kwota stoi osobno od stanu: stan konczy sie na 'cancelled', a to,
   -- czy pieniadze wrocily, mowia `refund_grosze` i `refunded_at`.
+  -- Prosba o ocene trzy dni po odbiorze. `review_ask` mowi, czy w ogole ma
+  -- wyjsc: klient, ktory wystawil opinie sam, nie ma dostawac dopominania sie
+  -- o cos, co juz zrobil. `review_asked_at` mowi, ze juz poszla.
+  review_ask        BOOLEAN      NOT NULL DEFAULT TRUE,
+
   cancel_kind       VARCHAR(30),
   refund_grosze     INTEGER      NOT NULL DEFAULT 0,
   refunded_at       TIMESTAMPTZ,

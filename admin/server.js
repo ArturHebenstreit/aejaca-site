@@ -1801,6 +1801,9 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         // Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj, a zaznaczona
         // dzisiaj, i wtedy termin realizacji wygladalby na przekroczony o dzien.
         shippedOn: (req.body.shippedOn || "").trim() || undefined,
+        // Prosba o ocene przy odbiorze. Pole jedzie tylko wtedy, gdy formularz
+        // je mial, wiec przy innych etapach nic sie nie zmienia.
+        reviewAsk: req.body.reviewAsk === undefined ? undefined : req.body.reviewAsk === "1",
       },
     });
     back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: ${r.status}` });
@@ -1881,6 +1884,20 @@ app.post("/queue/:ref/close", requireAuth, async (req, res) => {
       : ", bez zwrotu";
     const mail = req.body.notify === "on" ? (r.mailSent ? ", mail poszedl" : ", MAIL NIE POSZEDL") : "";
     back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: sprawa zamknieta${zwrot}${mail}` });
+  } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
+});
+
+// Wlaczenie albo wylaczenie prosby o ocene po fakcie. Decyzja przy odbiorze
+// zapada, zanim wiadomo, czy klient wystawi opinie sam, a robi to zwykle
+// wlasnie w tych trzech dniach.
+app.post("/queue/:ref/prosba-o-ocene", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/review-ask`, {
+      method: "POST",
+      body: { ask: req.body.ask === "1" },
+    });
+    const stan = r.reviewAsk ? "prosba o ocene wroci na liste" : "nie poprosimy o ocene";
+    back(res, req.body.back || "/queue", { otwarte: req.params.ref, msg: `${req.params.ref}: ${stan}` });
   } catch (err) { back(res, req.body.back || "/queue", { otwarte: req.params.ref, err: err.message }); }
 });
 
