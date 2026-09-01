@@ -55,9 +55,14 @@ assert.match(serwer, /deadlineAt: dataISO\(o\.deadline_at\)/,
   "kolejka i strona zamowienia podaja termin przez dataISO");
 assert.doesNotMatch(serwer, /String\(o\.deadline_at\)\.slice/,
   "nigdzie nie obcinamy terminu jak napisu");
-const strona = readFileSync(join(ROOT, "src", "pages", "OrderStatus.jsx"), "utf8");
-assert.match(strona, /\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$\//,
-  "strona nadal sprawdza postac daty, zamiast ufac temu, co przyjdzie");
+// Formater terminow stoi od 2 wrzesnia 2026 w jednym pliku, wspolnym dla
+// wszystkich stron: termin mial jeden ksztalt w mailu, drugi na stronie oferty
+// i trzeci przy przelewie.
+const formater = readFileSync(join(ROOT, "src", "utils", "dataDnia.js"), "utf8");
+assert.match(formater, /\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$\//,
+  "formater nadal sprawdza postac daty, zamiast ufac temu, co przyjdzie");
+assert.match(readFileSync(join(ROOT, "src", "pages", "OrderStatus.jsx"), "utf8"),
+  /dzienNumerycznie/, "strona zamowienia uzywa wspolnego formatera");
 
 // --- 4. Mail pisze daty po polsku ----------------------------------------
 const zamowienie = {

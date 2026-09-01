@@ -10,6 +10,7 @@
 // liczby zaleznie od tego, czyj komputer ja otworzyl.
 
 import { useState, useEffect } from "react";
+import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { Loader2, XCircle, Clock, ShoppingCart, ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
@@ -184,8 +185,7 @@ export default function QuotePage() {
     setAdded(true);
   }
 
-  const dateFmt = (d) =>
-    new Date(d).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE");
+  const dateFmt = dzienNumerycznie;
 
   const delta = quote?.metalDeltaGrosze || 0;
 

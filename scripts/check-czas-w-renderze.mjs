@@ -75,6 +75,42 @@ for (const plik of walk(SRC)) {
   });
 }
 
+// --- Termin ma jeden ksztalt, i to liczbowy ------------------------------
+// Termin realizacji, waznosc oferty i data przelewu to dla klienta ta sama
+// rzecz. Do 2 wrzesnia 2026 kazde miejsce pisalo ja inaczej: "22.09.2026"
+// w mailu, "2026-09-22" na stronie oferty, "1.09.2026" przy przelewie.
+// Klient dostawal dwie wiadomosci o jednej sprawie i widzial dwa zapisy jednej
+// daty. Nic sie przez to nie psulo i wlasnie dlatego zylo tak dlugo.
+//
+// Decyzja wlasciciela: wszedzie liczbowo, "DD.MM.RRRR", przez
+// `src/utils/dataDnia.js`. `toLocaleDateString` jest tu zakazane z dwoch
+// powodow: daje inny ksztalt w kazdym jezyku i opiera sie na danych ICU, ktore
+// w Node i w przegladarce bywaja z roznych wersji, a rozjazd na prerenderze
+// wyrzuca cale poddrzewo (ADR-0022).
+//
+// Wyjatek maja teksty REDAKCYJNE, gdzie miesiac slownie jest wlasciwy i nie
+// jest terminem: data wpisu na blogu i zdanie o tym, od kiedy prowadzimy
+// wysylke. To nie sa obietnice zlozone klientowi.
+const REDAKCYJNE = new Set([
+  "src/pages/BlogPost.jsx",
+  "src/components/NewsletterForm.jsx",
+]);
+for (const plik of walk(SRC)) {
+  const wzgledny = relative(ROOT, plik).replace(/\\/g, "/");
+  if (REDAKCYJNE.has(wzgledny)) continue;
+  const linie = readFileSync(plik, "utf8").split("\n");
+  linie.forEach((linia, i) => {
+    const bez = linia.trim();
+    if (bez.startsWith("//") || bez.startsWith("*")) return;
+    if (/toLocaleDateString|toLocaleTimeString/.test(linia)) {
+      problemy.push(
+        `${wzgledny}:${i + 1}\n    ${bez.slice(0, 120)}\n` +
+        "    Termin pisze sie liczbowo, przez dzienNumerycznie() z src/utils/dataDnia.js."
+      );
+    }
+  });
+}
+
 // Rok w stopce
 const FOOTER = join(SRC, "components", "Footer.jsx");
 const rok = /const ROK_COPYRIGHT = (\d{4});/.exec(readFileSync(FOOTER, "utf8"));

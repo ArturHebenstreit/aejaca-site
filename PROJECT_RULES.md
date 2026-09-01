@@ -257,6 +257,29 @@ Conversion: `eur = pln / pln_per_eur` where `pln_per_eur` comes from the live `/
 
 This applies to: all calculators, pricing displays, result cards, quote forms - any component that shows monetary values. Use the pattern: `const showEur = lang === "en" || lang === "de"`.
 
+## 5a. Terminy podajemy liczbowo
+
+**Każda data, która jest terminem, ma jeden kształt: `DD.MM.RRRR`, z zerem
+wiodącym** (decyzja właściciela, 2026-09-02). Dotyczy planowanej finalizacji,
+ważności oferty, terminu przelewu, dat na osi zlecenia i wszystkich stempli
+w mailach.
+
+Formatery są dwa i tylko dwa:
+- serwis: `dzienNumerycznie()` z `src/utils/dataDnia.js`,
+- maile: `dzien()` z `chat-api/mailSzata.js`.
+
+**`toLocaleDateString` jest w serwisie zakazane** poza tekstem redakcyjnym
+(wpis blogowy, opinie), gdzie miesiąc słownie jest właściwy i nie jest
+obietnicą złożoną klientowi. Powody są dwa: daje inny kształt w każdym języku,
+a przy tym opiera się na danych ICU, które w Node i w przeglądarce bywają
+z różnych wersji, więc rozjazd wyrzuca całe poddrzewo przy hydracji (ADR-0022).
+Pilnuje `scripts/check-czas-w-renderze.mjs`.
+
+**Pole `<input type="date">` w panelu przyjmuje wyłącznie `RRRR-MM-DD`**
+i bierze wartość z `dataPola()`. Data po polsku w takim polu nie wyświetla się
+wcale, więc pole wygląda na puste mimo zapisanej wartości, a następny zapis
+kasuje ją naprawdę. Pilnuje `admin/check-views.mjs`.
+
 ## 6. Linkowanie narzędzi
 
 **Jeżeli treść dotyka tematu, który mamy obsłużony narzędziem, ta treść MUSI do niego prowadzić.** Dotyczy wpisów blogowych, haseł słownika, kalkulatorów, sklepu, kart usług i strony B2B. Zbudowane i nielinkowane narzędzie nie istnieje dla czytelnika.

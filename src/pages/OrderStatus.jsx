@@ -6,6 +6,7 @@
 // komunikat ITN od Autopay, bo tylko on jest podpisany kluczem.
 
 import { useState, useEffect } from "react";
+import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { sciezkaJezyka } from "../routes.js";
@@ -71,12 +72,10 @@ function TransferRow({ label, value, mono, highlight }) {
 // przegladarce bywaja z roznych wersji, a rozjazd na prerenderze wyrzuca cale
 // poddrzewo (ADR-0022). Z tego samego powodu nie liczymy tu nic z `Date.now()`:
 // `daysLeft` przychodzi policzone z serwera.
-function dzienZeStempla(wartosc) {
-  if (!wartosc) return null;
-  const iso = String(wartosc).slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-  return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
-}
+// Wszystkie terminy w serwisie i w mailach maja JEDEN ksztalt, "DD.MM.RRRR"
+// (wlasciciel, 2026-09-02). Formater stoi w `utils/dataDnia.js`, zeby nie
+// dalo sie go rozjechac miedzy strona a mailem.
+const dzienZeStempla = dzienNumerycznie;
 
 function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
   if (!order) return null;
@@ -1024,7 +1023,7 @@ export default function OrderStatus() {
                     {tr.bank && <TransferRow label={u.transferBank} value={tr.bank} />}
                     <TransferRow label={u.transferRef} value={tr.reference} mono highlight />
                     {tr.dueAt && (
-                      <TransferRow label={u.transferDue} value={new Date(tr.dueAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")} />
+                      <TransferRow label={u.transferDue} value={dzienNumerycznie(tr.dueAt)} />
                     )}
                     <p className="text-neutral-500 text-xs leading-relaxed mt-3 pt-3 border-t border-white/10">
                       {u.transferAfter}

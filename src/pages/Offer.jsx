@@ -20,6 +20,7 @@
 // zamowienia, w jednej transakcji z jego zapisem. Przegladarka pokazuje.
 
 import { useState, useEffect, useMemo } from "react";
+import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { Loader2, Tag, Check, CheckCircle2, Clock, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
@@ -962,7 +963,7 @@ export default function Offer() {
                   <div className="mt-3 text-neutral-500 text-xs">
                     {domkniete || offer.expired ? u.validUntilPast : u.validUntil}
                     {" "}
-                    {String(offer.validUntil).slice(0, 10)}
+                    {dzienNumerycznie(offer.validUntil)}
                   </div>
                 )}
               </section>

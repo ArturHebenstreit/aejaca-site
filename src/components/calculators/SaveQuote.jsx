@@ -14,6 +14,7 @@
 // wysyla wylacznie parametry.
 
 import { useState } from "react";
+import { dzienNumerycznie } from "../../utils/dataDnia.js";
 import { idSesji } from "../../utils/analytics.js";
 import { Bookmark, Check, Copy, Loader2, Mail } from "lucide-react";
 
@@ -136,7 +137,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
 
   if (saved) {
     const until = saved.validUntil
-      ? new Date(saved.validUntil).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")
+      ? dzienNumerycznie(saved.validUntil)
       : null;
     return (
       <div className="mt-3 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.05] p-4">
