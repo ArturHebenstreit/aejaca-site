@@ -171,8 +171,7 @@
                   <%# Jeden znak w wierszu: olowek otwiera. Wszystkie dzialania
                       na tym zgloszeniu stoja w rozwinieciu, wiec lista zostaje
                       lista, a nie tablica przyciskow. %>
-                  <button data-dymek="Otwórz zgłoszenie: pełna treść i wszystkie działania" class="dymek" type="button" data-otworz="<%= lead.id %>"
-                          class="text-neutral-500 hover:text-white transition-colors"
+                  <button class="dymek text-neutral-500 hover:text-white transition-colors" data-dymek="Otwórz zgłoszenie: pełna treść i wszystkie działania" type="button" data-otworz="<%= lead.id %>"
                           title="Otwórz zgłoszenie">
                     <%- IKONY.olowek %>
                   </button>
@@ -185,118 +184,154 @@
                   samo. %>
               <tr data-edycja="<%= lead.id %>" class="hidden border-b border-white/10 bg-neutral-950/60">
                 <td colspan="7" class="px-4 py-4">
-                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <%# Rozwiniecie ma dwa tryby. PODGLAD sluzy do czytania:
+                      pola sa wylaczone, zeby nie dalo sie zmienic czegos
+                      przypadkiem, przewijajac tresc. EDYCJA wlacza sie
+                      olowkiem. Zapis i wycofanie wracaja do podgladu, bo praca
+                      z tym rekordem zwykle na tym sie konczy. %>
+                  <div data-panel="<%= lead.id %>" data-tryb="podglad">
 
-                    <div>
-                      <h3 class="text-white text-xs font-semibold mb-2">Treść zapytania</h3>
-                      <%# Tego pola NIE da sie edytowac i to jest decyzja: zapis
-                          tego, co powiedzial klient, poprawiony przez nas
-                          przestaje byc dowodem, czego zapytanie dotyczylo. %>
-                      <div class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-neutral-300 text-xs leading-relaxed">
-<%= lead.description || lead.params || "Bez treści." %>
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                      <h3 class="text-white text-xs font-semibold">Treść zapytania</h3>
+                      <div class="flex items-center gap-2 shrink-0">
+                        <% if (lead.watek_id) { %>
+                          <a href="/email-threads/<%= lead.watek_id %>"
+                             class="text-[11px] text-blue-400 hover:text-blue-300 transition-colors">
+                            Cały wątek<% if (lead.watek_wiadomosci > 1) { %> (<%= lead.watek_wiadomosci %> wiadomości)<% } %> &rarr;
+                          </a>
+                        <% } %>
+                        <button data-dymek="Włącz edycję: stan, data kontaktu i notatka" data-edytuj="<%= lead.id %>"
+                                type="button"
+                                class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-[11px] hover:border-white/35 transition-colors">
+                          <%- IKONY.olowek %> Edytuj
+                        </button>
                       </div>
-                      <% if (lead.params_json && typeof lead.params_json === "object") { %>
-                        <p class="text-neutral-500 text-[10px] mt-2">
-                          <% Object.entries(lead.params_json).forEach(function (e) { %>
-                            <span class="mr-2"><%= e[0] %>: <%= e[1] %></span>
-                          <% }); %>
-                        </p>
-                      <% } %>
-                      <% if (lead.price_min_pln != null || lead.price_max_pln != null) { %>
-                        <p class="text-neutral-500 text-[11px] mt-2">
-                          Widełki z kalkulatora: <%= lead.price_min_pln %> - <%= lead.price_max_pln %> PLN
-                        </p>
-                      <% } %>
                     </div>
 
-                    <div class="space-y-4">
-                      <form method="POST" action="/leads/<%= lead.id %>/edit" class="space-y-2">
-                        <input type="hidden" name="back" value="<%= adresListy({}) %>" />
-                        <div class="grid grid-cols-2 gap-2">
-                          <label class="block">
-                            <span class="text-neutral-500 text-[10px] block mb-1">Stan</span>
-                            <select name="status" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white">
-                              <% ["new", "contacted", "quoted", "closed", "spam"].forEach(function (st) { %>
-                                <option value="<%= st %>" <%= (lead.status || "new") === st ? "selected" : "" %>><%= stanEtykiety[st] %></option>
-                              <% }); %>
-                            </select>
-                          </label>
-                          <label class="block">
-                            <span class="text-neutral-500 text-[10px] block mb-1">Skontaktowano dnia</span>
-                            <input type="date" name="contactedAt"
-                                   value="<%= lead.contacted_at ? String(fmtDateShort(lead.contacted_at)).slice(0, 10) : '' %>"
-                                   class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
-                          </label>
-                        </div>
-                        <label class="block">
-                          <span class="text-neutral-500 text-[10px] block mb-1">Notatka, dla nas</span>
-                          <textarea name="contactNote" rows="3"
-                                    class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-neutral-200"><%= lead.contact_note || "" %></textarea>
-                        </label>
-                        <div class="flex items-center gap-2">
-                          <button data-dymek="Zapisz stan, datę kontaktu i notatkę" class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
-                            <%- IKONY.fistaszek %> Zapisz
-                          </button>
-                          <button data-dymek="Zamknij bez zapisywania, pola wracają do zapisanych wartości" class="dymek" type="button" data-zamknij="<%= lead.id %>"
-                                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[11px] hover:bg-amber-400/10 transition-colors">
-                            <%- IKONY.cofnij %> Wycofaj
-                          </button>
-                        </div>
-                      </form>
+                    <%# Tresc bierzemy z POCZTY, gdy zgloszenie ja ma: stara
+                        droga zapisywala w zgloszeniu sam temat, wiec tutaj
+                        stalo jedno zdanie, a cala wiadomosc lezala obok,
+                        w tabeli poczty, i nie dalo sie jej przeczytac.
+                        Pola NIE da sie edytowac i to jest decyzja: zapis tego,
+                        co powiedzial klient, poprawiony przez nas przestaje
+                        byc dowodem, czego zapytanie dotyczylo. %>
+                    <% var pelnaTresc = (lead.watek_tresc && lead.watek_tresc.trim()) || lead.description || lead.params || ""; %>
+                    <div class="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 max-h-96 overflow-y-auto whitespace-pre-wrap text-neutral-200 text-xs leading-relaxed mb-4"><%
+                      %><% if (temat && pelnaTresc && !pelnaTresc.startsWith(temat)) { %><strong class="text-white"><%= temat %></strong>
 
-                      <%# Decyzja "lead czy nie lead" wraz z podpowiedzia
-                          automatu. Stoi tylko przy zgloszeniach z poczty:
-                          formularz ze strony JEST zapytaniem i nie ma tu czego
-                          rozstrzygac. %>
-                      <% if (lead.watek_id) { %>
-                        <div class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-                          <p class="text-neutral-400 text-[11px] mb-1.5">
-                            Wątek mailowy:
-                            <strong class="text-neutral-200"><%= lead.watek_tag === "lead" ? "zapytanie" : lead.watek_tag === "spam" ? "spam" : lead.watek_tag === "not_lead" ? "nie zapytanie" : "bez decyzji" %></strong>
-                            <% if (lead.watek_tag === "unclassified" && lead.watek_sugestia) { %>
-                              <span class="text-neutral-500">, automat typuje: <%= lead.watek_sugestia === "lead" ? "zapytanie" : lead.watek_sugestia === "spam" ? "spam" : "nie zapytanie" %></span>
-                            <% } %>
-                          </p>
-                          <div class="flex flex-wrap gap-1.5">
-                            <% [
-                              ["lead", "To zapytanie", "Sprawa dostaje numer, a klient potwierdzenie odbioru. Z takiego zgłoszenia robi się ofertę"],
-                              ["not_lead", "Nie zapytanie", "Oferty z tego nie zrobimy. Sprawa zostaje w historii, numer też"],
-                              ["spam", "Spam", "Znika z domyślnych widoków i nie liczy się jako nieobsłużone"],
-                            ].forEach(function (w) { %>
-                              <form method="POST" action="/leads/<%= lead.id %>/watek-tag" class="inline-block">
-                                <input type="hidden" name="back" value="<%= adresListy({}) %>" />
-                                <input type="hidden" name="watekId" value="<%= lead.watek_id %>" />
-                                <input type="hidden" name="tag" value="<%= w[0] %>" />
-                                <button data-dymek="<%= w[2] %>"
-                                        class="dymek px-2.5 py-1 rounded-lg border text-[10px] transition-colors <%= lead.watek_tag === w[0] ? 'border-white/35 text-white bg-white/5' : 'border-white/10 text-neutral-400 hover:border-white/25' %>">
-                                  <%= w[1] %>
-                                </button>
-                              </form>
-                            <% }); %>
+<% } %><%= pelnaTresc || "Bez treści. Zgłoszenie zapisano, zanim zaczęliśmy zachowywać treść wiadomości." %></div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      <div class="space-y-3">
+                        <form method="POST" action="/leads/<%= lead.id %>/edit" class="space-y-2" data-formularz="<%= lead.id %>">
+                          <input type="hidden" name="back" value="<%= adresListy({}) %>" />
+                          <div class="grid grid-cols-2 gap-2">
+                            <label class="block">
+                              <span class="text-neutral-500 text-[10px] block mb-1">Stan</span>
+                              <select name="status" disabled
+                                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white disabled:opacity-60">
+                                <% ["new", "contacted", "quoted", "closed", "spam"].forEach(function (st) { %>
+                                  <option value="<%= st %>" <%= (lead.status || "new") === st ? "selected" : "" %>><%= stanEtykiety[st] %></option>
+                                <% }); %>
+                              </select>
+                            </label>
+                            <label class="block">
+                              <span class="text-neutral-500 text-[10px] block mb-1">Skontaktowano dnia</span>
+                              <input type="date" name="contactedAt" disabled
+                                     value="<%= lead.contacted_at ? String(fmtDateShort(lead.contacted_at)).slice(0, 10) : '' %>"
+                                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white disabled:opacity-60" />
+                            </label>
                           </div>
-                        </div>
-                      <% } %>
+                          <label class="block">
+                            <span class="text-neutral-500 text-[10px] block mb-1">Notatka, dla nas</span>
+                            <textarea name="contactNote" rows="4" disabled
+                                      placeholder="Co ustalone, co obiecane, kiedy oddzwonić."
+                                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-neutral-200 disabled:opacity-60"><%= lead.contact_note || "" %></textarea>
+                          </label>
+                          <div class="flex items-center gap-2" data-przyciski-edycji="<%= lead.id %>" hidden>
+                            <button data-dymek="Zapisz i wróć do podglądu"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 text-[11px] hover:bg-emerald-400/10 transition-colors">
+                              <%- IKONY.fistaszek %> Zapisz
+                            </button>
+                            <button data-dymek="Wyjdź z edycji bez zapisywania, pola wracają do zapisanych wartości"
+                                    type="button" data-zamknij="<%= lead.id %>"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 text-[11px] hover:bg-amber-400/10 transition-colors">
+                              <%- IKONY.cofnij %> Wycofaj
+                            </button>
+                          </div>
+                        </form>
 
-                      <div class="flex items-center gap-2">
-                        <% if (lead.odrzucony) { %>
-                          <span class="text-[11px] text-neutral-500">Wątek oznaczony jako nie zapytanie, oferty z niego nie robimy.</span>
-                        <% } else if (!lead.ma_wycene) { %>
-                          <form method="POST" action="/leads/<%= lead.id %>/do-wyceny">
+                        <% if (lead.params_json && typeof lead.params_json === "object" && Object.keys(lead.params_json).length) { %>
+                          <p class="text-neutral-500 text-[10px]">
+                            <% Object.entries(lead.params_json).forEach(function (e) { %>
+                              <span class="mr-2"><%= e[0] %>: <%= e[1] %></span>
+                            <% }); %>
+                          </p>
+                        <% } %>
+                        <% if (lead.price_min_pln != null || lead.price_max_pln != null) { %>
+                          <p class="text-neutral-500 text-[11px]">
+                            Widełki z kalkulatora: <%= lead.price_min_pln %> - <%= lead.price_max_pln %> PLN
+                          </p>
+                        <% } %>
+                      </div>
+
+                      <div class="space-y-3">
+                        <%# Decyzja "zapytanie czy nie" wraz z podpowiedzia
+                            automatu. Stoi tylko przy zgloszeniach z poczty:
+                            formularz ze strony JEST zapytaniem i nie ma tu
+                            czego rozstrzygac. %>
+                        <% if (lead.watek_id) { %>
+                          <div class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                            <p class="text-neutral-400 text-[11px] mb-1.5">
+                              Wątek mailowy:
+                              <strong class="text-neutral-200"><%= lead.watek_tag === "lead" ? "zapytanie" : lead.watek_tag === "spam" ? "spam" : lead.watek_tag === "not_lead" ? "nie zapytanie" : "bez decyzji" %></strong>
+                              <% if (lead.watek_tag === "unclassified" && lead.watek_sugestia) { %>
+                                <span class="text-neutral-500">, automat typuje: <%= lead.watek_sugestia === "lead" ? "zapytanie" : lead.watek_sugestia === "spam" ? "spam" : "nie zapytanie" %></span>
+                              <% } %>
+                            </p>
+                            <div class="flex flex-wrap gap-1.5">
+                              <% [
+                                ["lead", "To zapytanie", "Sprawa dostaje numer, a klient potwierdzenie odbioru. Z takiego zgłoszenia robi się ofertę"],
+                                ["not_lead", "Nie zapytanie", "Oferty z tego nie zrobimy. Sprawa zostaje w historii, numer też"],
+                                ["spam", "Spam", "Znika z domyślnych widoków i nie liczy się jako nieobsłużone"],
+                              ].forEach(function (w) { %>
+                                <form method="POST" action="/leads/<%= lead.id %>/watek-tag" class="inline-block">
+                                  <input type="hidden" name="back" value="<%= adresListy({}) %>" />
+                                  <input type="hidden" name="watekId" value="<%= lead.watek_id %>" />
+                                  <input type="hidden" name="tag" value="<%= w[0] %>" />
+                                  <button data-dymek="<%= w[2] %>"
+                                          class="dymek px-2.5 py-1 rounded-lg border text-[10px] transition-colors <%= lead.watek_tag === w[0] ? 'border-white/35 text-white bg-white/5' : 'border-white/10 text-neutral-400 hover:border-white/25' %>">
+                                    <%= w[1] %>
+                                  </button>
+                                </form>
+                              <% }); %>
+                            </div>
+                          </div>
+                        <% } %>
+
+                        <div class="flex items-center gap-2">
+                          <% if (lead.odrzucony) { %>
+                            <span class="text-[11px] text-neutral-500">Wątek oznaczony jako nie zapytanie, oferty z niego nie robimy.</span>
+                          <% } else if (!lead.ma_wycene) { %>
+                            <form method="POST" action="/leads/<%= lead.id %>/do-wyceny">
+                              <input type="hidden" name="back" value="<%= adresListy({}) %>" />
+                              <button data-dymek="Załóż ofertę pod numerem tego zgłoszenia i przepisz do niej treść"
+                                      class="dymek px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 text-[11px] hover:bg-amber-950 transition-colors">
+                                Zrób wycenę
+                              </button>
+                            </form>
+                          <% } else { %>
+                            <span class="text-[11px] text-neutral-500">Oferta pod tym numerem już istnieje.</span>
+                          <% } %>
+                          <form method="POST" action="/leads/<%= lead.id %>/delete" class="ml-auto"
+                                onsubmit="return confirm('Usunąć zgłoszenie <%= lead.quote_ref || lead.id %>? Tego się nie cofa.')">
                             <input type="hidden" name="back" value="<%= adresListy({}) %>" />
-                            <button data-dymek="Załóż ofertę pod numerem tego zgłoszenia i przepisz do niej treść" class="dymek px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 text-[11px] hover:bg-amber-950 transition-colors">
-                              Zrób wycenę
+                            <button data-dymek="Usuń zgłoszenie na stałe, razem z treścią i numerem sprawy"
+                                    class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-400/30 text-red-400 text-[11px] hover:bg-red-400/10 transition-colors">
+                              <%- IKONY.krzyzyk %> Usuń
                             </button>
                           </form>
-                        <% } else { %>
-                          <span class="text-[11px] text-neutral-500">Oferta pod tym numerem już istnieje.</span>
-                        <% } %>
-                        <form method="POST" action="/leads/<%= lead.id %>/delete" class="ml-auto"
-                              onsubmit="return confirm('Usunąć zgłoszenie <%= lead.quote_ref || lead.id %>? Tego się nie cofa.')">
-                          <input type="hidden" name="back" value="<%= adresListy({}) %>" />
-                          <button data-dymek="Usuń zgłoszenie na stałe, razem z treścią i numerem sprawy" class="dymek flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-400/30 text-red-400 text-[11px] hover:bg-red-400/10 transition-colors">
-                            <%- IKONY.krzyzyk %> Usuń
-                          </button>
-                        </form>
+                        </div>
                       </div>
                     </div>
 
@@ -357,9 +392,24 @@
         return wiersz;
       };
 
-      // Po kazdym zapisie wracamy do tego samego wiersza, otwartego. Numer
-      // przychodzi w adresie, bo serwer wie, czego dotyczyla akcja, a strona
-      // po przeladowaniu juz nie.
+      // Tryb podgladu i tryb edycji. W podgladzie pola sa WYLACZONE, zeby nie
+      // dalo sie zmienic czegos przypadkiem, przewijajac dluga tresc maila.
+      var tryb = function (id, czy) {
+        var panel = document.querySelector('[data-panel="' + id + '"]');
+        if (!panel) return;
+        panel.setAttribute("data-tryb", czy ? "edycja" : "podglad");
+        panel.querySelectorAll('[data-formularz] select, [data-formularz] input:not([type=hidden]), [data-formularz] textarea')
+          .forEach(function (pole) { pole.disabled = !czy; });
+        var przyciski = panel.querySelector('[data-przyciski-edycji]');
+        if (przyciski) przyciski.hidden = !czy;
+        var olowek = panel.querySelector("[data-edytuj]");
+        if (olowek) olowek.hidden = czy;
+      };
+
+      // Po kazdym zapisie wracamy do tego samego wiersza, otwartego i w trybie
+      // podgladu: praca z tym rekordem zwykle na zapisie sie konczy. Numer
+      // przychodzi w adresie, bo serwer wie, czego dotyczyla akcja, a strona po
+      // przeladowaniu juz nie.
       var doOtwarcia = new URLSearchParams(location.search).get("otwarte");
       if (doOtwarcia) {
         pokaz(doOtwarcia, true);
@@ -368,21 +418,32 @@
       }
 
       document.addEventListener("click", function (e) {
-        // Zawinieta strzalka: zostaw, jak bylo. Formularz wraca do wartosci
-        // z bazy, zamiast zostawac z polowicznie wpisana zmiana.
-        var zamknij = e.target.closest("[data-zamknij]");
-        if (zamknij) {
-          var id = zamknij.getAttribute("data-zamknij");
-          var formularz = zamknij.closest("form");
-          if (formularz) formularz.reset();
-          pokaz(id, false);
+        var edytuj = e.target.closest("[data-edytuj]");
+        if (edytuj) {
+          tryb(edytuj.getAttribute("data-edytuj"), true);
           return;
         }
+
+        // Zawinieta strzalka: zostaw, jak bylo. Formularz wraca do wartosci
+        // z bazy i wychodzimy z edycji, ale wiersz zostaje otwarty do czytania.
+        var zamknij = e.target.closest("[data-zamknij]");
+        if (zamknij) {
+          var idZ = zamknij.getAttribute("data-zamknij");
+          var formularz = document.querySelector('[data-formularz="' + idZ + '"]');
+          if (formularz) formularz.reset();
+          tryb(idZ, false);
+          return;
+        }
+
         var otworz = e.target.closest("[data-otworz]");
         if (!otworz) return;
-        // Klikniecie w odnosnik albo w przycisk w srodku wiersza ma robic to,
-        // po co tam stoi, a nie zwijac wiersz pod palcem.
-        if (e.target.closest("a, button[type=submit], form")) return;
+        // Klikniecie w odnosnik albo w pole w srodku wiersza ma robic to, po co
+        // tam stoi, a nie zwijac wiersz pod palcem. Wyjatkiem jest sam olowek,
+        // ktory JEST przyciskiem otwierajacym: bez tego wyjatku nie dzialalby
+        // jedyny znak, po ktorym widac, ze wiersz da sie otworzyc.
+        var wnetrze = e.target.closest("a, button, form, input, select, textarea");
+        if (wnetrze && wnetrze !== otworz && !otworz.contains(wnetrze)) return;
+        if (wnetrze && wnetrze !== otworz && otworz.contains(wnetrze)) return;
         var id = otworz.getAttribute("data-otworz");
         var wiersz = document.querySelector('[data-edycja="' + id + '"]');
         if (wiersz) pokaz(id, wiersz.classList.contains("hidden"));

@@ -359,8 +359,7 @@
                                     (`formaction`). Drugie pole na te sama kwote byloby dwoma
                                     miejscami na jedna liczbe, a wpisanie jej nie w to okienko
                                     konczyloby sie prosba o doplate na przypadkowa kwote. %>
-                                <button data-dymek="Wyślij prośbę o brakującą kwotę z terminem trzech dni" class="dymek" formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall"
-                                        class="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-orange-400/40 text-orange-300 text-[10px] hover:bg-orange-400/10 transition-colors">
+                                <button class="dymek w-full mt-1 px-2.5 py-1.5 rounded-lg border border-orange-400/40 text-orange-300 text-[10px] hover:bg-orange-400/10 transition-colors" data-dymek="Wyślij prośbę o brakującą kwotę z terminem trzech dni" formaction="/transfers/<%= encodeURIComponent(o.orderRef) %>/shortfall">
                                   Napisz o dopłatę, 3 dni
                                 </button>
                               </form>

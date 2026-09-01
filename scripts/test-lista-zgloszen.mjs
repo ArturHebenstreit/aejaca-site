@@ -54,6 +54,24 @@ assert.match(widok, /doOtwarcia/, "po zapisie wracamy do tego samego wiersza, ot
 // powiedzial czlowiek, poprawiony przez nas przestaje byc dowodem.
 assert.doesNotMatch(widok, /name="description"|name="email"/,
   "tresci i adresu z maila nie da sie edytowac");
+// Tresc bierzemy Z POCZTY, gdy zgloszenie ja ma. Stara droga zapisywala
+// w zgloszeniu sam temat, wiec w panelu stalo jedno zdanie, a cala wiadomosc
+// lezala obok, w tabeli poczty, i nie dalo sie jej przeczytac.
+assert.match(panel, /SELECT em\.body_text FROM email_messages em/,
+  "lista siega po tresc wiadomosci, a nie tylko po opis zgloszenia");
+assert.match(widok, /lead\.watek_tresc && lead\.watek_tresc\.trim\(\)/,
+  "tresc z poczty wygrywa z krotkim opisem zapisanym przy zgloszeniu");
+
+// --- 3b. Podglad i edycja to DWA tryby -----------------------------------
+// W podgladzie pola sa wylaczone, zeby przewijanie dlugiego maila nie
+// konczylo sie przypadkowa zmiana stanu sprawy. Olowek wlacza edycje, zapis
+// i wycofanie z niej wychodza.
+assert.match(widok, /data-tryb="podglad"/, "rozwiniecie otwiera sie do czytania");
+assert.match(widok, /data-edytuj="<%= lead\.id %>"/, "olowek wlacza edycje");
+assert.match(widok, /<textarea name="contactNote"[\s\S]{0,120}disabled/,
+  "pola stoja wylaczone, dopoki nie wlaczysz edycji");
+assert.match(widok, /pole\.disabled = !czy/, "edycja wlacza pola, a wyjscie z niej je wylacza");
+assert.match(widok, /formularz\.reset\(\)/, "wycofanie przywraca zapisane wartosci");
 assert.match(panel, /app\.post\("\/leads\/:id\/edit"/, "jest zapis tego, co nasze");
 assert.match(panel, /SET status = COALESCE\(\$2, status\)/, "zapis nie rusza tresci zapytania");
 
