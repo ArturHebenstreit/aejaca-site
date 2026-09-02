@@ -31,7 +31,7 @@
 //   node .claude/skills/aejaca-seo/audyt.mjs --dist=dist
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, dirname, relative, sep } from "node:path";
+import { join, dirname, relative, sep, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { JEZYKI, JEZYK_DOMYSLNY, sciezkaJezyka } from "../../../src/routes.js";
@@ -41,7 +41,10 @@ const SITE = "https://www.aejaca.com";
 
 const argDist = process.argv.find((a) => a.startsWith("--dist="));
 const WSZYSTKO = process.argv.includes("--wszystko");
-const DIST = join(KORZEN, argDist ? argDist.slice(7) : "dist");
+const wskazany = argDist ? argDist.slice(7) : "dist";
+// Sciezka bezwzgledna zdarza sie przy sprawdzaniu kopii katalogu, wiec nie
+// doklejamy do niej korzenia repozytorium.
+const DIST = isAbsolute(wskazany) ? wskazany : join(KORZEN, wskazany);
 
 if (!existsSync(DIST)) {
   console.error(`\nNie ma katalogu ${DIST}. Najpierw: npm run build\n`);
@@ -120,6 +123,8 @@ const strony = new Map(); // adres -> dane
         plik: relative(KORZEN, p),
         html,
         tekst: tekstStrony(html),
+        // Kotwice, na ktore wolno wskazac adresowi z krzyzykiem.
+        kotwice: new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])),
         lang: /<html[^>]*\slang="([^"]*)"/.exec(html)?.[1] || "",
         tytul: odkoduj(/<title[^>]*>([\s\S]*?)<\/title>/.exec(html)?.[1] || ""),
         opis: odkoduj(meta("description") || ""),
@@ -231,6 +236,14 @@ for (const [adres, s] of strony) {
 // do tego stanu nie jest zla wola, tylko usuniecie sekcji ze strony bez
 // usuniecia schematu, ktory ja opisywal.
 for (const [sciezka, s] of strony) {
+  // Dwa schematy tego samego typu pod jednym adresem to dwa opisy jednej
+  // rzeczy, ktore udaja dwie rzeczy. `/jewelry/` niosla trzy schematy
+  // `Product` (pierscionek, pierscionek zareczynowy, kolczyki), kazdy
+  // z wlasnym SKU i wlasna cena w euro, i wszystkie trzy z `url` wskazujacym
+  // na te sama strone kategorii. Zaden z tych wyrobow nie istnial w katalogu,
+  // a ocena przy nich byla ocena FIRMY z Google.
+  const podAdresem = new Map();
+
   for (const surowe of s.dane) {
     let obiekt;
     try {
@@ -258,6 +271,40 @@ for (const [sciezka, s] of strony) {
         }
       }
 
+      // Adres z krzyzykiem obiecuje MIEJSCE na stronie. Kiedy tego miejsca nie
+      // ma, przegladarka po prostu zostaje na gorze i nikt niczego nie zauwaza,
+      // a schemat opisuje jedenascie osobnych pozycji, ktore wszystkie sa ta
+      // sama strona. `/studio/` i `/jewelry/` mialy tak przez caly czas:
+      // `ItemList` wymienial `#co2laser`, `#fiber`, `#rings` i osiem innych
+      // sekcji, ktorych na stronie nigdy nie bylo.
+      const zKotwica = [];
+      if (Array.isArray(schemat.itemListElement)) {
+        for (const poz of schemat.itemListElement) {
+          if (!poz || typeof poz !== "object") continue;
+          const u = typeof poz.url === "string"
+            ? poz.url
+            : (typeof poz.item === "string" ? poz.item : poz.item?.url);
+          if (typeof u === "string") zKotwica.push(u);
+        }
+      }
+      // `@id` z krzyzykiem to NAZWA bytu, a nie miejsce na stronie:
+      // `https://www.aejaca.com/#organization` nazywa firme i nie obiecuje, ze
+      // na stronie stoi element o takim identyfikatorze. Dlatego `@id` tu nie
+      // wchodzi, mimo ze wyglada jak adres z kotwica.
+      for (const pole of ["url", "mainEntityOfPage"]) {
+        const w = typeof schemat[pole] === "string" ? schemat[pole] : schemat[pole]?.["@id"];
+        if (typeof w === "string") zKotwica.push(w);
+      }
+      for (const adres of zKotwica) {
+        if (!adres.startsWith(SITE) || !adres.includes("#")) continue;
+        const [bez, kotwica] = adres.slice(SITE.length).split("#");
+        const docelowa = (bez || "/") === sciezka ? s : strony.get(bez || "/");
+        if (!docelowa) continue;
+        if (!docelowa.kotwice.has(kotwica)) {
+          blad(`${schemat["@type"]} wskazuje na #${kotwica}, a takiego miejsca na stronie nie ma`, s.plik);
+        }
+      }
+
       if (schemat["@type"] === "FAQPage") {
         for (const q of schemat.mainEntity || []) {
           const pytanie = odkoduj(q?.name || "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -278,6 +325,18 @@ for (const [sciezka, s] of strony) {
           if (!oferta.priceCurrency) blad("Product.offers bez priceCurrency", s.plik);
           if (!(Number(oferta.price) > 0)) blad(`Product.offers.price = ${oferta.price}`, s.plik);
           if (!oferta.availability) blad("Product.offers bez availability", s.plik);
+        }
+      }
+
+      {
+        const w = typeof schemat.url === "string" ? schemat.url : null;
+        if (w) {
+          const klucz = `${schemat["@type"]}|${w}`;
+          const ile = (podAdresem.get(klucz) || 0) + 1;
+          podAdresem.set(klucz, ile);
+          if (ile === 2) {
+            blad(`${schemat["@type"]} wystepuje na tej stronie ${ile} razy z tym samym url (${w})`, s.plik);
+          }
         }
       }
 
