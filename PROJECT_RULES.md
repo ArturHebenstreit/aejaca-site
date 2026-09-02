@@ -77,6 +77,46 @@ alternatywą. Uwaga zgłoszona i odrzucona też jest wynikiem: zapisuje się ją
 jako świadomie przyjętą konsekwencję, żeby za pół roku nikt jej nie odkrywał
 drugi raz jako błędu.
 
+## 3a. Praca równoległa agentów (polecenie właściciela, 2026-09-02)
+
+**Zadania, które da się rozdzielić, rozdziela się agentom i puszcza
+równolegle.** Sesja główna trzyma decyzję, diagnozę i ocenę wyniku; wykonanie
+schodzi w dół. To rozwinięcie reguły delegowania z `CLAUDE.md`: tam było
+„zlecaj proste zadania", tutaj dochodzi **równoległość jako domyślny kształt
+pracy** wszędzie, gdzie jest skuteczniejsza i tańsza.
+
+### Kiedy rozdzielamy
+
+- **Badanie o kilku niezależnych wątkach** (dwa obszary wiedzy, dwa katalogi
+  do przeszukania, kilka plików do przeczytania na raz).
+- **Zmiany w rozłącznych plikach**, gdzie żadna nie zależy od wyniku drugiej.
+- **Powtarzalna robota na wielu wierszach**: i18n w trzech językach, ta sama
+  poprawka w kilkunastu miejscach, przegląd listy pod jednym kątem.
+
+### Kiedy NIE rozdzielamy
+
+- **Zadania na jednym pliku**, gdzie dwie równoległe edycje zdepczą się
+  nawzajem. Rozłączność plików jest warunkiem, nie życzeniem.
+- **Wysokie ryzyko błędnej diagnozy**: geometria kreatora, wycena, płatności,
+  prawo konsumenckie. Tam sesja główna pracuje sama.
+- **Zadanie krótsze niż jego opisanie.** Zlecenie i kontrola też kosztują.
+
+### Co agent dostaje w zleceniu, zawsze
+
+1. **Zakaz długich myślników.**
+2. **Nazwę gałęzi** i zakaz wychodzenia poza nią.
+3. **Zakres plików**, których wolno mu dotknąć, i wprost: czego ma nie ruszać.
+4. `npm run sync:pricing` po dotknięciu `src/geometry`.
+5. Regułę zgłaszania sprzeczności przed kodem (sekcja `Jak podejmujemy
+   decyzje`).
+
+### Co sesja główna robi z wynikiem
+
+**Sprawdza go sama, zawsze.** Agent raportuje własną pracę i bywa w tym
+optymistą: „gotowe" znaczy „skończyłem", a nie „działa". Spójność całości jest
+po stronie sesji głównej, bo agent widzi swój wycinek i nie wie, że akurat ta
+zmiana kłóci się z decyzją zapisaną trzy tygodnie temu w innym ADR.
+
 ## 4. Twarde niezmienniki
 
 **NEVER use long em-dashes (" - ") anywhere** - not in chat replies, emails, code comments, content, or commits. Use a short hyphen, a comma, parentheses, or a full stop instead. This is a standing, non-negotiable rule.

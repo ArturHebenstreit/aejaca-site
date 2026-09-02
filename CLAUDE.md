@@ -84,6 +84,13 @@ zakaz długich myślników, wymóg `npm run sync:pricing` po dotknięciu
 `src/geometry`, i nazwę gałęzi. Wynik zawsze sprawdzamy sami, bo agent
 raportuje własną pracę i bywa w tym optymistą.
 
+**Rownoleglosc jest domyslnym ksztaltem pracy tam, gdzie jest skuteczniejsza
+(polecenie wlasciciela, 2026-09-02).** Zadanie o kilku niezaleznych watkach
+rozdziela sie na agentow i puszcza naraz, w jednej wiadomosci. Warunkiem jest
+ROZLACZNOSC: dwie rownolegle edycje tego samego pliku zdepcza sie nawzajem.
+Pelna regula, razem z lista przypadkow, w ktorych NIE rozdzielamy, i z tym, co
+agent dostaje w zleceniu: `PROJECT_RULES.md`, sekcja `Praca rownolegla agentow`.
+
 **Claude MUST automatically route tasks to the most cost-effective model** - the user does not need to ask. Default behavior:
 
 | Model | Role | Use for |
