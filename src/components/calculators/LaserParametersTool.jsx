@@ -71,13 +71,13 @@ function ProgressBar({ step, total, labels }) {
             <div className="flex flex-col items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                 done   ? "bg-blue-600 text-white" :
-                active ? "kafelek-wybrany bg-white/[0.10] text-white" :
+                active ? "bg-blue-500 text-white ring-2 ring-blue-400/50 ring-offset-2 ring-offset-neutral-950" :
                          "bg-neutral-800 text-neutral-500"
               }`}>
                 {done ? "✓" : n}
               </div>
               {labels && (
-                <span className={`hidden sm:block text-xs mt-1 text-center leading-tight max-w-16 ${active ? "text-white" : done ? "text-neutral-400" : "text-neutral-600"}`}>
+                <span className={`hidden sm:block text-xs mt-1 text-center leading-tight max-w-16 ${active ? "text-blue-300" : done ? "text-neutral-400" : "text-neutral-600"}`}>
                   {labels[i]}
                 </span>
               )}

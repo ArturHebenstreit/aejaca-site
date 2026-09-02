@@ -472,7 +472,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
               optDisabled
                 ? "opacity-30 pointer-events-none border-white/5"
                 : active
-                  ? "kafelek-wybrany"
+                  ? "border-emerald-400 ring-2 ring-emerald-400/60 shadow-[0_0_0_6px_rgba(52,211,153,0.16)]"
                   : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
             {hasImg ? (
@@ -483,13 +483,14 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                       active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                  {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
                 </div>
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink text-white`}>
+                  <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-emerald-300" : "text-white"}`}>
                     {label}
                   </div>
                   {sub && (
-                    <div className={`text-xs mt-0.5 drop-shadow-md tile-ink ${active ? "text-neutral-200" : "text-neutral-200"}`}>
+                    <div className={`text-xs mt-0.5 drop-shadow-md tile-ink ${active ? "text-emerald-200/90" : "text-neutral-200"}`}>
                       {sub}
                     </div>
                   )}
@@ -497,14 +498,14 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
               </>
             ) : (
               <div className={`p-3 sm:p-4 h-full min-h-[120px] sm:min-h-[140px] flex flex-col ${
-                active ? "bg-white/[0.06]" : ""
+                active ? "bg-emerald-400/10" : ""
               }`}>
-                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-white" : "text-neutral-400"}`} />
-                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-neutral-200" : "text-white"}`}>
+                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-emerald-300" : "text-neutral-400"}`} />
+                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-emerald-200" : "text-white"}`}>
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-xs sm:text-xs mt-0.5 ${active ? "text-neutral-400" : "text-neutral-400"}`}>
+                  <div className={`text-xs sm:text-xs mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}
@@ -520,9 +521,9 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
 /** Overrides CalcCard for emerald theme (step number in green). */
 function SimpleCard({ stepNum, label, children, id }) {
   return (
-    <div id={id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 mb-4">
+    <div id={id} className="rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] p-4 sm:p-5 mb-4">
       <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
-        {stepNum && <span className="text-neutral-300 mr-1.5">{stepNum}</span>}{label}
+        {stepNum && <span className="text-emerald-400 mr-1.5">{stepNum}</span>}{label}
       </div>
       {children}
     </div>
@@ -586,7 +587,7 @@ function AdvancedHint({ lang, tech, l, onAdvanced, onShop = null, shop = false, 
       {/* Obawa, ze przelaczenie trybu zmarnuje wgrany plik, potrafi zatrzymac
           klienta skuteczniej niz sama liczba opcji. Mowimy wprost, ze nie. */}
       {keepsFile && (
-        <p className="mt-1 text-xs leading-relaxed text-neutral-400">{l.moreKeepsFile}</p>
+        <p className="mt-1 text-xs leading-relaxed text-neutral-500">{l.moreKeepsFile}</p>
       )}
       <div className="mt-2.5 flex flex-wrap gap-2">
         {/* Przycisk, a nie zdanie "przelacz u gory". Odeslanie klienta do
@@ -1099,17 +1100,17 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 }}
                 className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 ${
                   active
-                    ? "border-white/25 bg-white/[0.06]"
+                    ? "border-emerald-400 bg-emerald-400/10"
                     : "border-white/10 bg-white/[0.02]"
                 } ${
                   zablokowany
                     ? "opacity-40 cursor-not-allowed"
-                    : active ? "" : "hover:border-white/25/40"
+                    : active ? "" : "hover:border-emerald-400/40"
                 }`}
               >
-                <o.icon className={`w-5 h-5 shrink-0 ${active ? "text-white" : "text-neutral-400"}`} />
+                <o.icon className={`w-5 h-5 shrink-0 ${active ? "text-emerald-300" : "text-emerald-400/70"}`} />
                 <span className="min-w-0">
-                  <span className={`block text-xs sm:text-sm font-semibold truncate text-white`}>{o.label}</span>
+                  <span className={`block text-xs sm:text-sm font-semibold truncate ${active ? "text-emerald-300" : "text-white"}`}>{o.label}</span>
                   <span className="block text-xs text-neutral-400 truncate">{o.sub}</span>
                 </span>
               </button>
@@ -1118,7 +1119,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
         </div>
 
         {(hasFile || fileForHuman) && (
-          <p className="-mt-1 mb-3 text-xs text-neutral-400 leading-relaxed">{l.q0locked}</p>
+          <p className="-mt-1 mb-3 text-xs text-neutral-500 leading-relaxed">{l.q0locked}</p>
         )}
 
         {/* Pole wgrywania, tylko po zadeklarowaniu rodzaju pliku */}
@@ -1127,24 +1128,24 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             <label
               className={`group relative flex flex-col items-center justify-center gap-3 py-8 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
                 dragOver
-                  ? "border-white/25 bg-white/[0.06]"
-                  : "border-white/15 bg-white/[0.06] hover:border-white/25/60 hover:bg-white/[0.08]"
+                  ? "border-emerald-400 bg-emerald-400/10"
+                  : "border-emerald-400/30 bg-emerald-400/[0.06] hover:border-emerald-400/60 hover:bg-emerald-400/[0.08]"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
             >
-              <div className={`p-3 rounded-full transition-colors ${dragOver ? "bg-white/[0.08]" : "bg-white/[0.06] group-hover:bg-white/[0.10]"}`}>
+              <div className={`p-3 rounded-full transition-colors ${dragOver ? "bg-emerald-400/20" : "bg-emerald-400/10 group-hover:bg-emerald-400/15"}`}>
                 {fileParsing
-                  ? <Loader2 className="w-8 h-8 text-neutral-300 animate-spin" />
-                  : <Upload className={`w-8 h-8 ${dragOver ? "text-white" : "text-neutral-300 group-hover:text-white"} transition-colors`} />}
+                  ? <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                  : <Upload className={`w-8 h-8 ${dragOver ? "text-emerald-300" : "text-emerald-400 group-hover:text-emerald-300"} transition-colors`} />}
               </div>
               <div className="text-center">
-                <div className={`text-sm font-semibold ${dragOver ? "text-white" : "text-white"}`}>
+                <div className={`text-sm font-semibold ${dragOver ? "text-emerald-300" : "text-white"}`}>
                   <span className="hidden sm:inline">{l.q0drop}</span>
                   <span className="sm:hidden">{l.q0tap}</span>
                 </div>
-                <div className="text-xs text-neutral-400 mt-1">
+                <div className="text-xs text-emerald-400/60 mt-1">
                   {fileMode === "mesh" ? l.haveMeshSub : l.haveVectorSub}
                 </div>
               </div>
@@ -1183,13 +1184,13 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
         {/* Wgrany plik: podglad, wymiar oryginalny i wymiar do realizacji */}
         {hasFile && (
-          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mb-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <FileBox className="w-5 h-5 text-neutral-300 shrink-0" />
+                <FileBox className="w-5 h-5 text-emerald-400 shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{fileName}</div>
-                  <div className="text-xs text-neutral-400">
+                  <div className="text-xs text-emerald-400/80">
                     {l.q0detected}: {fileType === "stl"
                       ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl)
                       : (detectedExtLabel ? `${l.q0vector} (${detectedExtLabel})` : l.q0svg)}
@@ -1213,7 +1214,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 czarnej ramki, ktora wyglada jak awaria, mowimy wprost, ze
                 podgladu nie bedzie, a geometrie odczytalismy. */}
             {fileType === "svg" && !svgBlobUrl && svgData && (
-              <p className="mb-3 text-xs text-neutral-400 leading-relaxed">{l.dxfNoPreview}</p>
+              <p className="mb-3 text-xs text-neutral-500 leading-relaxed">{l.dxfNoPreview}</p>
             )}
 
             {/* Blok, ktorego nie rozwijamy, to kawalek rysunku, ktorego nie
@@ -1238,7 +1239,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 wiersze pokazuja to samo i to tez jest informacja. */}
             <dl className="space-y-1.5 text-xs">
               <div className="flex items-center gap-1.5 text-neutral-400">
-                <Ruler className="w-3 h-3 text-neutral-400 shrink-0" />
+                <Ruler className="w-3 h-3 text-emerald-400/60 shrink-0" />
                 <dt>{l.dimOriginal}:</dt>
                 <dd className="text-white">
                   {fileType === "stl" && stlData
@@ -1247,9 +1248,9 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 </dd>
               </div>
               <div className="flex items-center gap-1.5 text-neutral-400">
-                <Maximize2 className="w-3 h-3 text-neutral-400 shrink-0" />
+                <Maximize2 className="w-3 h-3 text-emerald-400/60 shrink-0" />
                 <dt>{l.dimTarget}:</dt>
-                <dd className="text-neutral-200 font-medium">
+                <dd className="text-emerald-200 font-medium">
                   {fileType === "stl" && scaledStl
                     ? `${scaledStl.bbox.x.toFixed(1)}×${scaledStl.bbox.y.toFixed(1)}×${scaledStl.bbox.z.toFixed(1)} cm`
                     : `${scaledSvg.bboxMm.x.toFixed(1)}×${scaledSvg.bboxMm.y.toFixed(1)} mm`}
@@ -1258,7 +1259,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
               </div>
               {fileType === "stl" && scaledStl && (
                 <div className="flex items-center gap-1.5 text-neutral-400">
-                  <Layers className="w-3 h-3 text-neutral-400 shrink-0" />
+                  <Layers className="w-3 h-3 text-emerald-400/60 shrink-0" />
                   <dt>{l.q0vol}:</dt>
                   <dd className="text-white">{scaledStl.volumeCm3.toFixed(1)} cm³</dd>
                 </div>
@@ -1333,7 +1334,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             {zmiescSieNaFdm && (
               <button
                 onClick={() => { setPrintTech("fdm"); trackCalc("studio_simple", "switch_to_fdm", String(Math.round(sizeCm))); }}
-                className="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2 px-4 py-2 rounded-lg bg-white/[0.08] border border-white/25/40 text-neutral-200 text-xs font-semibold hover:bg-white/[0.12] transition-colors"
+                className="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2 px-4 py-2 rounded-lg bg-emerald-400/15 border border-emerald-400/40 text-emerald-200 text-xs font-semibold hover:bg-emerald-400/25 transition-colors"
               >
                 {l.overPlateSwitchFdm}
               </button>
@@ -1428,21 +1429,21 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                   onClick={() => setPrintTech(o.id)}
                   aria-pressed={aktywna}
                   className={`text-left rounded-xl border p-3 transition-colors ${
-                    aktywna ? "border-white/25/50 bg-white/[0.06]" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                    aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
                   }`}
                 >
-                  <div className={`text-sm font-medium ${aktywna ? "text-white" : "text-neutral-200"}`}>{o.nazwa}</div>
-                  <div className="text-xs text-neutral-400 leading-tight mt-1">{o.opis}</div>
+                  <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
+                  <div className="text-xs text-neutral-500 leading-tight mt-1">{o.opis}</div>
                   {o.tworzywo && (
                     <div className="text-xs text-neutral-400 mt-1.5">
-                      <span className="text-neutral-400">{o.etykieta}:</span> {o.tworzywo}
+                      <span className="text-neutral-500">{o.etykieta}:</span> {o.tworzywo}
                     </div>
                   )}
                   {kwota && (
-                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-white" : "text-neutral-400"}`}>{kwota}</div>
+                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
                   )}
                   {aktywna && printTech === null && (
-                    <div className="text-xs text-neutral-400 mt-1">{l.techAuto}</div>
+                    <div className="text-xs text-neutral-600 mt-1">{l.techAuto}</div>
                   )}
                 </button>
               );
@@ -1494,19 +1495,19 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                   className={`text-left rounded-xl border p-3 transition-colors ${
                     wylaczona
                       ? "border-white/10 bg-white/[0.02] opacity-40 cursor-not-allowed"
-                      : aktywna ? "border-white/25/50 bg-white/[0.06]" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                      : aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
                   }`}
                 >
-                  <div className={`text-sm font-medium ${aktywna ? "text-white" : "text-neutral-200"}`}>{o.nazwa}</div>
-                  <div className="text-xs text-neutral-400 leading-tight mt-1">{o.opis}</div>
+                  <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
+                  <div className="text-xs text-neutral-500 leading-tight mt-1">{o.opis}</div>
                   {kwota && (
-                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-white" : "text-neutral-400"}`}>{kwota}</div>
+                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
                   )}
                   {wylaczona && (
-                    <div className="text-xs text-neutral-400 mt-2 leading-tight">{l.co2CutOffMetal}</div>
+                    <div className="text-xs text-neutral-500 mt-2 leading-tight">{l.co2CutOffMetal}</div>
                   )}
                   {aktywna && !naSwiatlowodzie && co2Mode === null && (
-                    <div className="text-xs text-neutral-400 mt-1">{l.techAuto}</div>
+                    <div className="text-xs text-neutral-600 mt-1">{l.techAuto}</div>
                   )}
                 </button>
               );
@@ -1521,8 +1522,8 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
         {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
             i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
         {material === "idk" && (
-          <div className="mt-4 rounded-xl border border-white/25/25 bg-white/[0.05] p-4">
-            <p className="text-neutral-200 text-xs font-medium mb-1">
+          <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.05] p-4">
+            <p className="text-emerald-200 text-xs font-medium mb-1">
               {t(hasFile ? IDK_TITLE_FILE : IDK_TITLE, lang)}
             </p>
             <p className="text-neutral-400 text-xs leading-relaxed mb-3">{t(IDK_HINT, lang)}</p>
@@ -1548,7 +1549,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
               wszystkich, bo pozostalych technologii to nie dotyczy. */}
           {material === "precious" && (
             <div className="mt-5 pt-5 border-t border-white/10">
-              <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(ALLOY_LBL, lang)}</div>
+              <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">{t(ALLOY_LBL, lang)}</div>
               <Chips options={CASTING_METALS} value={alloyId} onChange={handleSet(setAlloyId, "alloy")} lang={lang} />
               <p className="text-neutral-400 text-xs leading-relaxed mt-3">
                 {t(hasFile ? CAST_HINT_FILE : CAST_HINT_NO_FILE, lang)}
@@ -1569,7 +1570,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                   adres paczkomatu zajmowal mu glowe bez powodu. */}
               <MaterialNotice lang={lang} className="mb-4" delivery={przysylaCos} />
 
-              <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SUBSTRATE_LABEL, lang)}</div>
+              <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">{t(SUBSTRATE_LABEL, lang)}</div>
               <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
 
               {podloze === "our_stock" ? (
@@ -1591,7 +1592,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                       nieobowiazkowe, bo opis zlecenia nizej i tak jest
                       wymagany i to on blokuje zakup. */}
                   <div className="mt-3">
-                    <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">
+                    <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">
                       {t(podloze === "own_item" ? ITEM_NOTE_LBL : OWN_STOCK_NOTE_LBL, lang)}
                     </div>
                     <textarea
@@ -1599,12 +1600,12 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                       onChange={(e) => setMaterialNote(e.target.value)}
                       placeholder={t(podloze === "own_item" ? ITEM_NOTE_PLACEHOLDER : OWN_STOCK_NOTE_PLACEHOLDER, lang)}
                       rows={2}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-400 focus:border-white/25/50 focus:outline-none focus:ring-1 focus:ring-white/25 resize-none transition-colors"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
                     />
                   </div>
 
                   <div className="mt-3">
-                    <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+                    <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">{t(SPARE_LABEL, lang)}</div>
                     <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
                   </div>
                 </>
@@ -1625,9 +1626,9 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
       {/* MSLA hint for small resin STL uploads */}
       {showMslaHint && (
-        <div className="mb-3 p-3 rounded-xl bg-white/[0.04] border border-white/25/15 flex items-start gap-3">
-          <Lightbulb className="w-4 h-4 text-neutral-300 mt-0.5 flex-shrink-0" />
-          <div className="text-[12px] leading-relaxed text-neutral-400">{l.mslaHint}</div>
+        <div className="mb-3 p-3 rounded-xl bg-emerald-400/5 border border-emerald-400/15 flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+          <div className="text-[12px] leading-relaxed text-emerald-400/70">{l.mslaHint}</div>
         </div>
       )}
 
@@ -1636,19 +1637,19 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
       {/* Suggested tech badge */}
       {techLabel && (
-        <div className="mb-3 p-3 rounded-xl bg-white/[0.06] border border-white/10 flex items-start gap-3">
-          <Lightbulb className="w-4 h-4 text-neutral-300 mt-0.5 flex-shrink-0" />
+        <div className="mb-3 p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
           <div className="text-[12px] leading-relaxed">
-            <div className="text-white font-semibold mb-0.5">
-              {l.suggestion}: <span className="text-neutral-200">{techLabel}</span>
+            <div className="text-emerald-300 font-semibold mb-0.5">
+              {l.suggestion}: <span className="text-emerald-200">{techLabel}</span>
             </div>
-            <div className="text-neutral-400">{techRationale}</div>
+            <div className="text-emerald-400/70">{techRationale}</div>
           </div>
         </div>
       )}
 
       {/* Result */}
-      <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-white/15 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
+      <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-br from-emerald-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         {stlData?.triangles?.length > 0 && (resolved?.tech === "3dprint" || resolved?.tech === "msla") && (
@@ -1715,22 +1716,22 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
         {/* Zdanie "przelacz u gory" bylo instrukcja bez drogi: klient musial
             sam znalezc przelacznik i zaczac od nowa. Teraz to jest przycisk,
             ktory otwiera wlasciwa zakladke trybu zaawansowanego. */}
-        <div className="mt-4 pt-3 border-t border-white/10 text-center">
+        <div className="mt-4 pt-3 border-t border-emerald-400/10 text-center">
           {onAdvanced ? (
             <button
               type="button"
               onClick={() => przekazDoZaawansowanych(activeResolved?.tech)}
-              className="text-xs text-neutral-400 hover:text-white underline underline-offset-2 transition-colors"
+              className="text-xs text-emerald-400/70 hover:text-emerald-300 underline underline-offset-2 transition-colors"
             >
               {l.moreCta}
             </button>
           ) : (
-            <span className="text-xs text-neutral-400 italic">{l.switchHint}</span>
+            <span className="text-xs text-emerald-400/60 italic">{l.switchHint}</span>
           )}
         </div>
       </div>
 
-      <div className="mt-4 p-3 rounded-xl border border-white/10 bg-white/[0.02] text-xs text-neutral-400 leading-relaxed text-center">
+      <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-xs text-emerald-400/50 leading-relaxed text-center">
         {l.note}
       </div>
     </div>
@@ -1756,14 +1757,14 @@ function StockPicker({ options, value, note, onPick, onOther, onNote, lang }) {
     // puste kafelki i udawac, ze wybor istnieje.
     return (
       <div className="mt-3">
-        <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+        <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
         <textarea
           value={note}
           onChange={(e) => onNote(e.target.value)}
           placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
           rows={2}
           minLength={MIN_MATERIAL_NOTE}
-          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-400 focus:border-white/25/50 focus:outline-none focus:ring-1 focus:ring-white/25 resize-none transition-colors"
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
         />
       </div>
     );
@@ -1772,13 +1773,13 @@ function StockPicker({ options, value, note, onPick, onOther, onNote, lang }) {
   const kafelek = (aktywny) =>
     `px-3 py-2 rounded-xl border text-xs transition-colors text-left ${
       aktywny
-        ? "border-white/25 bg-white/[0.06] text-neutral-200"
+        ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
         : "border-white/10 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white"
     }`;
 
   return (
     <div className="mt-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(STOCK_LBL, lang)}</div>
+      <div className="text-xs uppercase tracking-wide text-emerald-400/60 mb-2">{t(STOCK_LBL, lang)}</div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {options.map((o) => (
           <button key={o.id} type="button" className={kafelek(value === o.id)} onClick={() => onPick(o.id, t(o.label, lang))}>
@@ -1797,11 +1798,11 @@ function StockPicker({ options, value, note, onPick, onOther, onNote, lang }) {
           placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
           rows={2}
           minLength={MIN_MATERIAL_NOTE}
-          className="mt-2 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-400 focus:border-white/25/50 focus:outline-none focus:ring-1 focus:ring-white/25 resize-none transition-colors"
+          className="mt-2 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
         />
       )}
 
-      <p className="text-neutral-400 text-xs mt-2 leading-relaxed">{t(STOCK_HINT, lang)}</p>
+      <p className="text-neutral-500 text-xs mt-2 leading-relaxed">{t(STOCK_HINT, lang)}</p>
     </div>
   );
 }

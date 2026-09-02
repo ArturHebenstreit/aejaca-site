@@ -282,7 +282,7 @@ function ResinCard({ resin, active, onSelect, lang, L }) {
     >
       <div className="font-semibold text-white text-sm mb-1">{t(resin.label, lang)}</div>
       <div className="mb-1.5">
-        <div className={`text-sm font-medium ${active ? "text-white" : "text-neutral-200"}`}>{price.primary}</div>
+        <div className={`text-sm font-medium ${active ? "text-blue-300" : "text-neutral-200"}`}>{price.primary}</div>
         <div className="text-xs text-neutral-500">{price.secondary}{resin.estimated ? ` · ${L.estimated}` : ""}</div>
       </div>
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">

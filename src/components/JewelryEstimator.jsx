@@ -56,10 +56,10 @@ export default function JewelryEstimator() {
   const l = LABELS[lang] || LABELS.en;
 
   const isSimple = mode === "simple";
-  const accentClass = isSimple ? "text-neutral-300" : "text-amber-400";
+  const accentClass = isSimple ? "text-rose-300" : "text-amber-400";
 
   return (
-    <section id="calculator" className={`py-20 px-4 transition-colors duration-500 $"bg-neutral-950"`}>
+    <section id="calculator" className={`py-20 px-4 transition-colors duration-500 ${isSimple ? "bg-gradient-to-b from-neutral-950 via-rose-950/10 to-neutral-950" : "bg-neutral-950"}`}>
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <div className={`text-xs uppercase tracking-[0.2em] mb-3 ${accentClass}`}>{l.tag}</div>
@@ -72,27 +72,27 @@ export default function JewelryEstimator() {
             onClick={() => { setMode("simple"); trackCalc("jewelry", "mode", "simple"); }}
             className={`group p-4 rounded-xl border text-left transition-all duration-200 ${
               isSimple
-                ? "kafelek-wybrany bg-white/[0.06]"
+                ? "border-rose-400 bg-rose-400/10 shadow-lg shadow-rose-400/20"
                 : "border-white/10 bg-white/[0.02] hover:border-white/30"
             }`}>
             <div className="flex items-center gap-2 mb-1">
-              <Zap className={`w-4 h-4 ${isSimple ? "text-white" : "text-neutral-400"}`} />
-              <div className={`text-sm font-bold ${isSimple ? "text-white" : "text-white"}`}>{l.modeSimple}</div>
+              <Zap className={`w-4 h-4 ${isSimple ? "text-rose-300" : "text-neutral-400"}`} />
+              <div className={`text-sm font-bold ${isSimple ? "text-rose-300" : "text-white"}`}>{l.modeSimple}</div>
             </div>
-            <div className={`text-xs ${"text-neutral-400"}`}>{l.modeSimpleDesc}</div>
+            <div className={`text-xs ${isSimple ? "text-rose-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
           </button>
           <button
             onClick={() => { setMode("advanced"); trackCalc("jewelry", "mode", "advanced"); }}
             className={`group p-4 rounded-xl border text-left transition-all duration-200 ${
               !isSimple
-                ? "kafelek-wybrany bg-white/[0.06]"
+                ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/20"
                 : "border-white/10 bg-white/[0.02] hover:border-white/30"
             }`}>
             <div className="flex items-center gap-2 mb-1">
-              <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-white" : "text-neutral-400"}`} />
-              <div className={`text-sm font-bold text-white`}>{l.modeAdvanced}</div>
+              <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-amber-300" : "text-neutral-400"}`} />
+              <div className={`text-sm font-bold ${!isSimple ? "text-amber-300" : "text-white"}`}>{l.modeAdvanced}</div>
             </div>
-            <div className={`text-xs ${"text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
+            <div className={`text-xs ${!isSimple ? "text-amber-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
           </button>
         </div>
 
@@ -104,7 +104,7 @@ export default function JewelryEstimator() {
 
         {/* SIMPLE MODE */}
         {isSimple && (
-          <div className="rounded-2xl p-5 sm:p-6 border border-white/10 bg-white/[0.02]">
+          <div className="rounded-2xl p-5 sm:p-6 border border-rose-400/10 bg-rose-400/[0.02]">
             <SimpleJewelryCalc lang={lang} />
           </div>
         )}
@@ -120,8 +120,8 @@ export default function JewelryEstimator() {
             mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
         <div className={`mt-4 p-3 rounded-xl border text-xs leading-relaxed text-center ${
           isSimple
-            ? "border-white/10 bg-white/[0.02] text-neutral-400"
-            : "border-amber-400/10 bg-amber-400/[0.02] text-neutral-400"
+            ? "border-rose-400/10 bg-rose-400/[0.02] text-rose-400/60"
+            : "border-amber-400/10 bg-amber-400/[0.02] text-amber-400/60"
         }`}>
           {l.vat} {l.shipping}
         </div>
