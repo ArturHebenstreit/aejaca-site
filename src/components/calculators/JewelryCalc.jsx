@@ -351,7 +351,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             return (
               <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
                 className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[160px] ${
-                  active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
+                  active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
                 }`}>
                 {/* Background image (full visibility) */}
                 {s.img && (
@@ -362,15 +362,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                       }`} />
                     {/* Gradient only at bottom, preserves image visibility */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                    {/* Active state: amber tint */}
-                    {active && (
-                      <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
-                    )}
                   </div>
                 )}
                 {/* Text content at bottom */}
                 <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
+                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink text-white`}>{t(s.label, lang)}</div>
                   <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(s.desc, lang)}</div>
                 </div>
               </button>
@@ -389,7 +385,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[180px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
+                      active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
                     }`}>
                     {/* Background image (full visibility) */}
                     {pl.img && (
@@ -400,15 +396,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                           }`} />
                         {/* Gradient only at bottom */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {/* Active state: amber tint */}
-                        {active && (
-                          <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
-                        )}
                       </div>
                     )}
                     {/* Text content at bottom */}
                     <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
-                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
+                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg tile-ink text-white`}>{pl.label}</div>
                       <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(pl.desc, lang)}</div>
                     </div>
                   </button>
@@ -427,7 +419,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   <button key={jt.id}
                     onClick={() => { setTypeId(jt.id); trackCalc("jewelry", "type", jt.id); }}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                      active ? "kafelek-wybrany bg-white/[0.06]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -488,18 +480,17 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={w.id} onClick={() => setWeightId(w.id)}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
+                      active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
                     }`}>
                     {w.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
+                      <div className={`text-xs sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink text-white`}>{t(w.label, lang)}</div>
                       <div className="text-xs sm:text-xs text-neutral-300 break-words drop-shadow-md tile-ink leading-tight">{t(w.desc, lang)}</div>
                     </div>
                   </button>
@@ -747,7 +738,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={w.id} onClick={() => setWeaveId(w.id)}
                       className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                        active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                        active ? "kafelek-wybrany bg-white/[0.06]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
@@ -824,7 +815,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={c.id} onClick={() => setClaspId(c.id)}
                       className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                        active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                        active ? "kafelek-wybrany bg-white/[0.06]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
@@ -854,7 +845,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={m.id} onClick={() => { setMetalId(m.id); trackCalc("jewelry", "metal", m.id); }}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                      active ? "kafelek-wybrany bg-white/[0.06]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -931,18 +922,17 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={m.id} onClick={() => setMethodId(m.id)}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[140px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
+                      active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
                     }`}>
                     {m.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={t(m.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
+                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink text-white`}>{t(m.label, lang)}</div>
                       <div className="text-xs text-neutral-300 break-words drop-shadow-md tile-ink">{t(m.desc, lang)}</div>
                     </div>
                   </button>
@@ -982,7 +972,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={pl.id} onClick={() => setPlatingId(pl.id)}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                      active ? "kafelek-wybrany bg-white/[0.06]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">

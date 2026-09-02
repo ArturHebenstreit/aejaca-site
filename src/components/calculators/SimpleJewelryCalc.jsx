@@ -444,7 +444,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
           <button key={opt.id} aria-pressed={active} onClick={() => onChange(opt.id)}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
-                ? "border-rose-400 ring-2 ring-rose-400/60 shadow-[0_0_0_6px_rgba(251,113,133,0.16)]"
+                ? "kafelek-wybrany"
                 : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
             {hasImg ? (
@@ -457,16 +457,14 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                     }`} />
                   {/* Bottom gradient for text legibility */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                  {/* Active state tint */}
-                  {active && <div className="absolute inset-0 bg-rose-400/10 mix-blend-overlay" />}
                 </div>
                 {/* Text at bottom */}
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-rose-300" : "text-white"}`}>
+                  <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink text-white`}>
                     {label}
                   </div>
                   {sub && active && (
-                    <div className="text-xs mt-0.5 drop-shadow-md tile-ink text-rose-200/90">
+                    <div className="text-xs mt-0.5 drop-shadow-md tile-ink text-neutral-200">
                       {sub}
                     </div>
                   )}
@@ -475,14 +473,14 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
             ) : (
               /* Icon fallback (no image) */
               <div className={`p-3 sm:p-4 h-full min-h-[120px] sm:min-h-[140px] flex flex-col ${
-                active ? "bg-rose-400/10" : ""
+                active ? "bg-white/[0.06]" : ""
               }`}>
-                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-rose-300" : "text-neutral-400"}`} />
-                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-rose-200" : "text-white"}`}>
+                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-white" : "text-neutral-400"}`} />
+                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-neutral-200" : "text-white"}`}>
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-xs sm:text-xs mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-400"}`}>
+                  <div className={`text-xs sm:text-xs mt-0.5 ${active ? "text-neutral-400" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}
@@ -497,9 +495,9 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
 
 function SimpleCard({ stepNum, label, children }) {
   return (
-    <div className="rounded-xl border border-rose-400/10 bg-rose-400/[0.02] p-4 sm:p-5 mb-4">
+    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 mb-4">
       <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
-        {stepNum && <span className="text-rose-400 mr-1.5">{stepNum}</span>}{label}
+        {stepNum && <span className="text-neutral-300 mr-1.5">{stepNum}</span>}{label}
       </div>
       {children}
     </div>
@@ -602,20 +600,20 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
 
       {/* Summary badge */}
       {!resolved?.custom && (
-        <div className="mb-3 p-3 rounded-xl bg-rose-400/10 border border-rose-400/20 flex items-start gap-3">
-          <Lightbulb className="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" />
+        <div className="mb-3 p-3 rounded-xl bg-white/[0.06] border border-white/10 flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-neutral-300 mt-0.5 flex-shrink-0" />
           <div className="text-[12px] leading-relaxed">
-            <div className="text-rose-300 font-semibold mb-0.5">{l.summary}</div>
-            <div className="text-rose-400/80">{paramsSummary}</div>
+            <div className="text-white font-semibold mb-0.5">{l.summary}</div>
+            <div className="text-neutral-400">{paramsSummary}</div>
           </div>
         </div>
       )}
 
       {/* Result */}
-      <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
+      <div className="rounded-2xl border-2 border-white/15 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
-        <div className="mt-4 pt-3 border-t border-rose-400/10 text-xs text-rose-400/60 italic text-center">
+        <div className="mt-4 pt-3 border-t border-white/10 text-xs text-neutral-400 italic text-center">
           {l.switchHint}
         </div>
         <NextStepPanel
@@ -642,7 +640,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         />
       </div>
 
-      <div className="mt-4 p-3 rounded-xl border border-rose-400/10 bg-rose-400/[0.02] text-xs text-rose-400/50 leading-relaxed text-center">
+      <div className="mt-4 p-3 rounded-xl border border-white/10 bg-white/[0.02] text-xs text-neutral-400 leading-relaxed text-center">
         {l.note}
       </div>
     </div>

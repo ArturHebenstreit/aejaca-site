@@ -405,7 +405,7 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
               type="checkbox"
               checked={accepted}
               onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-0.5 w-4 h-4 shrink-0 accent-rose-400"
+              className="mt-0.5 w-4 h-4 shrink-0 suwak-wybor"
             />
             <span className="text-white text-xs leading-relaxed">{L.accept}</span>
           </label>
