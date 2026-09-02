@@ -31,7 +31,7 @@
 //   node .claude/skills/aejaca-seo/audyt.mjs --dist=dist
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, dirname, relative, sep } from "node:path";
+import { join, dirname, relative, sep, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { JEZYKI, JEZYK_DOMYSLNY, sciezkaJezyka } from "../../../src/routes.js";
@@ -41,7 +41,10 @@ const SITE = "https://www.aejaca.com";
 
 const argDist = process.argv.find((a) => a.startsWith("--dist="));
 const WSZYSTKO = process.argv.includes("--wszystko");
-const DIST = join(KORZEN, argDist ? argDist.slice(7) : "dist");
+const wskazany = argDist ? argDist.slice(7) : "dist";
+// Sciezka bezwzgledna zdarza sie przy sprawdzaniu kopii katalogu, wiec nie
+// doklejamy do niej korzenia repozytorium.
+const DIST = isAbsolute(wskazany) ? wskazany : join(KORZEN, wskazany);
 
 if (!existsSync(DIST)) {
   console.error(`\nNie ma katalogu ${DIST}. Najpierw: npm run build\n`);
@@ -233,6 +236,14 @@ for (const [adres, s] of strony) {
 // do tego stanu nie jest zla wola, tylko usuniecie sekcji ze strony bez
 // usuniecia schematu, ktory ja opisywal.
 for (const [sciezka, s] of strony) {
+  // Dwa schematy tego samego typu pod jednym adresem to dwa opisy jednej
+  // rzeczy, ktore udaja dwie rzeczy. `/jewelry/` niosla trzy schematy
+  // `Product` (pierscionek, pierscionek zareczynowy, kolczyki), kazdy
+  // z wlasnym SKU i wlasna cena w euro, i wszystkie trzy z `url` wskazujacym
+  // na te sama strone kategorii. Zaden z tych wyrobow nie istnial w katalogu,
+  // a ocena przy nich byla ocena FIRMY z Google.
+  const podAdresem = new Map();
+
   for (const surowe of s.dane) {
     let obiekt;
     try {
@@ -314,6 +325,18 @@ for (const [sciezka, s] of strony) {
           if (!oferta.priceCurrency) blad("Product.offers bez priceCurrency", s.plik);
           if (!(Number(oferta.price) > 0)) blad(`Product.offers.price = ${oferta.price}`, s.plik);
           if (!oferta.availability) blad("Product.offers bez availability", s.plik);
+        }
+      }
+
+      {
+        const w = typeof schemat.url === "string" ? schemat.url : null;
+        if (w) {
+          const klucz = `${schemat["@type"]}|${w}`;
+          const ile = (podAdresem.get(klucz) || 0) + 1;
+          podAdresem.set(klucz, ile);
+          if (ile === 2) {
+            blad(`${schemat["@type"]} wystepuje na tej stronie ${ile} razy z tym samym url (${w})`, s.plik);
+          }
         }
       }
 

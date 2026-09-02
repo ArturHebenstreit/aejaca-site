@@ -12,7 +12,6 @@ import ToolLinks from "../components/ToolLinks.jsx";
 import { getToolsByCategory } from "../data/toolLinks.js";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
-import { GOOGLE_BUSINESS } from "../data/googleReviews.js";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -22,7 +21,6 @@ import {
   buildBreadcrumbSchema,
   buildWebPageSchema,
   buildHowToSchema,
-  buildProductSchema,
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { getSEO, adresStrony, adresZasobu } from "../seo/seoData.js";
@@ -134,39 +132,6 @@ export default function Studio() {
         image: adresZasobu(usluga.image),
         description: etykieta(usluga.lead, lang),
       })),
-    }),
-    buildProductSchema({
-      name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
-      description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
-      image: ogImage,
-      sku: "AEJACA-3DPRINT",
-      price: "25",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
-    }),
-    buildProductSchema({
-      name: "CO2 Laser Engraving & Cutting, AEJaCA sTuDiO",
-      description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
-      image: ogImage,
-      sku: "AEJACA-CO2LASER",
-      price: "15",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
-    }),
-    buildProductSchema({
-      name: "Fiber Laser Marking, AEJaCA sTuDiO",
-      description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
-      image: ogImage,
-      sku: "AEJACA-FIBER",
-      price: "20",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
     }),
   ];
 

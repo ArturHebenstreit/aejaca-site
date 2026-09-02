@@ -57,10 +57,25 @@ sprawdza, czy JSON sie parsuje.
    z katalogu uslug i wskazuje na te same strony, ktore strona pokazuje
    odnosnikiem (`src/components/OdnosnikiUslug.jsx`).
 
-4. **Oceny w schemacie bez ocen na stronie.** `aggregateRating` wolno postawic
-   tylko tam, gdzie te same oceny sa widoczne dla czlowieka. Liczba opinii
-   w schemacie idzie z jednego zrodla razem z tym, co pokazuje strona,
-   a nie z pamieci.
+4. **Ocena FIRMY doklejona do wyrobu.** `/studio/` i `/jewelry/` nosily po trzy
+   schematy `Product` z wymyslonymi numerami katalogowymi (`AEJACA-RING-925`
+   i piec podobnych, zadnego z nich nie ma w katalogu), ze sztywnymi cenami
+   w euro, ktorych nie liczy zaden silnik, i z ocena oraz liczba opinii wzieta
+   z profilu firmy w Google. Do tego wszystkie trzy na jednej stronie
+   wskazywaly `url` tej samej strony kategorii, wiec byly trzema opisami jednej
+   rzeczy udajacymi trzy rzeczy.
+
+   `aggregateRating` opisuje BYT, ktory ocenie podlega. Ocena firmy nalezy do
+   `Organization` i tam stoi, na stronie glownej. Doklejona do wyrobu mowi, ze
+   ten wyrob ma tyle opinii, a on nie ma zadnej.
+
+   Usuniete w calosci, bo nie bylo czego naprawiac: nie ma takiego wyrobu, nie
+   ma takiej ceny i nie ma takich opinii. Prawdziwe dane strukturalne wyrobu
+   stoja tam, gdzie wyrob mozna kupic: na `/shop/<slug>/` i na stronie uslugi,
+   gdzie cena idzie z `priceFromGrosze`, w zlotowkach.
+
+   Audyt lapie teraz najostrzejszy objaw: dwa schematy tego samego typu pod
+   jednym adresem na jednej stronie.
 
 ## Zanim dolozysz nowy schemat
 

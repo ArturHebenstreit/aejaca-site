@@ -15,7 +15,6 @@ import { getToolsByCategory } from "../data/toolLinks.js";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
-import { GOOGLE_BUSINESS } from "../data/googleReviews.js";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -25,7 +24,6 @@ import {
   buildBreadcrumbSchema,
   buildWebPageSchema,
   buildHowToSchema,
-  buildProductSchema,
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { getSEO, adresStrony, adresZasobu } from "../seo/seoData.js";
@@ -146,39 +144,6 @@ export default function Jewelry() {
         image: adresZasobu(usluga.image),
         description: etykieta(usluga.lead, lang),
       })),
-    }),
-    buildProductSchema({
-      name: "Custom Silver Ring with Gemstone, AEJaCA",
-      description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
-      image: ogImage,
-      sku: "AEJACA-RING-925",
-      price: "150",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
-    }),
-    buildProductSchema({
-      name: "Handmade Gold Engagement Ring, AEJaCA",
-      description: "Bespoke 14K or 18K gold engagement ring with premium gemstone setting. Prong, bezel, or channel setting available.",
-      image: ogImage,
-      sku: "AEJACA-ENGAGE-14K",
-      price: "450",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
-    }),
-    buildProductSchema({
-      name: "Silver Earrings with Natural Gemstones, AEJaCA",
-      description: "Artisan-crafted sterling silver earrings featuring hand-selected natural gemstones. Each pair is unique.",
-      image: ogImage,
-      sku: "AEJACA-EARR-925",
-      price: "95",
-      currency: "EUR",
-      rating: GOOGLE_BUSINESS.rating,
-      reviewCount: GOOGLE_BUSINESS.totalReviews,
-      url: pageUrl,
     }),
   ];
 
