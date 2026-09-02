@@ -86,7 +86,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
         return (
           <button key={String(o.id)} onClick={() => onChange(o.id)}
             className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-              active ? "kafelek-wybrany bg-white/[0.06]"
+              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -147,7 +147,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             style={{ minHeight: `${minH}px` }}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
               o.disabled ? "border-white/5 opacity-40 cursor-not-allowed" :
-              active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
+              active ? "border-blue-400 ring-2 ring-blue-400/60 shadow-[0_0_0_6px_rgba(96,165,250,0.16)]" : "border-white/10 hover:border-white/30"
             }`}>
             {o.img && (
               <div className="absolute inset-0 overflow-hidden">
@@ -156,6 +156,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                     active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
               </div>
             )}
             {/* OBWODKA NAPISU JEST DLA ZDJECIA, a nie dla kazdego kafelka.
@@ -167,7 +168,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                 `index.css` celuja w `.from-black/95`, ktore powstaje tylko
                 razem ze zdjeciem, wiec warunek musi stac po tej samej stronie. */}
             <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
-              <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} text-white`}>{lbl(o.label)}</div>
+              <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
               {o.desc && <div className={`text-xs text-neutral-200 ${o.img ? "drop-shadow-md tile-ink" : ""}`}>{lbl(o.desc)}</div>}
             </div>
           </button>

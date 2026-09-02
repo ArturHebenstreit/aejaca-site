@@ -117,15 +117,6 @@ body { padding-top: var(--pasek-jezyka, 0px); }
   --ds-navbar-bg:       rgba(10,10,10,0.80);
   --ds-navbar-bg-s:     rgba(10,10,10,0.95);
   --ds-divider:         rgba(255,255,255,0.10);
-  /* Zaznaczenie w kalkulatorach jest BEZBARWNE. Kafelki stoja na ciemnych
-     fotografiach, wiec kolorowa mgla na zdjeciu i kolorowa etykieta
-     (rose-300 w jasnym motywie to #be123c) czytaly sie gorzej niz biel, a do
-     tego roz w kalkulatorze bizuterii i zielen w kalkulatorze sTuDiO klocily
-     sie z bursztynem i blekitem marki. Zglosil to wlasciciel 2026-09-02.
-     Sygnal niesie pierscien: 2 px przerwy w kolorze tla, potem 3 px w kolorze
-     wyboru. Taki uklad widac zarowno na ciemnym zdjeciu, jak i na kremowym
-     panelu, w obu motywach. */
-  --ds-wybor:           #ffffff;
   --ds-amber-text:      #fbbf24;
   --ds-amber-hi:        #f59e0b;
   --ds-blue-text:       #60a5fa;
@@ -149,7 +140,6 @@ body { padding-top: var(--pasek-jezyka, 0px); }
   --ds-navbar-bg:       rgba(250,247,242,0.85);
   --ds-navbar-bg-s:     rgba(250,247,242,0.97);
   --ds-divider:         rgba(0,0,0,0.08);
-  --ds-wybor:           #1c1917;   /* patrz --ds-wybor w :root */
   --ds-amber-text:      #92400e;
   /* Bursztyn "hi" w jasnym: #a04a08 zamiast #b45309, ktory na kremowej karcie
      #f6ede4 mial 4,34:1. Nowy ma 5,22:1 i dalej jest jasniejszy od amber-text. */
@@ -340,21 +330,6 @@ body {
 [data-theme="light"] .text-white            { color: var(--ds-text-1) !important; }
 [data-theme="light"] .text-neutral-100      { color: var(--ds-text-2) !important; }
 [data-theme="light"] .text-neutral-200      { color: var(--ds-text-2) !important; }
-/* Jedno zrodlo stanu "wybrane" dla wszystkich kafelkow w kalkulatorach.
-   Do 2026-09-02 kazdy z pieciu kalkulatorow mial wlasny zestaw klas
-   (border + ring + shadow + mgla na zdjeciu + kolorowa etykieta), lacznie
-   trzydziesci miejsc i cztery rozne kolory. */
-/* Suwak: kolor uchwytu bierze sie z tego samego tokenu co zaznaczenie
-   kafelka, wiec jest bialy na ciemnym i prawie czarny na kremie. Natywne
-   `accent-color` nie ma wariantu na motyw, a `accent-emerald-400` bylo
-   zielone rowniez tam, gdzie zielen nie nalezy do marki. */
-.suwak-wybor { accent-color: var(--ds-wybor); }
-
-.kafelek-wybrany {
-  border-color: var(--ds-wybor) !important;
-  box-shadow: 0 0 0 2px var(--ds-bg), 0 0 0 5px var(--ds-wybor);
-}
-
 [data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
 [data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }
 /* neutral-500 w jasnym szedl na #a3a3a3: 2,4:1 na kremie, najgorszy kontrast

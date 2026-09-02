@@ -62,11 +62,11 @@ function ResinCards({ options, value, onChange, lang }) {
         return (
           <button key={o.id} onClick={() => onChange(o.id)}
             className={`text-left p-3 rounded-xl border transition-all duration-200 ${
-              active ? "kafelek-wybrany bg-white/[0.06]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
-            <div className={`text-xs sm:text-sm font-semibold mb-0.5 text-white`}>{t(o.label, lang)}</div>
+            <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${active ? "text-blue-300" : "text-white"}`}>{t(o.label, lang)}</div>
             <div className="text-xs text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
-            <div className={`text-xs font-medium ${active ? "text-white" : "text-neutral-500"}`}>{o.priceHint}</div>
+            <div className={`text-xs font-medium ${active ? "text-blue-300" : "text-neutral-500"}`}>{o.priceHint}</div>
           </button>
         );
       })}
