@@ -476,6 +476,18 @@ body {
 
 /* ── Notification states (success/error) ── */
 [data-theme="light"] .text-emerald-200  { color: #065f46 !important; }
+/* Fiolet szybkiej wyceny jubilerskiej. Zaden pojedynczy fiolet nie ma 4,5:1
+   naraz na kremie #faf7f2 i na czerni #0a0a0a, wiec sa dwa: w ciemnym motywie
+   violet-300 (#c4b5fd, 10,7:1 na stronie i 10,0:1 na zdjeciu kafelka),
+   w jasnym violet-700 (#6d28d9, 6,7:1 na kremie). Zmiana z rozu na polecenie
+   wlasciciela, 2026-09-02: roz mial byc bardziej stonowany. */
+[data-theme="light"] .text-violet-300   { color: #6d28d9 !important; }
+/* Numery sekcji (①②③) chodza na violet-400 (#a684ff): w ciemnym 6,9:1,
+   w jasnym na kremie tylko 2,7:1. `check-light-theme.mjs` tego nie zlapal,
+   bo violet-400 jest tonem srednim i siedzi na liscie dozwolonych. */
+[data-theme="light"] .text-violet-400   { color: #6d28d9 !important; }
+[data-theme="light"] .text-violet-200   { color: #5b21b6 !important; }
+[data-theme="light"] .text-violet-200\/90 { color: rgba(91,33,182,0.90) !important; }
 [data-theme="light"] .text-rose-300     { color: #be123c !important; }
 
 /* ── Calc chips - inactive borders/hover ── */
@@ -623,12 +635,44 @@ body {
    Zamiast licytowac sie specyficznoscia, wyjmujemy te obrazki spod tamtej
    reguly, wiec konkurencji o `filter` w ogole nie ma.
    Pilnuje tego `scripts/check-light-theme.mjs`. */
-img.tile-dim { --tile-jasnosc: 1; filter: grayscale(1) brightness(var(--tile-jasnosc)) !important; }
+/* Wygaszony kafelek byl `grayscale(1)` przy jasnosci 1 i kryciu 0,6, przez co
+   w ciemnym motywie cala siatka wygladala zalobnie (zgloszenie wlasciciela,
+   2026-09-02). Zostaje szary, bo na tym stoi rozroznienie wybrany/niewybrany,
+   ale jasniejszy: odrobina koloru wraca, jasnosc idzie w gore, krycie tez.
+   Krycie ustawiamy TUTAJ, a nie klasa `opacity-60` w komponencie, bo inaczej
+   ta sama wartosc siedzialaby w osiemnastu miejscach. */
+img.tile-dim {
+  --tile-jasnosc: 1.22;
+  filter: grayscale(0.78) brightness(var(--tile-jasnosc)) !important;
+  opacity: 0.82 !important;
+}
 [data-theme="light"] button:has(.from-black\/95) img.tile-dim { --tile-jasnosc: 1.32; }
 [data-theme="light"] a:has(.from-black\/90.via-black\/60) img.tile-dim { --tile-jasnosc: 1.28; }
 [data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img.tile-dim { --tile-jasnosc: 1.20; }
-/* Najazd myszka zdejmuje szarosc, zeby dalo sie obejrzec oferte bez klikania. */
-button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-jasnosc)) !important; }
+/* Najazd myszka zdejmuje szarosc I rozjasnia, zeby dalo sie obejrzec oferte
+   bez klikania, a sam najazd byl widoczny. */
+button:hover img.tile-dim, a:hover img.tile-dim {
+  filter: brightness(calc(var(--tile-jasnosc) * 1.14)) !important;
+  opacity: 1 !important;
+}
+
+/* ── Kafelek WYBRANY: pelny kolor i podbita jasnosc ────────────────────
+   Motyw jasny mial rozjasnienie zdjecia od dawna (brightness 1.32 wyzej),
+   ciemny nie mial zadnego, wiec wybrany kafelek roznil sie od reszty tylko
+   brakiem szarosci i obwodka, a fotografie produktowe sa ciemne. Ta regula
+   stoi bez prefiksu motywu, wiec obowiazuje w ciemnym; jasny nadpisuje ja
+   wyzsza waga selektora `[data-theme="light"] ...`. Najazd na wybrany
+   rozjasnia jeszcze raz, zeby kursor mial odpowiedz wszedzie. */
+button:has(.from-black\/95) img:not(.tile-dim),
+a:has(.from-black\/90.via-black\/60) img:not(.tile-dim) {
+  filter: brightness(1.16) saturate(1.12) !important;
+}
+button:has(.from-black\/95):hover img:not(.tile-dim),
+a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) {
+  filter: brightness(1.30) saturate(1.18) !important;
+}
+[data-theme="light"] button:has(.from-black\/95):hover img:not(.tile-dim) { filter: brightness(1.46) saturate(1.10) !important; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) { filter: brightness(1.42) saturate(1.10) !important; }
 
 /* ── Napis na zdjeciu: ciemna obwodka, a nie sam cien ──────────────────
    Kafelki kalkulatorow maja pod tekstem fotografie, a fotografia bywa jasna
@@ -667,6 +711,9 @@ button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-
   text-shadow: 0 1px 3px rgba(0,0,0,0.70) !important;
 }
 [data-theme="light"] button:has(.from-black\/95) .text-blue-300  { color: #93c5fd !important; }
+[data-theme="light"] button:has(.from-black\/95) .text-violet-300 { color: #c4b5fd !important; }
+[data-theme="light"] button:has(.from-black\/95) .text-violet-200 { color: rgba(196,181,253,0.92) !important; }
+[data-theme="light"] button:has(.from-black\/95) .text-violet-200\/90 { color: rgba(196,181,253,0.90) !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-rose-300  { color: #fca5a5 !important; }
 /* STL/SVG tile text (Link elements) stays white on dark photo */
 [data-theme="light"] a:has(.from-black\/90.via-black\/60) .text-white   {

@@ -106,7 +106,11 @@ async function main() {
   }
 
   const przegladarka = await uruchomPrzegladarke();
-  const findingsMap = new Map(); // klucz: "url||rule||selektor"
+  const findingsMap = new Map();
+  // Wezly, ktorych axe nie potrafil rozstrzygnac (najczesciej tlo gradientowe
+  // albo obrazkowe pod tekstem). Nie sa bledami, ale ich liczba mowi, ile
+  // strony pomiar NAPRAWDE sprawdzil, a ile tylko obejrzal.
+  const niepewneMap = new Map(); // klucz: "regula||powod"
   const stronyZUdanymBiegiem = new Set();
   let udaneUruchomienia = 0;
 
@@ -155,17 +159,41 @@ async function main() {
             );
           });
 
+          // `violations` TO NIE WSZYSTKO. Tekst z przezroczystoscia (np.
+          // `text-violet-400/60`) axe wrzuca do `incomplete`, bo nie umie sam
+          // policzyc koloru wynikowego, i taki wezel nigdy nie trafial do
+          // wyniku. Przez to pomiar dwa razy 2026-09-02 pokazal "zero bledow
+          // kontrastu" na stronie, na ktorej dwa dopiski byly nieczytelne.
+          // Niepewne zbieramy osobno, z wlasna powaga, zeby nie mieszaly sie
+          // z tym, co axe potwierdzil.
+          // Niepewne NIE ida do findings, tylko do osobnego licznika. Pierwsza
+          // wersja wrzucala je razem z bledami i dala 96 wezlow szumu na jednej
+          // stronie, z czego prawie wszystko to "tlo jest gradientem", czego
+          // axe z zasady nie policzy. Raport, ktorego sie nie czyta, jest
+          // gorszy niz jego brak, wiec zostaje jedna linia z liczba i powodem.
+          for (const n of wynikAxe.incomplete || []) {
+            for (const wezel of n.nodes) {
+              const powod = /gradient/i.test(wezel.failureSummary || "") ? "tlo gradientowe"
+                : /image/i.test(wezel.failureSummary || "") ? "tlo obrazkowe"
+                : /too short|non-text/i.test(wezel.failureSummary || "") ? "za malo tekstu"
+                : "inny";
+              const k = `${n.id}||${powod}`;
+              niepewneMap.set(k, (niepewneMap.get(k) || 0) + 1);
+            }
+          }
+
           for (const naruszenie of wynikAxe.violations) {
+            const niepewne = false;
             const severity = MAPA_SEVERITY[naruszenie.impact] || "medium";
             const wcag = (naruszenie.tags || []).filter((t) => /^wcag/i.test(t));
             for (const wezel of naruszenie.nodes) {
               const selektor = selektorZTarget(wezel.target);
-              const klucz = `${url}||${naruszenie.id}||${selektor}`;
+              const klucz = `${url}||${niepewne ? "?" : ""}${naruszenie.id}||${selektor}`;
               if (!findingsMap.has(klucz)) {
                 findingsMap.set(klucz, {
                   severity,
                   wcag,
-                  rule: naruszenie.id,
+                  rule: niepewne ? `${naruszenie.id} (niepewne)` : naruszenie.id,
                   page: url,
                   element: selektor,
                   html: (wezel.html || "").slice(0, 160),
@@ -224,6 +252,7 @@ async function main() {
     runs: udaneUruchomienia,
     findings,
     by_rule,
+    niepewne: Object.fromEntries([...niepewneMap.entries()].sort((a, b) => b[1] - a[1])),
   };
 
   const plikWyjsciowy = join(args.wyjscie, "dostepnosc.json");
@@ -232,6 +261,13 @@ async function main() {
   wypiszTabelke(findings);
   console.log(`\nZapisano: ${plikWyjsciowy}`);
   console.log(`Stron: ${wynik.pages_audited}, przebiegow: ${wynik.runs}, znalezisk: ${findings.length}`);
+  const niepewneRazem = [...niepewneMap.values()].reduce((a, b) => a + b, 0);
+  if (niepewneRazem > 0) {
+    const czolo = [...niepewneMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map(([k, v]) => `${k.replace("||", ": ")} (${v})`).join(", ");
+    console.log(`Niepewnych, czyli axe nie umial rozstrzygnac: ${niepewneRazem}. Najczesciej ${czolo}.`);
+    console.log("To nie sa bledy. Tlo gradientowe i obrazkowe sa nie do policzenia automatem, wiec te miejsca oglada sie na zrzucie.");
+  }
 }
 
 /** Jednoznaczny selektor pierwszego celu naruszenia. Cel bywa zagniezdzony
