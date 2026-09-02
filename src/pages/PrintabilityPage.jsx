@@ -24,12 +24,10 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import ToolLinks from "../components/ToolLinks.jsx";
 import { getToolById } from "../data/toolLinks.js";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import { Link } from "../i18n/nav.jsx";
 import Obraz from "../components/Obraz.jsx";
-
-const URL = `${SITE.url}/toolstudio/printability/`;
 
 const LABELS = {
   pl: {
@@ -149,12 +147,14 @@ export default function PrintabilityPage() {
 
   const relatedTools = RELATED_TOOL_IDS.map(getToolById).filter(Boolean);
 
+  const URL = adresStrony("/toolstudio/printability/", lang);
+
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: URL, lang }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
-      { name: L.breadTools, url: `${SITE.url}/toolstudio/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolstudio/", lang) },
       { name: L.breadThis, url: URL },
     ]),
     buildFAQSchema(faq),

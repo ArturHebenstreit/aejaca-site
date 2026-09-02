@@ -128,6 +128,22 @@ app.use((req, res, next) => {
     if (!d) return ' - ';
     return new Date(d).toLocaleDateString('pl-PL');
   };
+  // Data DO POLA FORMULARZA, czyli "RRRR-MM-DD". To nie to samo co data dla
+  // czlowieka: `<input type="date">` z wartoscia "1.09.2026" nie pokazuje
+  // niczego, bo nie umie jej odczytac. Wyglada to jak brak zapisu, a przy
+  // nastepnym zapisie pole naprawde wraca puste i kasuje date w bazie.
+  //
+  // Skladamy z pol LOKALNYCH, a nie przez `toISOString()`: data zapisana jako
+  // polnoc lokalna cofnelaby sie o dobe w kazdej strefie na wschod od
+  // Greenwich, i tego nikt by nie zakwestionowal.
+  res.locals.dataPola = (d) => {
+    if (!d) return "";
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return "";
+    const m = String(dt.getMonth() + 1).padStart(2, "0");
+    const dzien = String(dt.getDate()).padStart(2, "0");
+    return `${dt.getFullYear()}-${m}-${dzien}`;
+  };
   next();
 });
 
@@ -441,6 +457,13 @@ app.post("/leads/:id/edit", requireAuth, async (req, res) => {
     return back(res, req.body.back || "/leads", { otwarte: req.params.id, err: "Datę kontaktu podaj jako RRRR-MM-DD" });
   }
   const notatka = String(req.body.contactNote || "").slice(0, 4000) || null;
+
+  // Stan "skontaktowano" bez daty to dwa pola opisujace jeden fakt, ktore
+  // mowia co innego: licznik "bez reakcji" liczy po dacie, wiec zgloszenie
+  // oznaczone jako zalatwione dalej wisialoby jako zaniedbane. Pusta date przy
+  // tym stanie stemplujemy dniem dzisiejszym.
+  const kiedyOstatecznie = kiedy || (["contacted", "quoted", "closed"].includes(stan) ? dzisiajISO() : "");
+
   try {
     await pool.query(
       `UPDATE leads
@@ -448,7 +471,9 @@ app.post("/leads/:id/edit", requireAuth, async (req, res) => {
               contacted_at = $3,
               contact_note = $4
         WHERE id = $1`,
-      [req.params.id, stan, kiedy ? `${kiedy}T12:00:00Z` : null, notatka]
+      // Poludnie, a nie polnoc: data zapisana jako polnoc UTC wyswietla sie
+      // w Polsce jako dzien wczesniejszy przez pol roku, gdy strefa jest +2.
+      [req.params.id, stan, kiedyOstatecznie ? `${kiedyOstatecznie}T12:00:00Z` : null, notatka]
     );
     back(res, req.body.back || "/leads", { otwarte: req.params.id, msg: "Zgłoszenie zapisane" });
   } catch (err) {
@@ -617,7 +642,10 @@ app.get("/analytics", requireAuth, async (req, res) => {
       zWlasnymi,
       teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci,
       kraje, urzadzenia, jezyki, lejekS, lejekW, wybory, narzedzia: narzedziaLista,
-      sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }),
+      // `poprzedniOd` niesie date poczatku okresu porownawczego. Sygnal
+      // o spadku ruchu milczy, gdy ten okres siega przed zmiana sposobu
+      // liczenia: inaczej wolalby o pomoc z powodu naszej wlasnej poprawki.
+      sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd: o.poprzedniOd }),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
@@ -1377,6 +1405,12 @@ async function shopApi(path, { method = "GET", body } = {}) {
  * kroku, wiszace nad wynikiem nastepnego, czyta sie jak potwierdzenie czegos,
  * co sie nie stalo.
  */
+/** Dzisiaj jako "RRRR-MM-DD", z pol lokalnych. */
+const dzisiajISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const back = (res, path, params = {}) => {
   const [sciezka, pytanie = ""] = String(path).split("?");
   const q = new URLSearchParams(pytanie);

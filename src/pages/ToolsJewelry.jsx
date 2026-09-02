@@ -5,7 +5,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -110,11 +110,11 @@ export default function ToolsJewelry() {
   const ctaRef = useScrollReveal();
 
   const schemas = [
-    buildWebPageSchema({ title: seo.title, description: seo.description, url: `${SITE.url}/toolsjewelry/` }),
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: adresStrony("/toolsjewelry/", lang) }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
-      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadJewelry, url: adresStrony("/jewelry/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolsjewelry/", lang) },
     ]),
   ];
 

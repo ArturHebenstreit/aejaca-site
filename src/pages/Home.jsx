@@ -16,7 +16,7 @@ import {
   buildLocalBusinessSchema,
   buildFAQSchema,
 } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { getSEO, adresStrony } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import TrustpilotWidget from "../components/TrustpilotWidget.jsx";
 import NewsletterForm from "../components/NewsletterForm.jsx";
@@ -83,8 +83,8 @@ export default function Home() {
       reviewCount: GOOGLE_BUSINESS.totalReviews,
       reviews: REVIEWS,
     }),
-    buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
-    buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: adresStrony("/", lang), lang }),
+    buildBreadcrumbSchema([{ name: "Home", url: adresStrony("/", lang) }]),
     buildLocalBusinessSchema(),
     buildFAQSchema(pytania.map((f) => ({ q: f.q[lang] || f.q.pl, a: odpowiedz(f, lang, kwoty) }))),
   ];

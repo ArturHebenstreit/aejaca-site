@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { idSesji } from "../utils/analytics.js";
 import { Link } from "../i18n/nav.jsx";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -119,8 +120,12 @@ const LABELS = {
   },
 };
 
+// Rozmowa uzywa TEGO SAMEGO identyfikatora wizyty co licznik odwiedzin.
+// Wlasny, zaczynajacy sie od "chat_", byl poprawny sam w sobie i bezuzyteczny
+// w zestawieniu: zgloszenia z czatu nie dawaly sie polaczyc z ruchem, wiec
+// kanal, ktory przyprowadzil rozmowce, wygladal na bezplodny.
 function genSessionId() {
-  return `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return idSesji();
 }
 
 export default function ChatWidget() {

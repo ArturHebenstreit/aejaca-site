@@ -13,7 +13,7 @@ import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import RelatedContent from "../components/RelatedContent.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
@@ -726,9 +726,9 @@ export default function Shop() {
         schemas={[
           buildBreadcrumbSchema(
             [
-              { name: "AEJaCA", url: `${SITE.url}/` },
-              { name: u.title, url: `${SITE.url}/shop/` },
-              ...(category ? [{ name: t(category.title, lang), url: `${SITE.url}${category.path}` }] : []),
+              { name: "AEJaCA", url: adresStrony("/", lang) },
+              { name: u.title, url: adresStrony("/shop/", lang) },
+              ...(category ? [{ name: t(category.title, lang), url: adresStrony(category.path, lang) }] : []),
             ]
           ),
         ]}

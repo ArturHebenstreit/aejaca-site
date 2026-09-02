@@ -23,7 +23,7 @@ import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import FaqLista from "../components/FaqLista.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
@@ -137,11 +137,11 @@ export default function Faq() {
 
   const wynik = useMemo(() => szukajFaq(fraza, lang, temat, wartosci), [fraza, lang, temat, wartosci]);
 
-  const pageUrl = `${SITE.url}/faq/`;
+  const pageUrl = adresStrony("/faq/", lang);
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: l.title, url: pageUrl },
     ]),
   ];

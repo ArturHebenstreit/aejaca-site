@@ -14,7 +14,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import RelatedContent from "../components/RelatedContent.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony, adresZasobu } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
@@ -132,8 +132,10 @@ export default function Service() {
     "@type": "Service",
     name: t(card.title, lang),
     description: t(card.seoOpis || card.lead, lang),
-    image: `${SITE.url}${card.image}`,
-    provider: { "@type": "Organization", name: "AEJaCA", url: SITE.url },
+    image: adresZasobu(card.image),
+    // Adres firmy, nie tej strony: firma jest jedna dla trzech jezykow,
+    // wiec swiadomie bez prefiksu jezyka.
+    provider: { "@type": "Organization", name: "AEJaCA", url: adresZasobu("/") },
     areaServed: "PL",
     ...(card.priceFromGrosze
       ? {
@@ -141,7 +143,7 @@ export default function Service() {
             "@type": "Offer",
             price: (card.priceFromGrosze / 100).toFixed(2),
             priceCurrency: "PLN",
-            url: `${SITE.url}/shop/service/${card.id}/`,
+            url: adresStrony(`/shop/service/${card.id}/`, lang),
           },
         }
       : {}),
@@ -161,10 +163,10 @@ export default function Service() {
         schemas={[
           serviceSchema,
           buildBreadcrumbSchema([
-            { name: "AEJaCA", url: `${SITE.url}/` },
-            { name: u.shop, url: `${SITE.url}/shop/` },
-            ...(category ? [{ name: t(category.title, lang), url: `${SITE.url}${category.path}` }] : []),
-            { name: t(card.title, lang), url: `${SITE.url}/shop/service/${card.id}/` },
+            { name: "AEJaCA", url: adresStrony("/", lang) },
+            { name: u.shop, url: adresStrony("/shop/", lang) },
+            ...(category ? [{ name: t(category.title, lang), url: adresStrony(category.path, lang) }] : []),
+            { name: t(card.title, lang), url: adresStrony(`/shop/service/${card.id}/`, lang) },
           ]),
         ]}
       />

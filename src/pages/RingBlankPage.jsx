@@ -4,7 +4,7 @@ import RingBlankCalc from "../components/calculators/RingBlankCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
@@ -83,13 +83,13 @@ export default function RingBlankPage() {
     buildWebPageSchema({
       title: seo.title,
       description: seo.description,
-      url: `${SITE.url}/toolsjewelry/ring-blank/`,
+      url: adresStrony("/toolsjewelry/ring-blank/", lang),
     }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
-      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
-      { name: L.breadThis, url: `${SITE.url}/toolsjewelry/ring-blank/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadJewelry, url: adresStrony("/jewelry/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolsjewelry/", lang) },
+      { name: L.breadThis, url: adresStrony("/toolsjewelry/ring-blank/", lang) },
     ]),
   ];
 

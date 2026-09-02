@@ -20,6 +20,7 @@
 // zamowienia, w jednej transakcji z jego zapisem. Przegladarka pokazuje.
 
 import { useState, useEffect, useMemo } from "react";
+import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
 import { Loader2, Tag, Check, CheckCircle2, Clock, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
@@ -720,7 +721,11 @@ export default function Offer() {
           platnosci i przez telefon, wiec ma byc do znalezienia takze wtedy,
           gdy klient zgubil i link, i maila. Sama tresc oferty jest za tokenem,
           wiec indeksowany jest wylacznie formularz z numerem. */}
-      <SEOHead pageKey="offer" path="/oferta" schemas={[]} />
+      {/* Bez numeru oferty ta strona nie ma tresci: pokazuje formularz
+          proszacy o numer, ktorego szukajacy nie ma. W wynikach wyszukiwania
+          taki adres szkodzi, wiec nie idzie do indeksu. Decyzja wlasciciela,
+          2 wrzesnia 2026, po pierwszym audycie SEO. */}
+      <SEOHead pageKey="offer" path="/oferta" schemas={[]} noindex />
       <div className="min-h-[80vh] bg-neutral-950 pt-28 pb-20 px-6">
         <div className="max-w-2xl mx-auto">
 
@@ -962,7 +967,7 @@ export default function Offer() {
                   <div className="mt-3 text-neutral-500 text-xs">
                     {domkniete || offer.expired ? u.validUntilPast : u.validUntil}
                     {" "}
-                    {String(offer.validUntil).slice(0, 10)}
+                    {dzienNumerycznie(offer.validUntil)}
                   </div>
                 )}
               </section>

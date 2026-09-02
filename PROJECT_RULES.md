@@ -77,6 +77,46 @@ alternatywą. Uwaga zgłoszona i odrzucona też jest wynikiem: zapisuje się ją
 jako świadomie przyjętą konsekwencję, żeby za pół roku nikt jej nie odkrywał
 drugi raz jako błędu.
 
+## 3a. Praca równoległa agentów (polecenie właściciela, 2026-09-02)
+
+**Zadania, które da się rozdzielić, rozdziela się agentom i puszcza
+równolegle.** Sesja główna trzyma decyzję, diagnozę i ocenę wyniku; wykonanie
+schodzi w dół. To rozwinięcie reguły delegowania z `CLAUDE.md`: tam było
+„zlecaj proste zadania", tutaj dochodzi **równoległość jako domyślny kształt
+pracy** wszędzie, gdzie jest skuteczniejsza i tańsza.
+
+### Kiedy rozdzielamy
+
+- **Badanie o kilku niezależnych wątkach** (dwa obszary wiedzy, dwa katalogi
+  do przeszukania, kilka plików do przeczytania na raz).
+- **Zmiany w rozłącznych plikach**, gdzie żadna nie zależy od wyniku drugiej.
+- **Powtarzalna robota na wielu wierszach**: i18n w trzech językach, ta sama
+  poprawka w kilkunastu miejscach, przegląd listy pod jednym kątem.
+
+### Kiedy NIE rozdzielamy
+
+- **Zadania na jednym pliku**, gdzie dwie równoległe edycje zdepczą się
+  nawzajem. Rozłączność plików jest warunkiem, nie życzeniem.
+- **Wysokie ryzyko błędnej diagnozy**: geometria kreatora, wycena, płatności,
+  prawo konsumenckie. Tam sesja główna pracuje sama.
+- **Zadanie krótsze niż jego opisanie.** Zlecenie i kontrola też kosztują.
+
+### Co agent dostaje w zleceniu, zawsze
+
+1. **Zakaz długich myślników.**
+2. **Nazwę gałęzi** i zakaz wychodzenia poza nią.
+3. **Zakres plików**, których wolno mu dotknąć, i wprost: czego ma nie ruszać.
+4. `npm run sync:pricing` po dotknięciu `src/geometry`.
+5. Regułę zgłaszania sprzeczności przed kodem (sekcja `Jak podejmujemy
+   decyzje`).
+
+### Co sesja główna robi z wynikiem
+
+**Sprawdza go sama, zawsze.** Agent raportuje własną pracę i bywa w tym
+optymistą: „gotowe" znaczy „skończyłem", a nie „działa". Spójność całości jest
+po stronie sesji głównej, bo agent widzi swój wycinek i nie wie, że akurat ta
+zmiana kłóci się z decyzją zapisaną trzy tygodnie temu w innym ADR.
+
 ## 4. Twarde niezmienniki
 
 **NEVER use long em-dashes (" - ") anywhere** - not in chat replies, emails, code comments, content, or commits. Use a short hyphen, a comma, parentheses, or a full stop instead. This is a standing, non-negotiable rule.
@@ -256,6 +296,29 @@ drugiej stronie stoi mężczyzna.
 Conversion: `eur = pln / pln_per_eur` where `pln_per_eur` comes from the live `/api/market-rates` endpoint (NBP rate). Fallback: `4.25`. The secondary amount (smaller text below primary) shows the opposite currency.
 
 This applies to: all calculators, pricing displays, result cards, quote forms - any component that shows monetary values. Use the pattern: `const showEur = lang === "en" || lang === "de"`.
+
+## 5a. Terminy podajemy liczbowo
+
+**Każda data, która jest terminem, ma jeden kształt: `DD.MM.RRRR`, z zerem
+wiodącym** (decyzja właściciela, 2026-09-02). Dotyczy planowanej finalizacji,
+ważności oferty, terminu przelewu, dat na osi zlecenia i wszystkich stempli
+w mailach.
+
+Formatery są dwa i tylko dwa:
+- serwis: `dzienNumerycznie()` z `src/utils/dataDnia.js`,
+- maile: `dzien()` z `chat-api/mailSzata.js`.
+
+**`toLocaleDateString` jest w serwisie zakazane** poza tekstem redakcyjnym
+(wpis blogowy, opinie), gdzie miesiąc słownie jest właściwy i nie jest
+obietnicą złożoną klientowi. Powody są dwa: daje inny kształt w każdym języku,
+a przy tym opiera się na danych ICU, które w Node i w przeglądarce bywają
+z różnych wersji, więc rozjazd wyrzuca całe poddrzewo przy hydracji (ADR-0022).
+Pilnuje `scripts/check-czas-w-renderze.mjs`.
+
+**Pole `<input type="date">` w panelu przyjmuje wyłącznie `RRRR-MM-DD`**
+i bierze wartość z `dataPola()`. Data po polsku w takim polu nie wyświetla się
+wcale, więc pole wygląda na puste mimo zapisanej wartości, a następny zapis
+kasuje ją naprawdę. Pilnuje `admin/check-views.mjs`.
 
 ## 6. Linkowanie narzędzi
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { idSesji } from "../utils/analytics.js";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 import { Link } from "../i18n/nav.jsx";
@@ -7,7 +8,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema, buildWebPageSchema, buildOrganizationSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, getSEO } from "../seo/seoData.js";
 import { SELLER } from "../data/sellerInfo.js";
 
 const contactLinks = [
@@ -33,11 +34,11 @@ export default function Contact() {
   // Contact page: emit ContactPage + Organization (with phone/email) so Google
   // surfaces "Call" / "Email" action buttons directly in knowledge panel.
   const seo = getSEO("contact", lang);
-  const pageUrl = `${SITE.url}/contact/`;
+  const pageUrl = adresStrony("/contact/", lang);
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: "Contact", url: pageUrl },
     ]),
     buildOrganizationSchema(),
@@ -76,6 +77,10 @@ export default function Contact() {
         fd.append("message", formData.message);
         fd.append("lang", lang);
         fd.append("source", "contact");
+        // Identyfikator wizyty. Bez niego analityka nie umie powiedziec, KTORA
+        // droga przyniosla zapytanie: liczy zgloszenia po `session_id`, a ta
+        // kolumna byla wypelniana wylacznie przy zapytaniu z kalkulatora.
+        fd.append("sessionId", idSesji());
         const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {

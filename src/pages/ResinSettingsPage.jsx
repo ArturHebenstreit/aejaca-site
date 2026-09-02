@@ -5,7 +5,7 @@ import ResinSettingsCalc from "../components/calculators/ResinSettingsCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import { Link } from "../i18n/nav.jsx";
 import Obraz from "../components/Obraz.jsx";
@@ -92,13 +92,13 @@ export default function ResinSettingsPage() {
     buildWebPageSchema({
       title: seo.title,
       description: seo.description,
-      url: `${SITE.url}/toolstudio/resin-settings/`,
+      url: adresStrony("/toolstudio/resin-settings/", lang),
     }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
-      { name: L.breadTools, url: `${SITE.url}/toolstudio/` },
-      { name: L.breadThis, url: `${SITE.url}/toolstudio/resin-settings/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolstudio/", lang) },
+      { name: L.breadThis, url: adresStrony("/toolstudio/resin-settings/", lang) },
     ]),
     buildFAQSchema(faqItems),
   ];

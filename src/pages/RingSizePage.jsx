@@ -5,7 +5,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
@@ -84,13 +84,13 @@ export default function RingSizePage() {
     buildWebPageSchema({
       title: seo.title,
       description: seo.description,
-      url: `${SITE.url}/toolsjewelry/ring-size/`,
+      url: adresStrony("/toolsjewelry/ring-size/", lang),
     }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
-      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
-      { name: L.breadThis, url: `${SITE.url}/toolsjewelry/ring-size/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadJewelry, url: adresStrony("/jewelry/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolsjewelry/", lang) },
+      { name: L.breadThis, url: adresStrony("/toolsjewelry/ring-size/", lang) },
     ]),
   ];
 

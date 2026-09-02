@@ -6,7 +6,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
@@ -106,13 +106,13 @@ export default function ShrinkagePage() {
     buildWebPageSchema({
       title: seo.title,
       description: seo.description,
-      url: `${SITE.url}/toolstudio/shrinkage/`,
+      url: adresStrony("/toolstudio/shrinkage/", lang),
     }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
-      { name: L.breadTools, url: `${SITE.url}/toolstudio/` },
-      { name: L.breadThis, url: `${SITE.url}/toolstudio/shrinkage/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolstudio/", lang) },
+      { name: L.breadThis, url: adresStrony("/toolstudio/shrinkage/", lang) },
     ]),
     buildFAQSchema(faqItems),
   ];

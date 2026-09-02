@@ -15,7 +15,7 @@ import {
   buildFAQSchema,
   buildBreadcrumbSchema,
 } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony, adresZasobu } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import Obraz from "../components/Obraz.jsx";
 
@@ -69,13 +69,13 @@ export default function BlogPost() {
   const catLabel = CATEGORY_LABELS[post.category]?.[lang] || post.category;
   const accent = post.accent || "amber";
 
-  const pageUrl = `${SITE.url}/blog/${post.slug}/`;
+  const pageUrl = adresStrony(`/blog/${post.slug}/`, lang);
   const schemas = [
     buildArticleSchema({
       headline: title,
       description,
       url: pageUrl,
-      image: `${SITE.url}${post.coverImage}`,
+      image: adresZasobu(post.coverImage),
       datePublished: post.publishedAt,
       dateModified: post.updatedAt || post.publishedAt,
       keywords: post.keywords?.[lang] || post.keywords?.pl,
@@ -83,8 +83,8 @@ export default function BlogPost() {
       inLanguage: lang,
     }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
-      { name: "Blog", url: `${SITE.url}/blog/` },
+      { name: "Home", url: adresStrony("/", lang) },
+      { name: "Blog", url: adresStrony("/blog/", lang) },
       { name: title, url: pageUrl },
     ]),
     faqItems?.length && buildFAQSchema(faqItems),
@@ -105,7 +105,7 @@ export default function BlogPost() {
         title={title}
         description={description}
         keywords={post.keywords?.[lang]}
-        image={`${SITE.url}${post.coverImage}`}
+        image={adresZasobu(post.coverImage)}
         ogType="article"
         articleMeta={{
           publishedTime: post.publishedAt,

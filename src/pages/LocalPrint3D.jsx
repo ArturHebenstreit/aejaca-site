@@ -10,7 +10,7 @@ import {
   buildServiceSchema,
   buildFAQSchema,
 } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { getSEO, adresStrony } from "../seo/seoData.js";
 import { LOCAL_PAGES, LOCAL_MACHINES } from "../data/localPages.js";
 
 const UI = {
@@ -72,13 +72,13 @@ export default function LocalPrint3D({ city }) {
   const whoRef = useScrollReveal();
   const machinesRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}${page.path}`;
+  const pageUrl = adresStrony(page.path, lang);
 
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
       { name: c.h1, url: pageUrl },
     ]),
     buildServiceSchema({

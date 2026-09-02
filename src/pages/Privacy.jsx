@@ -4,7 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { getSEO, adresStrony } from "../seo/seoData.js";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import { PRIVACY, PRIVACY_EFFECTIVE_DATE } from "../data/privacyContent.js";
 import { SELLER } from "../data/sellerInfo.js";
@@ -23,11 +23,11 @@ export default function Privacy() {
   const tocRef = useScrollReveal();
 
   const seo = getSEO("privacy", lang);
-  const pageUrl = `${SITE.url}/privacy/`;
+  const pageUrl = adresStrony("/privacy/", lang);
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: "Privacy", url: pageUrl },
     ]),
   ];

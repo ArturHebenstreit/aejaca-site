@@ -238,7 +238,11 @@
                             <label class="block">
                               <span class="text-neutral-500 text-[10px] block mb-1">Skontaktowano dnia</span>
                               <input type="date" name="contactedAt" disabled
-                                     value="<%= lead.contacted_at ? String(fmtDateShort(lead.contacted_at)).slice(0, 10) : '' %>"
+                                     <%# Pole daty przyjmuje WYLACZNIE "RRRR-MM-DD". Stala tu data
+                                         po polsku ("1.09.2026"), ktorej przegladarka nie umie odczytac,
+                                         wiec pole wygladalo na puste mimo zapisanej daty, a nastepny
+                                         zapis kasowal ja naprawde. %>
+                                     value="<%= dataPola(lead.contacted_at) %>"
                                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white disabled:opacity-60" />
                             </label>
                           </div>

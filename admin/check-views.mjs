@@ -336,6 +336,28 @@ const ZESTAWY = {
 // czyli dokladnie tak, jak wywali sie u wlasciciela.
 const nazwyLokalnych = [...server.matchAll(/(?:res|app)\.locals\.(\w+)\s*=/g)].map((m) => m[1]);
 if (!nazwyLokalnych.length) zle("nie znalazlem w server.js zadnego `res.locals.x =`, kontrola szablonow bylaby pozorna");
+// --- Pole daty przyjmuje wylacznie "RRRR-MM-DD" -------------------------
+// `<input type="date">` z wartoscia po polsku ("1.09.2026") nie pokazuje
+// NICZEGO: przegladarka jej nie odczyta i zostawia pole puste. Wyglada to na
+// brak zapisu, a jest gorzej, bo nastepny zapis wysyla pusta wartosc i kasuje
+// date w bazie naprawde. Bledu nie widac w zadnym logu.
+//
+// Stad reguła: wartosc pola daty NIE MOZE pochodzic z formatera dla czlowieka.
+// Do pola idzie `dataPola()`, do zdania na ekranie `fmtDate`/`fmtDateShort`.
+for (const plik of pliki) {
+  const tresc = readFileSync(join(VIEWS, plik), "utf8");
+  // Wzorzec przepuszcza wstawki EJS, bo `%>` niesie ">" i uciety na nim tag
+  // konczylby sie przed atrybutem `value`, czyli bramka patrzylaby w prozne
+  // miejsce i zawsze przechodzila.
+  const pola = [...tresc.matchAll(/<input(?:[^<>]|<%(?:[^%]|%(?!>))*%>)*?type="date"(?:[^<>]|<%(?:[^%]|%(?!>))*%>)*?>/gs)];
+  for (const pole of pola) {
+    const wartosc = (pole[0].match(/value="([^"]*)"/) || [])[1] || "";
+    if (/fmtDate|toLocaleDateString/.test(wartosc)) {
+      zle(`${plik}: pole daty bierze wartosc z formatera dla czlowieka (${wartosc.slice(0, 60)}), a przyjmuje tylko RRRR-MM-DD`);
+    }
+  }
+}
+
 const globalne = Object.fromEntries(nazwyLokalnych.map((n) => [n, () => "-"]));
 
 for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
