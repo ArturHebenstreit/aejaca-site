@@ -142,10 +142,10 @@ export default function StudioCalculator() {
   };
 
   const isSimple = mode === "simple";
-  const accentClass = isSimple ? "text-emerald-400" : "text-blue-400";
+  const accentClass = isSimple ? "text-neutral-300" : "text-blue-400";
 
   return (
-    <section id="calculator" className={`py-20 px-4 transition-colors duration-500 ${isSimple ? "bg-gradient-to-b from-neutral-950 via-emerald-950/10 to-neutral-950" : "bg-neutral-950"}`}>
+    <section id="calculator" className={`py-20 px-4 transition-colors duration-500 $"bg-neutral-950"`}>
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <div className={`text-xs uppercase tracking-[0.2em] mb-3 ${accentClass}`}>{l.tag}</div>
@@ -158,27 +158,27 @@ export default function StudioCalculator() {
             onClick={() => { setMode("simple"); trackCalc("studio", "mode", "simple"); }}
             className={`group p-4 rounded-xl border text-left transition-all duration-200 ${
               isSimple
-                ? "border-emerald-400 bg-emerald-400/10 shadow-lg shadow-emerald-400/20"
+                ? "kafelek-wybrany bg-white/[0.06]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/30"
             }`}>
             <div className="flex items-center gap-2 mb-1">
-              <Zap className={`w-4 h-4 ${isSimple ? "text-emerald-300" : "text-neutral-400"}`} />
-              <div className={`text-sm font-bold ${isSimple ? "text-emerald-300" : "text-white"}`}>{l.modeSimple}</div>
+              <Zap className={`w-4 h-4 ${isSimple ? "text-white" : "text-neutral-400"}`} />
+              <div className={`text-sm font-bold ${isSimple ? "text-white" : "text-white"}`}>{l.modeSimple}</div>
             </div>
-            <div className={`text-xs ${isSimple ? "text-emerald-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
+            <div className={`text-xs ${"text-neutral-400"}`}>{l.modeSimpleDesc}</div>
           </button>
           <button
             onClick={() => { setMode("advanced"); trackCalc("studio", "mode", "advanced"); }}
             className={`group p-4 rounded-xl border text-left transition-all duration-200 ${
               !isSimple
-                ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20"
+                ? "kafelek-wybrany bg-white/[0.06]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/30"
             }`}>
             <div className="flex items-center gap-2 mb-1">
-              <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-blue-300" : "text-neutral-400"}`} />
-              <div className={`text-sm font-bold ${!isSimple ? "text-blue-300" : "text-white"}`}>{l.modeAdvanced}</div>
+              <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-white" : "text-neutral-400"}`} />
+              <div className={`text-sm font-bold text-white`}>{l.modeAdvanced}</div>
             </div>
-            <div className={`text-xs ${!isSimple ? "text-blue-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
+            <div className={`text-xs ${"text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
           </button>
         </div>
 
@@ -190,7 +190,7 @@ export default function StudioCalculator() {
 
         {/* SIMPLE MODE */}
         {isSimple && (
-          <div className="rounded-2xl p-5 sm:p-6 border border-emerald-400/10 bg-emerald-400/[0.02]">
+          <div className="rounded-2xl p-5 sm:p-6 border border-white/10 bg-white/[0.02]">
             <SimpleStudioCalc lang={lang} onAdvanced={openAdvanced} />
           </div>
         )}
@@ -208,18 +208,17 @@ export default function StudioCalculator() {
                   <button key={id}
                     onClick={() => { setActiveTech(id); trackCalc("studio", "tech_tab", id); }}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[140px] ${
-                      active ? "border-blue-400 ring-2 ring-blue-400/60 shadow-[0_0_0_6px_rgba(96,165,250,0.16)]" : "border-white/10 hover:border-white/30"
+                      active ? "kafelek-wybrany" : "border-white/10 hover:border-white/30"
                     }`}>
                     {img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <Obraz sizes="(min-width: 640px) 180px, 40vw" src={img} alt={l[labelKey]} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-blue-300" : "text-white"}`}>{l[labelKey]}</div>
+                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink text-white`}>{l[labelKey]}</div>
                       <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{l[descKey]}</div>
                     </div>
                   </button>
@@ -246,8 +245,8 @@ export default function StudioCalculator() {
             mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
         <div className={`mt-4 p-3 rounded-xl border text-xs leading-relaxed text-center ${
           isSimple
-            ? "border-emerald-400/10 bg-emerald-400/[0.02] text-emerald-400/60"
-            : "border-blue-400/10 bg-blue-400/[0.02] text-blue-400/60"
+            ? "border-white/10 bg-white/[0.02] text-neutral-400"
+            : "border-blue-400/10 bg-blue-400/[0.02] text-neutral-400"
         }`}>
           {l.vat} {l.shipping}
         </div>

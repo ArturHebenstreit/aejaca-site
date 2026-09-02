@@ -123,6 +123,12 @@ export default function SizeSlider({
 
   const valueText = `${formatCm(clampedValue)} cm, ${t(CATEGORY_LABELS[category], lang)}`;
 
+  // Ten gradient ZOSTAJE kolorowy, w odroznieniu od reszty kalkulatora
+  // (odbarwionej 2026-09-02). Zielen do `fitPct` znaczy "miesci sie na stole
+  // roboczym", bursztyn dalej znaczy "nie miesci sie": kolor niesie tu tresc,
+  // a nie stan wybrania. Odbarwienie skasowaloby informacje, a nie ozdobe.
+  // Stan "wybrane" w tym samym komponencie idzie juz przez `--ds-wybor`
+  // (klasa `suwak-wybor` na uchwycie i biala etykieta aktywnej kategorii).
   const trackStyle = fitPct != null
     ? {
         background: `linear-gradient(to right, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.35) ${fitPct}%, rgba(251,191,36,0.35) ${fitPct}%, rgba(251,191,36,0.35) 100%)`,
@@ -138,7 +144,7 @@ export default function SizeSlider({
         {/* Odczyt zmienia barwe razem ze sciezka, gdy wielkosc wychodzi poza
             pole robocze. Kolor przy samej liczbie widac wczesniej niz kolor
             odcinka trasy, ktory jest w drugim koncu kontrolki. */}
-        <span className={`text-xs font-medium ${overFit ? "text-amber-300" : "text-emerald-300"}`}>
+        <span className={`text-xs font-medium ${overFit ? "text-amber-300" : "text-white"}`}>
           {formatCm(clampedValue)} cm &middot; {t(CATEGORY_LABELS[category], lang)}
         </span>
       </div>
@@ -180,7 +186,7 @@ export default function SizeSlider({
           step={1}
           value={pos}
           onChange={handleChange}
-          className="relative w-full h-1.5 accent-emerald-400"
+          className="relative w-full h-1.5 suwak-wybor"
           aria-label={t({ pl: "Wielkość modelu", en: "Model size", de: "Modellgröße" }, lang)}
           aria-valuetext={valueText}
           aria-valuemin={minCm}
@@ -197,7 +203,7 @@ export default function SizeSlider({
               <span
                 key={s.id}
                 className={`absolute top-0 -translate-x-1/2 text-xs whitespace-nowrap ${
-                  active ? "text-emerald-300 font-semibold" : "text-neutral-600"
+                  active ? "text-white font-semibold" : "text-neutral-400"
                 }`}
                 style={{ left: `${centerPct}%` }}
               >
