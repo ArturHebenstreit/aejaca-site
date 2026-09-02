@@ -36,6 +36,7 @@ const SKILLE_ZEWNETRZNE = [
   "frontend-design",
   "playwright-skill",
   "rhino3d-scripts",
+  "site-audit",
   "task-observer",
 ];
 const OBCY_SKILL = new RegExp(

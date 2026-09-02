@@ -233,6 +233,22 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
     ze sobą**, czego żadna bramka w buildzie nie robi: każda ogląda jedną stronę.
     Pierwszy przebieg znalazł 252 strony podające w schemacie polski adres zamiast
     własnego, przy zielonym buildzie i zielonym prerenderze. Decyzja: ADR-0035.
+  - `aejaca-ux` - **nasz własny**, więc bez `ORIGIN.md`. Wygoda, układ treści
+    i dostępność: trzej odwiedzający i ich jedna sprawa, role stron, kolejność
+    teza-oferta-dowód-zastrzeżenia-narzędzia, droga do wyceny, WCAG 2.2, formularze
+    i kasa, telefon, pisanie w interfejsie, rejestr wpadek. Niesie pomiar
+    `npm run ux:pomiar`: crawl ze **zrzutem każdej strony** w 390 px i 1280 px,
+    axe-core w obu motywach, wzorce błędów plus przekierowania w odnośnikach
+    i martwe kliknięcia. **Najpierw zrzuty, potem kod**: strzałka na karcie i nogi
+    krap przetrwały czytanie kodu i padły na zrzucie. Wygląd to `aejaca-design`,
+    nie ten skill. Decyzja: ADR-0036.
+  - `site-audit` - przegląd serwisu w czterech osiach (dan323, MIT): wygoda,
+    dostępność, wydajność, błędy funkcjonalne, z raportem według powagi. **Przerobiony**:
+    agenty klikające przez Playwright MCP zastąpiły skrypty z `aejaca-ux/pomiar/`
+    na naszym Chromium, analityk UX ogląda zrzuty zamiast czytać HTML, lista słów,
+    których pomiar nie klika, jest w trzech językach. Listy kontrolne
+    (`references/`) zostały bez zmian; to po nie wzięliśmy ten skill. Co dokładnie
+    zmieniono i dlaczego: jego `ORIGIN.md`.
   - `rhino3d-scripts` - pisanie skryptów do Rhino 8 (GitHub, MIT). Trzy powierzchnie: RhinoPython, RhinoScript (VBScript) i RhinoCommon, plus makra i ładowanie skryptów. **Uzupełnia `jewelry-design`, nie zastępuje go**: tamten mówi CO zbudować (tolerancje osadzenia, skurcz stopu, wlewy), ten CZYM to zautomatyzować. Najcenniejsze są pułapki spoza dokumentacji: `_-RunPythonScript` to IronPython 2.7, który wywala się na długim myślniku, a `rhinocode` (CPython 3) ten sam plik uruchamia bez słowa.
   - `frontend-design` - wiedza o projektowaniu interfejsów (Anthropic, Apache 2.0). Plan przed kodem: tokeny koloru, kroje do 2+ ról, układ, jeden element sygnaturowy, a potem krytyka tego planu. Ma osobny rozdział o pisaniu w interfejsie i listę wyglądów, po których poznaje się projekt zrobiony przez AI. **Na aejaca.com `aejaca-design` wygrywa**: marka jest ustalona i spójna na stu prerenderowanych stronach, więc ten skill służy rzeczom nowym, a nie przemalowywaniu tego, co stoi.
   - `playwright-skill` - steruje przeglądarką: klika, wypełnia, robi zrzuty. **Zobaczyć podgląd u siebie jest tańsze niż czytać kod**: tak znalazłem wiszące nogi krap po czterech rundach czytania. W tym środowisku wymaga `PW_HEADLESS=true` i `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, i **nigdy `npm run setup`**.
