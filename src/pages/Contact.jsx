@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { idSesji } from "../utils/analytics.js";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 import { Link } from "../i18n/nav.jsx";
@@ -76,6 +77,10 @@ export default function Contact() {
         fd.append("message", formData.message);
         fd.append("lang", lang);
         fd.append("source", "contact");
+        // Identyfikator wizyty. Bez niego analityka nie umie powiedziec, KTORA
+        // droga przyniosla zapytanie: liczy zgloszenia po `session_id`, a ta
+        // kolumna byla wypelniana wylacznie przy zapytaniu z kalkulatora.
+        fd.append("sessionId", idSesji());
         const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {

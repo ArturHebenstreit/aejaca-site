@@ -6,7 +6,7 @@
 // ============================================================
 import { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, X } from "lucide-react";
-import { trackInquiry, trackFunnel } from "../utils/analytics.js";
+import { trackInquiry, trackFunnel, idSesji } from "../utils/analytics.js";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -287,6 +287,9 @@ export default function B2BInquiryForm({ lang = "pl", id }) {
       fd.append("message", message);
       fd.append("lang", lang);
       fd.append("source", "b2b");
+      // Jak wyzej: bez identyfikatora wizyty zapytanie nie ma zadnego zrodla
+      // w analityce, wiec kanal, ktory je przyniosl, wyglada na bezplodny.
+      fd.append("sessionId", idSesji());
       if (fileBlob) fd.append("file", fileBlob, fileName);
 
       const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });

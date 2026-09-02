@@ -163,6 +163,41 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
   }
 }
 
+// --- Sygnal nie moze wolac o pomoc z powodu wlasnej poprawki --------------
+// 31 sierpnia 2026 licznik zaczal odsiewac roboty i oznaczac ruch wlasciciela.
+// Porownanie z okresem sprzed tej daty pokazuje wiec "spadek", ktory jest
+// w duzej czesci skutkiem odsiania. Alarm w takiej sytuacji wysyla wlasciciela
+// w tygodniowe poszukiwanie kanalu, ktory nigdzie nie ubyl.
+{
+  const dane = {
+    teraz: { wizyty: 100, zapytania: 3, odbicia: 20 },
+    przedtem: { wizyty: 200, zapytania: 5, odbicia: 40 },
+    kanaly: [], wejscia: [], lejekS: { koszyk: 0, kasa: 0, zlozone: 0, oplacone: 0, czekaja: 0 },
+  };
+  const stare = sygnaly({ ...dane, poprzedniOd: new Date("2026-07-01") });
+  const nowe = sygnaly({ ...dane, poprzedniOd: new Date("2026-09-05") });
+  const spadekStary = stare.find((x) => /Ruch/.test(x.tresc));
+  const spadekNowy = nowe.find((x) => /Ruch/.test(x.tresc));
+  assert.equal(spadekStary.waga, "uwaga", "porownanie przez granice pomiaru nie jest alarmem");
+  assert.match(spadekStary.tresc, /NIE czytaj jako spadku/, "i mowi wprost, czego nie wolno z tego wyczytac");
+  assert.equal(spadekNowy.waga, "alarm", "dwa okresy po zmianie porownuja sie normalnie");
+}
+
+// --- Zamowienie czekajace na przelew nie jest porzucone -------------------
+// Zamowienie w euro jest nieoplacone z definicji, dopoki wlasciciel nie
+// potwierdzi wplaty. Liczone jako porzucone zamienialo normalna kolejke
+// w alarm o zepsutej bramce platniczej.
+{
+  const wspolne = { teraz: { wizyty: 50, zapytania: 2, odbicia: 5 }, przedtem: { wizyty: 50, zapytania: 2, odbicia: 5 },
+                    kanaly: [], wejscia: [] };
+  const czekaja = sygnaly({ ...wspolne, lejekS: { koszyk: 0, kasa: 0, zlozone: 8, oplacone: 2, czekaja: 6 } });
+  const porzucone = sygnaly({ ...wspolne, lejekS: { koszyk: 0, kasa: 0, zlozone: 8, oplacone: 2, czekaja: 0 } });
+  assert.ok(!czekaja.some((x) => /nie zostalo oplaconych/.test(x.tresc)),
+    "szesc zamowien czekajacych na przelew to kolejka, nie alarm");
+  assert.ok(porzucone.some((x) => /nie zostalo oplaconych/.test(x.tresc)),
+    "ale zamowienia rozstrzygniete i nieoplacone alarmem sa");
+}
+
 // --- Sygnaly: prog musi dzialac w obie strony -----------------------------
 
 {
@@ -174,7 +209,12 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
   const tresci = wynik.map((s) => s.tresc).join(" | ");
   assert.match(tresci, /Ruch spadl o 50 procent/, "spadek ruchu o polowe jest alarmem");
   assert.match(tresci, /zapytan nie ma ani jednego/, "ruch bez zapytan jest alarmem");
-  assert.match(tresci, /czy formularz w ogole wysyla/, "alarm podaje pierwsza rzecz do sprawdzenia, a nie sama diagnoze");
+  // Pierwsza rzecz do sprawdzenia jest POMIAR, a nie tresc strony: zapytania
+  // licza sie przez `session_id`, a zgloszenie bez tej kolumny nie istnieje dla
+  // analityki, choc lezy w tabeli. Alarm, ktory od razu kaze przepisywac teksty,
+  // wysyla wlasciciela w zla strone na tydzien.
+  assert.match(tresci, /identyfikator wizyty/, "alarm podaje pierwsza rzecz do sprawdzenia, a nie sama diagnoze");
+  assert.match(tresci, /Dopiero potem patrz na formularz/, "i dopiero potem odsyla do formularza");
 }
 
 {

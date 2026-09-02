@@ -642,7 +642,10 @@ app.get("/analytics", requireAuth, async (req, res) => {
       zWlasnymi,
       teraz, przedtem, dni, kanaly, zrodla, wejscia, tresci,
       kraje, urzadzenia, jezyki, lejekS, lejekW, wybory, narzedzia: narzedziaLista,
-      sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }),
+      // `poprzedniOd` niesie date poczatku okresu porownawczego. Sygnal
+      // o spadku ruchu milczy, gdy ten okres siega przed zmiana sposobu
+      // liczenia: inaczej wolalby o pomoc z powodu naszej wlasnej poprawki.
+      sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd: o.poprzedniOd }),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });

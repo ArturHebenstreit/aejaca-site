@@ -1052,9 +1052,13 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
         // i tez dostaje numer. Bez niego byla jedynym rodzajem zgloszenia,
         // do ktorego nie dalo sie odniesc w odpowiedzi.
         pool.query(
-          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status)
-           VALUES ($1, $2, 'chat', 'chat', $3, $4, $5, 'new')`,
-          [userEmail, lang, lastMsg.slice(0, 400), allText.slice(-8000), generateQuoteRef()]
+          `INSERT INTO leads (email, lang, calculator, source, params, description, quote_ref, status, session_id)
+           VALUES ($1, $2, 'chat', 'chat', $3, $4, $5, 'new', $6)`,
+          // Rozmowa niesie wlasny identyfikator, ten sam, ktory idzie
+          // z licznika odwiedzin, wiec zgloszenie z czatu ma swoje zrodlo
+          // tak samo jak zgloszenie z formularza.
+          [userEmail, lang, lastMsg.slice(0, 400), allText.slice(-8000), generateQuoteRef(),
+           sessionId || null]
         ).catch(() => {});
       }
     }
@@ -1167,6 +1171,10 @@ app.post("/api/contact", (req, res, next) => {
     message: message.trim().slice(0, 5000),
     lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
     source: (source || "contact").slice(0, 50),
+    // Identyfikator wizyty, z ktorej przyszlo zapytanie. Analityka laczy po nim
+    // zgloszenia z ruchem: bez niego kazdy kanal i kazda strona wejscia wygladaly
+    // na bezplodne, bo pytanie "co przynosi zapytania" nie mialo czego policzyc.
+    sessionId: String(req.body?.sessionId || "").slice(0, 50) || null,
   };
   // Jedna lista niezaleznie od tego, ktorym polem przyszly.
   const zalaczniki = [...(req.files?.file || []), ...(req.files?.files || [])].slice(0, MAX_QUOTE_FILES);
@@ -1211,8 +1219,12 @@ app.post("/api/contact", (req, res, next) => {
       zalaczniki.map((f) => storeQuoteAttachment({ name: f.originalname, mimeType: f.mimetype, buffer: f.buffer }, payload.lang, ip))
     ).then((ids) => ids.filter((x) => x != null)[0] ?? null).then((uploadId) =>
       pool.query(
-        `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        // `session_id` niesie ODPOWIEDZ NA PYTANIE, skad wzielo sie zapytanie.
+        // Bez niego analityka liczyla zero zapytan przy kazdym kanale i przy
+        // kazdej stronie wejscia, bo laczy zgloszenia z wizytami wlasnie po tej
+        // kolumnie, a wypelniala ja tylko droga z kalkulatora.
+        `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status, session_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [payload.email, payload.lang, payload.source, "contact",
          `${payload.subject}\n${payload.message.slice(0, 400)}`,
          payload.message,
@@ -1221,7 +1233,7 @@ app.post("/api/contact", (req, res, next) => {
            subject: payload.subject || null,
            ...(zalaczniki.length > 1 ? { attachments: zalaczniki.map((f) => String(f.originalname).slice(0, 255)) } : {}),
          }),
-         uploadId, quoteRef, "new"]
+         uploadId, quoteRef, "new", payload.sessionId || null]
       )
     ).catch(err => console.error("Lead save error:", err.message));
   }

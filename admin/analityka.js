@@ -121,7 +121,12 @@ export async function kpi(pool, od, doKiedy, { zWlasnymi = false } = {}) {
     `WITH ${sesjeCTE("s", zWlasnymi)}
      SELECT COUNT(*)                                        AS wizyty,
             COUNT(*) FILTER (WHERE interakcje > 0)          AS zaangazowane,
-            COUNT(*) FILTER (WHERE odslony <= 1 AND interakcje = 0) AS odbicia,
+            -- ODBICIE to wyjscie bez zadnego sladu, a nie "nie kliknal w nic,
+            -- co mierzymy". Czytanie przez kwadrans jednej strony poradnika NIE
+            -- jest odbiciem, a przy poprzedniej definicji bylo, wiec wskaznik
+            -- pokazywal 70 procent na serwisie, ktorego polowa to tresc do
+            -- czytania. Prog: pietnascie sekund widocznosci.
+            COUNT(*) FILTER (WHERE odslony <= 1 AND interakcje = 0 AND sekundy < 15) AS odbicia,
             COALESCE(SUM(odslony), 0)                       AS odslony,
             COALESCE(AVG(NULLIF(sekundy, 0)), 0)            AS sredni_czas,
             COALESCE(SUM(zapytania), 0)                     AS zapytania,
@@ -218,8 +223,20 @@ export async function lejekSklepu(pool, od, doKiedy, { zWlasnymi = false } = {})
        COUNT(DISTINCT session) FILTER (WHERE category = 'shop' AND action = 'add_to_cart') AS koszyk,
        COUNT(DISTINCT session) FILTER (WHERE category = 'shop' AND action = 'begin_checkout') AS kasa,
        COUNT(DISTINCT session) FILTER (WHERE category = 'shop' AND action = 'place_order') AS zlozone,
-       (SELECT COUNT(*) FROM orders WHERE session_id IS NOT NULL AND paid_at IS NOT NULL
-          AND created_at >= $1 AND created_at < $2)                                     AS oplacone
+       -- Po obu stronach WIZYTY, a nie raz wizyty i raz zamowienia. Wczesniej
+       -- "zlozone" liczylo sesje, a "oplacone" wiersze w tabeli zamowien, wiec
+       -- lejek porownywal dwie rozne jednostki i przy kazdym zamowieniu
+       -- z oferty (te nie niosa identyfikatora wizyty) wychodzilo zero.
+       (SELECT COUNT(DISTINCT session_id) FROM orders
+         WHERE session_id IS NOT NULL AND paid_at IS NOT NULL
+           AND created_at >= $1 AND created_at < $2)                                    AS oplacone,
+       -- Zamowienie w euro czeka na przelew i na nasze reczne potwierdzenie,
+       -- czasem dwa dni. Liczenie go jako "nieoplacone" robilo z normalnej
+       -- kolejki alarm o zepsutej bramce platniczej.
+       (SELECT COUNT(DISTINCT session_id) FROM orders
+         WHERE session_id IS NOT NULL AND paid_at IS NULL
+           AND status IN ('awaiting_transfer', 'payment_review')
+           AND created_at >= $1 AND created_at < $2)                                    AS czekaja
      FROM z`,
     [od, doKiedy]
   );
@@ -339,17 +356,32 @@ export async function skutkiSesji(pool, session) {
  * na juz pobranych danych, bo to jest arytmetyka na kilkunastu wierszach, a nie
  * kolejne zapytanie do bazy.
  */
-export function sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }) {
+/**
+ * Dzien, od ktorego licznik mierzy TO SAMO co dzis: odsiewa roboty, oznacza
+ * ruch wlasciciela i wiaze zgloszenia z wizytami. Porownanie z okresem sprzed
+ * tej daty jest porownaniem dwoch roznych miar, wiec sygnal o spadku ruchu
+ * milczy, zamiast wolac o pomoc z powodu wlasnej poprawki.
+ */
+export const POMIAR_OD = new Date("2026-08-31T00:00:00Z");
+
+export function sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd = null }) {
   const lista = [];
   const spadek = (a, b) => (b > 0 ? Math.round(((a - b) / b) * 100) : null);
 
+  // Poprzedni okres siega przed zmiane sposobu liczenia: wtedy w tabeli
+  // siedzialy jeszcze roboty i wlasny ruch, wiec "spadek" jest w duzej czesci
+  // skutkiem odsiania, a nie ubytkiem odwiedzajacych.
+  const porownywalne = !poprzedniOd || new Date(poprzedniOd) >= POMIAR_OD;
+
   const dW = spadek(Number(teraz.wizyty), Number(przedtem.wizyty));
   if (dW !== null && dW <= -25) {
-    lista.push({ waga: "alarm", tresc: `Ruch spadl o ${Math.abs(dW)} procent wobec poprzedniego okresu. Sprawdz, ktory kanal ubyl, i czy strony, ktore go przynosily, dalej sa w wyszukiwarce.` });
+    lista.push(porownywalne
+      ? { waga: "alarm", tresc: `Ruch spadl o ${Math.abs(dW)} procent wobec poprzedniego okresu. Sprawdz, ktory kanal ubyl, i czy strony, ktore go przynosily, dalej sa w wyszukiwarce.` }
+      : { waga: "uwaga", tresc: `Ruch jest nizszy o ${Math.abs(dW)} procent, ale poprzedni okres siega przed 31 sierpnia 2026, czyli przed odsianiem robotow i wlasnego ruchu. Tej roznicy NIE czytaj jako spadku: porownanie bedzie uczciwe dopiero na dwoch okresach po tej dacie.` });
   }
 
   if (Number(teraz.wizyty) > 30 && Number(teraz.zapytania) === 0) {
-    lista.push({ waga: "alarm", tresc: "Ruch jest, zapytan nie ma ani jednego. Zanim zmienisz teksty, sprawdz, czy formularz w ogole wysyla: taki obraz daje takze zepsuty przycisk." });
+    lista.push({ waga: "alarm", tresc: "Ruch jest, zapytan nie ma ani jednego. Najpierw sprawdz, czy zgloszenia w ogole niosa identyfikator wizyty (kolumna `session_id` w tabeli zgloszen): puste zapytania przy pelnej liscie zgloszen znacza zerwane polaczenie, a nie brak klientow. Dopiero potem patrz na formularz i na teksty." });
   }
 
   const odbicia = Number(teraz.wizyty) ? Math.round((Number(teraz.odbicia) / Number(teraz.wizyty)) * 100) : 0;
@@ -369,16 +401,22 @@ export function sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS }) {
     }
   }
 
-  if (Number(lejekS.koszyk) > 0) {
+  // Prog na liczbie, nie tylko na procencie: przy trzech koszykach "33 procent"
+  // to jedna osoba, ktora poszla zaparzyc herbate, a nie wada sklepu.
+  if (Number(lejekS.koszyk) >= 10) {
     const doKasy = Number(lejekS.kasa) / Number(lejekS.koszyk);
     if (doKasy < 0.4) {
       lista.push({ waga: "uwaga", tresc: `Z koszyka do kasy przechodzi ${Math.round(doKasy * 100)} procent. Najczestsza przyczyna to koszt dostawy pokazany dopiero w kasie.` });
     }
   }
-  if (Number(lejekS.zlozone) > 0) {
-    const doZaplaty = Number(lejekS.oplacone) / Number(lejekS.zlozone);
+  // Rozstrzygniete, czyli zlozone MINUS te, ktore wciaz czekaja na przelew.
+  // Zamowienie w euro jest nieoplacone z definicji, dopoki nie potwierdzisz
+  // wplaty, wiec liczone jako porzucone zamienialo normalna kolejke w alarm.
+  const rozstrzygniete = Number(lejekS.zlozone) - Number(lejekS.czekaja || 0);
+  if (rozstrzygniete >= 5) {
+    const doZaplaty = Number(lejekS.oplacone) / rozstrzygniete;
     if (doZaplaty < 0.6) {
-      lista.push({ waga: "alarm", tresc: `${Math.round((1 - doZaplaty) * 100)} procent zlozonych zamowien nie zostalo oplaconych. To sie dzieje juz PO decyzji klienta, wiec sprawdz bramke i wiadomosc z danymi do przelewu.` });
+      lista.push({ waga: "alarm", tresc: `${Math.round((1 - doZaplaty) * 100)} procent rozstrzygnietych zamowien nie zostalo oplaconych (bez tych, ktore czekaja na przelew). To sie dzieje juz PO decyzji klienta, wiec sprawdz bramke i wiadomosc z danymi do przelewu.` });
     }
   }
 
