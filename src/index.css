@@ -607,12 +607,12 @@ body {
 }
 
 /* Boost brightness of images inside calc/service cards */
-[data-theme="light"] button:has(.from-black\/95) img:not(.tile-dim) { filter: brightness(1.32) !important; }
+[data-theme="light"] button:has(.from-black\/95) img:not(.tile-dim) { filter: contrast(0.90) brightness(1.46) saturate(1.10) !important; }
 /* STL/SVG tile images (Link elements) */
-[data-theme="light"] a:has(.from-black\/90.via-black\/60) img:not(.tile-dim) { filter: brightness(1.28) !important; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img:not(.tile-dim) { filter: contrast(0.90) brightness(1.42) saturate(1.10) !important; }
 /* Tool subpage rounded card - brighten image */
 [data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img:not(.tile-dim) {
-  filter: brightness(1.20) !important;
+  filter: contrast(0.92) brightness(1.34) saturate(1.08) !important;
 }
 
 /* ── Kafelek niewybrany: szary, wybrany w kolorze ──────────────────────
@@ -642,17 +642,18 @@ body {
    Krycie ustawiamy TUTAJ, a nie klasa `opacity-60` w komponencie, bo inaczej
    ta sama wartosc siedzialaby w osiemnastu miejscach. */
 img.tile-dim {
-  --tile-jasnosc: 1.22;
-  filter: grayscale(0.78) brightness(var(--tile-jasnosc)) !important;
-  opacity: 0.82 !important;
+  --tile-jasnosc: 1.42;
+  --tile-kontrast: 0.90;
+  filter: grayscale(0.72) contrast(var(--tile-kontrast)) brightness(var(--tile-jasnosc)) !important;
+  opacity: 0.85 !important;
 }
-[data-theme="light"] button:has(.from-black\/95) img.tile-dim { --tile-jasnosc: 1.32; }
-[data-theme="light"] a:has(.from-black\/90.via-black\/60) img.tile-dim { --tile-jasnosc: 1.28; }
-[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img.tile-dim { --tile-jasnosc: 1.20; }
+[data-theme="light"] button:has(.from-black\/95) img.tile-dim { --tile-jasnosc: 1.50; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img.tile-dim { --tile-jasnosc: 1.46; }
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img.tile-dim { --tile-jasnosc: 1.38; }
 /* Najazd myszka zdejmuje szarosc I rozjasnia, zeby dalo sie obejrzec oferte
    bez klikania, a sam najazd byl widoczny. */
 button:hover img.tile-dim, a:hover img.tile-dim {
-  filter: brightness(calc(var(--tile-jasnosc) * 1.14)) !important;
+  filter: contrast(var(--tile-kontrast)) brightness(calc(var(--tile-jasnosc) * 1.14)) !important;
   opacity: 1 !important;
 }
 
@@ -663,16 +664,37 @@ button:hover img.tile-dim, a:hover img.tile-dim {
    stoi bez prefiksu motywu, wiec obowiazuje w ciemnym; jasny nadpisuje ja
    wyzsza waga selektora `[data-theme="light"] ...`. Najazd na wybrany
    rozjasnia jeszcze raz, zeby kursor mial odpowiedz wszedzie. */
+/* Samo `brightness()` nie wystarcza i to jest zmierzone (2026-09-02): fotografie
+   kafelkow maja srednia jasnosc 34 do 36 na 255 w OBU dzialach, wiec sTuDiO nie
+   ma ciemniejszych zdjec od bizuterii, tylko nie ma na nich swiatel (bizuteria
+   iskrzy metalem i kamieniem, sTuDiO to matowe czarne przedmioty). Mnoznik
+   podnosi obie strony tak samo i obie zostaja plaskie: nawet brightness(1.5)
+   daje srednia 51 przy 6% przepalonych pikseli. Obnizenie kontrastu podnosi
+   ciemna mase duzo taniej: contrast(0.90) brightness(1.38) daje srednia 62
+   przy niecalych 4%. Kolejnosc ma znaczenie, filtry licza sie od lewej. */
+/* Gradient pod napisem gasil dol kazdego kafelka do prawie czerni
+   (`from-black/95`), i to on, a nie zdjecie, odpowiadal za wrazenie ciemnosci:
+   filtr rozjasnia fotografie, a gradient natychmiast ja przykrywa. Zmiekczamy
+   go TUTAJ, zamiast zmieniac klase w JSX, bo `from-black/95` jest zaczepem
+   kilkunastu regul motywu jasnego i bramki `check-light-theme.mjs`.
+   Napis zostaje czytelny, bo niesie go obwodka `.tile-ink`, zbudowana
+   dokladnie na wypadek jasnego miejsca pod tekstem. */
+button:has(.from-black\/95) .from-black\/95,
+a:has(.from-black\/90.via-black\/60) .from-black\/90 {
+  background-image: linear-gradient(to top,
+    rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.44) 52%, rgba(0,0,0,0.10) 100%) !important;
+}
+
 button:has(.from-black\/95) img:not(.tile-dim),
 a:has(.from-black\/90.via-black\/60) img:not(.tile-dim) {
-  filter: brightness(1.16) saturate(1.12) !important;
+  filter: contrast(0.90) brightness(1.38) saturate(1.15) !important;
 }
 button:has(.from-black\/95):hover img:not(.tile-dim),
 a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) {
-  filter: brightness(1.30) saturate(1.18) !important;
+  filter: contrast(0.88) brightness(1.52) saturate(1.20) !important;
 }
-[data-theme="light"] button:has(.from-black\/95):hover img:not(.tile-dim) { filter: brightness(1.46) saturate(1.10) !important; }
-[data-theme="light"] a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) { filter: brightness(1.42) saturate(1.10) !important; }
+[data-theme="light"] button:has(.from-black\/95):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.60) saturate(1.12) !important; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.56) saturate(1.12) !important; }
 
 /* ── Napis na zdjeciu: ciemna obwodka, a nie sam cien ──────────────────
    Kafelki kalkulatorow maja pod tekstem fotografie, a fotografia bywa jasna
