@@ -29,6 +29,8 @@ import {
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { getSEO, adresStrony, adresZasobu } from "../seo/seoData.js";
+import OdnosnikiUslug, { uslugiKategorii } from "../components/OdnosnikiUslug.jsx";
+import { t as etykieta } from "../pricing/config.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -129,17 +131,21 @@ export default function Jewelry() {
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     buildFAQSchema(pozycjeFaq.map((f) => ({ q: f.q, a: f.a }))),
+    // Szesc pozycji wpisanych z reki wskazywalo na `#rings`, `#engagement`,
+    // `#earrings`, `#bracelets`, `#wedding` i `#pendants`, czyli na sekcje,
+    // ktorych ta strona nigdy nie miala, i nazywalo wyroby, ktorych nie da sie
+    // zamowic pod zadnym z tych adresow. Lista idzie teraz z katalogu uslug:
+    // piec pozycji, kazda z wlasna strona, ta sama, ktora strona pokazuje
+    // odnosnikiem. Decyzja: ADR-0035.
     buildItemListSchema({
       name: "AEJaCA Handcrafted Jewelry Collection",
       url: pageUrl,
-      items: [
-        { name: "Custom Silver Ring with Gemstone", url: `${pageUrl}#rings`, image: ogImage, description: "Handcrafted sterling silver ring with natural gemstone setting" },
-        { name: "Gold Engagement Ring", url: `${pageUrl}#engagement`, image: ogImage, description: "Bespoke 14K/18K gold engagement ring with premium gemstone" },
-        { name: "Silver Earrings with Gemstones", url: `${pageUrl}#earrings`, image: ogImage, description: "Artisan sterling silver earrings with natural gemstones" },
-        { name: "Gemstone Bracelet", url: `${pageUrl}#bracelets`, image: ogImage, description: "Natural stone bead bracelet with silver elements" },
-        { name: "Wedding Bands", url: `${pageUrl}#wedding`, image: ogImage, description: "Personalized wedding ring pairs with custom engraving" },
-        { name: "Personalized Pendant", url: `${pageUrl}#pendants`, image: ogImage, description: "Custom pendant with gemstone or engraved design" },
-      ],
+      items: uslugiKategorii("jewelry").map((usluga) => ({
+        name: etykieta(usluga.title, lang),
+        url: adresStrony(`/shop/service/${usluga.id}/`, lang),
+        image: adresZasobu(usluga.image),
+        description: etykieta(usluga.lead, lang),
+      })),
     }),
     buildProductSchema({
       name: "Custom Silver Ring with Gemstone, AEJaCA",
@@ -228,6 +234,7 @@ export default function Jewelry() {
               );
             })}
           </div>
+          <OdnosnikiUslug kategoria="jewelry" className="mt-12" />
         </div>
       </section>
 

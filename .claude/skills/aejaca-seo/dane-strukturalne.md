@@ -46,7 +46,18 @@ sprawdza, czy JSON sie parsuje.
    samej nazwie. `Organization` i `LocalBusiness` sa jedynymi schematami,
    ktorych adres NIE dostaje prefiksu jezyka, i audyt je z tego sprawdzenia
    wylacza.
-3. **Oceny w schemacie bez ocen na stronie.** `aggregateRating` wolno postawic
+3. **Adres z krzyzykiem, ktory nie trafia w zadne miejsce.** `ItemList` na
+   `/studio/` i `/jewelry/` wymienial jedenascie pozycji wskazujacych na
+   `#3dprint`, `#co2laser`, `#rings` i osiem innych sekcji, ktorych te strony
+   nigdy nie mialy. Przegladarka zostaje wtedy na gorze strony, wiec nikt tego
+   nie zobaczyl, a dla wyszukiwarki jedenascie osobnych pozycji listy bylo
+   jednym i tym samym adresem. Uwaga: `@id` z krzyzykiem
+   (`.../#organization`) to co innego, bo nazywa BYT, a nie miejsce na stronie,
+   i audyt go z tego sprawdzenia wylacza. Naprawione tak, ze lista idzie
+   z katalogu uslug i wskazuje na te same strony, ktore strona pokazuje
+   odnosnikiem (`src/components/OdnosnikiUslug.jsx`).
+
+4. **Oceny w schemacie bez ocen na stronie.** `aggregateRating` wolno postawic
    tylko tam, gdzie te same oceny sa widoczne dla czlowieka. Liczba opinii
    w schemacie idzie z jednego zrodla razem z tym, co pokazuje strona,
    a nie z pamieci.

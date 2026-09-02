@@ -26,6 +26,8 @@ import {
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { getSEO, adresStrony, adresZasobu } from "../seo/seoData.js";
+import OdnosnikiUslug, { uslugiKategorii } from "../components/OdnosnikiUslug.jsx";
+import { t as etykieta } from "../pricing/config.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -116,16 +118,22 @@ export default function Studio() {
       image: ogImage,
     }),
     buildFAQSchema(pozycjeFaq.map((f) => ({ q: f.q, a: f.a }))),
+    // Lista uslug bierze sie z KATALOGU, a nie z reki. Wczesniej stalo tu piec
+    // pozycji wskazujacych na `#3dprint`, `#co2laser`, `#fiber`, `#resin`
+    // i `#prototyping`, czyli na sekcje, ktorych ta strona nigdy nie miala.
+    // Kazda z nich sprowadzala sie do tego samego adresu, bo adres z krzyzykiem
+    // nietrafiajacy w zaden element zostaje na gorze strony. Teraz pozycje
+    // wskazuja na prawdziwe strony uslug, ktore ta strona takze pokazuje
+    // odnosnikiem, wiec schemat opisuje to, co widac. Decyzja: ADR-0035.
     buildItemListSchema({
       name: "AEJaCA sTuDiO Digital Fabrication Services",
       url: pageUrl,
-      items: [
-        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: ogImage, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
-        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: ogImage, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
-        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: ogImage, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
-        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: ogImage, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
-        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: ogImage, description: "From CAD design to functional prototype in 24-48 hours" },
-      ],
+      items: uslugiKategorii("studio").map((usluga) => ({
+        name: etykieta(usluga.title, lang),
+        url: adresStrony(`/shop/service/${usluga.id}/`, lang),
+        image: adresZasobu(usluga.image),
+        description: etykieta(usluga.lead, lang),
+      })),
     }),
     buildProductSchema({
       name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
@@ -291,6 +299,7 @@ export default function Studio() {
               </div>
             ))}
           </div>
+          <OdnosnikiUslug kategoria="studio" className="mt-12" />
         </div>
       </section>
 
