@@ -177,6 +177,12 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="space-y-2">
                 <Link to="/shop/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shop}</Link>
+                {/* `/order/` stalo w mapie witryny, a zaden odnosnik na serwisie
+                    do niego nie prowadzil: pelny pomiar 2026-09-02 znalazl je
+                    wsrod dwunastu stron bez wejscia. Strona w mapie, do ktorej
+                    nic nie linkuje, jest dla wyszukiwarki slabym sygnalem, a dla
+                    klienta osiagalna tylko z wyniku wyszukiwania. */}
+                <Link to="/order/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.order}</Link>
                 <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
                 <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
                 <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>

@@ -80,7 +80,12 @@ const SRC = join(ROOT, "src");
   // Sprawdzenie "czy gdziekolwiek jest tile-dim w motywie jasnym" przepuszczalo
   // usuniecie jednej z nich, bo zaliczala je druga. Dlatego pary wyprowadzamy
   // z samych regul rozjasniajacych, zamiast wypisywac selektory z pamieci.
-  const ROZJASNIENIA = [...css.matchAll(/\[data-theme="light"\]\s+(\w+:has\([^)]*\))\s+img(:not\(\.tile-dim\))?\s*\{\s*filter:\s*brightness/g)];
+  // `filter` zaczyna sie od dowolnej funkcji, nie tylko `brightness`. Od
+  // 2026-09-02 rozjasnienie to `contrast(...) brightness(...)`, bo sam mnoznik
+  // jasnosci nie podnosil ciemnych fotografii (pomiar: srednia 34-36/255).
+  // Wzorzec przybity do slowa "brightness" wywrocil te bramke przy tamtej
+  // zmianie, chociaz reguly byly na miejscu.
+  const ROZJASNIENIA = [...css.matchAll(/\[data-theme="light"\]\s+(\w+:has\([^)]*\))\s+img(:not\(\.tile-dim\))?\s*\{\s*filter:\s*[a-z-]+\(/g)];
   if (!ROZJASNIENIA.length) zle.push("nie znalazlem regul rozjasniajacych zdjecia w motywie jasnym; sprawdzenie stracilo sens");
   for (const m of ROZJASNIENIA) {
     const selektor = m[1];

@@ -113,6 +113,14 @@ export const GLOSSARY = [
       en: "Gold or platinum jewelry with gemstones that retains or appreciates in value over time. What drives that value is the metal, the quality of the stone and the workmanship.",
       de: "Gold- oder Platinschmuck mit Edelsteinen, der seinen Wert behält oder mit der Zeit steigert. Entscheidend sind das Edelmetall, die Qualität des Steins und die Ausführung.",
     },
+    // Skrot do wyniku wyszukiwania. Pelna definicja zostaje na stronie
+    // i w danych strukturalnych; bez tego pola strona ucinala ja w pol
+    // frazy i doklejala wielokropek.
+    metaOpis: {
+      pl: "Biżuteria ze złota lub platyny z kamieniami szlachetnymi, która zachowuje wartość w czasie. Decyduje o niej kruszec, jakość kamienia i wykonanie.",
+      en: "Gold or platinum jewelry with gemstones that holds its value over time. What drives it is the metal, the quality of the stone and the workmanship.",
+      de: "Gold- oder Platinschmuck mit Edelsteinen, der seinen Wert über die Zeit behält. Entscheidend sind Edelmetall, Steinqualität und Ausführung.",
+    },
     relatedBlog: "bizuteria-inwestycja",
   },
   {
@@ -156,6 +164,11 @@ export const GLOSSARY = [
       pl: "Wytrzymały filament odporny na uderzenia i chemikalia, mniej kruchy od PLA i łatwiejszy w druku od ABS. Do części mechanicznych i elementów pracujących na zewnątrz.",
       en: "A tough filament resistant to impact and chemicals, less brittle than PLA and easier to print than ABS. For mechanical parts and components that work outdoors.",
       de: "Robustes Filament, beständig gegen Schlag und Chemikalien, weniger spröde als PLA und leichter zu drucken als ABS. Für mechanische Teile und Bauteile im Freien.",
+    },
+    metaOpis: {
+      pl: "Wytrzymały filament odporny na uderzenia i chemikalia, mniej kruchy od PLA i łatwiejszy w druku od ABS. Do części pracujących na zewnątrz.",
+      en: "A tough filament resistant to impact and chemicals, less brittle than PLA and easier to print than ABS. For parts that work outdoors.",
+      de: "Robustes Filament, schlag- und chemikalienbeständig, weniger spröde als PLA und leichter zu drucken als ABS. Für Bauteile im Freien.",
     },
     relatedBlog: "druk-3d-krok-po-kroku",
   },
@@ -245,6 +258,11 @@ export const GLOSSARY = [
       en: "Creating precise 3D models in Rhino and Fusion 360 - both organic jewelry forms and functional technical parts (parametric design, mechanical tolerances, reverse engineering). AEJaCA models from a sketch, photo, or idea, preparing files ready for 3D printing or casting.",
       de: "Erstellung präziser 3D-Modelle in Rhino und Fusion 360 - sowohl organische Schmuckformen als auch funktionale technische Teile (parametrisches Design, mechanische Toleranzen, Reverse Engineering). AEJaCA modelliert aus Skizze, Foto oder Idee und bereitet druck- oder gussfertige Dateien vor.",
     },
+    metaOpis: {
+      pl: "Precyzyjne modele 3D w Rhino i Fusion 360: organiczne formy biżuterii i techniczne części funkcjonalne. Ze szkicu, zdjęcia albo pomysłu.",
+      en: "Precise 3D models in Rhino and Fusion 360: organic jewelry forms and functional technical parts. Built from a sketch, a photo or an idea.",
+      de: "Präzise 3D-Modelle in Rhino und Fusion 360: organische Schmuckformen und funktionale technische Teile. Aus Skizze, Foto oder Idee.",
+    },
     relatedBlog: "jak-przygotowac-plik-stl",
   },
   {
@@ -289,6 +307,11 @@ export const GLOSSARY = [
       en: "A casting method where a pattern printed in castable resin is invested in casting plaster, then burned out in a kiln at around 600°C so the resin combusts cleanly, leaving an empty cavity ready for metal. AEJaCA uses this pattern to cast rings and figurines in 925 silver or 585 gold.",
       de: "Ein Gussverfahren, bei dem ein aus Gussharz gedrucktes Modell in Einbettmasse eingebettet und anschließend im Ofen bei rund 600°C ausgebrannt wird, sodass das Harz rückstandslos verbrennt und eine leere Form für das Metall zurückbleibt. AEJaCA nutzt dieses Modell zum Gießen von Ringen und Figuren in 925-Silber oder 585-Gold.",
     },
+    metaOpis: {
+      pl: "Odlew z wzorca wydrukowanego z żywicy castable: wzorzec wypala się w piecu do 600°C bez śladu, zostawiając formę gotową na srebro albo złoto.",
+      en: "Casting from a pattern printed in castable resin: the pattern burns out in a kiln at 600°C, leaving a cavity ready for silver or gold.",
+      de: "Guss aus einem Modell aus Gussharz: Das Modell brennt im Ofen bei 600°C rückstandslos aus und hinterlässt eine Form für Silber oder Gold.",
+    },
     relatedBlog: "druk-miniatur-figurek-16k",
   },
   {
@@ -299,6 +322,11 @@ export const GLOSSARY = [
       pl: "Żywica do druku MSLA zaprojektowana do czystego wypalania w piecu odlewniczym. AEJaCA używa BlueCast X-One V2 (zero skurczu, do szyn i masywnych elementów) oraz BlueCast X-Wax Filigree (ponad 80% wosku, do filigranu i detali od 0,2 mm). Wysoka zawartość wosku ułatwia całkowite spalenie bez pozostałości popiołu, co chroni formę odlewniczą.",
       en: "A resin for MSLA printing designed to burn out cleanly in a casting kiln. AEJaCA uses BlueCast X-One V2 (zero shrinkage, for shanks and bulky elements) and BlueCast X-Wax Filigree (over 80% wax content, for filigree and details down to 0.2 mm). High wax content ensures complete combustion with no ash residue, protecting the casting mold.",
       de: "Ein Harz für den MSLA-Druck, das für ein sauberes Ausbrennen im Gussofen ausgelegt ist. AEJaCA verwendet BlueCast X-One V2 (kein Schrumpf, für Ringschienen und massive Elemente) und BlueCast X-Wax Filigree (über 80% Wachsanteil, für Filigran und Details ab 0,2 mm). Der hohe Wachsanteil sorgt für rückstandsfreies Verbrennen ohne Ascherückstände und schont die Gussform.",
+    },
+    metaOpis: {
+      pl: "Żywica do druku MSLA wypalająca się bez popiołu. AEJaCA używa BlueCast X-One V2 do szyn i X-Wax Filigree do filigranu i detali od 0,2 mm.",
+      en: "Resin for MSLA printing that burns out without ash. AEJaCA uses BlueCast X-One V2 for shanks and X-Wax Filigree for filigree and 0.2 mm detail.",
+      de: "Harz für den MSLA-Druck, das rückstandslos ausbrennt. AEJaCA nutzt BlueCast X-One V2 für Ringschienen und X-Wax Filigree für Filigran ab 0,2 mm.",
     },
     relatedBlog: "odlewy-zywiczne-poradnik",
   },
@@ -311,6 +339,11 @@ export const GLOSSARY = [
       en: "A resin printing technology where an entire layer is cured at once by UV light projected through a mono LCD screen, rather than point-by-point as in classic laser SLA. Resolution depends on the screen's pixel size (14x19 µm on the Elegoo Saturn 4 Ultra 16K), not on nozzle diameter as with FDM. It produces a smooth surface and detail from about 0.2 mm, far finer than FDM's 0.4-0.8 mm.",
       de: "Eine Harzdrucktechnologie, bei der eine ganze Schicht gleichzeitig durch UV-Licht ausgehärtet wird, das über einen Mono-LCD-Bildschirm projiziert wird, statt punktweise wie beim klassischen Laser-SLA. Die Auflösung hängt von der Pixelgröße des Bildschirms ab (14x19 µm beim Elegoo Saturn 4 Ultra 16K), nicht vom Düsendurchmesser wie beim FDM-Druck. Sie liefert eine glatte Oberfläche und Details ab etwa 0,2 mm, deutlich feiner als FDM mit 0,4-0,8 mm.",
     },
+    metaOpis: {
+      pl: "Druk żywiczny, w którym cała warstwa utwardza się naraz światłem UV z ekranu LCD. Detal od 0,2 mm, znacznie precyzyjniej niż FDM.",
+      en: "Resin printing where a whole layer cures at once under UV light from an LCD screen. Detail from 0.2 mm, far finer than FDM.",
+      de: "Harzdruck, bei dem eine ganze Schicht zugleich durch UV-Licht vom LCD aushärtet. Details ab 0,2 mm, deutlich feiner als FDM.",
+    },
     relatedBlog: "druk-miniatur-figurek-16k",
   },
   {
@@ -321,6 +354,11 @@ export const GLOSSARY = [
       pl: "Powiększenie modelu CAD przed drukiem o współczynnik odpowiadający skurczowi stopu podczas krzepnięcia, tak by gotowy odlew miał docelowy wymiar. AEJaCA stosuje: Au 585 x1,0196, Ag 925 x1,016, Au 9K x1,021, Au 18K x1,018. Bez tej korekty odlew wychodzi mniejszy niż zaprojektowany model.",
       en: "Scaling up a CAD model before printing by a factor matching the alloy's shrinkage during solidification, so the finished casting reaches its target size. AEJaCA applies: Au 585 x1.0196, Ag 925 x1.016, Au 9K x1.021, Au 18K x1.018. Without this correction, the casting comes out smaller than the designed model.",
       de: "Vergrößerung eines CAD-Modells vor dem Druck um einen Faktor, der dem Schwund der Legierung beim Erstarren entspricht, damit der fertige Guss die Zielgröße erreicht. AEJaCA verwendet: Au 585 x1,0196, Ag 925 x1,016, Au 9K x1,021, Au 18K x1,018. Ohne diese Korrektur fällt der Guss kleiner aus als das entworfene Modell.",
+    },
+    metaOpis: {
+      pl: "Powiększenie modelu CAD przed drukiem o skurcz stopu, żeby gotowy odlew miał docelowy wymiar. Ag 925 x1,016, Au 585 x1,0196, Au 9K x1,021.",
+      en: "Scaling a CAD model up before printing by the alloy's shrinkage, so the finished casting hits its target size. Ag 925 x1.016, Au 585 x1.0196.",
+      de: "Vergrößerung des CAD-Modells vor dem Druck um den Schwund der Legierung, damit der Guss die Zielgröße erreicht. Ag 925 x1,016, Au 585 x1,0196.",
     },
     relatedBlog: "druk-3d-krok-po-kroku",
   },
@@ -333,6 +371,11 @@ export const GLOSSARY = [
       en: "The way links are joined, which decides how a chain looks, how it lasts and what it costs. It is described by the weave factor: how much wire goes into one centimetre of finished chain. A classic weave is x1.0, a Byzantine x3.2, so the same length costs three times more.",
       de: "Die Art, wie Glieder verbunden werden, bestimmt Aussehen, Haltbarkeit und Preis einer Kette. Beschrieben wird sie durch den Flechtfaktor: wie viel Draht auf einen Zentimeter fertige Kette entfällt. Klassisch x1,0, Byzantiner x3,2, dieselbe Länge kostet also dreimal mehr.",
     },
+    metaOpis: {
+      pl: "Sposób łączenia ogniw decyduje o wyglądzie, trwałości i cenie łańcuszka. Klasyczny ma współczynnik x1,0, bizantyjski x3,2, czyli trzy razy więcej drutu.",
+      en: "How links are joined decides how a chain looks, lasts and costs. A classic weave is x1.0, a Byzantine x3.2, so three times the wire per centimetre.",
+      de: "Die Art der Gliederverbindung bestimmt Aussehen, Haltbarkeit und Preis. Klassisch x1,0, Byzantiner x3,2, also dreimal so viel Draht pro Zentimeter.",
+    },
     relatedBlog: "rodzaje-splotow-lancuszkow",
   },
   {
@@ -344,6 +387,11 @@ export const GLOSSARY = [
       en: "The casting comes out smaller than the pattern, because an alloy takes up less room solid than liquid. How much depends on the alloy: silver 925 shrinks about 1.6 percent, 9K gold about 2.1. That is why the model is enlarged before printing, not corrected after casting.",
       de: "Der Guss fällt kleiner aus als das Modell, weil eine Legierung fest weniger Raum einnimmt als flüssig. Das Maß hängt von der Legierung ab: Silber 925 schwindet etwa 1,6 Prozent, Gold 9K etwa 2,1. Deshalb wird das Modell vor dem Druck vergrößert, nicht nach dem Guss.",
     },
+    metaOpis: {
+      pl: "Odlew wychodzi mniejszy od wzorca, bo stop krzepnąc zajmuje mniej miejsca. Srebro 925 kurczy się o 1,6 procent, złoto 9K o 2,1.",
+      en: "A casting comes out smaller than the pattern, because an alloy takes less room solid than liquid. Silver 925 shrinks 1.6 percent, 9K gold 2.1.",
+      de: "Der Guss fällt kleiner aus als das Modell, weil die Legierung fest weniger Raum einnimmt. Silber 925 schwindet 1,6 Prozent, Gold 9K 2,1.",
+    },
     relatedBlog: "lost-resin-krok-po-kroku",
   },
   {
@@ -354,6 +402,11 @@ export const GLOSSARY = [
       pl: "Czyste złoto i srebro są zbyt miękkie na biżuterię, więc łączy się je z miedzią, cynkiem, srebrem lub palladem. Dodatki decydują o twardości, barwie i temperaturze topnienia: miedź daje odcień czerwony, pallad biały, cynk poprawia lejność przy odlewaniu.",
       en: "Pure gold and silver are too soft for jewelry, so they are alloyed with copper, zinc, silver or palladium. The additions set hardness, colour and melting point: copper pulls the tone red, palladium white, zinc improves how the metal fills a mould when cast.",
       de: "Reines Gold und Silber sind für Schmuck zu weich, daher legiert man sie mit Kupfer, Zink, Silber oder Palladium. Die Zusätze bestimmen Härte, Farbe und Schmelzpunkt: Kupfer färbt rötlich, Palladium weiß, Zink verbessert das Formfüllvermögen beim Guss.",
+    },
+    metaOpis: {
+      pl: "Czyste złoto i srebro są za miękkie na biżuterię, więc łączy się je z miedzią, cynkiem lub palladem. Dodatki decydują o twardości i barwie.",
+      en: "Pure gold and silver are too soft for jewelry, so they are alloyed with copper, zinc or palladium. The additions set hardness and colour.",
+      de: "Reines Gold und Silber sind für Schmuck zu weich, daher legiert man sie mit Kupfer, Zink oder Palladium. Die Zusätze bestimmen Härte und Farbe.",
     },
     relatedBlog: "srebro-vs-zloto",
   },

@@ -391,6 +391,12 @@ if (/<Suspense/.test(clientShell)) {
   const MIN_OPIS = 100;
   const zaDlugie = [];
   const zaKrotkie = [];
+  // Opis urwany w pol frazy. Dlugosc miesci sie w normie, wiec ani nasza
+  // bramka, ani Bing tego nie zglosza, a w wyniku wyszukiwania klient widzi
+  // zdanie konczace sie wielokropkiem w przypadkowym miejscu. Dziesiec z
+  // trzydziestu dwoch hasel slownika mialo tak 2 wrzesnia 2026; naprawa to
+  // pole `metaOpis` w `src/data/glossary.js`, a nie dluzsze ciecie.
+  const urwane = [];
   const zPanelu = [];
 
   const wszystkie = [];
@@ -423,6 +429,9 @@ if (/<Suspense/.test(clientShell)) {
     if (opis && odkoduj(opis).length > MAX_OPIS) {
       zaDlugie.push(`${nazwa}: opis ${odkoduj(opis).length} znakow`);
     }
+    if (opis && /(\.\.\.|\u2026)\s*$/.test(odkoduj(opis))) {
+      urwane.push(`${nazwa}: opis urwany wielokropkiem`);
+    }
     const indeksowana = !/name="robots"[^>]*content="[^"]*noindex/.test(tresc);
     if (opis && indeksowana && odkoduj(opis).length < MIN_OPIS) {
       // `/shop/<slug>/` to karta produktu, `/shop/service/<id>/` to usluga
@@ -442,6 +451,13 @@ if (/<Suspense/.test(clientShell)) {
     for (const z of zaKrotkie.slice(0, 10)) console.error(`    ${z}`);
     if (zaKrotkie.length > 10) console.error(`    ...i ${zaKrotkie.length - 10} wiecej`);
     console.error(`    Minimum: ${MIN_OPIS} znakow, celuj w 150 do 160.`);
+    failed++;
+  }
+  if (urwane.length) {
+    console.error(`\n  ✗ Opisy urwane w pol frazy: ${urwane.length}`);
+    for (const z of urwane.slice(0, 10)) console.error(`    ${z}`);
+    if (urwane.length > 10) console.error(`    ...i ${urwane.length - 10} wiecej`);
+    console.error(`    Napisz wlasne zdanie zamiast ciac definicje: pole "metaOpis" w src/data/glossary.js.`);
     failed++;
   }
   if (zaDlugie.length) {
