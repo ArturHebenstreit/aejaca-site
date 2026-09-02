@@ -328,7 +328,7 @@ export default function Studio() {
             ))}
           </div>
           <div className="text-center mt-5">
-            <Link to="/glossary/" className="text-blue-400/70 text-xs hover:text-blue-300 hover:underline transition-colors">
+            <Link to="/glossary/" className="text-blue-400 text-xs hover:text-blue-300 hover:underline transition-colors">
               {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
             </Link>
           </div>
@@ -415,7 +415,10 @@ export default function Studio() {
         className={`floating-cta ${showFloatingCta ? "visible" : ""}`}
         aria-label={FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
       >
-        <span className="flex items-center gap-2 px-5 py-3 bg-blue-500 text-white font-medium rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-400 transition-colors">
+        {/* blue-600, nie blue-500: bialy napis na #2b7fff mial 3,76:1 w obu motywach
+            (pomiar 2026-09-02), na #155dfc ma 5,25:1. Najechanie idzie ciemniej,
+            nie jasniej, bo stan po najechaniu tez musi byc czytelny. */}
+        <span className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors">
           <Calculator className="w-5 h-5" />
           {FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
         </span>

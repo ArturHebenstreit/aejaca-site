@@ -72,6 +72,16 @@
   --color-paper: #fafafa;
   --color-card: #ffffff;
   --radius-DEFAULT: 0.5rem;
+  /* neutral-500 to #808080, nie tailwindowe #737373. W ciemnym motywie ta
+     szarosc niesie ceny "od", terminy wysylki i podpisy pol na kartach
+     bg-white/[0.02], czyli na #0f0f0f, gdzie #737373 daje 4,18:1 (pomiar
+     2026-09-02, 88 wpisow na kazdej z dziesieciu stron). #808080 daje 5,0:1
+     na #0a0a0a i 4,8:1 na karcie. Zmiana idzie tu, w definicji koloru, a nie
+     w regule nadpisujacej klase, bo nadpisanie spoza warstwy utilities
+     zabiloby kazde hover:text-white i group-hover na tych samych elementach.
+     Tla i obramowania z neutral-500 stoja w 10-20% krycia, wiec roznicy nie
+     widac. Jasny motyw ma wlasne nadpisanie nizej. */
+  --color-neutral-500: #808080;
 }
 
 /* Wysokosc paska podpowiedzi jezyka. Pasek melduje ja sam po zamontowaniu,
@@ -101,7 +111,7 @@ body { padding-top: var(--pasek-jezyka, 0px); }
   --ds-text-1:          #ffffff;
   --ds-text-2:          #e5e5e5;
   --ds-text-3:          #a3a3a3;
-  --ds-text-4:          #737373;
+  --ds-text-4:          #808080;   /* patrz --color-neutral-500 w @theme */
   --ds-border:          rgba(255,255,255,0.08);
   --ds-border-hi:       rgba(255,255,255,0.15);
   --ds-navbar-bg:       rgba(10,10,10,0.80);
@@ -120,14 +130,20 @@ body { padding-top: var(--pasek-jezyka, 0px); }
   --ds-text-1:          #0a0a0a;
   --ds-text-2:          #262626;
   --ds-text-3:          #525252;
-  --ds-text-4:          #737373;
+  /* Czwarty stopien tekstu: #6b6b6b, nie #737373. Na kremie #faf7f2 stary
+     dawal 4,44:1, a na miekkim tle #f5f2eb 4,24:1, czyli o wlos ponizej 4,5:1
+     z WCAG 1.4.3. Pomiar 2026-09-02 (npm run ux:pomiar) zliczyl to na kazdej
+     z dziesieciu stron, okolo tysiaca wezlow; nowy daje 4,99 i 4,77. */
+  --ds-text-4:          #6b6b6b;
   --ds-border:          rgba(0,0,0,0.08);
   --ds-border-hi:       rgba(0,0,0,0.18);
   --ds-navbar-bg:       rgba(250,247,242,0.85);
   --ds-navbar-bg-s:     rgba(250,247,242,0.97);
   --ds-divider:         rgba(0,0,0,0.08);
   --ds-amber-text:      #92400e;
-  --ds-amber-hi:        #b45309;
+  /* Bursztyn "hi" w jasnym: #a04a08 zamiast #b45309, ktory na kremowej karcie
+     #f6ede4 mial 4,34:1. Nowy ma 5,22:1 i dalej jest jasniejszy od amber-text. */
+  --ds-amber-hi:        #a04a08;
   --ds-blue-text:       #1e40af;
   --ds-blue-hi:         #1d4ed8;
 }
@@ -316,7 +332,11 @@ body {
 [data-theme="light"] .text-neutral-200      { color: var(--ds-text-2) !important; }
 [data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
 [data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }
-[data-theme="light"] .text-neutral-500      { color: #a3a3a3 !important; }
+/* neutral-500 w jasnym szedl na #a3a3a3: 2,4:1 na kremie, najgorszy kontrast
+   w serwisie, i to w cenach "od", terminach wysylki i podpisach pol. Jasny
+   motyw nie ma "jeszcze jasniejszej" szarosci do rozdania: czwarty stopien
+   to najjasniejszy, jaki jeszcze da sie przeczytac. */
+[data-theme="light"] .text-neutral-500      { color: var(--ds-text-4) !important; }
 /* Borders */
 [data-theme="light"] .border-white\/5       { border-color: rgba(0,0,0,0.05) !important; }
 [data-theme="light"] .border-white\/10      { border-color: rgba(0,0,0,0.10) !important; }
@@ -895,8 +915,13 @@ button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-
 [data-theme="light"] .text-rose-200          { color: #9f1239 !important; }
 [data-theme="light"] .text-rose-200\/90      { color: rgba(159,18,57,0.90) !important; }
 [data-theme="light"] .text-amber-200\/80     { color: rgba(146,64,14,0.85) !important; }
-[data-theme="light"] .text-amber-300\/90     { color: rgba(180,83,9,0.90) !important; }
-[data-theme="light"] .text-amber-300\/80     { color: rgba(180,83,9,0.85) !important; }
+/* Przycisk plywajacy na /studio/: bialy napis na niebieskim ma zostac bialy
+   takze w jasnym motywie. Ogolne nadpisanie .text-white robilo z niego
+   #0a0a0a na #155dfc, czyli 2,7:1 (pomiar 2026-09-02 po pierwszej poprawce). */
+[data-theme="light"] .bg-blue-600.text-white  { color: #ffffff !important; }
+[data-theme="light"] .text-amber-400\/80      { color: var(--ds-amber-text) !important; }
+[data-theme="light"] .text-amber-300\/90     { color: rgba(160,74,8,0.90) !important; }
+[data-theme="light"] .text-amber-300\/80     { color: rgba(160,74,8,0.85) !important; }
 [data-theme="light"] .text-blue-300\/80      { color: rgba(30,64,175,0.85) !important; }
 [data-theme="light"] .text-emerald-200\/90   { color: rgba(6,95,70,0.90) !important; }
 

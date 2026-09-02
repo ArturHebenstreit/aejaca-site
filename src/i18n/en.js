@@ -14,6 +14,7 @@ export default {
     darkMode: "Switch to dark mode",
     prevImage: "Previous image",
     nextImage: "Next image",
+    galleryTrack: "Project gallery, scrolls sideways",
     closeLightbox: "Close the enlarged view",
     newsletter: "Newsletter signup",
     whatsapp: "Message us on WhatsApp",

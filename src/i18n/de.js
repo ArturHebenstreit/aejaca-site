@@ -14,6 +14,7 @@ export default {
     darkMode: "Zum dunklen Modus wechseln",
     prevImage: "Vorheriges Bild",
     nextImage: "Nächstes Bild",
+    galleryTrack: "Galerie der Arbeiten, seitlich scrollbar",
     closeLightbox: "Vergrößerung schließen",
     newsletter: "Newsletter-Anmeldung",
     whatsapp: "Schreiben Sie uns auf WhatsApp",

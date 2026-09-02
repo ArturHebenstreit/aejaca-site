@@ -413,7 +413,7 @@ export default function B2BInquiryForm({ lang = "pl", id }) {
             accept=".stl,.3mf,.step,.stp,.obj,.svg,.ai,.dxf,.jpg,.jpeg,.png,.pdf" onChange={handleFileChange} />
         </div>
         <div className="text-xs text-neutral-400 mt-1">{L.fileHint}</div>
-        {fileName && <div className="text-xs text-blue-400/70 mt-1">{L.attachNote}</div>}
+        {fileName && <div className="text-xs text-blue-400 mt-1">{L.attachNote}</div>}
       </div>
 
       {/* Consent */}

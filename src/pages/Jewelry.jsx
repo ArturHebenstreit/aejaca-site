@@ -340,7 +340,7 @@ export default function Jewelry() {
             ))}
           </div>
           <div className="text-center mt-5">
-            <Link to="/glossary/" className="text-amber-400/70 text-xs hover:text-amber-300 hover:underline transition-colors">
+            <Link to="/glossary/" className="text-amber-400 text-xs hover:text-amber-300 hover:underline transition-colors">
               {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
             </Link>
           </div>

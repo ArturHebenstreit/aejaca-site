@@ -242,7 +242,25 @@ async function sprawdzMartweKlikniecia(tab, stan, p, host, findings, limit = 40)
     .slice(0, limit);
 
   let wykonaneKlikniecia = 0;
+  // Strone wczytujemy od nowa tylko po kliknieciu, ktore cos zmienilo; po
+  // martwym kliknieciu drzewo jest takie samo, wiec wczytanie byloby stracona
+  // sekunda razy sto osiemdziesiat kandydatow.
+  let stanZmieniony = false;
   for (const item of kandydaci) {
+    // Kazde klikniecie startuje ze swiezo wczytanej strony. Selektory z mapy
+    // sa pozycyjne (nth-of-type), a wczesniejsze klikniecie na tej samej
+    // stronie potrafi przestawic drzewo: po rozwinieciu panelu "dla
+    // zaawansowanych" selektor kafelka "Nowa bizuteria" trafial w inny
+    // przycisk, ktory nic nie robil, i to ON wychodzil jako martwe klikniecie
+    // pod cudza nazwa (drugi przebieg, 2026-09-02). Do tego tekst elementu
+    // musi zgadzac sie z mapa, inaczej klikamy nie to, co raportujemy.
+    if (stanZmieniony) {
+      try {
+        await tab.goto(p.url, { waitUntil: "load", timeout: 15000 });
+        await tab.waitForTimeout(300);
+      } catch { break; }
+      stanZmieniony = false;
+    }
     const loc = tab.locator(item.selector).first();
     let liczba = 0;
     try { liczba = await loc.count(); } catch { continue; }
@@ -250,6 +268,10 @@ async function sprawdzMartweKlikniecia(tab, stan, p, host, findings, limit = 40)
     let widoczny = false;
     try { widoczny = await loc.isVisible(); } catch { widoczny = false; }
     if (!widoczny) continue;
+    let tekstTeraz = "";
+    try { tekstTeraz = ((await loc.textContent()) || "").replace(/\s+/g, " ").trim(); } catch { tekstTeraz = ""; }
+    const tekstMapy = String(item.text || "").replace(/\s+/g, " ").trim();
+    if (tekstMapy && tekstTeraz && !tekstTeraz.startsWith(tekstMapy.slice(0, 20))) continue; // selektor zdryfowal
 
     // Opcja juz wybrana (kafelek kalkulatora z domyslnym wyborem) po kliknieciu
     // nie zmienia niczego i to jest poprawne. Pierwszy przebieg zglosil cztery
@@ -274,6 +296,7 @@ async function sprawdzMartweKlikniecia(tab, stan, p, host, findings, limit = 40)
     try {
       await loc.click({ timeout: 3000 });
       wykonaneKlikniecia++;
+      stanZmieniony = true;
     } catch {
       continue; // element nieklikalny w tej chwili, to nie jest blad strony
     }
@@ -323,6 +346,7 @@ async function sprawdzMartweKlikniecia(tab, stan, p, host, findings, limit = 40)
     const atrybutyTakieSame = JSON.stringify(atrybutyPrzed) === JSON.stringify(atrybutyPo);
 
     if (domTakiSam && brakNowychZadan && brakNowychWpisow && atrybutyTakieSame) {
+      stanZmieniony = false; // nic sie nie stalo, wiec nie ma czego wczytywac od nowa
       findings.push({
         severity: "medium",
         type: "dead-click",

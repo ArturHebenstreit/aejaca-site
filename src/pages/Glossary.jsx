@@ -131,6 +131,7 @@ export default function Glossary() {
                 <button
                   key={cat}
                   onClick={() => setActiveCat(cat)}
+                  aria-pressed={activeCat === cat}
                   className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
                     activeCat === cat
                       ? "bg-amber-400 text-neutral-950 font-medium"

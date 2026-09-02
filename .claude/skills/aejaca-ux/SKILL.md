@@ -158,6 +158,22 @@ strona `/en/` i `/de/` miala polski pasek podpowiedzi, a axe liczyl go jako
 tresc poza landmarkiem); zrzut telefonu ma wersje pierwszego ekranu, bo pelna
 strona dzialu ma 19 000 px i nie da sie jej ogladac.
 
+**Po naprawie u zrodla (ten sam dzien, ten sam pomiar):** kontrast z 194 wpisow
+do zera w obu motywach, pasek przewijany z 6 do zera, kafelki kalkulatora
+z 6 martwych klikniec do zera. Zrodla: `--color-neutral-500` i `--ds-text-4`
+w `src/index.css` (dwie liczby, nie sto plikow), `bg-blue-600` na przycisku
+plywajacym z osobnym nadpisaniem w jasnym motywie, `tabIndex` i nazwa na
+pasku w `Portfolio.jsx`, `aria-pressed` w trzech siatkach kafelkow
+i na filtrze kategorii. Zostaly dwie klasy `low`/`medium`, nietkniete celowo:
+`alt` powtarzajacy sasiedni tekst (logo, kafelki) i panele FAQ jako
+`role="region"` bez unikalnej nazwy.
+
+Przy okazji pomiar nauczyl sie dwoch rzeczy: kazde zywe klikniecie
+przestawia drzewo, wiec kolejny kandydat startuje ze swiezo wczytanej strony
+i musi zgadzac sie tekstem z mapa (bez tego szesc "martwych" kafelkow bylo
+w istocie innym przyciskiem pod cudza nazwa); a opcja ze stanem ARIA
+`true` nie jest kandydatem, bo klikniecie w wybrane ma nic nie zmieniac.
+
 Kazdy kolejny przebieg, ktory znajdzie nowa klase, dopisuje ja do rejestru
 w `wygoda.md`, sekcja "Rzeczy, ktore juz raz zrobilismy".
 
