@@ -81,7 +81,14 @@
      zabiloby kazde hover:text-white i group-hover na tych samych elementach.
      Tla i obramowania z neutral-500 stoja w 10-20% krycia, wiec roznicy nie
      widac. Jasny motyw ma wlasne nadpisanie nizej. */
-  --color-neutral-500: #808080;
+  --color-neutral-500: #8a8a8a;
+  /* neutral-600 to #525252, czyli 2,4:1 na kazdym ciemnym tle: numeracja list,
+     podpisy pol i stany nieaktywne byly w ciemnym motywie nieczytelne na 177
+     stronach (pelny pomiar 2026-09-02, 765 wezlow). Ponizej #7d7d7d nie ma
+     na czerni miejsca na nic, wiec szosty stopien i piaty prawie sie schodza:
+     na tym tle glebszej hierarchii po prostu nie da sie zbudowac przy 4,5:1.
+     Motyw jasny zostaje przy #525252 (7,3:1 na kremie), nadpisanie nizej. */
+  --color-neutral-600: #7d7d7d;
 }
 
 /* Wysokosc paska podpowiedzi jezyka. Pasek melduje ja sam po zamontowaniu,
@@ -111,7 +118,7 @@ body { padding-top: var(--pasek-jezyka, 0px); }
   --ds-text-1:          #ffffff;
   --ds-text-2:          #e5e5e5;
   --ds-text-3:          #a3a3a3;
-  --ds-text-4:          #808080;   /* patrz --color-neutral-500 w @theme */
+  --ds-text-4:          #8a8a8a;   /* patrz --color-neutral-500 w @theme */
   --ds-border:          rgba(255,255,255,0.08);
   --ds-border-hi:       rgba(255,255,255,0.15);
   --ds-navbar-bg:       rgba(10,10,10,0.80);
@@ -134,7 +141,7 @@ body { padding-top: var(--pasek-jezyka, 0px); }
      dawal 4,44:1, a na miekkim tle #f5f2eb 4,24:1, czyli o wlos ponizej 4,5:1
      z WCAG 1.4.3. Pomiar 2026-09-02 (npm run ux:pomiar) zliczyl to na kazdej
      z dziesieciu stron, okolo tysiaca wezlow; nowy daje 4,99 i 4,77. */
-  --ds-text-4:          #6b6b6b;
+  --ds-text-4:          #646464;   /* 4,84 na jasnej karcie #e8e8ea, gdzie #6b6b6b mial 4,36 */
   --ds-border:          rgba(0,0,0,0.08);
   --ds-border-hi:       rgba(0,0,0,0.18);
   --ds-navbar-bg:       rgba(250,247,242,0.85);
@@ -330,6 +337,15 @@ body {
 [data-theme="light"] .text-white            { color: var(--ds-text-1) !important; }
 [data-theme="light"] .text-neutral-100      { color: var(--ds-text-2) !important; }
 [data-theme="light"] .text-neutral-200      { color: var(--ds-text-2) !important; }
+[data-theme="light"] .text-neutral-600      { color: #525252 !important; }
+/* Bialy napis na `bg-blue-500` (#2b7fff) to 3,76:1, a najechanie szlo na
+   `blue-400`, czyli jeszcze jasniej. Poprawka wchodzi na PARE klas, a nie na
+   token `--color-blue-500`, bo ten sam blekit sluzy tez za tlo ozdobne, gdzie
+   nic nie stoi na wierzchu. 69 wezlow w pelnym pomiarze 2026-09-02. */
+.bg-blue-500.text-white { background-color: #155dfc !important; }
+.bg-blue-500.text-white:hover,
+.hover\:bg-blue-400.text-white:hover { background-color: #1447e6 !important; }
+
 [data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
 [data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }
 /* neutral-500 w jasnym szedl na #a3a3a3: 2,4:1 na kremie, najgorszy kontrast
