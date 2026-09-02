@@ -120,6 +120,8 @@ const strony = new Map(); // adres -> dane
         plik: relative(KORZEN, p),
         html,
         tekst: tekstStrony(html),
+        // Kotwice, na ktore wolno wskazac adresowi z krzyzykiem.
+        kotwice: new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])),
         lang: /<html[^>]*\slang="([^"]*)"/.exec(html)?.[1] || "",
         tytul: odkoduj(/<title[^>]*>([\s\S]*?)<\/title>/.exec(html)?.[1] || ""),
         opis: odkoduj(meta("description") || ""),
@@ -255,6 +257,40 @@ for (const [sciezka, s] of strony) {
         if (typeof w !== "string" || !w.startsWith(SITE)) continue;
         if (jezykAdresu(w.replace(SITE, "") || "/") !== jezykAdresu(sciezka)) {
           blad(`${schemat["@type"]}.${pole} wskazuje na inny jezyk: ${w}`, s.plik);
+        }
+      }
+
+      // Adres z krzyzykiem obiecuje MIEJSCE na stronie. Kiedy tego miejsca nie
+      // ma, przegladarka po prostu zostaje na gorze i nikt niczego nie zauwaza,
+      // a schemat opisuje jedenascie osobnych pozycji, ktore wszystkie sa ta
+      // sama strona. `/studio/` i `/jewelry/` mialy tak przez caly czas:
+      // `ItemList` wymienial `#co2laser`, `#fiber`, `#rings` i osiem innych
+      // sekcji, ktorych na stronie nigdy nie bylo.
+      const zKotwica = [];
+      if (Array.isArray(schemat.itemListElement)) {
+        for (const poz of schemat.itemListElement) {
+          if (!poz || typeof poz !== "object") continue;
+          const u = typeof poz.url === "string"
+            ? poz.url
+            : (typeof poz.item === "string" ? poz.item : poz.item?.url);
+          if (typeof u === "string") zKotwica.push(u);
+        }
+      }
+      // `@id` z krzyzykiem to NAZWA bytu, a nie miejsce na stronie:
+      // `https://www.aejaca.com/#organization` nazywa firme i nie obiecuje, ze
+      // na stronie stoi element o takim identyfikatorze. Dlatego `@id` tu nie
+      // wchodzi, mimo ze wyglada jak adres z kotwica.
+      for (const pole of ["url", "mainEntityOfPage"]) {
+        const w = typeof schemat[pole] === "string" ? schemat[pole] : schemat[pole]?.["@id"];
+        if (typeof w === "string") zKotwica.push(w);
+      }
+      for (const adres of zKotwica) {
+        if (!adres.startsWith(SITE) || !adres.includes("#")) continue;
+        const [bez, kotwica] = adres.slice(SITE.length).split("#");
+        const docelowa = (bez || "/") === sciezka ? s : strony.get(bez || "/");
+        if (!docelowa) continue;
+        if (!docelowa.kotwice.has(kotwica)) {
+          blad(`${schemat["@type"]} wskazuje na #${kotwica}, a takiego miejsca na stronie nie ma`, s.plik);
         }
       }
 
