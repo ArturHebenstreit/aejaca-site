@@ -14,6 +14,7 @@ export default {
     darkMode: "Włącz tryb ciemny",
     prevImage: "Poprzednie zdjęcie",
     nextImage: "Następne zdjęcie",
+    galleryTrack: "Galeria realizacji, przewijana w bok",
     closeLightbox: "Zamknij powiększenie",
     newsletter: "Zapis na newsletter",
     whatsapp: "Napisz do nas na WhatsAppie",

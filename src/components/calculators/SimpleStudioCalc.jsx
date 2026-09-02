@@ -467,7 +467,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
         const hasImg = !!opt.img;
 
         return (
-          <button key={opt.id} onClick={() => !optDisabled && onChange(opt.id)} disabled={disabled || optDisabled}
+          <button key={opt.id} aria-pressed={active} onClick={() => !optDisabled && onChange(opt.id)} disabled={disabled || optDisabled}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               optDisabled
                 ? "opacity-30 pointer-events-none border-white/5"

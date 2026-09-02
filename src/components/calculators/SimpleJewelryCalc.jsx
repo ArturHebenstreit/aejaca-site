@@ -441,7 +441,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
         const hasImg = !!opt.img;
 
         return (
-          <button key={opt.id} onClick={() => onChange(opt.id)}
+          <button key={opt.id} aria-pressed={active} onClick={() => onChange(opt.id)}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
                 ? "border-rose-400 ring-2 ring-rose-400/60 shadow-[0_0_0_6px_rgba(251,113,133,0.16)]"

@@ -173,9 +173,16 @@ export default function Portfolio({ data, accent = "amber", id }) {
           )}
 
           {/* Scrollable track */}
+          {/* Pasek przewija sie poziomo, wiec musi dac sie zlapac klawiatura:
+              bez tabindex strzalki w lewo i w prawo nie maja czego przesuwac,
+              a strzalki-przyciski pokazuja sie dopiero po najechaniu myszka.
+              axe: scrollable-region-focusable, szesc stron, pomiar 2026-09-02. */}
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+            role="region"
+            aria-label={t.a11y.galleryTrack}
+            tabIndex={0}
+            className={`flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 ${isAmber ? "focus-visible:ring-amber-400/60" : "focus-visible:ring-blue-400/60"}`}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {filtered.map((item, i) => {

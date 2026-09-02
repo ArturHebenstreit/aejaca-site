@@ -49,6 +49,7 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
         return (
           <button
             key={String(opt.id)}
+            aria-pressed={active}
             onClick={() => !disabled && onChange(opt.id)}
             title={opt.note ? t(opt.note, lang) : undefined}
             disabled={disabled}
@@ -900,7 +901,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
         )}
 
         <div className="text-xs text-neutral-400 mt-1">{il.fileHint}</div>
-        {files.length > 0 && <div className="text-xs text-blue-400/70 mt-1">{il.attachNote}</div>}
+        {files.length > 0 && <div className="text-xs text-blue-400 mt-1">{il.attachNote}</div>}
       </div>
 
       {/* License consent, MSLA figurine/miniature path only */}

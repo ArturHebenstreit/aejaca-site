@@ -41,3 +41,6 @@ MDs/kreator-podglad.html
 
 # Podglad maili: wynik `npm run mail:podglad`, do ogladania, nie do repozytorium.
 podglad-maili/
+
+# Pomiar UX: wynik `npm run ux:pomiar` (mapa, zrzuty, axe, bledy, raport). Do ogladania, nie do repozytorium.
+audyt-ux/

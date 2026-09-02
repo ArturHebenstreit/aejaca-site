@@ -41,7 +41,11 @@
     "check:faq": "node scripts/check-faq.mjs",
     "img:mail": "node scripts/znak-do-maila.mjs",
     "mail:podglad": "node scripts/podglad-maili.mjs",
-    "seo:audyt": "node .claude/skills/aejaca-seo/audyt.mjs"
+    "seo:audyt": "node .claude/skills/aejaca-seo/audyt.mjs",
+    "ux:pomiar": "node .claude/skills/aejaca-ux/pomiar/pomiar.mjs",
+    "ux:mapa": "node .claude/skills/aejaca-ux/pomiar/mapa.mjs",
+    "ux:dostepnosc": "node .claude/skills/aejaca-ux/pomiar/dostepnosc.mjs",
+    "ux:bledy": "node .claude/skills/aejaca-ux/pomiar/bledy.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",
@@ -60,6 +64,7 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.21",
+    "axe-core": "^4.13.0",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
