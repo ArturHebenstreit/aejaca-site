@@ -86,7 +86,12 @@ function sprawdzWyciekSzablonu(tekst) {
   if (/\bundefined\b/.test(tekst)) {
     wyniki.push({ severity: "high", fragment: "undefined" });
   }
-  if (/\bnull\b/.test(tekst)) {
+  // `null` po niemiecku znaczy ZERO i stoi w normalnych zdaniach: "Ein Rabatt
+  // geht nie unter null", "Wert sinkt auf null". Pelny przebieg 2 wrzesnia 2026
+  // zglosil z tego powodu trzy strony `/de/` jako wyciek szablonu, a wyciekiem
+  // nie byly. Szukamy wiec `null` tylko tam, gdzie sasiaduje z czyms, co w
+  // ludzkim zdaniu nie wystepuje: poczatek linii, dwukropek pola albo nawias.
+  if (/(^|[:=[{,]\s*)null(\s*[\]},]|$)/m.test(tekst)) {
     wyniki.push({ severity: "high", fragment: "null" });
   }
   return wyniki;
