@@ -24,6 +24,7 @@ w `npm run build`:
 | Kazdy napis widziany przez czlowieka idzie ze slownika | `scripts/check-nazwy-dostepne.mjs` |
 | Nic zaleznego od chwili renderu, czyli zaden rozjazd hydracji | `scripts/check-czas-w-renderze.mjs` |
 | Obrazy maja warianty, kafelki i hero nie sa surowym `<img>` | `check-card-images`, `check-hero-images` |
+| Zaden adres nie jest sklejany z golego `SITE.url` | `scripts/check-adresy-seo.mjs` |
 
 Jesli szukasz miejsca na nowa bramke, zacznij od pytania, czy ktoras z tych
 juz nie odpowiada na to pytanie.
@@ -51,6 +52,13 @@ juz dzis trwa dlugo, a audyt potrzebuje katalogu `dist`, wiec moglby ruszyc
 dopiero po prerenderze. **Kiedy ta sama klasa bledu wraca po raz drugi,
 przenosimy TEN JEDEN sprawdzian do osobnej bramki w `scripts/`** i dopisujemy
 go do `npm run build`. Tak powstala wiekszosc straznikow w tym repozytorium.
+
+Raz zdarzylo sie inaczej i warto wiedziec dlaczego. Pierwszy przebieg audytu,
+2 wrzesnia 2026, znalazl jedna klase bledu na 252 stronach naraz, czyli na
+calym `/en/` i calym `/de/`. Przy takiej skali czekanie na drugie wystapienie
+nie mialo sensu i bramka (`scripts/check-adresy-seo.mjs`) powstala od razu,
+razem z poprawka. Kryterium jest wiec nie "drugi raz", tylko "czy stac nas na
+to, zeby ten blad wrocil".
 
 ## Procedura przegladu
 

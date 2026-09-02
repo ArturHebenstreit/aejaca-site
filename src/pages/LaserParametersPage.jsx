@@ -4,7 +4,7 @@ import LaserParametersTool from "../components/calculators/LaserParametersTool.j
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
@@ -83,13 +83,13 @@ export default function LaserParametersPage() {
     buildWebPageSchema({
       title: seo.title,
       description: seo.description,
-      url: `${SITE.url}/toolstudio/laser-parameters/`,
+      url: adresStrony("/toolstudio/laser-parameters/", lang),
     }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
-      { name: L.breadTools, url: `${SITE.url}/toolstudio/` },
-      { name: L.breadThis, url: `${SITE.url}/toolstudio/laser-parameters/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolstudio/", lang) },
+      { name: L.breadThis, url: adresStrony("/toolstudio/laser-parameters/", lang) },
     ]),
   ];
 

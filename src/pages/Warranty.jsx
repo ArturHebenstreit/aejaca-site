@@ -4,7 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 
@@ -114,7 +114,7 @@ export default function Warranty() {
   const exclusionsRef = useScrollReveal();
   const footerRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/warranty/`;
+  const pageUrl = adresStrony("/warranty/", lang);
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag}, ${SITE.name}`,
@@ -123,7 +123,7 @@ export default function Warranty() {
       lang,
     }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: l.tag, url: pageUrl },
     ]),
   ];

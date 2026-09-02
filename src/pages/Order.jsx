@@ -12,7 +12,7 @@ import { Upload, X, Check, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Shield
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
@@ -605,8 +605,8 @@ export default function Order() {
         pageKey="order"
         path="/order"
         schemas={[buildBreadcrumbSchema([
-          { name: "AEJaCA", url: `${SITE.url}/` },
-          { name: u.title, url: `${SITE.url}/order/` },
+          { name: "AEJaCA", url: adresStrony("/", lang) },
+          { name: u.title, url: adresStrony("/order/", lang) },
         ])]}
       />
       <div className="min-h-screen bg-neutral-950 pt-24 pb-20 px-4 sm:px-6">

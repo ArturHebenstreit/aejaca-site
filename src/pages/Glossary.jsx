@@ -7,7 +7,7 @@ import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 
 const LABELS = {
@@ -79,11 +79,11 @@ export default function Glossary() {
     }).sort((a, b) => (a.term[lang] || "").localeCompare(b.term[lang] || "", lang));
   }, [query, activeCat, lang]);
 
-  const pageUrl = `${SITE.url}/glossary/`;
+  const pageUrl = adresStrony("/glossary/", lang);
   const schemas = [
     buildWebPageSchema({ title: `${l.tag}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: l.tag, url: pageUrl },
     ]),
     buildFAQSchema(GLOSSARY, lang),

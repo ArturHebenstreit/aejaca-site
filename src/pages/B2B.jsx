@@ -10,7 +10,7 @@ import {
   buildServiceSchema,
   buildFAQSchema,
 } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, adresZasobu, getSEO } from "../seo/seoData.js";
 import ToolLinks from "../components/ToolLinks.jsx";
 import { getToolsForPros } from "../data/toolLinks.js";
 import B2BInquiryForm from "../components/B2BInquiryForm.jsx";
@@ -261,12 +261,12 @@ export default function B2B() {
   const formRef = useScrollReveal();
 
   const seo = getSEO("b2b", lang);
-  const pageUrl = `${SITE.url}/b2b/`;
+  const pageUrl = adresStrony("/b2b/", lang);
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
-      { name: "sTuDiO", url: `${SITE.url}/studio/` },
+      { name: "Home", url: adresStrony("/", lang) },
+      { name: "sTuDiO", url: adresStrony("/studio/", lang) },
       { name: "B2B", url: pageUrl },
     ]),
     buildServiceSchema({
@@ -326,7 +326,7 @@ export default function B2B() {
 
   return (
     <>
-      <SEOHead pageKey="b2b" path="/b2b" image={`${SITE.url}/img/b2b/hero.webp`} schemas={schemas} />
+      <SEOHead pageKey="b2b" path="/b2b" image={adresZasobu("/img/b2b/hero.webp")} schemas={schemas} />
       <div className="bg-neutral-950">
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[380px]">

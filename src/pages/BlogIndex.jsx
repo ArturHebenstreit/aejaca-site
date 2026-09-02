@@ -7,7 +7,7 @@ import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 
 const LABELS = {
   pl: {
@@ -41,11 +41,11 @@ export default function BlogIndex() {
   const headerRef = useScrollReveal();
   const getCardRef = useStaggerReveal(100);
 
-  const pageUrl = `${SITE.url}/blog/`;
+  const pageUrl = adresStrony("/blog/", lang);
   const schemas = [
     buildWebPageSchema({ title: `${l.tag} - ${l.title} - ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: "Blog", url: pageUrl },
     ]),
   ];

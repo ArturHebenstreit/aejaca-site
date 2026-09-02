@@ -20,10 +20,8 @@ import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
-
-const URL = `${SITE.url}/toolsjewelry/ring-sizer/`;
 
 const LABELS = {
   pl: {
@@ -130,12 +128,14 @@ export default function RingSizerPage() {
   const faqRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
+  const URL = adresStrony("/toolsjewelry/ring-sizer/", lang);
+
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: URL, lang }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
-      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadJewelry, url: adresStrony("/jewelry/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolsjewelry/", lang) },
       { name: L.breadThis, url: URL },
     ]),
     buildHowToSchema({

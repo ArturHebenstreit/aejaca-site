@@ -29,12 +29,10 @@ import {
   buildHowToSchema,
   buildFAQSchema,
 } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
-
-const URL = `${SITE.url}/toolsjewelry/metal-pricing/`;
 
 const LABELS = {
   pl: {
@@ -196,12 +194,14 @@ export default function MetalPricingPage() {
 
   const relatedTools = RELATED_TOOL_IDS.map(getToolById).filter(Boolean);
 
+  const URL = adresStrony("/toolsjewelry/metal-pricing/", lang);
+
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: URL, lang }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
-      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadJewelry, url: adresStrony("/jewelry/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolsjewelry/", lang) },
       { name: L.breadThis, url: URL },
     ]),
     buildHowToSchema({

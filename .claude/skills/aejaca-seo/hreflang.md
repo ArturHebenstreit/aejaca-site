@@ -59,14 +59,22 @@ go do danych strukturalnych, i wtedy niemiecka strona niesie schemat mowiacy
 Pierwszy przebieg audytu, 2 wrzesnia 2026, znalazl 252 takie strony: caly `/en/`
 i caly `/de/`. Zaden build tego nie widzial przez tydzien.
 
-Poprawnie:
+Poprawka poszla u zrodla: `src/seo/seoData.js` daje dwa pomocniki i strona
+nie sklada adresu sama.
 
 ```js
-const pageUrl = `${SITE.url}${sciezkaJezyka("/about/", lang)}`;
+adresStrony("/about/", lang)   // strona, dostaje prefiks jezyka
+adresZasobu("/og-about.jpg")   // plik, prefiksu NIE dostaje, obraz jest jeden
 ```
+
+Pilnuje tego `scripts/check-adresy-seo.mjs`: poza `src/seo/` `SITE.url` nie ma
+prawa sie pojawic, a `adresStrony` bez drugiego argumentu jest bledem, bo
+domyslnym jezykiem jest polski, czyli wracamy dokladnie tam, skad wyszlismy.
 
 Ta sama pulapka dotyczy `item` w okruszkach, `url` w `Service` i `Product`,
 `mainEntityOfPage` w `Article` oraz kazdego adresu wpisanego do `llms.txt`.
+Wyjatkiem sa `Organization` i `LocalBusiness`: opisuja FIRME, a firma jest
+jedna dla trzech jezykow, wiec jej adres zostaje goly.
 
 ## Czego hreflang NIE zalatwia
 

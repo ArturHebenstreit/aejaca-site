@@ -5,7 +5,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -111,11 +111,11 @@ export default function ToolsStudio() {
   const ctaRef = useScrollReveal();
 
   const schemas = [
-    buildWebPageSchema({ title: seo.title, description: seo.description, url: `${SITE.url}/toolstudio/` }),
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: adresStrony("/toolstudio/", lang) }),
     buildBreadcrumbSchema([
-      { name: L.breadHome, url: SITE.url },
-      { name: L.breadStudio, url: `${SITE.url}/studio/` },
-      { name: L.breadTools, url: `${SITE.url}/toolstudio/` },
+      { name: L.breadHome, url: adresStrony("/", lang) },
+      { name: L.breadStudio, url: adresStrony("/studio/", lang) },
+      { name: L.breadTools, url: adresStrony("/toolstudio/", lang) },
     ]),
   ];
 

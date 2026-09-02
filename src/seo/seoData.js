@@ -14,6 +14,8 @@
 // - natural-language descriptions (ChatGPT/Gemini ranking signal)
 // ============================================================
 
+import { JEZYK_DOMYSLNY, sciezkaJezyka } from "../routes.js";
+
 export const SITE = {
   url: "https://www.aejaca.com",
   name: "AEJaCA",
@@ -582,4 +584,37 @@ export function getSEO(pageKey, lang = "en") {
 export function canonicalUrl(path = "/") {
   if (path === "/") return SITE.url;
   return `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
+}
+
+// ------------------------------------------------------------
+// PELNE ADRESY: strona kontra plik
+// ------------------------------------------------------------
+// `SITE.url` to goly adres serwisu, czyli adres POLSKI. Kazde miejsce, ktore
+// skleja `${SITE.url}/about/` z reki, produkuje adres polski takze na stronie
+// niemieckiej. W `SEOHead` bylo to zrobione dobrze, bo prefiks doklada sie tam
+// raz. Poza `SEOHead` juz nie: strony liczyly sobie `pageUrl` wlasnorecznie
+// i wkladaly go do danych strukturalnych, wiec niemiecka strona niosla schemat
+// mowiacy "ta strona to https://www.aejaca.com/about/".
+//
+// Audyt SEO (`npm run seo:audyt`) znalazl 252 takie strony, czyli caly `/en/`
+// i caly `/de/`. Nic sie przy tym nie psulo, build byl zielony, prerender
+// wypisywal 318 stron bez bledu, a dwie trzecie serwisu mowilo wyszukiwarce,
+// ze jest polska wersja.
+//
+// Stad te dwa pomocniki i bramka `scripts/check-adresy-seo.mjs`, ktora nie
+// wpuszcza `SITE.url` poza `src/seo/`. Podzial jest prosty:
+//
+//   adresStrony("/about/", lang)   strona, ma prefiks jezyka
+//   adresZasobu("/og-about.jpg")   plik, prefiksu NIE ma, bo obraz jest jeden
+
+/** Pelny adres strony w JEJ jezyku: ("/about/", "de") -> ".../de/about/". */
+export function adresStrony(sciezka = "/", lang = JEZYK_DOMYSLNY) {
+  const z = sciezka.startsWith("/") ? sciezka : "/" + sciezka;
+  const pelna = z.endsWith("/") || z.includes("#") ? z : z + "/";
+  return `${SITE.url}${sciezkaJezyka(pelna, lang)}`;
+}
+
+/** Pelny adres pliku: obrazu, logo, dokumentu. Bez prefiksu jezyka. */
+export function adresZasobu(sciezka = "/") {
+  return `${SITE.url}${sciezka.startsWith("/") ? sciezka : "/" + sciezka}`;
 }

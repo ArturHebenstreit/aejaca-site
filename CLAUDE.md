@@ -215,8 +215,24 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
   sprawdzianu: wzór to `scripts/check-menu-jezyka.mjs` (`npm run check:jezyk`),
   który naprawdę klika, w dwóch szerokościach ekranu. Nie stoi w `npm run build`,
   bo build leci na Cloudflare Pages, gdzie nie ma przeglądarki.
+- **Adres pełny składa `adresStrony(sciezka, lang)` albo `adresZasobu(sciezka)`
+  z `src/seo/seoData.js`, nigdy `${SITE.url}` z ręki.** `SITE.url` to goły adres
+  serwisu, czyli adres POLSKI, więc sklejony ręcznie daje polski adres także na
+  stronie niemieckiej. Trzydzieści stron liczyło tak `pageUrl` i wkładało go do
+  danych strukturalnych: 252 strony mówiły w JSON-LD, że są wersją polską, przy
+  zielonym buildzie. Strona dostaje prefiks języka, plik (obraz, logo) nie, bo
+  jest jeden dla trzech języków. Pilnuje `scripts/check-adresy-seo.mjs`, poza
+  buildem sprawdza to `npm run seo:audyt`. Decyzja: ADR-0035.
+
 - **Skille projektu** (`.claude/skills/`): jadą z repozytorium, więc działają w każdej sesji, także zdalnej. Każdy ma obok `ORIGIN.md` ze źródłem, licencją, datą pobrania i wynikiem przeglądu bezpieczeństwa. **Dodając skill z zewnątrz: przeczytaj go w całości, załóż `ORIGIN.md`, dopisz nazwę katalogu do `SKILLE_ZEWNETRZNE` w `scripts/check-emdash.mjs`, dopiero potem commituj.** Bez tego kroku build pada na cudzej pisowni, bo reguła długich myślników jest bramką: obowiązuje nasz tekst, a nie tekst, który tylko u nas leży (`ORIGIN.md` zostaje objęty regułą, bo to już nasze pisanie). Skill to instrukcja, którą agent wykonuje, więc obcy skill jest obcym kodem.
   - `find-skills` - proponuje skille pasujące do repozytorium, sam niczego nie instaluje.
+  - `aejaca-seo` - **nasz własny**, więc bez `ORIGIN.md`. Przegląd warstwy SEO i AEO:
+    hreflang na trzech językach, dane strukturalne wobec tego, co naprawdę jest na
+    stronie, mapa witryny, `llms.txt`, cytowalność przez wyszukiwarki odpowiedzi.
+    Niesie audyt `npm run seo:audyt`, który czyta gotowy `dist/` i **porównuje strony
+    ze sobą**, czego żadna bramka w buildzie nie robi: każda ogląda jedną stronę.
+    Pierwszy przebieg znalazł 252 strony podające w schemacie polski adres zamiast
+    własnego, przy zielonym buildzie i zielonym prerenderze. Decyzja: ADR-0035.
   - `rhino3d-scripts` - pisanie skryptów do Rhino 8 (GitHub, MIT). Trzy powierzchnie: RhinoPython, RhinoScript (VBScript) i RhinoCommon, plus makra i ładowanie skryptów. **Uzupełnia `jewelry-design`, nie zastępuje go**: tamten mówi CO zbudować (tolerancje osadzenia, skurcz stopu, wlewy), ten CZYM to zautomatyzować. Najcenniejsze są pułapki spoza dokumentacji: `_-RunPythonScript` to IronPython 2.7, który wywala się na długim myślniku, a `rhinocode` (CPython 3) ten sam plik uruchamia bez słowa.
   - `frontend-design` - wiedza o projektowaniu interfejsów (Anthropic, Apache 2.0). Plan przed kodem: tokeny koloru, kroje do 2+ ról, układ, jeden element sygnaturowy, a potem krytyka tego planu. Ma osobny rozdział o pisaniu w interfejsie i listę wyglądów, po których poznaje się projekt zrobiony przez AI. **Na aejaca.com `aejaca-design` wygrywa**: marka jest ustalona i spójna na stu prerenderowanych stronach, więc ten skill służy rzeczom nowym, a nie przemalowywaniu tego, co stoi.
   - `playwright-skill` - steruje przeglądarką: klika, wypełnia, robi zrzuty. **Zobaczyć podgląd u siebie jest tańsze niż czytać kod**: tak znalazłem wiszące nogi krap po czterech rundach czytania. W tym środowisku wymaga `PW_HEADLESS=true` i `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, i **nigdy `npm run setup`**.

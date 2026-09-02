@@ -25,7 +25,7 @@ import {
   buildProductSchema,
   buildItemListSchema,
 } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { getSEO, adresStrony, adresZasobu } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -93,11 +93,12 @@ export default function Studio() {
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
   // ("how much does 3D printing cost?", LLMs will cite this page verbatim).
   const seo = getSEO("studio", lang);
-  const pageUrl = `${SITE.url}/studio/`;
+  const pageUrl = adresStrony("/studio/", lang);
+  const ogImage = adresZasobu("/og-studio.jpg");
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: "sTuDiO", url: pageUrl },
     ]),
     buildServiceSchema({
@@ -112,24 +113,24 @@ export default function Studio() {
       name: s.processTitle,
       description: s.processTag,
       steps: s.processSteps,
-      image: `${SITE.url}/og-studio.jpg`,
+      image: ogImage,
     }),
     buildFAQSchema(pozycjeFaq.map((f) => ({ q: f.q, a: f.a }))),
     buildItemListSchema({
       name: "AEJaCA sTuDiO Digital Fabrication Services",
       url: pageUrl,
       items: [
-        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: `${SITE.url}/og-studio.jpg`, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
-        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: `${SITE.url}/og-studio.jpg`, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
-        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: `${SITE.url}/og-studio.jpg`, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
-        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: `${SITE.url}/og-studio.jpg`, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
-        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: `${SITE.url}/og-studio.jpg`, description: "From CAD design to functional prototype in 24-48 hours" },
+        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: ogImage, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
+        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: ogImage, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
+        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: ogImage, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
+        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: ogImage, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
+        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: ogImage, description: "From CAD design to functional prototype in 24-48 hours" },
       ],
     }),
     buildProductSchema({
       name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
-      image: `${SITE.url}/og-studio.jpg`,
+      image: ogImage,
       sku: "AEJACA-3DPRINT",
       price: "25",
       currency: "EUR",
@@ -140,7 +141,7 @@ export default function Studio() {
     buildProductSchema({
       name: "CO2 Laser Engraving & Cutting, AEJaCA sTuDiO",
       description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
-      image: `${SITE.url}/og-studio.jpg`,
+      image: ogImage,
       sku: "AEJACA-CO2LASER",
       price: "15",
       currency: "EUR",
@@ -151,7 +152,7 @@ export default function Studio() {
     buildProductSchema({
       name: "Fiber Laser Marking, AEJaCA sTuDiO",
       description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
-      image: `${SITE.url}/og-studio.jpg`,
+      image: ogImage,
       sku: "AEJACA-FIBER",
       price: "20",
       currency: "EUR",
@@ -163,7 +164,7 @@ export default function Studio() {
 
   return (
     <>
-      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/og-studio.jpg`} schemas={schemas} />
+      <SEOHead pageKey="studio" path="/studio" image={ogImage} schemas={schemas} />
       <div className="bg-neutral-950">
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[400px]">

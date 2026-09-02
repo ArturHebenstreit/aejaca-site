@@ -314,7 +314,13 @@ for (const [klucz, gdzie] of wgTytulu) {
 // przechodzic caly serwis. Martwy adres w nim nie psuje niczego na stronie i
 // nie zglasza sie nigdzie, a model cytuje go dalej.
 const llms = readFileSync(join(KORZEN, "public", "llms.txt"), "utf8");
-const wLlms = new Set([...llms.matchAll(/https:\/\/www\.aejaca\.com(\/[^\s)\]>,"']*)?/g)].map((m) => m[1] || "/"));
+// Adres w prozie konczy sie kropka zdania, a strona z zakladka niesie parametr
+// (`/studio/?tab=co2_laser`). Jedno i drugie odcinamy, bo pytamy o STRONE.
+const wLlms = new Set(
+  [...llms.matchAll(/https:\/\/www\.aejaca\.com(\/[^\s)\]>,"']*)?/g)]
+    .map((m) => (m[1] || "/").split("?")[0].split("#")[0].replace(/[.,;:]+$/, ""))
+    .map((a) => a || "/")
+);
 for (const adres of wLlms) {
   if (/\.(xml|txt|jpg|png|webp|pdf|svg)$/.test(adres)) {
     if (!existsSync(join(DIST, adres.slice(1)))) blad(`llms.txt wymienia plik ${adres}, ktorego nie ma`, "public/llms.txt");

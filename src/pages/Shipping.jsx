@@ -5,7 +5,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import { useMarketRates } from "../hooks/useMarketRates.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import { ZONES, HANDLING_GROSZE, MAX_PARCEL_G, leadDaysLabel } from "../pricing/shipping.js";
@@ -197,7 +197,7 @@ export default function Shipping() {
     id: f.id,
   }));
 
-  const pageUrl = `${SITE.url}/shipping/`;
+  const pageUrl = adresStrony("/shipping/", lang);
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag}, ${SITE.name}`,
@@ -206,7 +206,7 @@ export default function Shipping() {
       lang,
     }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: l.tag, url: pageUrl },
     ]),
     buildFAQSchema(faqItems),

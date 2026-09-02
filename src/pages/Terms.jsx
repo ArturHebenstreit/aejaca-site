@@ -3,7 +3,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import { TERMS, TERMS_EFFECTIVE_DATE } from "../data/termsContent.js";
@@ -43,7 +43,7 @@ export default function Terms() {
   const headerRef = useScrollReveal();
   const tocRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/terms/`;
+  const pageUrl = adresStrony("/terms/", lang);
   const schemas = [
     buildWebPageSchema({
       title: `${t.title}, ${SITE.name}`,
@@ -52,7 +52,7 @@ export default function Terms() {
       lang,
     }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: t.tag, url: pageUrl },
     ]),
   ];

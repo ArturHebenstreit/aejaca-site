@@ -39,7 +39,8 @@ sprawdza, czy JSON sie parsuje.
 ## Trzy pomylki, ktore juz sie zdarzyly albo sa o krok
 
 1. **Adres w schemacie bez prefiksu jezyka.** Zdarzylo sie na 252 stronach.
-   Opisane w `hreflang.md`, sekcja o `SITE.url`.
+   Naprawione pomocnikami `adresStrony` i `adresZasobu`, zamkniete bramka
+   `scripts/check-adresy-seo.mjs`. Opisane w `hreflang.md`, sekcja o `SITE.url`.
 2. **`Organization` powielony na kazdej stronie z innym `@id`.** Firma jest
    jedna. Jesli `@id` sie rozjedzie, wyszukiwarka zobaczy kilkaset firm o tej
    samej nazwie. `Organization` i `LocalBusiness` sa jedynymi schematami,

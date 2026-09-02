@@ -8,7 +8,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema, buildWebPageSchema, buildOrganizationSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, getSEO } from "../seo/seoData.js";
 import { SELLER } from "../data/sellerInfo.js";
 
 const contactLinks = [
@@ -34,11 +34,11 @@ export default function Contact() {
   // Contact page: emit ContactPage + Organization (with phone/email) so Google
   // surfaces "Call" / "Email" action buttons directly in knowledge panel.
   const seo = getSEO("contact", lang);
-  const pageUrl = `${SITE.url}/contact/`;
+  const pageUrl = adresStrony("/contact/", lang);
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: "Contact", url: pageUrl },
     ]),
     buildOrganizationSchema(),

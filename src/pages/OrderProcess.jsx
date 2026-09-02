@@ -17,7 +17,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import FaqLista from "../components/FaqLista.jsx";
@@ -222,11 +222,11 @@ export default function OrderProcess() {
   const sprawdzRef = useScrollReveal();
 
   const pytania = [...SKLEP.filter((f) => f.temat === "realizacja" || f.temat === "dostawa"), ...TERMIN];
-  const pageUrl = `${SITE.url}/order-process/`;
+  const pageUrl = adresStrony("/order-process/", lang);
   const schemas = [
     buildWebPageSchema({ title: `${l.title}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: l.tag, url: pageUrl },
     ]),
     buildFAQSchema(pytania.map((f) => ({ q: f.q[lang] || f.q.pl, a: f.a[lang] || f.a.pl }))),

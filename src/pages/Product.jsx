@@ -15,7 +15,7 @@ import { ShoppingCart, Package, Download, RotateCcw, Truck, ArrowLeft, Check } f
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { adresStrony, adresZasobu } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useCart } from "../cart/CartContext.jsx";
@@ -208,7 +208,7 @@ export default function Product() {
     "@type": "Product",
     name: t(product.title, lang),
     description: t(product.short, lang),
-    image: `${SITE.url}${product.images[0]}`,
+    image: adresZasobu(product.images[0]),
     sku: product.slug,
     brand: { "@type": "Brand", name: "AEJaCA" },
     offers: {
@@ -220,7 +220,7 @@ export default function Product() {
         : soldOut
           ? "https://schema.org/OutOfStock"
           : "https://schema.org/InStock",
-      url: `${SITE.url}/shop/${product.slug}/`,
+      url: adresStrony(`/shop/${product.slug}/`, lang),
       itemCondition: "https://schema.org/NewCondition",
     },
   };
@@ -237,10 +237,10 @@ export default function Product() {
         schemas={[
           productSchema,
           buildBreadcrumbSchema([
-            { name: "AEJaCA", url: `${SITE.url}/` },
-            { name: u.shop, url: `${SITE.url}/shop/` },
-            ...(category ? [{ name: t(category.title, lang), url: `${SITE.url}${category.path}` }] : []),
-            { name: t(product.title, lang), url: `${SITE.url}/shop/${product.slug}/` },
+            { name: "AEJaCA", url: adresStrony("/", lang) },
+            { name: u.shop, url: adresStrony("/shop/", lang) },
+            ...(category ? [{ name: t(category.title, lang), url: adresStrony(category.path, lang) }] : []),
+            { name: t(product.title, lang), url: adresStrony(`/shop/${product.slug}/`, lang) },
           ]),
         ]}
       />

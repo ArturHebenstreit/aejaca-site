@@ -8,7 +8,7 @@ import ContentCTA from "../components/ContentCTA.jsx";
 import ToolLinks from "../components/ToolLinks.jsx";
 import { getToolsForTerm } from "../data/toolLinks.js";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE } from "../seo/seoData.js";
+import { SITE, adresStrony, adresZasobu } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 
 const LABELS = {
@@ -50,12 +50,14 @@ function buildDefinedTermSchema(term, lang) {
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
       name: "AEJaCA Glossary",
-      url: `${SITE.url}/glossary/`,
+      url: adresStrony("/glossary/", lang),
     },
-    url: `${SITE.url}/glossary/${term.id}/`,
+    url: adresStrony(`/glossary/${term.id}/`, lang),
     // Kto to twierdzi. Sama definicja daje sie wyciagnac, ale bez wydawcy
     // asystent cytuje tresc bez zrodla, wiec marka nic z tego nie ma.
-    publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+    // Wydawca opisuje FIRME, a nie te strone, a firma jest jedna dla trzech
+    // jezykow, wiec jej adres zostaje goly, bez prefiksu.
+    publisher: { "@type": "Organization", name: SITE.name, url: adresZasobu("/") },
     inLanguage: lang,
   };
 }
@@ -103,12 +105,12 @@ export default function GlossaryTerm() {
 
   const related = GLOSSARY.filter((t) => t.category === term.category && t.id !== term.id).slice(0, 6);
 
-  const pageUrl = `${SITE.url}/glossary/${term.id}/`;
+  const pageUrl = adresStrony(`/glossary/${term.id}/`, lang);
   const schemas = [
     buildWebPageSchema({ title: `${termName}, ${SITE.name}`, description: termDef, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
-      { name: l.glossary, url: `${SITE.url}/glossary/` },
+      { name: "Home", url: adresStrony("/", lang) },
+      { name: l.glossary, url: adresStrony("/glossary/", lang) },
       { name: termName, url: pageUrl },
     ]),
     buildDefinedTermSchema(term, lang),

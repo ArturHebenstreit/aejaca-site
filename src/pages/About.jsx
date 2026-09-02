@@ -5,7 +5,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
-import { SITE, getSEO } from "../seo/seoData.js";
+import { adresStrony, adresZasobu, getSEO } from "../seo/seoData.js";
 import Obraz from "../components/Obraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
@@ -284,11 +284,11 @@ export default function About() {
   const getEquip2Ref = useStaggerReveal(110);
 
   const seo = getSEO("about", lang);
-  const pageUrl = `${SITE.url}/about/`;
+  const pageUrl = adresStrony("/about/", lang);
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
-      { name: "Home", url: SITE.url },
+      { name: "Home", url: adresStrony("/", lang) },
       { name: L.tag, url: pageUrl },
     ]),
   ];
@@ -302,7 +302,7 @@ export default function About() {
         // i reszta: 1200 x 630 i 110 kB. Wczesniej stalo tu zdjecie warsztatu
         // w pelnej rozdzielczosci, 2048 x 1536 i 796 kB, ktore kazdy podglad
         // linku musial pobrac w calosci i tak samo przyciac.
-        image={`${SITE.url}/og-about.jpg`}
+        image={adresZasobu("/og-about.jpg")}
         schemas={schemas}
       />
       <div className="pt-16 bg-neutral-950">
