@@ -35,10 +35,13 @@ const SITE = "https://www.aejaca.com";
 // Strony sesyjne: koszyk, kasa, status zamowienia, wejscie z numerem oferty
 // i wersja robocza kreatora. Nie maja wlasnej tresci i nie maja czego szukac
 // w wynikach wyszukiwania.
+// `/order/` stalo tu przez pomylke. Nosi tytul "Zamow online, druk 3D, grawer
+// i bizuteria", ma wlasna tresc i dane strukturalne, czyli jest strona
+// sprzedazowa, a nie krokiem procesu. Audyt SEO pokazal rozjazd: strona
+// indeksowana, a poza mapa. Wraca do mapy, decyzja wlasciciela 2 wrzesnia 2026.
 const POZA_MAPA = new Set([
   "/cart/",
   "/checkout/",
-  "/order/",
   "/order/status/",
   "/oferta/",
   "/quote/",

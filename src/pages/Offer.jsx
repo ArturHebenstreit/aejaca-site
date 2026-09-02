@@ -721,7 +721,11 @@ export default function Offer() {
           platnosci i przez telefon, wiec ma byc do znalezienia takze wtedy,
           gdy klient zgubil i link, i maila. Sama tresc oferty jest za tokenem,
           wiec indeksowany jest wylacznie formularz z numerem. */}
-      <SEOHead pageKey="offer" path="/oferta" schemas={[]} />
+      {/* Bez numeru oferty ta strona nie ma tresci: pokazuje formularz
+          proszacy o numer, ktorego szukajacy nie ma. W wynikach wyszukiwania
+          taki adres szkodzi, wiec nie idzie do indeksu. Decyzja wlasciciela,
+          2 wrzesnia 2026, po pierwszym audycie SEO. */}
+      <SEOHead pageKey="offer" path="/oferta" schemas={[]} noindex />
       <div className="min-h-[80vh] bg-neutral-950 pt-28 pb-20 px-6">
         <div className="max-w-2xl mx-auto">
 
