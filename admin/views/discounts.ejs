@@ -51,14 +51,18 @@
 
         <label class="block">
           <span class="block text-[11px] text-neutral-500 mb-1">Zniżka</span>
-          <select name="kind" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+          <select name="kind" id="nowy-rodzaj" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
             <option value="percent">Procent</option>
             <option value="amount">Kwota w złotych</option>
           </select>
         </label>
         <label class="block">
-          <span class="block text-[11px] text-neutral-500 mb-1">Wartość</span>
-          <input name="value" type="number" min="1" value="10" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+          <span class="block text-[11px] text-neutral-500 mb-1">Wartość <span id="nowa-jednostka">(%)</span></span>
+          <%# Bez `step` pole przyjmowalo wylacznie liczby calkowite, wiec kodu
+              na 25,50 zl nie dalo sie tu zalozyc wcale. Przy procencie odwrotnie:
+              wolno tylko calkowite, od 1 do MAX_PERCENT. `min` i `step` musza
+              pasowac do siebie, bo przegladarka przyjmuje `min + n * step`. -%>
+          <input name="value" type="number" min="1" step="1" max="<%= maxPercent %>" value="10" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
         </label>
         <label class="block">
           <span class="block text-[11px] text-neutral-500 mb-1">Obejmuje</span>
@@ -209,5 +213,26 @@
     <% } %>
 
   </main>
+
+  <script>
+    // Jednostka i granice pola wartosci ida za wyborem rodzaju. Bez tego
+    // "Kwota w zlotych" dziedziczyla `step="1"` po procencie i nie przyjmowala
+    // 25,50 zl, a procent nie mial gornej granicy, wiec 500% odbijalo sie
+    // dopiero od serwera, po przeladowaniu strony.
+    (function () {
+      var rodzaj = document.getElementById('nowy-rodzaj');
+      var jednostka = document.getElementById('nowa-jednostka');
+      var wartosc = document.querySelector('input[name="value"]');
+      if (!rodzaj || !jednostka || !wartosc) return;
+      rodzaj.addEventListener('change', function () {
+        var procent = rodzaj.value === 'percent';
+        jednostka.textContent = procent ? '(%)' : '(zł)';
+        wartosc.step = procent ? '1' : '0.01';
+        wartosc.min = procent ? '1' : '0.01';
+        if (procent) wartosc.max = '<%= maxPercent %>';
+        else wartosc.removeAttribute('max');
+      });
+    })();
+  </script>
 </body>
 </html>

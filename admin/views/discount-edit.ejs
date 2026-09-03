@@ -49,8 +49,18 @@
           </label>
           <%# Kwoty trzymamy w groszach, a wpisuje się je w złotych: ta sama
               zamiana co przy zakładaniu kodu. Rozjechanie się tych dwóch dałoby
-              kod stukrotnie hojniejszy, niż ktokolwiek zamierzał. -%>
-          <input type="number" name="value" step="<%= kod.kind === 'percent' ? '1' : '0.01' %>" min="0.01" required
+              kod stukrotnie hojniejszy, niż ktokolwiek zamierzał.
+
+              MIN MUSI PASOWAĆ DO STEP. Przeglądarka przyjmuje tylko wartości
+              postaci `min + n * step`, więc `min="0.01"` przy `step="1"` dawało
+              zbiór 0,01 · 1,01 · 2,01 i odrzucało okrągłe 10 bez słowa o tym,
+              dlaczego. Procent jest liczbą całkowitą od 1 do 80 (`MAX_PERCENT`
+              w `chat-api/discounts.js` i warunek `discount_percent_range`
+              w bazie), złotówki idą co grosz i górnej granicy nie mają. -%>
+          <input type="number" name="value" required
+            step="<%= kod.kind === 'percent' ? '1' : '0.01' %>"
+            min="<%= kod.kind === 'percent' ? '1' : '0.01' %>"
+            <%- kod.kind === 'percent' ? `max="${maxPercent}"` : '' %>
             value="<%= kod.kind === 'percent' ? kod.value : (kod.value / 100).toFixed(2) %>"
             class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber-400 font-semibold focus:outline-none focus:border-amber-400/50 transition-colors" />
         </div>
@@ -142,7 +152,13 @@
         rodzaj.addEventListener('change', function () {
           var procent = rodzaj.value === 'percent';
           jednostka.textContent = procent ? '(%)' : '(zł)';
+          // Wszystkie trzy naraz. Sam `step` zostawial `min` z poprzedniego
+          // rodzaju, a niedopasowany `min` odrzuca wartosci, ktore wygladaja
+          // najzupelniej normalnie.
           wartosc.step = procent ? '1' : '0.01';
+          wartosc.min = procent ? '1' : '0.01';
+          if (procent) wartosc.max = '<%= maxPercent %>';
+          else wartosc.removeAttribute('max');
         });
       })();
     </script>

@@ -1456,16 +1456,23 @@ app.post("/products/:slug/status", requireAuth, async (req, res) => {
 });
 
 // --- Kody rabatowe ---
+// Gorna granica zniżki procentowej. Sprawdza ja serwer sklepu (`MAX_PERCENT`
+// w `chat-api/discounts.js`) i warunek `discount_percent_range` w bazie, ale
+// formularz musi ja znac SAM, zeby powiedziec to przy polu, a nie bledem po
+// przeladowaniu strony. Panel wdraza sie osobno i nie importuje z `chat-api`,
+// wiec liczba stoi tu drugi raz; ze zrodlem porownuje ja `admin/check-views.mjs`.
+const MAX_PERCENT = 80;
+
 app.get("/discounts", requireAuth, async (req, res) => {
   try {
     const { codes } = await shopApi("/api/admin/discounts");
     res.render("discounts", {
-      user: req.user, codes,
+      user: req.user, codes, maxPercent: MAX_PERCENT,
       created: req.query.created ? req.query.created.split(",") : [],
       msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
-    res.render("discounts", { user: req.user, codes: [], created: [], msg: null, err: err.message });
+    res.render("discounts", { user: req.user, codes: [], created: [], msg: null, maxPercent: MAX_PERCENT, err: err.message });
   }
 });
 
@@ -1514,7 +1521,7 @@ app.get("/discounts/:code/edit", requireAuth, async (req, res) => {
     const { codes } = await shopApi("/api/admin/discounts");
     const kod = (codes || []).find((c) => c.code === req.params.code);
     if (!kod) return res.status(404).render("error", { message: "Nie znamy takiego kodu" });
-    res.render("discount-edit", { user: req.user, kod, err: req.query.err || null });
+    res.render("discount-edit", { user: req.user, kod, maxPercent: MAX_PERCENT, err: req.query.err || null });
   } catch (err) { res.status(500).render("error", { message: err.message }); }
 });
 
