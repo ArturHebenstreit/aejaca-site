@@ -374,8 +374,11 @@ jest powrót do filamentu jednym kliknięciem, a nie zmniejszanie wyrobu.
 **Szybka wycena nazywa tworzywo i mówi, gdzie je zmienić (od 2026-08-19).** Karta druku pokazuje
 teraz konkret: "Filament: PLA" albo nazwę żywicy, zamiast rodzajowego słowa "filament". Pod kartami
 stoi notka, że wybraliśmy je sami, a w trybie dla zaawansowanych klient wybiera z **21 filamentów**
-(PETG, TPU 95A, ABS) albo **13 żywic**, plus wypełnienie, liczba kolorów i precyzja; przy laserze ta
-sama notka wymienia materiał i grubość, poziom detali, złożoność i obszar roboczy. Notka niesie
+(PETG, TPU 95A, ABS) albo **13 żywic** w trzech rodzajach, plus wypełnienie, liczba kolorów
+i precyzja; przy laserze ta sama notka wymienia materiał i grubość, poziom detali i złożoność.
+Obszaru roboczego lasera nie wymienia od 2026-09-03, bo klient go nie ustawia: stół wynika
+z wielkości pracy i liczy go rdzeń cenowy, a notka ma obiecywać tylko to, co da się wybrać
+(ADR-0037). Notka niesie
 przycisk, który przełącza na tryb zaawansowany **we właściwej zakładce** (grawer otwiera kalkulator
 CO2, a nie druk 3D), a przy druku dodatkowo odsyła do sklepu. Powód jest handlowy, nie kosmetyczny:
 zdanie "Filament: PLA" bez alternatywy czyta się jak deklaracja, że innych nie robimy, a klient,

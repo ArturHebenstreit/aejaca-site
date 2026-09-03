@@ -256,7 +256,14 @@ const UI = {
 export default function ServiceConfigurator({ card, lang, accent = "blue", onPriceChange }) {
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
-  const service = getService(card.service);
+  // NIE WYCHODZIMY WCZESNIE, bo ponizej stoja hooki. Karta uslugi bez opisu
+  // w katalogu to nie awaria, tylko brak pytan: podstawiamy pusty opis, a JSX
+  // na koncu i tak nic nie rysuje. Wczesny `return` gasil calosc w chwili,
+  // gdy warunek zmienil sie przy zywym komponencie, bo React liczyl wtedy
+  // mniej hookow niz w poprzednim renderze. Pilnuje tego
+  // `scripts/check-hooki-po-wyjsciu.mjs`.
+  const opisUslugi = getService(card.service);
+  const service = opisUslugi || { fields: [], defaults: {} };
   const cart = useCart();
 
   const [params, setParams] = useState(() => ({ ...(service?.defaults || {}) }));
@@ -389,7 +396,6 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
     return () => { cancelled = true; };
   }, [uploadToken, hasThumb, thumbTick]);
 
-  if (!service) return null;
 
   // Usluga cyfrowa konczy sie plikiem, wiec nie ma czego pakowac.
   const isDigital = Boolean(service.digital);
@@ -721,6 +727,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
       : maxScaleForBBox(geometry.bbox, service.calculator)
     : null;
   const isJewelry = String(service.calculator || "").startsWith("jewelry");
+
+  // Brak opisu uslugi: nie ma o co pytac, wiec nie rysujemy konfiguratora.
+  if (!opisUslugi) return null;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
