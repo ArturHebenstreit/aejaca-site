@@ -151,3 +151,54 @@ Nowa klasa z pomiaru laduje tutaj, zanim trafi do kodu.
 | Poprawka kontrastu zalatana tam, gdzie ja WIDZIALEM, a nie tam, gdzie klasa stoi (2026-09-02) | probka 25 stron pokazala `text-neutral-600` i biel na `bg-blue-500` w kalkulatorach, wiec poprawilem kalkulatory. Pelny przebieg 318 stron znalazl te same dwie klasy na 177 stronach: `text-neutral-600` siedzi w 39 plikach, `bg-blue-500` w 30 | **zasieg klasy sprawdza sie `grep`em po `src/`, ZANIM sie ja naprawi.** Jesli klasa jest w wiecej niz kilku plikach, poprawka idzie do `index.css` albo do tokenu, nigdy do komponentu |
 | Sprawdzian wycieku szablonu zglosil trzy strony `/de/`, bo `null` po niemiecku znaczy ZERO (2026-09-02) | wzorzec `\bnull\b` szukal slowa, a nie skladni; "Ein Rabatt geht nie unter null" to poprawne zdanie | wzorzec wymaga sasiedztwa skladniowego (`: null`, `{ null }`, `= null`), wiec zdanie przechodzi, a wyciek nie. **Sprawdzian tekstu na serwisie wielojezycznym testuje sie na kazdym jezyku**, bo slowo techniczne w jednym bywa zwyklym slowem w drugim |
 | Kafelki kalkulatora bez `aria-pressed`: czytnik ekranu nie wie, co jest wybrane, a pomiar liczyl je jako martwe klikniecia | wybrany kafelek WYGLADA na wybrany; stan byl tylko w klasach CSS | `bledy.mjs` pomija opcje ze stanem ARIA, wiec kafelek bez stanu dalej wychodzi jako martwe klikniecie |
+
+## Dwie drogi do tej samej rzeczy (2026-09-03)
+
+Usluge da sie u nas zamowic dwiema drogami: karta w sklepie i zakladka
+kalkulatora. Przeniesienie ich na jedna liste pytan (ADR-0037) wyciagnelo
+osiem usterek, ktorych zadna bramka nie widziala, bo kazda byla widoczna
+DOPIERO PRZEZ POROWNANIE dwoch ekranow ze soba. Stad regula:
+
+- **Kiedy do jednej rzeczy prowadza dwie drogi, sprawdza sie je obok siebie,
+  ta sama sekwencja klikniec, i porownuje wyniki.** Nie po kolei, nie osobno.
+  Sklep sprzedawal grawer L za 110,37 zl przy wlasnej wycenie 150,00 zl przez
+  jedno pole wpisane na sztywno w wartosciach startowych.
+- **Pytanie, w ktorym zawsze dokladnie jedna odpowiedz jest klikalna, nie jest
+  pytaniem.** To stan wyliczalny udajacy wybor. Liczymy go u zrodla i piszemy
+  jako zdanie o skutku, nie jako krok.
+- **Suwak nie umie wylaczyc przystanku.** Pole, ktorego czesc wariantow odbiera
+  inne pole, nie moze byc suwakiem: klient dojedzie do wartosci, ktorej maszyna
+  nie wykona, i zobaczy za nia cene.
+- **Wybor pokazany na ekranie musi dojechac do zamowienia, i to w DWOCH
+  miejscach.** Dopisanie go do parametrow pozycji nie wystarcza: `describeParams`
+  wypisuje tylko pola z katalogu plus liste wyjatkow, wiec wybor bywa
+  w pozycji i niewidoczny w koszyku, w mailu i w panelu.
+- **Ta sama usluga musi startowac od tych samych wartosci.** Trzy uslugi mialy
+  dwie rozne kwoty startowe, zaleznie od tego, ktoredy klient wszedl.
+
+### Hook po wczesnym wyjsciu gasi cale drzewo
+
+Wybor lancuszka w zaawansowanym kalkulatorze jubilerskim gasil caly kalkulator
+i robil to **przed** ta praca, przy zielonym buildzie i zielonym prerenderze.
+`CalcToCart` ma wczesne wyjscie dla konfiguracji bez wyceny wiazacej, a ponizej
+niego stal efekt zglaszajacy kwote: gdy warunek przeszedl z falszu w prawde
+przy zywym komponencie, React zglosil "Rendered fewer hooks than expected"
+i odmontowal drzewo. Prerender tego nie zlapie, bo rysuje pierwszy ekran,
+a usterka wymaga klikniecia. Pilnuje `scripts/check-hooki-po-wyjsciu.mjs`,
+ktory przy pierwszym przebiegu znalazl jeszcze jedno takie miejsce.
+
+### Trzy razy zmierzylem zly ekran
+
+W jednej sesji, trzy razy, moje narzedzie pomiarowe klamalo, a nie kod:
+
+1. `/jewelry/` otwiera sie w trybie szybkiej wyceny, wiec mierzylem
+   `SimpleJewelryCalc`, a przenosilem `JewelryCalc`. **Zanim uwierzysz
+   w wynik, sprawdz, ze patrzysz na ten komponent, ktory zmieniasz**: poszukaj
+   na ekranie napisu, ktory istnieje tylko w nim.
+2. Skrypt pytal starego `dist` na porcie, ktorego nie podmienilem razem
+   z pozostalymi. **Adres serwera trzymaj w jednej stalej i wypisuj go
+   w wyniku.**
+3. Panel koszyka renderuje sie dopiero, gdy `/api/price` odpowie, a w tym
+   srodowisku nie ma backendu. **Zeby obejrzec cokolwiek za `price`, postaw
+   atrape wyceny i serwer deweloperski**: `dist` sam z siebie nigdy tego nie
+   pokaze, i przez chwile bralem to za brak swojej zmiany.

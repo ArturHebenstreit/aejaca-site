@@ -34,7 +34,38 @@ export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing };
 // SHARED UI COMPONENTS
 // ============================================================
 
-export function Chips({ options, value, onChange, lang = "pl" }) {
+/**
+ * Klasy akcentu dla kafelkow.
+ *
+ * Jubilerka chodzi na bursztynie, sTuDiO na blekicie. Do tej pory kolor byl
+ * wpisany w kafelki na sztywno, wiec przeniesienie kalkulatora jubilerskiego
+ * na wspolna warstwe pol pomalowaloby polowe jego ekranu na niebiesko.
+ * Domyslny zostaje blekit, zeby zaden istniejacy ekran sie nie zmienil.
+ */
+export function klasyAkcentu(accent = "blue") {
+  return accent === "amber"
+    ? {
+      obwodka: "border-amber-400",
+      tlo: "bg-amber-400/10",
+      napis: "text-amber-300",
+      obraczka: "ring-amber-400/60",
+      poswiataMala: "shadow-[0_0_0_5px_rgba(251,191,36,0.14)]",
+      poswiataDuza: "shadow-[0_0_0_6px_rgba(251,191,36,0.16)]",
+      nalozenie: "bg-amber-400/10",
+    }
+    : {
+      obwodka: "border-blue-400",
+      tlo: "bg-blue-400/10",
+      napis: "text-blue-300",
+      obraczka: "ring-blue-400/60",
+      poswiataMala: "shadow-[0_0_0_5px_rgba(96,165,250,0.14)]",
+      poswiataDuza: "shadow-[0_0_0_6px_rgba(96,165,250,0.16)]",
+      nalozenie: "bg-blue-400/10",
+    };
+}
+
+export function Chips({ options, value, onChange, lang = "pl", accent = "blue" }) {
+  const a = klasyAkcentu(accent);
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
@@ -56,8 +87,8 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
               disabled ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed line-through" :
               isCustom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-xs sm:text-xs" :
-              isCustom && active ? "border-dashed border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
-              active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
+              isCustom && active ? `border-dashed ${a.obwodka} ${a.tlo} ${a.napis} font-medium` :
+              active ? `${a.obwodka} ${a.tlo} ${a.napis} font-medium` :
               "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
             }`}
           >
@@ -77,16 +108,23 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
 // do szarosci i sciemniaja sie, a wybrane zostaje w kolorze i dostaje szersza
 // poswiate. Najazd myszka przywraca kolor, wiec przegladanie oferty nie
 // odbywa sie po szarych miniaturach.
-export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5" }) {
+export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5", accent = "blue" }) {
+  const a = klasyAkcentu(accent);
   return (
     <div className={`grid ${cols} gap-2 sm:gap-3`}>
       {options.filter(o => !o.custom).map(o => {
         const active = value === o.id;
+        // Wariant niedostepny zostaje na liscie, ale nie da sie go wybrac:
+        // zniknieciem powiedzielibysmy, ze nie istnieje, a istnieje, tylko
+        // przy innym ustawieniu wyzej.
+        const wylaczony = Boolean(o.disabled);
         const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
         return (
-          <button key={String(o.id)} onClick={() => onChange(o.id)}
+          <button key={String(o.id)} disabled={wylaczony} title={o.note ? t(o.note, lang) : undefined}
+            onClick={() => !wylaczony && onChange(o.id)}
             className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
+              wylaczony ? "border-white/5 opacity-40 cursor-not-allowed"
+                : active ? `${a.obwodka} ${a.tlo} ring-2 ${a.obraczka} ${a.poswiataMala}`
                 : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -102,7 +140,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
               )}
             </div>
             <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
-              active ? "text-blue-300 font-medium" : "text-neutral-400"
+              active ? `${a.napis} font-medium` : "text-neutral-400"
             }`}>{label}</span>
           </button>
         );
@@ -113,7 +151,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
         return (
           <button key={String(o.id)} onClick={() => onChange(o.id)}
             className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
-              active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+              active ? `${a.obwodka} ${a.napis}` : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
             }`}>
             <span className="text-lg opacity-50">?</span>
             <span className="text-center leading-tight">{label}</span>
@@ -124,7 +162,8 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
   );
 }
 
-export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-cols-2", minH = 160 }) {
+export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-cols-2", minH = 160, accent = "blue" }) {
+  const a = klasyAkcentu(accent);
   const lbl = (v) => typeof v === "object" ? (v[lang] || v.en) : v;
   return (
     <div className={`grid ${cols} gap-3`}>
@@ -135,7 +174,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
               className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
                 o.disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
-                active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+                active ? `${a.obwodka} ${a.napis}` : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
               }`}>
               <span className="text-lg opacity-50">?</span>
               <span className="text-center leading-tight">{lbl(o.label)}</span>
@@ -147,7 +186,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             style={{ minHeight: `${minH}px` }}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
               o.disabled ? "border-white/5 opacity-40 cursor-not-allowed" :
-              active ? "border-blue-400 ring-2 ring-blue-400/60 shadow-[0_0_0_6px_rgba(96,165,250,0.16)]" : "border-white/10 hover:border-white/30"
+              active ? `${a.obwodka} ring-2 ${a.obraczka} ${a.poswiataDuza}` : "border-white/10 hover:border-white/30"
             }`}>
             {o.img && (
               <div className="absolute inset-0 overflow-hidden">
@@ -156,7 +195,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                     active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
+                {active && <div className={`absolute inset-0 ${a.nalozenie} mix-blend-overlay`} />}
               </div>
             )}
             {/* OBWODKA NAPISU JEST DLA ZDJECIA, a nie dla kazdego kafelka.
@@ -168,7 +207,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                 `index.css` celuja w `.from-black/95`, ktore powstaje tylko
                 razem ze zdjeciem, wiec warunek musi stac po tej samej stronie. */}
             <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
-              <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
+              <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} ${active ? a.napis : "text-white"}`}>{lbl(o.label)}</div>
               {o.desc && <div className={`text-xs text-neutral-200 ${o.img ? "drop-shadow-md tile-ink" : ""}`}>{lbl(o.desc)}</div>}
             </div>
           </button>
@@ -178,11 +217,11 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
   );
 }
 
-export function CalcCard({ stepNum, label, children, id }) {
+export function CalcCard({ stepNum, label, children, id, accent = "blue" }) {
   return (
     <div id={id} className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
       <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
-        {stepNum && <span className="text-blue-400 mr-1.5">{stepNum}</span>}{label}
+        {stepNum && <span className={`${accent === "amber" ? "text-amber-400" : "text-blue-400"} mr-1.5`}>{stepNum}</span>}{label}
       </div>
       {children}
     </div>

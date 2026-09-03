@@ -30,9 +30,9 @@ const TECHNICZNE = new Set([
 ]);
 
 const DODATKOWE = {
-  pl: { materialNote: "Materiał (opis)", spare: "Zapas materiału", extended: "Obszar roboczy", extendedYes: "rozszerzony (przelotka)", wymiary: "Wymiary wyrobu", znieksztalcony: "Uwaga" },
-  en: { materialNote: "Material (description)", spare: "Spare material", extended: "Work area", extendedYes: "extended (pass-through)", wymiary: "Finished size", znieksztalcony: "Note" },
-  de: { materialNote: "Material (Beschreibung)", spare: "Materialreserve", extended: "Arbeitsbereich", extendedYes: "erweitert (Passthrough)", wymiary: "Fertigmaß", znieksztalcony: "Hinweis" },
+  pl: { materialNote: "Materiał (opis)", spare: "Zapas materiału", extended: "Obszar roboczy", extendedYes: "rozszerzony (przelotka)", wymiary: "Wymiary wyrobu", znieksztalcony: "Uwaga", resinColor: "Kolor żywicy" },
+  en: { materialNote: "Material (description)", spare: "Spare material", extended: "Work area", extendedYes: "extended (pass-through)", wymiary: "Finished size", znieksztalcony: "Note", resinColor: "Resin colour" },
+  de: { materialNote: "Material (Beschreibung)", spare: "Materialreserve", extended: "Arbeitsbereich", extendedYes: "erweitert (Passthrough)", wymiary: "Fertigmaß", znieksztalcony: "Hinweis", resinColor: "Harzfarbe" },
 };
 
 /**
@@ -106,6 +106,16 @@ export function describeParams(pozycja, lang = "pl") {
   if (params.znieksztalcony) {
     wynik.push({ label: extra.znieksztalcony, value: DISTORTION_NOTE[lang] || DISTORTION_NOTE.pl, uwaga: true });
   }
+  // KOLOR ZYWICY JEST USTALENIEM, choc nie wchodzi do kwoty. Klient wybieral
+  // go na ekranie i widzial w podsumowaniu, a pozycja go nie niosla: zamowienie
+  // szlo do pracowni bez koloru, wiec szary wyjezdzal zamiast przezroczystego.
+  // Nazwy kolorow zostaja w oryginale, bo tak sa opisane na butelkach i tak je
+  // zamawiamy u dostawcy; tlumaczona "Przezroczysta" nie wskazuje jednej z nich.
+  if (params.resinColor) {
+    wynik.push({ label: extra.resinColor, value: String(params.resinColor) });
+  }
+  // Stary koszyk moze jeszcze niesc `extended` z czasow, gdy stol byl pytaniem.
+  // Nowe pozycje go nie maja: wylicza go rdzen cenowy z wielkosci pracy.
   if (params.extended) {
     wynik.push({ label: extra.extended, value: extra.extendedYes });
   }

@@ -44,7 +44,12 @@ export const ADVANCED_TAB = {
 const GRUPY = {
   "3dprint": { lbl: PRINT_LBL, klucze: ["filament", "infill", "colors", "precision"] },
   msla: { lbl: MSLA_LBL, klucze: ["resin", "color", "layer", "application"] },
-  co2: { lbl: CO2_LBL, klucze: ["matThick", "detail", "complexity", "workArea"] },
+  // OBSZAR ROBOCZY WYPADL Z TEJ LISTY (2026-09-03). Notka obiecuje parametry,
+  // ktore klient ustawi w trybie zaawansowanym, a stolu juz nie ustawia:
+  // wynika z wielkosci pracy i liczy go rdzen cenowy (`wymagaRozszerzonego`).
+  // Obietnica wyboru, ktorego nie ma, jest gorsza niz brak obietnicy.
+  // Decyzja: ADR-0037.
+  co2: { lbl: CO2_LBL, klucze: ["matThick", "detail", "complexity"] },
   fiber: { lbl: FIBER_LBL, klucze: ["material", "lens", "markType", "area"] },
 };
 

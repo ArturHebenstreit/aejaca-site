@@ -24,6 +24,32 @@ export const EXTENDED_AREA_MM = { x: 600, y: 3000 };
 
 export const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 export const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
+
+/**
+ * Czy praca wymaga stolu rozszerzonego.
+ *
+ * STOL NIE JEST WYBOREM KLIENTA, tylko skutkiem wielkosci pracy. Praca powyzej
+ * 60 cm2 nie miesci sie na 600x288 mm i musi isc przez przelot 600x3000 mm,
+ * z narzutem i dluzszym przygotowaniem. Do tej pory stalo to jako krok "Obszar
+ * roboczy" w kalkulatorze, gdzie ZAWSZE dokladnie jedna kafelka byla klikalna,
+ * a karta uslugi w sklepie w ogole o to nie pytala i miala wpisane `false`.
+ * Skutek byl w zlotowkach: grawer L kosztowal w sklepie 110,37 zl, a w
+ * kalkulatorze 150,00 zl. Ta sama praca, dwie kwoty.
+ *
+ * Dlatego stol wylicza sie tutaj, a `extended` podane z zewnatrz jest
+ * ignorowane: zaden ekran nie moze juz podac wartosci innej niz prawdziwa.
+ * Decyzja wlasciciela 2026-09-03, zapisana w ADR-0037.
+ */
+export function wymagaRozszerzonego({ areaId = null, pathId = null, svgData = null }) {
+  // Wgrany rysunek mierzy sie wprost: liczy sie ramka, a nie prog z listy.
+  // Poltora dziesiatego milimetra zapasu, zeby rysunek dokladnie na wymiar
+  // nie wpadal w narzut przez blad zaokraglenia.
+  if (svgData?.bboxMm) {
+    return svgData.bboxMm.x > WORK_AREA_MM.x + 0.5 || svgData.bboxMm.y > WORK_AREA_MM.y + 0.5;
+  }
+  if (pathId) return Boolean(PATH_NEEDS_EXTENDED[pathId]);
+  return Boolean(AREA_NEEDS_EXTENDED[areaId]);
+}
 export const LBL = {
   pl: { mode: "Tryb pracy", engrave: "Grawerowanie", cut: "Cięcie",
     engraveDesc: "Raster - znakowanie powierzchni", cutDesc: "Wektor - wycinanie kształtów",
@@ -222,7 +248,10 @@ export const CUT_COMPLEXITY = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-export function calcEngrave({ matId, areaId, detailId, quantityId, qty: sztuk, extended, svgData, podloze = null }, lang, stock = null) {
+export function calcEngrave({ matId, areaId, detailId, quantityId, qty: sztuk, svgData, podloze = null }, lang, stock = null) {
+  // Stol wynika z wielkosci pracy, wiec liczymy go tu, a nie przyjmujemy
+  // z ekranu. Patrz `wymagaRozszerzonego`.
+  const extended = wymagaRozszerzonego({ areaId, svgData });
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
   const area = svgData
     ? { area: svgData.engravAreaCm2 }
@@ -305,7 +334,10 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, qty: sztuk, e
   };
 }
 
-export function calcCut({ matId, pathId, complexId, quantityId, qty: sztuk, extended, svgData, podloze = null }, lang, stock = null) {
+export function calcCut({ matId, pathId, complexId, quantityId, qty: sztuk, svgData, podloze = null }, lang, stock = null) {
+  // Stol wynika z wielkosci pracy, wiec liczymy go tu, a nie przyjmujemy
+  // z ekranu. Patrz `wymagaRozszerzonego`.
+  const extended = wymagaRozszerzonego({ pathId, svgData });
   const mat = CUT_MATERIALS.find(m => m.id === matId);
   const path = svgData
     ? { pathCm: svgData.pathLengthCm, sheetCm2: svgData.engravAreaCm2 }

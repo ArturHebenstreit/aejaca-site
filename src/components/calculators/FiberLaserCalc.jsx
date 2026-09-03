@@ -1,18 +1,26 @@
 // ============================================================
 // FIBER LASER ESTIMATOR - Raycus 30W Galvo  v1.1
 // Max work area: 150 × 150 mm
+//
+// PYTANIA SA WZIETE ZE SKLEPU. Lista pol, kolejnosc, etykiety i sposob
+// rysowania stoja w `orderCatalog.js`, rysuje je `PolaUslugi`. Zaleznosc
+// "obiektyw ogranicza pole znakowania" przeniosla sie stad do rdzenia
+// cenowego (`areaOptionsForLens`), bo nalezy do oferty, a nie do ekranu:
+// dopoki stala tutaj, karta uslugi w sklepie pozwalala wybrac pole wieksze
+// niz zasieg soczewki i policzyc za nie cene. Decyzja: ADR-0037.
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
-import { uniformScale, isUniform, dimsFor, parseScale, serializeScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
+import { QUANTITY_TIERS, t, Chips, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
+import { uniformScale, isUniform, parseScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
 import { measureScaled } from "../../utils/svgParser.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
-import { QuantityStepper } from "../shop/ConfigControls.jsx";
+import PolaUslugi from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 import {
-  SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
+  SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
 import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 
@@ -27,9 +35,7 @@ const MATERIAL_NOTE_PLACEHOLDER = {
   de: "z. B. 3 mm Birkensperrholz, 5 mm schwarzes Acrylglas",
 };
 
-import { FIBER_CONFIG, MATERIALS, LENSES, MARK_TYPES, AREAS, calculate,
-  LBL,
-} from "../../pricing/laserFiber.js";
+import { MATERIALS, LENSES, MARK_TYPES, AREAS, areaOptionsForLens, calculate } from "../../pricing/laserFiber.js";
 
 export { MATERIALS, LENSES, MARK_TYPES, AREAS, calculate };
 
@@ -37,17 +43,18 @@ export { MATERIALS, LENSES, MARK_TYPES, AREAS, calculate };
 const TECH_LABEL = { pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
+/** Opis uslugi wspolny ze sklepem: stad biora sie pytania i stan poczatkowy. */
+const USLUGA = getService("laser_fiber");
+
 export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffUsed = null }) {
-  const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
   // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
   // bo przedzial obok konkretnej kwoty tylko ja podwaza.
   const [bindingGrosze, setBindingGrosze] = useState(null);
 
-  const [matId, setMatId] = useState("stainless");
-  const [lensId, setLensId] = useState("150mm");
-  const [markId, setMarkId] = useState("surface");
-  const [areaId, setAreaId] = useState("S");
+  // STAN POCZATKOWY IDZIE Z KATALOGU, tego samego, ktory czyta karta uslugi.
+  const [params, setParams] = useState(() => ({ ...USLUGA.defaults }));
+  const { matId, lensId, markId, areaId, podloze } = params;
   // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
   // licznik nigdy nie pokazaly sprzecznych wartosci.
   const [qty, setQty] = useState(1);
@@ -56,17 +63,16 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
   // WPLYWA na wycene: material z naszego magazynu jest pozycja kwoty, liczona
   // z tabeli stanow magazynowych, tak samo jak przy laserze CO2.
   const materialStock = useMaterialStock();
-  const [podloze, setPodloze] = useState("our_stock");
   const [spare, setSpare] = useState("");
   const [materialNote, setMaterialNote] = useState("");
 
   // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
   // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
-  function handlePodlozeChange(id) {
-    setPodloze(id);
-    setSpare("");
-    setMaterialNote("");
-  }
+  const setParam = (klucz, wartosc) => {
+    if (klucz === "quantityId") { setQty(qtyForTier(wartosc, QUANTITY_TIERS)); return; }
+    if (klucz === "podloze") { setSpare(""); setMaterialNote(""); }
+    setParams((p) => ({ ...p, [klucz]: wartosc }));
+  };
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -81,11 +87,11 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
 
   useEffect(() => {
     if (svgData) return;
-    const area = AREAS.find(a => a.id === areaId);
-    if (area && area.area && selectedLens && area.area > selectedLens.maxAreaCm2) {
-      const firstValid = AREAS.find(a => a.area && a.area <= selectedLens.maxAreaCm2);
-      if (firstValid) setAreaId(firstValid.id);
-    }
+    const dostepne = areaOptionsForLens(lensId);
+    if (!dostepne.find((a) => a.id === areaId)?.disabled) return;
+    const pierwsze = dostepne.find((a) => a.area && !a.disabled);
+    if (pierwsze) setParams((p) => ({ ...p, areaId: pierwsze.id }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lensId]);
 
   // PRZEJECIE RYSUNKU Z SZYBKIEJ WYCENY. Rysunek jest juz sparsowany razem
@@ -148,15 +154,6 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     return measureScaled(svgData, Number(svgScale.x), Number(svgScale.y));
   }, [svgData, svgScale]);
 
-  const areaOptions = useMemo(() =>
-    AREAS.map(a => ({
-      ...a,
-      disabled: a.area && selectedLens ? a.area > selectedLens.maxAreaCm2 : false,
-      note: a.area && selectedLens && a.area > selectedLens.maxAreaCm2
-        ? { pl: `Przekracza pole ${selectedLens.fieldMm}×${selectedLens.fieldMm}mm`, en: `Exceeds ${selectedLens.fieldMm}×${selectedLens.fieldMm}mm field`, de: `Überschreitet ${selectedLens.fieldMm}×${selectedLens.fieldMm}mm Feld` }
-        : undefined,
-    })),
-  [lensId]);
 
   const result = useMemo(() => {
     // Brak pomiaru rozciagnietego rysunku nie moze cicho zejsc na przedzialy
@@ -180,50 +177,54 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     <div>
       <div className="text-center text-xs text-neutral-400 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
-      <CalcCard stepNum="①" label={l.material}>
-        <MaterialCards options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />
-      </CalcCard>
-
-      <CalcCard stepNum="②" label={l.lens}>
-        <HeroCards options={LENSES} value={lensId} onChange={setLensId} lang={lang} cols="grid-cols-2" minH={170} />
-      </CalcCard>
-
-      <CalcCard stepNum="③" label={l.markType}>
-        <HeroCards options={MARK_TYPES} value={markId} onChange={setMarkId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} />
-      </CalcCard>
-
-      <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area} id="file-upload">
-        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
-        {!svgData && <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />}
-      </CalcCard>
-
-      <CalcCard stepNum="⑤" label={l.qty}>
-        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
-          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-      </CalcCard>
-
-      <CalcCard stepNum="⑥" label={t(SUBSTRATE_LABEL, lang)}>
-        <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
-        {podloze !== "our_stock" ? (
-          <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
-            <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
-          </div>
-        ) : (
-          <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
-            <textarea
-              value={materialNote}
-              onChange={(e) => setMaterialNote(e.target.value)}
-              placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
-              rows={2}
-              minLength={MIN_MATERIAL_NOTE}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
-            />
-          </div>
-        )}
-      </CalcCard>
+      <PolaUslugi
+        service={USLUGA}
+        params={{ ...params, quantityId }}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        tierKey="quantityId"
+        qty={qty}
+        onQty={setQty}
+        qtyMax={qtyLimit(QUANTITY_TIERS)}
+        qtyOpen={qtyOpenValue(QUANTITY_TIERS)}
+        qtyLabel={t(QTY_STEPPER_LBL, lang)}
+        dodatki={{
+          // Rysunek nie jest osobnym pytaniem, tylko drugim sposobem
+          // odpowiedzenia na to samo: wgrany zastepuje wybor pola z listy
+          // i przejmuje etykiete kartki.
+          areaId: {
+            id: "file-upload",
+            etykieta: svgData ? sl.fromSvg : null,
+            ukryjWarianty: Boolean(svgData),
+            przed: () => (
+              <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
+            ),
+          },
+          // Sztuka na proby albo nazwa materialu: obie zaleza od podloza,
+          // wiec stoja w tej samej kartce, pod tym samym pytaniem.
+          podloze: {
+            po: () => (podloze !== "our_stock" ? (
+              <div className="mt-3">
+                <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+                <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+              </div>
+            ) : (
+              <div className="mt-3">
+                <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+                <textarea
+                  value={materialNote}
+                  onChange={(e) => setMaterialNote(e.target.value)}
+                  placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+                  rows={2}
+                  minLength={MIN_MATERIAL_NOTE}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
+                />
+              </div>
+            )),
+          },
+        }}
+      />
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />

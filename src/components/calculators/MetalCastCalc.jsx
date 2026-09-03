@@ -10,12 +10,14 @@
 // Kazda inna sciezka konczy sie wycena indywidualna i tak to nazywamy na
 // ekranie, zamiast pokazywac liczbe, ktorej nie da sie dotrzymac.
 //
-// Pole pliku i suwak skali sa WZIETE ZE SKLEPU (`ConfigControls`), a nie
-// napisane drugi raz. Razem z nimi przychodza ostrzezenia o limicie kolby i
-// o tym, ze skalowanie zmienia grubosc scianek: gdyby stalo tu wlasne pole,
-// te dwa zdania predzej czy pozniej rozjechalyby sie ze sklepem.
+// PYTANIA TEZ SA WZIETE ZE SKLEPU. Lista pol, ich kolejnosc, etykiety i
+// zaleznosci miedzy nimi stoja w `orderCatalog.js` i rysuje je `PolaUslugi`,
+// wiec kalkulator nie moze zapytac o co innego niz karta uslugi. Wczesniej
+// stal tu wlasny slownik siedmiu etykiet w trzech jezykach i wlasna kopia
+// regul: powloke galwaniczna napisalismy przez to dwa razy. Zostaje tu tylko
+// to, czego katalog nie opisuje: pole modelu, suwak skali i wynik.
 import { useState, useMemo, lazy, Suspense } from "react";
-import { t, Chips, CalcCard, ResultHeader, ResultDisplay, HeroCards, NextStepPanel } from "./calcShared.jsx";
+import { t, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 // PROGI ILOSCI IDA Z JUBILERKI, nie ze sTuDiO. Odlew liczy `calcNew`, ktore
 // zna wylacznie `QTY_TIERS` ("1", "2-5", "6-10", "10+"). Progi studyjne
@@ -23,11 +25,14 @@ import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/co
 // `null`: kalkulator pokazuje wtedy "wybierz wszystkie parametry" i nikt nie
 // widzi bledu, bo zaden sie nie pojawia.
 import { QTY_TIERS } from "../../pricing/jewelryConfig.js";
-import { QuantityStepper, FileDrop, ScaleControl } from "../shop/ConfigControls.jsx";
+import { FileDrop, ScaleControl } from "../shop/ConfigControls.jsx";
+import PolaUslugi, { poprawkiWyboru } from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
+  CASTING_PLATINGS, castingPlatingAvailable,
   CASTING_ENVELOPE_MM, maxCastingScaleForBBox, calculate,
 } from "../../pricing/preciousMetalCasting.js";
 
@@ -40,14 +45,9 @@ const TECH_LABEL = { pl: "Odlew z metali szlachetnych", en: "Precious metal cast
 
 const L = {
   pl: {
-    variant: "Co nam przekazujesz",
-    source: "Źródło kruszcu",
-    metal: "Kruszec i próba",
     model: "Model 3D",
     modelHint: "Przeciągnij plik STL, OBJ, 3MF lub STEP albo kliknij, żeby wybrać",
     scale: "Wielkość odlewu",
-    finish: "Zakres wykończenia",
-    qty: "Liczba sztuk",
     qtyStepper: "Liczba sztuk",
     parsing: "Analizuję model",
     parseFailed: "Nie udało się odczytać tego pliku. Sprawdź, czy to STL, OBJ, 3MF albo STEP.",
@@ -57,14 +57,9 @@ const L = {
     envelope: `Automatyczna wycena obejmuje modele mieszczące się po obrocie w ${CASTING_ENVELOPE_MM.join(" × ")} mm. Większe kierujemy do oceny indywidualnej.`,
   },
   en: {
-    variant: "What you provide",
-    source: "Metal source",
-    metal: "Metal and purity",
     model: "3D model",
     modelHint: "Drag an STL, OBJ, 3MF or STEP file here, or click to choose one",
     scale: "Casting size",
-    finish: "Finishing",
-    qty: "Quantity",
     qtyStepper: "Quantity",
     parsing: "Analysing the model",
     parseFailed: "We could not read this file. Check that it is an STL, OBJ, 3MF or STEP.",
@@ -74,14 +69,9 @@ const L = {
     envelope: `Automatic pricing covers models that fit ${CASTING_ENVELOPE_MM.join(" × ")} mm after rotation. Larger ones go to individual review.`,
   },
   de: {
-    variant: "Was Sie liefern",
-    source: "Metallquelle",
-    metal: "Metall und Feingehalt",
     model: "3D-Modell",
     modelHint: "STL-, OBJ-, 3MF- oder STEP-Datei hierher ziehen oder klicken",
     scale: "Gussgröße",
-    finish: "Finish",
-    qty: "Stückzahl",
     qtyStepper: "Stückzahl",
     parsing: "Modell wird analysiert",
     parseFailed: "Diese Datei konnte nicht gelesen werden. Prüfen Sie, ob es eine STL-, OBJ-, 3MF- oder STEP-Datei ist.",
@@ -92,32 +82,37 @@ const L = {
   },
 };
 
-/**
- * Zdjecia wariantow. Kazde pokazuje DOKLADNIE to, co wariant obiecuje, a nie
- * ogolna ilustracje odlewnictwa: wzorzec, ktory klient przynosi; model, ktory
- * przysyla; i prace projektowa, ktora wykonujemy za niego. Zdjecia sa juz
- * w repozytorium, wiec kafelki nie czekaja na nowa sesje z generatorem.
- */
-const VARIANT_IMG = {
-  ready_pattern: "/img/calc/3d_apps/casting.webp",
-  model_3d: "/img/b2b/pillar_cad.webp",
-  client_idea: "/img/shop/service/cad_project.webp",
-};
-
-/** Kafelki wariantow: `sub` z rdzenia cenowego jest tu opisem pod tytulem. */
-const VARIANT_CARDS = CASTING_VARIANTS.map((v) => ({ id: v.id, label: v.label, desc: v.sub, img: VARIANT_IMG[v.id] }));
+/** Opis uslugi wspolny ze sklepem: stad biora sie pytania i ich kolejnosc. */
+const USLUGA = getService("precious_metal_casting");
 
 export default function MetalCastCalc({ lang = "pl" }) {
   const l = L[lang] || L.en;
   const { rates } = useMarketRates();
   const [bindingGrosze, setBindingGrosze] = useState(null);
 
-  const [variantId, setVariantId] = useState("model_3d");
-  const [materialSourceId, setMaterialSourceId] = useState("aejaca");
-  const [metalId, setMetalId] = useState("silver");
-  const [finishId, setFinishId] = useState("clean");
+  const [params, setParams] = useState(() => ({ ...USLUGA.defaults }));
+  // Wybor spoza listy przystawiamy w RENDERZE, a nie efektem: efekt dorysowuje
+  // ekran drugi raz i przez moment pokazuje stan, ktorego nie oferujemy.
+  // Przystawia `poprawkiWyboru`, czyli ta sama funkcja, ktorej uzywa sklep:
+  // regula "przy kruszcu AEJaCA nie ma odlewu z kanalami" jest opisana raz,
+  // w katalogu, a nie powtorzona w obu konfiguratorach.
+  const poprawki = poprawkiWyboru(USLUGA, params);
+  if (poprawki) setParams((p) => ({ ...p, ...poprawki }));
+  const { variantId, materialSourceId, metalId, finishId, platingId } = { ...params, ...poprawki };
+
   const [qty, setQty] = useState(1);
   const qtyId = tierForQty(qty, QTY_TIERS).id;
+  // Prog nakladu na ekranie zawsze wynika z licznika sztuk, a nie z tego, co
+  // zostalo w stanie: inaczej dwie kontrolki tej samej decyzji pokazywalyby
+  // dwie rozne wartosci.
+  const stan = { ...params, ...poprawki, qtyId };
+
+  // Prog nakladu i licznik sztuk to jedna decyzja, wiec zapis idzie w obie
+  // strony: kafelek progu przestawia licznik, licznik przestawia kafelek.
+  const setParam = (klucz, wartosc) => {
+    if (klucz === "qtyId") { setQty(qtyForTier(wartosc, QTY_TIERS)); return; }
+    setParams((p) => ({ ...p, [klucz]: wartosc }));
+  };
 
   const [file, setFile] = useState(null);
   const [mesh, setMesh] = useState(null);
@@ -173,8 +168,8 @@ export default function MetalCastCalc({ lang = "pl" }) {
   }, [mesh, scale]);
 
   const result = useMemo(
-    () => calculate({ variantId, materialSourceId, metalId, finishId, qtyId, qty, stlData: scaledStlData }, lang, rates),
-    [variantId, materialSourceId, metalId, finishId, qtyId, qty, scaledStlData, lang, rates],
+    () => calculate({ variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, stlData: scaledStlData }, lang, rates),
+    [variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, scaledStlData, lang, rates],
   );
 
   const paramsSummary = [
@@ -182,82 +177,84 @@ export default function MetalCastCalc({ lang = "pl" }) {
     t(CASTING_MATERIAL_SOURCES.find((v) => v.id === materialSourceId)?.label, lang),
     t(CASTING_METALS.find((v) => v.id === metalId)?.label, lang),
     t(CASTING_FINISHES.find((v) => v.id === finishId)?.label, lang),
+    // Powloke pokazujemy w podsumowaniu tylko wtedy, gdy naprawde wchodzi do
+    // ceny: wpisana przy szlifowaniu bylaby obietnica, ktorej wycena nie niesie.
+    ...(castingPlatingAvailable(finishId) && platingId !== "none"
+      ? [t(CASTING_PLATINGS.find((v) => v.id === platingId)?.label, lang)] : []),
     ...(file ? [file.name] : []),
   ].join(" | ");
+
+  // Pole modelu nie jest pytaniem z katalogu, tylko narzedziem pomiaru, wiec
+  // wchodzi jako wstawka miedzy kruszec a wykonczenie: klient najpierw mowi,
+  // z czego odlewamy, potem pokazuje CO odlewamy, a dopiero potem wybiera
+  // obrobke tego czegos.
+  const wstawkaModelu = {
+    po: "metalId",
+    label: l.model,
+    id: "file-upload",
+    render: () => (measurable ? (
+      <>
+        <FileDrop
+          label=""
+          hint={l.modelHint}
+          file={file}
+          geometry={mesh ? { volumeCm3: Number((mesh.volumeCm3 * scale ** 3).toFixed(2)), bbox: scaledStlData.bbox } : null}
+          busy={parsing}
+          busyLabel={l.parsing}
+          error={parseError}
+          onPick={onPick}
+          onClear={onClear}
+          accent="blue"
+          lang={lang}
+          accept={ACCEPT_MODEL}
+        >
+          {mesh && (
+            <>
+              <Suspense fallback={<div className="w-full rounded-lg bg-[#eef0f3] border border-black/10 animate-pulse" style={{ height: "220px" }} />}>
+                <STLViewer triangles={mesh.triangles} bbox={mesh.bbox} scale={scale} />
+              </Suspense>
+              <div className="mt-3">
+                <ScaleControl
+                  label={l.scale}
+                  bbox={mesh.bbox}
+                  volumeCm3={mesh.volumeCm3}
+                  scale={scale}
+                  onChange={setScale}
+                  maxScale={maxScale}
+                  lang={lang}
+                  accent="blue"
+                  purpose="casting"
+                />
+              </div>
+            </>
+          )}
+        </FileDrop>
+        {!file && <p className="text-neutral-400 text-xs leading-relaxed">{l.needModel}</p>}
+        <p className="text-neutral-500 text-xs leading-relaxed mt-2">{l.envelope}</p>
+      </>
+    ) : (
+      <p className="text-neutral-400 text-xs leading-relaxed">{l.manualNote}</p>
+    )),
+  };
 
   return (
     <div>
       <div className="text-center text-xs text-neutral-400 mb-6">Ag 800/925 · Au 9k/14k/18k/24k · {CASTING_ENVELOPE_MM.join(" × ")} mm</div>
 
-      <CalcCard stepNum="①" label={l.variant}>
-        <HeroCards options={VARIANT_CARDS} value={variantId} onChange={setVariantId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={150} />
-      </CalcCard>
-
-      <CalcCard stepNum="②" label={l.source}>
-        <Chips options={CASTING_MATERIAL_SOURCES} value={materialSourceId} onChange={setMaterialSourceId} lang={lang} />
-      </CalcCard>
-
-      <CalcCard stepNum="③" label={l.metal}>
-        <Chips options={CASTING_METALS} value={metalId} onChange={setMetalId} lang={lang} />
-      </CalcCard>
-
-      {measurable && (
-        <CalcCard stepNum="④" label={l.model} id="file-upload">
-          <FileDrop
-            label=""
-            hint={l.modelHint}
-            file={file}
-            geometry={mesh ? { volumeCm3: Number((mesh.volumeCm3 * scale ** 3).toFixed(2)), bbox: scaledStlData.bbox } : null}
-            busy={parsing}
-            busyLabel={l.parsing}
-            error={parseError}
-            onPick={onPick}
-            onClear={onClear}
-            accent="blue"
-            lang={lang}
-            accept={ACCEPT_MODEL}
-          >
-            {mesh && (
-              <>
-                <Suspense fallback={<div className="w-full rounded-lg bg-[#eef0f3] border border-black/10 animate-pulse" style={{ height: "220px" }} />}>
-                  <STLViewer triangles={mesh.triangles} bbox={mesh.bbox} scale={scale} />
-                </Suspense>
-                <div className="mt-3">
-                  <ScaleControl
-                    label={l.scale}
-                    bbox={mesh.bbox}
-                    volumeCm3={mesh.volumeCm3}
-                    scale={scale}
-                    onChange={setScale}
-                    maxScale={maxScale}
-                    lang={lang}
-                    accent="blue"
-                    purpose="casting"
-                  />
-                </div>
-              </>
-            )}
-          </FileDrop>
-          {!file && <p className="text-neutral-400 text-xs leading-relaxed">{l.needModel}</p>}
-          <p className="text-neutral-500 text-xs leading-relaxed mt-2">{l.envelope}</p>
-        </CalcCard>
-      )}
-
-      {!measurable && (
-        <CalcCard stepNum="④" label={l.model}>
-          <p className="text-neutral-400 text-xs leading-relaxed">{l.manualNote}</p>
-        </CalcCard>
-      )}
-
-      <CalcCard stepNum="⑤" label={l.finish}>
-        <Chips options={CASTING_FINISHES} value={finishId} onChange={setFinishId} lang={lang} />
-      </CalcCard>
-
-      <CalcCard stepNum="⑥" label={l.qty}>
-        <Chips options={QTY_TIERS} value={qtyId} onChange={(id) => setQty(qtyForTier(id, QTY_TIERS))} lang={lang} />
-        <QuantityStepper label={l.qtyStepper} value={qty} onChange={setQty}
-          min={1} max={qtyLimit(QTY_TIERS)} openValue={qtyOpenValue(QTY_TIERS)} lang={lang} accent="blue" />
-      </CalcCard>
+      <PolaUslugi
+        service={USLUGA}
+        params={stan}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        wstawki={[wstawkaModelu]}
+        tierKey="qtyId"
+        qty={qty}
+        onQty={setQty}
+        qtyMax={qtyLimit(QTY_TIERS)}
+        qtyOpen={qtyOpenValue(QTY_TIERS)}
+        qtyLabel={l.qtyStepper}
+      />
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
@@ -278,7 +275,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
               onBinding={setBindingGrosze}
               calculator="jewelry_casting"
               serviceId="precious_metal_casting"
-              params={{ variantId, materialSourceId, metalId, finishId, qtyId }}
+              params={{ variantId, materialSourceId, metalId, finishId, platingId, qtyId }}
               qty={qty}
               file={file}
               triangles={mesh?.triangles || null}

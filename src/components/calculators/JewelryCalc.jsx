@@ -4,9 +4,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { sciezkaJezyka } from "../../routes.js";
-import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
+import { t, fmtCost, Chips, CalcCard, HeroCards, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
-import { QuantityStepper } from "../shop/ConfigControls.jsx";
+import PolaUslugi, { poprawkiWyboru } from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import { trackCalc } from "../../utils/analytics.js";
 import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
@@ -156,6 +157,16 @@ function ConsignedNote({ lang }) {
   );
 }
 
+/**
+ * Opisy trzech uslug jubilerskich, wspolne z ich kartami w sklepie.
+ * Klucze odpowiadaja identyfikatorom z `SERVICE_TYPES`.
+ */
+const USLUGI = {
+  new: getService("jewelry_plain"),
+  renovation: getService("jewelry_renovation"),
+  repair: getService("jewelry_repair"),
+};
+
 export default function JewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const { rates } = useMarketRates();
@@ -193,13 +204,41 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [qty, setQty] = useState(1);
   const qtyId = tierForQty(qty, QTY_TIERS).id;
 
-  // New creation
-  const [lineId, setLineId] = useState("woman");
+  // STAN POCZATKOWY TRZECH USLUG IDZIE Z KATALOGU, tego samego, ktory czytaja
+  // ich karty w sklepie. Kazda ma wlasny zestaw, zeby przelaczenie uslugi nie
+  // kasowalo tego, co klient ustawil w poprzedniej.
   // JEWELRY_TYPES jest pogrupowane po linii (woman/men/pet), a link ze sklepu
   // podaje sam rodzaj, wiec sprawdzamy go w calej puli.
-  const [typeId, setTypeId] = useState(
-    Object.values(JEWELRY_TYPES).flat().some((x) => x.id === urlType) ? urlType : "ring"
-  );
+  const [paramsNew, setParamsNew] = useState(() => ({
+    ...USLUGI.new.defaults,
+    ...(Object.values(JEWELRY_TYPES).flat().some((x) => x.id === urlType) ? { typeId: urlType } : {}),
+  }));
+  const [paramsReno, setParamsReno] = useState(() => ({ ...USLUGI.renovation.defaults }));
+  const [paramsRepair, setParamsRepair] = useState(() => ({ ...USLUGI.repair.defaults }));
+  const zestawy = { new: paramsNew, renovation: paramsReno, repair: paramsRepair };
+  const zapisy = { new: setParamsNew, renovation: setParamsReno, repair: setParamsRepair };
+  // WYBOR SPOZA LISTY PRZYSTAWIAMY BEZ ZAPISU DO STANU. Rodzaj zalezy od linii,
+  // wiec po przelaczeniu linii w stanie moze zostac rodzaj, ktorego ta linia
+  // nie ma. Pozostale kalkulatory poprawiaja to zapisem w trakcie renderu, ale
+  // tutaj po tym miejscu stoja jeszcze hooki (masa z geometrii, wycena, opis),
+  // a zapis w renderze przerywa render w polowie: React zglaszal wtedy
+  // "Rendered fewer hooks than expected" i gasil caly kalkulator po kliknieciu
+  // lancuszka. Dlatego poprawka jest CZYSTA: `stan` to jedyne zrodlo odczytu,
+  // a stan wewnetrzny doganiany jest przy nastepnym wyborze klienta.
+  const poprawki = poprawkiWyboru(USLUGI[serviceId], zestawy[serviceId]);
+  const params = poprawki ? { ...zestawy[serviceId], ...poprawki } : zestawy[serviceId];
+
+  const setParam = (klucz, wartosc) => {
+    if (klucz === "qtyId") { setQty(qtyForTier(wartosc, QTY_TIERS)); return; }
+    // Poprawki wjezdzaja razem z wyborem, zeby stan nie zostal z wartoscia,
+    // ktorej lista juz nie oferuje.
+    zapisy[serviceId]((x) => ({ ...x, ...poprawki, [klucz]: wartosc }));
+  };
+
+  const stanNew = serviceId === "new" ? params : (poprawkiWyboru(USLUGI.new, paramsNew) ? { ...paramsNew, ...poprawkiWyboru(USLUGI.new, paramsNew) } : paramsNew);
+  const { lineId, typeId, metalId, weightId, methodId, platingId, engravingId } = stanNew;
+  const { jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices } = paramsReno;
+  const { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId } = paramsRepair;
 
   // Geometry + client supply - productForm is derived from typeId (no separate selection needed)
   const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
@@ -221,11 +260,6 @@ export default function JewelryCalc({ lang = "pl" }) {
     setChainLengthMm(CHAIN_DEFAULT_LENGTH[typeId] ?? 450);
   }, [typeId]);
   const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
-  const [metalId, setMetalId] = useState("silver");
-  const [weightId, setWeightId] = useState("light");
-  const [methodId, setMethodId] = useState("cast");
-  const [platingId, setPlatingId] = useState("none");
-  const [engravingId, setEngravingId] = useState("none");
   // Chain-specific state
   const [calcMode, setCalcMode] = useState("standard"); // "standard" | "from_stock"
   const [stockMassG, setStockMassG] = useState(15);
@@ -240,15 +274,6 @@ export default function JewelryCalc({ lang = "pl" }) {
       clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
   ]);
 
-  // Renovation
-  const [renoServices, setRenoServices] = useState([]);
-  const [renoJewType, setRenoJewType] = useState("ring_g");
-  const [renoMetal, setRenoMetal] = useState("gold_g");
-
-  // Repair
-  const [repairId, setRepairId] = useState("resize");
-  const [repairJewType, setRepairJewType] = useState("ring_g");
-  const [repairMetal, setRepairMetal] = useState("gold_g");
 
   const types = JEWELRY_TYPES[lineId] || [];
 
@@ -283,9 +308,6 @@ export default function JewelryCalc({ lang = "pl" }) {
     clientSuppliesMetal, weightResult, calcMode, stockMassG,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
-  function toggleRenoService(id) {
-    setRenoServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
-  }
 
   let stepNum = 1;
   const step = () => String.fromCodePoint(0x2460 + stepNum++ - 1);
@@ -341,177 +363,17 @@ export default function JewelryCalc({ lang = "pl" }) {
     clientSuppliesMetal
   );
 
-  return (
-    <div>
-      {/* Step 1: Service Type */}
-      <CalcCard stepNum={step()} label={l.service}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {SERVICE_TYPES.map(s => {
-            const active = serviceId === s.id;
-            return (
-              <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
-                className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[160px] ${
-                  active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
-                }`}>
-                {/* Background image (full visibility) */}
-                {s.img && (
-                  <div className="absolute inset-0 overflow-hidden">
-                    <Obraz sizes="(min-width: 640px) 180px, 40vw" src={s.img} alt={t(s.label, lang)} loading="lazy"
-                      className={`w-full h-full object-cover transition-all duration-500 ${
-                        active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
-                      }`} />
-                    {/* Gradient only at bottom, preserves image visibility */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                    {/* Active state: amber tint */}
-                    {active && (
-                      <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
-                    )}
-                  </div>
-                )}
-                {/* Text content at bottom */}
-                <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-                  <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(s.desc, lang)}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </CalcCard>
+  // ============================================================
+  // NARZEDZIA, KTORE NIE SA PYTANIAMI Z KATALOGU
+  // ============================================================
+  // Wymiary, splot, zapiecie, przelacznik kruszcu powierzonego i kamien
+  // w oczku sygnetu nie stoja na karcie uslugi w sklepie, bo tamta droga ich
+  // nie obsluguje: wycena wiazaca istnieje tylko dla odlewu prostej bryly
+  // z naszego kruszcu (patrz `cartBlocked`). Wchodza wiec jako wstawki
+  // i przystawki do pol, a nie jako pola katalogu. Decyzja: ADR-0037.
 
-      {/* === NEW CREATION FLOW === */}
-      {serviceId === "new" && (
-        <>
-          <CalcCard stepNum={step()} label={l.line}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {PRODUCT_LINES.map(pl => {
-                const active = lineId === pl.id;
-                return (
-                  <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[180px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
-                    }`}>
-                    {/* Background image (full visibility) */}
-                    {pl.img && (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={pl.label} loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-500 ${
-                            active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
-                          }`} />
-                        {/* Gradient only at bottom */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {/* Active state: amber tint */}
-                        {active && (
-                          <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
-                        )}
-                      </div>
-                    )}
-                    {/* Text content at bottom */}
-                    <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
-                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                      <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(pl.desc, lang)}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-
-          <CalcCard stepNum={step()} label={l.type}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-              {types.map(jt => {
-                const active = typeId === jt.id;
-                const label = t(jt.label, lang);
-                const hasImg = !!jt.img;
-                return (
-                  <button key={jt.id}
-                    onClick={() => { setTypeId(jt.id); trackCalc("jewelry", "type", jt.id); }}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden ${
-                      hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {hasImg ? (
-                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
-                      ) : (
-                        <span className="text-2xl opacity-60">◆</span>
-                      )}
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>
-                      {label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-
-          {/* Calc mode tabs - visible only for chain types */}
-          {isChainType(typeId) && (
-            <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/8 mb-2">
-              {[
-                { id: "standard", pl: "Klasyczny", en: "Standard pricing", de: "Standardkalkulation" },
-                { id: "from_stock", pl: "Własny kruszec", en: "From metal stock", de: "Aus Metallvorrat" },
-              ].map(mode => (
-                <button key={mode.id} onClick={() => setCalcMode(mode.id)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                    calcMode === mode.id
-                      ? "bg-amber-500 text-black shadow-sm"
-                      : "text-neutral-400 hover:text-neutral-200"
-                  }`}>
-                  {mode[lang] ?? mode.pl}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.weight}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {WEIGHTS.map(w => {
-                const active = weightId === w.id;
-                if (w.custom) {
-                  return (
-                    <button key={w.id} onClick={() => setWeightId(w.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{t(w.label, lang)}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={w.id} onClick={() => setWeightId(w.id)}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
-                    }`}>
-                    {w.img && (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
-                      </div>
-                    )}
-                    <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
-                      <div className="text-xs sm:text-xs text-neutral-300 break-words drop-shadow-md tile-ink leading-tight">{t(w.desc, lang)}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>}
-
-          {/* Shape & Dimensions / Chain dimensions step */}
-          <CalcCard stepNum={step()} label={isChainType(typeId)
-            ? ({ pl: "Długość łańcuszka", en: "Chain length", de: "Kettenlänge" }[lang])
-            : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions")}>
+  const kartaWymiarow = () => (
+    <>
             {isChainType(typeId) ? (() => {
               // Gender is already known from the selected product line - no separate toggle needed
               const necklaceGender = lineId === "men" ? "men" : "women";
@@ -708,11 +570,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                 </p>
               )
             )}
-          </CalcCard>
+    </>
+  );
 
-          {/* Weave selection - chain types only */}
-          {isChainType(typeId) && (
-            <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
+  const kartaSplotu = () => (isChainType(typeId) ? (
+    <>
               {/* Splot decyduje o cenie mocniej niz cokolwiek innego w tym
                   formularzu: klasyczny ma wspolczynnik x1,0, bizantyjski x3,2.
                   Kto tego nie wie, wybiera po obrazku, a potem dziwi sie kwocie.
@@ -775,38 +637,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                   }[lang]}
                 </div>
               )}
-            </CalcCard>
-          )}
+    </>
+  ) : null);
 
-          {/* Weave image lightbox modal */}
-          {weaveModal && (() => {
-            const wm = CHAIN_WEAVES.find(x => x.id === weaveModal);
-            if (!wm || !wm.img) return null;
-            return (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
-                onClick={() => setWeaveModal(null)}>
-                <div className="relative max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={wm.img} alt={t(wm.label, lang)}
-                    className="w-full rounded-2xl shadow-2xl shadow-black/60" />
-                  <div className="mt-4 text-center">
-                    <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
-                    <p className="text-neutral-400 text-sm mt-1">
-                      {{ pl: `AR ${wm.ar ?? " - "} · czynnik ×${wm.weaveFactor} · szer. ×${wm.widthMul ?? " - "} · gr. ×${wm.thicknessMul ?? " - "} · odpad ~${wm.materialWaste}%`,
-                         en: `AR ${wm.ar ?? " - "} · factor ×${wm.weaveFactor} · width ×${wm.widthMul ?? " - "} · thk ×${wm.thicknessMul ?? " - "} · waste ~${wm.materialWaste}%`,
-                         de: `AR ${wm.ar ?? " - "} · Faktor ×${wm.weaveFactor} · Breite ×${wm.widthMul ?? " - "} · Dicke ×${wm.thicknessMul ?? " - "} · Abfall ~${wm.materialWaste}%`
-                      }[lang]}
-                    </p>
-                  </div>
-                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white text-sm flex items-center justify-center hover:bg-white/20 transition-colors"
-                    onClick={() => setWeaveModal(null)}>✕</button>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Clasp selection - chain types only */}
-          {isChainType(typeId) && (
-            <CalcCard stepNum={step()} label={{ pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang]}>
+  const kartaZapiecia = () => (isChainType(typeId) ? (
+    <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_CLASPS.map(c => {
                   const active = claspId === c.id;
@@ -843,50 +678,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                   );
                 })}
               </div>
-            </CalcCard>
-          )}
+    </>
+  ) : null);
 
-          <CalcCard stepNum={step()} label={l.metal}>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 sm:gap-3">
-              {METALS.filter(m => !m.custom).map(m => {
-                const active = metalId === m.id;
-                const label = t(m.label, lang);
-                return (
-                  <button key={m.id} onClick={() => { setMetalId(m.id); trackCalc("jewelry", "metal", m.id); }}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden ${
-                      m.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {m.img ? (
-                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
-                      ) : (
-                        <span className="text-2xl opacity-60">⬡</span>
-                      )}
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-              {/* Custom metal chip */}
-              {METALS.filter(m => m.custom).map(m => {
-                const active = metalId === m.id;
-                return (
-                  <button key={m.id} onClick={() => { setMetalId(m.id); trackCalc("jewelry", "metal", m.id); }}
-                    className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
-                      active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                    }`}>
-                    <span className="text-lg opacity-50">?</span>
-                    <span className="text-center leading-tight">{t(m.label, lang)}</span>
-                  </button>
-                );
-              })}
-            </div>
+  const przelacznikKruszcu = () => (
+    <>
             {/* Client supplies metal toggle - hidden in from_stock mode (metal is always client-supplied there) */}
             {!(isChainType(typeId) && calcMode === "from_stock") && <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
               border-white/8 hover:border-amber-400/20"
@@ -922,85 +718,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                 )}
               </div>
             </div>}
-          </CalcCard>
+    </>
+  );
 
-          {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.method}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {METHODS.filter(m => !m.custom).map(m => {
-                const active = methodId === m.id;
-                return (
-                  <button key={m.id} onClick={() => setMethodId(m.id)}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[140px] ${
-                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
-                    }`}>
-                    {m.img && (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={t(m.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
-                      </div>
-                    )}
-                    <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
-                      <div className="text-xs text-neutral-300 break-words drop-shadow-md tile-ink">{t(m.desc, lang)}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>}
-
-          <CalcCard stepNum={step()} label={l.plating}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-              {PLATING.map(pl => {
-                const active = platingId === pl.id;
-                const label = t(pl.label, lang);
-                if (!pl.img && !pl.custom) {
-                  // "none" - simple chip
-                  return (
-                    <button key={pl.id} onClick={() => setPlatingId(pl.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all text-xs ${
-                        active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                      }`}>
-                      <span className="text-lg opacity-50">∅</span>
-                      <span className="text-center leading-tight">{label}</span>
-                    </button>
-                  );
-                }
-                if (pl.custom) {
-                  return (
-                    <button key={pl.id} onClick={() => setPlatingId(pl.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{label}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={pl.id} onClick={() => setPlatingId(pl.id)}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
-                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-
-          <CalcCard stepNum={step()} label={typeId === "signet"
-            ? ({ pl: "Grawerowanie oczka sygnetu", en: "Signet bezel engraving", de: "Siegelkopf-Gravur" }[lang] ?? l.engraving)
-            : l.engraving}>
+  const dopiskiGraweru = () => (
+    <>
             {typeId === "signet" && (
               <p className="text-xs text-neutral-500 mb-3">
                 {{ pl: "Grawer nakładany jest bezpośrednio na oczko sygnetu - może współistnieć z kamieniem lub zastąpić go.",
@@ -1008,216 +730,99 @@ export default function JewelryCalc({ lang = "pl" }) {
                    de: "Gravur wird direkt auf den Siegelkopf aufgetragen - kann mit einem Stein kombiniert werden oder ihn ersetzen." }[lang]}
               </p>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {ENGRAVING_OPTIONS.map(opt => {
-                const active = engravingId === opt.id;
-                return (
-                  <button key={opt.id} onClick={() => setEngravingId(opt.id)}
-                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-xs text-center transition-all ${
-                      active
-                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-                    }`}>
-                    <span className="text-lg leading-none">{opt.cost === 0 ? "∅" : "✦"}</span>
-                    <span className="leading-tight break-words">{t(opt.label, lang)}</span>
-                    {opt.cost > 0 && <span className="text-xs opacity-60">+{opt.cost} PLN</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
+    </>
+  );
 
-          {!isChainType(typeId) && (
-            <CalcCard stepNum={step()} label={typeId === "signet"
-              ? ({ pl: "Kamień w oczku sygnetu", en: "Stone in signet bezel", de: "Stein im Siegelkopf" }[lang] ?? l.gem)
-              : l.gem}>
-              <StoneComposer
-                stoneRows={stoneRows}
-                onChange={setStoneRows}
-                lang={lang}
-                gemstones={resolvedGemstones}
-              />
-            </CalcCard>
-          )}
-        </>
-      )}
+  // Kamien nie dotyczy lancucha: `calcChain` go nie zna, a wycena wiazaca i tak
+  // przy kamieniach nie istnieje (patrz `cartBlocked`).
+  const kartaKamienia = () => (isChainType(typeId) ? null : (
+    <StoneComposer
+      stoneRows={stoneRows}
+      onChange={setStoneRows}
+      lang={lang}
+      gemstones={resolvedGemstones}
+    />
+  ));
 
-      {/* === RENOVATION FLOW === */}
-      {serviceId === "renovation" && (
-        <>
-          <CalcCard stepNum={step()} label={l.jewType}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-              {GENERIC_TYPES.map(jt => {
-                const active = renoJewType === jt.id;
-                const label = t(jt.label, lang);
-                return (
-                  <button key={jt.id} onClick={() => setRenoJewType(jt.id)}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-sky-400 bg-sky-400/10 shadow-lg shadow-sky-400/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden relative ${
-                      jt.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {jt.img ? (
-                        <>
-                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
-                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
-                            style={{ filter: "grayscale(30%) sepia(20%)" }} />
-                          <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
-                        </>
-                      ) : (
-                        <span className="text-2xl opacity-40">?</span>
-                      )}
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
-                      active ? "text-sky-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-          <CalcCard stepNum={step()} label={l.metalType}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {RENOVATION_METALS.map(m => {
-                const active = renoMetal === m.id;
-                const label = t(m.label, lang);
-                if (!m.img) {
-                  return (
-                    <button key={m.id} onClick={() => setRenoMetal(m.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-sky-400 text-sky-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{label}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={m.id} onClick={() => setRenoMetal(m.id)}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-sky-400 bg-sky-400/10 shadow-lg shadow-sky-400/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
-                        style={{ filter: "grayscale(30%) sepia(20%)" }} />
-                      <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
-                      active ? "text-sky-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-          <CalcCard stepNum={step()} label={l.renoServices}>
-            <div className="flex flex-wrap gap-2">
-              {RENOVATION_SERVICES.map(svc => {
-                const active = renoServices.includes(svc.id);
-                return (
-                  <button key={svc.id} onClick={() => toggleRenoService(svc.id)}
-                    className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
-                      active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-                    }`}>
-                    {t(svc.label, lang)}
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-        </>
-      )}
+  const etykietaKamienia = typeId === "signet"
+    ? ({ pl: "Kamień w oczku sygnetu", en: "Stone in signet bezel", de: "Stein im Siegelkopf" }[lang] ?? l.gem)
+    : l.gem;
 
-      {/* === REPAIR FLOW === */}
-      {serviceId === "repair" && (
-        <>
-          <CalcCard stepNum={step()} label={l.jewType}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-              {GENERIC_TYPES.map(jt => {
-                const active = repairJewType === jt.id;
-                const label = t(jt.label, lang);
-                return (
-                  <button key={jt.id} onClick={() => setRepairJewType(jt.id)}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-orange-400 bg-orange-400/10 shadow-lg shadow-orange-400/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden relative ${
-                      jt.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {jt.img ? (
-                        <>
-                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
-                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
-                            style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
-                          <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
-                        </>
-                      ) : (
-                        <span className="text-2xl opacity-40">?</span>
-                      )}
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
-                      active ? "text-orange-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-          <CalcCard stepNum={step()} label={l.metalType}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {/* Naprawa wymaga lutowania, wiec bez platyny. */}
-              {REPAIR_METALS.map(m => {
-                const active = repairMetal === m.id;
-                const label = t(m.label, lang);
-                if (!m.img) {
-                  return (
-                    <button key={m.id} onClick={() => setRepairMetal(m.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-orange-400 text-orange-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{label}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={m.id} onClick={() => setRepairMetal(m.id)}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-orange-400 bg-orange-400/10 shadow-lg shadow-orange-400/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
-                        style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
-                      <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
-                    </div>
-                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
-                      active ? "text-orange-300 font-medium" : "text-neutral-400"
-                    }`}>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CalcCard>
-          <CalcCard stepNum={step()} label={l.repairType}>
-            <Chips options={REPAIR_SERVICES} value={repairId} onChange={setRepairId} lang={lang} />
-          </CalcCard>
-        </>
-      )}
-
-      {/* Quantity */}
-      <CalcCard stepNum={step()} label={l.qty}>
-        <Chips options={QTY_TIERS} value={qtyId} onChange={(id) => setQty(qtyForTier(id, QTY_TIERS))} lang={lang} />
-        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
-          min={1} max={qtyLimit(QTY_TIERS)} openValue={qtyOpenValue(QTY_TIERS)} lang={lang} accent="amber" />
+  return (
+    <div>
+      {/* Step 1: Service Type */}
+      {/* Wybor uslugi: to nie jest pole uslugi, tylko wybor MIEDZY trzema
+          uslugami, wiec zostaje tutaj, przed lista pytan. */}
+      <CalcCard stepNum="①" label={l.service} accent="amber">
+        <HeroCards
+          options={SERVICE_TYPES}
+          value={serviceId}
+          onChange={(id) => { setServiceId(id); trackCalc("jewelry", "service", id); }}
+          lang={lang}
+          cols="grid-cols-1 sm:grid-cols-3"
+          minH={160}
+          accent="amber"
+        />
       </CalcCard>
+
+      <PolaUslugi
+        service={USLUGI[serviceId]}
+        params={{ ...params, qtyId }}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        accent="amber"
+        pierwszyNumer={2}
+        tierKey="qtyId"
+        qty={qty}
+        onQty={setQty}
+        qtyMax={qtyLimit(QTY_TIERS)}
+        qtyOpen={qtyOpenValue(QTY_TIERS)}
+        qtyLabel={t(QTY_STEPPER_LBL, lang)}
+        wstawki={[
+          // Kotwica jest masywnosc, bo tam te kartki staly. Przy lancuchu
+          // masywnosci nie ma, wiec wspolna warstwa przesuwa je za rodzaj.
+          { po: "weightId", render: kartaWymiarow, label: isChainType(typeId)
+            ? { pl: "Długość łańcuszka", en: "Chain length", de: "Kettenlänge" }[lang]
+            : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions") },
+          { po: "weightId", label: { pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang], render: kartaSplotu },
+          { po: "weightId", label: { pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang], render: kartaZapiecia },
+          { po: "engravingId", label: etykietaKamienia, render: kartaKamienia },
+        ]}
+        dodatki={{
+          metalId: { po: przelacznikKruszcu },
+          engravingId: { przed: dopiskiGraweru, etykieta: typeId === "signet"
+            ? ({ pl: "Grawerowanie oczka sygnetu", en: "Signet bezel engraving", de: "Siegelkopf-Gravur" }[lang] ?? l.engraving)
+            : l.engraving },
+        }}
+      />
+
+          {/* Weave image lightbox modal */}
+          {weaveModal && (() => {
+            const wm = CHAIN_WEAVES.find(x => x.id === weaveModal);
+            if (!wm || !wm.img) return null;
+            return (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
+                onClick={() => setWeaveModal(null)}>
+                <div className="relative max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={wm.img} alt={t(wm.label, lang)}
+                    className="w-full rounded-2xl shadow-2xl shadow-black/60" />
+                  <div className="mt-4 text-center">
+                    <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
+                    <p className="text-neutral-400 text-sm mt-1">
+                      {{ pl: `AR ${wm.ar ?? " - "} · czynnik ×${wm.weaveFactor} · szer. ×${wm.widthMul ?? " - "} · gr. ×${wm.thicknessMul ?? " - "} · odpad ~${wm.materialWaste}%`,
+                         en: `AR ${wm.ar ?? " - "} · factor ×${wm.weaveFactor} · width ×${wm.widthMul ?? " - "} · thk ×${wm.thicknessMul ?? " - "} · waste ~${wm.materialWaste}%`,
+                         de: `AR ${wm.ar ?? " - "} · Faktor ×${wm.weaveFactor} · Breite ×${wm.widthMul ?? " - "} · Dicke ×${wm.thicknessMul ?? " - "} · Abfall ~${wm.materialWaste}%`
+                      }[lang]}
+                    </p>
+                  </div>
+                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white text-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                    onClick={() => setWeaveModal(null)}>✕</button>
+                </div>
+              </div>
+            );
+          })()}
+
 
       {/* Result */}
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
@@ -1250,11 +855,11 @@ export default function JewelryCalc({ lang = "pl" }) {
             calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
             serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
             params={
-              serviceId === "renovation"
-                ? { jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }
-                : serviceId === "repair"
-                  ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
-                  : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
+              // POZYCJA NIESIE TO, O CO PYTALISMY, czyli caly zestaw z katalogu.
+              // Wypisywanie pol z reki gubilo te dodane pozniej: `complexityId`
+              // pojawil sie na ekranie, a bramka ksztaltu w koszyku go nie
+              // widziala, wiec zlozony wyrob przechodzil tu, a w sklepie nie.
+              { ...params, qtyId }
             }
             qty={qty}
             blocked={cartBlocked}
