@@ -710,7 +710,16 @@
                       <% o.items.forEach(function (it) { %>
                         <li class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
                           <div class="flex items-start justify-between gap-3">
-                            <div class="text-xs text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                            <div class="text-xs text-neutral-200">
+                              <%= it.qty %> &times; <%= it.title %>
+                              <%# TERMIN TEJ POZYCJI, obok jej nazwy. Zamowienie
+                                  niesie termin najdluzszej sztuki, wiec bez tej
+                                  liczby pracownia nie widzi, ze druga robi sie
+                                  krocej, i trzyma ja razem z wolniejsza. %>
+                              <% if (it.leadDays) { %>
+                                <span class="ml-1 text-[10px] text-neutral-500"><%= it.leadDays %> dni</span>
+                              <% } %>
+                            </div>
                             <%# Znacznik pojawia sie WYLACZNIE przy pozycji, ktora
                                 wymagala ustalen. Pole zaznaczane przy pozycji,
                                 ktora ich nie wymaga, kazaloby pytac, czego

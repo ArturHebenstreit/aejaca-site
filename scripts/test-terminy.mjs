@@ -92,4 +92,21 @@ zdanie("kopia w chat-api oddaje te sama liczbe", () => {
   assert.deepEqual(terminServer(pozycje), terminZamowienia(pozycje));
 });
 
+console.log("\n6. Pozycja niesie wlasny termin, zamowienie najdluzszy");
+zdanie("dwa odlewy o roznym wykonczeniu maja rozne terminy", () => {
+  const szybki = terminZamowienia([{ serviceId: "precious_metal_casting", params: { platingId: "none" } }]);
+  const wolny = terminZamowienia([{ serviceId: "precious_metal_casting", params: { platingId: "rhodium" } }]);
+  assert.equal(szybki.max, 14);
+  assert.equal(wolny.max, 16);
+  // ZAMOWIENIE BIERZE NAJDLUZSZY, ale pozycje zachowuja swoje. Bez tego
+  // pracownia trzymalaby szybsza sztuke na wolniejszej, choc paczka wychodzi
+  // jedna dopiero na koncu.
+  const calosc = terminZamowienia([
+    { serviceId: "precious_metal_casting", params: { platingId: "none" } },
+    { serviceId: "precious_metal_casting", params: { platingId: "rhodium" } },
+  ]);
+  assert.equal(calosc.max, 16);
+  assert.notEqual(szybki.max, calosc.max);
+});
+
 console.log(`\nCzas realizacji: ${ok} sprawdzen, wszystko sie zgadza`);

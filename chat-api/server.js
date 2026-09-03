@@ -427,6 +427,15 @@ if (pool) {
   pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
   pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
+  // TERMIN PRZY POZYCJI, a nie tylko przy zamowieniu. Dwa odlewy zaplacone
+  // jedna platnoscia to jedna paczka i jedna faktura, ale DWIE rozne roboty:
+  // klucz z wykonczeniem podstawowym i klucz z pelnym wykonczeniem plus
+  // rodowanie maja inny harmonogram. Zamowienie dalej niesie termin calosci
+  // (najdluzszy z pozycji), a to jest termin kazdej z osobna, zeby pracownia
+  // widziala, co robi sie krocej, i nie trzymala szybszej sztuki na wolniejszej.
+  // Polecenie wlasciciela, 2026-09-03.
+  pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`)
+    .catch((e) => console.error("[migracja] order_items.lead_days:", e.message));
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS deadline_at DATE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminders_sent JSONB NOT NULL DEFAULT '[]'::jsonb`).catch(() => {});
@@ -3919,8 +3928,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
       await pool.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
-           params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id)
-         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+           params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id, lead_days)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
          JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization, packagingText: i.packagingText, packagingTextBack: i.packagingTextBack, description: i.description }),
          JSON.stringify(i.breakdown ?? []),
@@ -3928,7 +3937,10 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          i.geometry?.sha256 ?? uploadRow?.file_sha256 ?? null,
          uploadRow?.drive_url ?? null,
          i.geometry ? JSON.stringify(i.geometry) : (uploadRow?.geometry ? JSON.stringify(uploadRow.geometry) : null),
-         uploadRow?.id ?? null]
+         uploadRow?.id ?? null,
+         // Termin TEJ pozycji, liczony tym samym rdzeniem, ktory pokazal go
+         // klientowi w koszyku. Zamowienie niesie najdluzszy z nich.
+         terminZamowienia([i])?.max ?? null]
       );
     }
 
@@ -4639,7 +4651,7 @@ app.get("/api/orders/queue", async (req, res) => {
 
   const { rows: pozycje } = await pool.query(
     `SELECT id, order_id, title, qty, calculator, file_name, file_url, params,
-            requires_details, details_settled_at, details_note
+            requires_details, details_settled_at, details_note, lead_days
        FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
     [rows.map((o) => o.id)]
   );
@@ -4656,6 +4668,9 @@ app.get("/api/orders/queue", async (req, res) => {
       requiresDetails: p.requires_details === true,
       detailsSettledAt: p.details_settled_at,
       detailsNote: p.details_note || null,
+      // Termin TEJ pozycji. Zamowienie ma swoj, najdluzszy, ale pracownia
+      // planuje prace sztuka po sztuce, wiec musi widziec obie liczby.
+      leadDays: p.lead_days != null ? Number(p.lead_days) : null,
       // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
       // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
       description: p.params?.description ?? null,
