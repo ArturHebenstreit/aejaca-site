@@ -25,7 +25,7 @@
 // Uruchamiany w `npm run build`.
 
 import { readFileSync } from "node:fs";
-import { issueGiftCode, MAX_PERCENT } from "../chat-api/discounts.js";
+import { wystawKod, RODZAJE_KODOW, MAX_PERCENT } from "../chat-api/discounts.js";
 import { buildPrezent } from "../chat-api/leadMail.js";
 
 let bledy = 0;
@@ -43,6 +43,18 @@ function atrapaBazy() {
   const zapytania = [];
   return {
     zapytania,
+    /**
+     * Parametry INSERT-a POD NAZWAMI, a nie pod numerami.
+     *
+     * Test czytal je wczesniej jako `params[5]`. Gdy kampania przestala byc
+     * wpisana w SQL, a stala sie parametrem, numery za nia przesunely sie
+     * o jeden i trzy sprawdzenia zaczely pytac o co innego, niz mysla, przy
+     * czym kod pod spodem byl poprawny. Nazwy nie przesuwaja sie same.
+     */
+    wpis(n = 0) {
+      const [code, kind, value, validFrom, dni, campaign, email, note, lang] = zapytania[n].params;
+      return { code, kind, value, validFrom, dni, campaign, email, note, lang };
+    },
     async query(sql, params) {
       zapytania.push({ sql, params });
       if (!/^\s*INSERT/i.test(sql)) return { rows: [] };
@@ -60,7 +72,7 @@ function atrapaBazy() {
 console.log("1. Prezent zawsze wystawia NOWY kod");
 {
   const pool = atrapaBazy();
-  const kod = await issueGiftCode(pool, { email: "anna@example.com", kind: "percent", value: 15 });
+  const kod = await wystawKod(pool, { rodzaj: "prezent", email: "anna@example.com", kind: "percent", value: 15 });
   ok(Boolean(kod?.code), "kod powstal", kod);
   ok(pool.zapytania.length === 1, "jedno zapytanie, bez szukania kodu wczesniejszego", pool.zapytania.length);
   ok(/^\s*INSERT/i.test(pool.zapytania[0].sql), "i jest nim INSERT");
@@ -71,44 +83,45 @@ console.log("1. Prezent zawsze wystawia NOWY kod");
 console.log("2. Warunki domyslne prezentu");
 {
   const pool = atrapaBazy();
-  await issueGiftCode(pool, { email: "anna@example.com", kind: "percent", value: 15 });
-  const { sql, params } = pool.zapytania[0];
-  ok(/'prezent'/.test(sql), "kampania to `prezent`, wiec da sie je znalezc na liscie");
+  await wystawKod(pool, { rodzaj: "prezent", email: "anna@example.com", kind: "percent", value: 15 });
+  const { sql } = pool.zapytania[0];
+  const w = pool.wpis();
+  ok(w.campaign === "prezent", "kampania to `prezent`, wiec da sie je znalezc na liscie", w.campaign);
   ok(/'all'/.test(sql), "obejmuje caly asortyment");
   ok(/max_uses, max_uses_per_email/.test(sql) && /1, 1,/.test(sql), "jedno uzycie i jeden adres");
-  ok(params.includes("90"), "domyslnie 90 dni", params);
-  ok(params[5] === "anna@example.com", "wystawiony na adres odbiorcy", params[5]);
+  ok(w.dni === "90", "domyslnie 90 dni", w.dni);
+  ok(w.email === "anna@example.com", "wystawiony na adres odbiorcy", w.email);
+  ok(/^AEJP-/.test(w.code), "przedrostek prezentu, ten sam na kartce i w mailu", w.code);
 }
 
 console.log("3. Bez adresu kod jest na okaziciela, a nie odmowa");
 {
   const pool = atrapaBazy();
-  const kod = await issueGiftCode(pool, { kind: "amount", value: 20000 });
+  const kod = await wystawKod(pool, { rodzaj: "prezent", kind: "amount", value: 20000 });
   ok(Boolean(kod?.code), "kod powstal mimo braku adresu", kod);
-  ok(pool.zapytania[0].params[5] === null, "adres jest pusty, wiec kod dziala u kazdego",
-    pool.zapytania[0].params[5]);
+  ok(pool.wpis().email === null, "adres jest pusty, wiec kod dziala u kazdego", pool.wpis().email);
 }
 
 console.log("4. Granice sprawdza silnik, a nie baza");
 {
   const pool = atrapaBazy();
-  ok(await issueGiftCode(pool, { value: MAX_PERCENT + 1 }) === null, `procent ponad ${MAX_PERCENT} odpada`);
-  ok(await issueGiftCode(pool, { value: 0 }) === null, "zero odpada");
-  ok(await issueGiftCode(pool, { value: 12.5 }) === null, "ulamek odpada");
-  ok(await issueGiftCode(pool, { value: -5 }) === null, "wartosc ujemna odpada");
+  ok(await wystawKod(pool, { rodzaj: "prezent", value: MAX_PERCENT + 1 }) === null, `procent ponad ${MAX_PERCENT} odpada`);
+  ok(await wystawKod(pool, { rodzaj: "prezent", value: 0 }) === null, "zero odpada");
+  ok(await wystawKod(pool, { rodzaj: "prezent", value: 12.5 }) === null, "ulamek odpada");
+  ok(await wystawKod(pool, { rodzaj: "prezent", value: -5 }) === null, "wartosc ujemna odpada");
   ok(pool.zapytania.length === 0, "zadne z nich nie dotknelo bazy", pool.zapytania.length);
   // Kwota nie ma gornej granicy procentowej: 200 zl to 20000 groszy, czyli
   // liczba wieksza od MAX_PERCENT, a mimo to poprawna.
-  ok(Boolean(await issueGiftCode(pool, { kind: "amount", value: 20000 })), "kwota 200 zl przechodzi");
+  ok(Boolean(await wystawKod(pool, { rodzaj: "prezent", kind: "amount", value: 20000 })), "kwota 200 zl przechodzi");
 }
 
 console.log("5. Waznosc trzymana w rozsadnych granicach");
 {
   const pool = atrapaBazy();
-  await issueGiftCode(pool, { value: 10, days: 5000 });
-  ok(pool.zapytania[0].params[4] === "730", "dwa lata to gora", pool.zapytania[0].params[4]);
-  await issueGiftCode(pool, { value: 10, days: 0 });
-  ok(pool.zapytania[1].params[4] === "90", "zero dni czyta sie jako brak wyboru", pool.zapytania[1].params[4]);
+  await wystawKod(pool, { rodzaj: "prezent", value: 10, days: 5000 });
+  ok(pool.wpis(0).dni === "730", "dwa lata to gora", pool.wpis(0).dni);
+  await wystawKod(pool, { rodzaj: "prezent", value: 10, days: 0 });
+  ok(pool.wpis(1).dni === "90", "zero dni czyta sie jako brak wyboru", pool.wpis(1).dni);
 }
 
 console.log("6. Trasa prezentu nie siega po odzyskiwanie kodow");
@@ -118,8 +131,8 @@ console.log("6. Trasa prezentu nie siega po odzyskiwanie kodow");
   const server = readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8");
   const trasa = server.match(/app\.post\("\/api\/admin\/discounts\/gift"[\s\S]*?\n\}\);/)?.[0] || "";
   ok(trasa.length > 0, "trasa prezentu istnieje");
-  ok(/issueGiftCode/.test(trasa), "wystawia kod przez issueGiftCode");
-  ok(!/issueSingleUseCode/.test(trasa), "i nie przez issueSingleUseCode");
+  ok(/rodzaj: "prezent"/.test(trasa), "wystawia kod rodzaju `prezent`");
+  ok(RODZAJE_KODOW.prezent.powtarzalny === false, "a ten rodzaj z definicji nie odzyskuje cudzego kodu");
   ok(/no_email/.test(trasa), "odmawia wyslania bez adresu, zamiast po cichu zapisywac");
   ok(/mail_failed/.test(trasa) && /codeIssued/.test(trasa),
     "gdy poczta padnie, oddaje kod, ktory juz powstal");

@@ -43,7 +43,7 @@ import {
 } from "./products.js";
 import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
-  releaseOrderRedemptions, normalizeCode, randomCode, issueSingleUseCode, issueGiftCode,
+  releaseOrderRedemptions, normalizeCode, randomCode, wystawKod, RODZAJE_KODOW,
   DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import {
@@ -4255,22 +4255,20 @@ app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, r
   const email = String(req.body?.email || "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
 
-  const percent = Number.isInteger(req.body?.percent) ? Math.min(req.body.percent, MAX_PERCENT) : 10;
-  // 45 dni (decyzja wlasciciela, 2026-08-31). Wczesniej 90: kod wazny kwartal
-  // nie jest zacheta, tylko rzecza zapomniana, a przy kruszcu cena metalu
-  // w dniu zapisu i trzy miesiace pozniej to dwie rozne ceny.
-  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 45;
-
   try {
-    // Wystawianie kodu stoi w `discounts.js`, bo ta sama droga rozdaje kod
-    // powitalny i rabat doklejony do wyceny sprzed tygodnia. Dwie kopie tego
-    // zapytania rozjechalyby sie przy pierwszej zmianie regul kodu.
-    const kod = await issueSingleUseCode(pool, {
-      email, percent, days, campaign: "newsletter", prefix: "AEJ10", lang: jezykZadania(req.body?.lang),
-      note: `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`,
+    // WARUNKI KODU STOJA W `RODZAJE_KODOW`, a nie tutaj. Trasa podaje rodzaj
+    // i to, co od niego odbiega; procent i waznosc, razem z ich granicami,
+    // nalezą do rodzaju. Wczesniej przedrostek byl tu wpisany na sztywno jako
+    // "AEJ10", a procent brany z zadania, wiec `percent: 15` dawalo kod
+    // o nazwie AEJ10 wart pietnascie procent.
+    const kod = await wystawKod(pool, {
+      rodzaj: "newsletter", email,
+      value: Number.isInteger(req.body?.percent) ? req.body.percent : undefined,
+      days: Number.isInteger(req.body?.days) ? req.body.days : undefined,
+      lang: jezykZadania(req.body?.lang),
     });
     if (!kod) return res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
-    res.json({ ok: true, reused: kod.reused, code: kod.code, percent, validTo: kod.validTo });
+    res.json({ ok: true, reused: kod.reused, code: kod.code, percent: kod.percent, validTo: kod.validTo });
   } catch (e) {
     console.error("[rabaty] kod powitalny:", e.message);
     res.status(500).json({ error: "Nie udalo sie wystawic kodu" });
@@ -4332,17 +4330,18 @@ app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => 
     // klienta. n8n nie musi o niego prosic osobno: jedno wolanie, jeden mail,
     // jeden kod, ktory w cudzych rekach nie zadziala.
     if (rodzaj === "rabat7" && !dane.kod) {
-      const procent = Number.isInteger(req.body?.procent) ? Math.min(req.body.procent, MAX_PERCENT) : 5;
-      const dni = Number.isInteger(req.body?.dni) ? Math.min(Math.max(req.body.dni, 7), 365) : 14;
-      const kod = pool ? await issueSingleUseCode(pool, {
-        email: to, percent: procent, days: dni, campaign: "quote-followup", prefix: `AEJ${procent}`, lang,
-        note: `Rabat do wyceny, ${new Date().toISOString().slice(0, 10)}`,
+      const kod = pool ? await wystawKod(pool, {
+        rodzaj: "rabat_do_wyceny", email: to, lang,
+        value: Number.isInteger(req.body?.procent) ? req.body.procent : undefined,
+        days: Number.isInteger(req.body?.dni) ? req.body.dni : undefined,
       }) : null;
       // Bez kodu ten mail nie ma o czym pisac: zdanie "oto Twoj rabat" bez
       // rabatu jest gorsze niz brak wiadomosci.
       if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
       dane.kod = kod.code;
-      dane.procent = `${procent}%`;
+      // Procent bierzemy Z KODU, a nie z zadania: kod powtarzalny bywa tym
+      // wystawionym wczesniej, o innej stawce, a mail ma mowic to, co kod robi.
+      dane.procent = `${kod.percent}%`;
       dane.waznyDo = dataISO(kod.validTo) ? dataISO(kod.validTo).split("-").reverse().join(".") : null;
     }
 
@@ -4416,9 +4415,9 @@ app.post("/api/admin/discounts/gift", express.json({ limit: "8kb" }), async (req
   const note = String(b.note || "").trim();
 
   try {
-    const kod = await issueGiftCode(pool, {
-      email: to || null, kind, value, days: b.days, validFrom: b.validFrom || null,
-      note: note || null, lang,
+    const kod = await wystawKod(pool, {
+      rodzaj: "prezent", email: to || null, kind, value, days: b.days,
+      validFrom: b.validFrom || null, note: note || null, lang,
     });
     if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
 
