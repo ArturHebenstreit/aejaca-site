@@ -61,7 +61,8 @@ import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { ETAPY_PRACY, przejscie, znanyEtap, korekta, etapPoZaplacie, terminRealizacji,
          dniDoTerminu, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM,
-         ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia } from "./productionQueue.js";
+         ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia,
+         znanyEtapPozycji, wolnoEtapPozycji, etapZamowieniaZPozycji } from "./productionQueue.js";
 import { progDoWyslania, szturchnacSzczegoly } from "./deadlineReminders.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -436,6 +437,13 @@ if (pool) {
   // Polecenie wlasciciela, 2026-09-03.
   pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`)
     .catch((e) => console.error("[migracja] order_items.lead_days:", e.message));
+  // Etap pracy przy POZYCJI. Status zamowienia zostaje tam, gdzie byl, bo
+  // opisuje platnosc i wysylke, czyli rzeczy wspolne dla calej paczki. To jest
+  // stan samego wykonania jednej sztuki. Patrz `ETAPY_POZYCJI`.
+  for (const kolumna of ["stage TEXT", "queued_at TIMESTAMPTZ", "production_started_at TIMESTAMPTZ", "ready_at TIMESTAMPTZ"]) {
+    pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS ${kolumna}`)
+      .catch((e) => console.error(`[migracja] order_items.${kolumna.split(" ")[0]}:`, e.message));
+  }
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS deadline_at DATE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminders_sent JSONB NOT NULL DEFAULT '[]'::jsonb`).catch(() => {});
@@ -4651,7 +4659,8 @@ app.get("/api/orders/queue", async (req, res) => {
 
   const { rows: pozycje } = await pool.query(
     `SELECT id, order_id, title, qty, calculator, file_name, file_url, params,
-            requires_details, details_settled_at, details_note, lead_days
+            requires_details, details_settled_at, details_note, lead_days,
+            stage, queued_at, production_started_at, ready_at
        FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
     [rows.map((o) => o.id)]
   );
@@ -4671,6 +4680,11 @@ app.get("/api/orders/queue", async (req, res) => {
       // Termin TEJ pozycji. Zamowienie ma swoj, najdluzszy, ale pracownia
       // planuje prace sztuka po sztuce, wiec musi widziec obie liczby.
       leadDays: p.lead_days != null ? Number(p.lead_days) : null,
+      // Etap tej sztuki. `waiting` znaczy: jeszcze nie wzieta do roboty.
+      stage: znanyEtapPozycji(p.stage) ? String(p.stage) : "waiting",
+      queuedAt: dataISO(p.queued_at),
+      productionStartedAt: dataISO(p.production_started_at),
+      readyAt: dataISO(p.ready_at),
       // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
       // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
       description: p.params?.description ?? null,
@@ -5066,6 +5080,80 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
  * temat za zamkniety, i termin liczony dalej bylby terminem na prace, ktorej
  * nie mozemy zaczac.
  */
+// ============================================================
+// ETAP PRACY PRZY POJEDYNCZEJ POZYCJI
+// ============================================================
+// Jedna platnosc, jedna paczka, ale dwie rozne roboty. Ta trasa przestawia
+// etap JEDNEJ sztuki, a status calego zamowienia dociaga do najmniej
+// zaawansowanej z nich, zeby zamowienie nie oglosilo sie gotowym, dopoki
+// cokolwiek jeszcze lezy w robocie. Patrz `ETAPY_POZYCJI`.
+app.post("/api/orders/:ref/items/:id/stage", express.json({ limit: "2kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const itemId = Number(req.params.id);
+  const etap = String(req.body?.stage || "");
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return res.status(400).json({ error: "Zla pozycja", code: "bad_item" });
+  }
+  if (!znanyEtapPozycji(etap)) {
+    return res.status(400).json({ error: "Nie znamy takiego etapu pozycji", code: "bad_stage" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: zam } = await client.query(
+      `SELECT id, status FROM orders WHERE order_ref = $1 FOR UPDATE`, [ref]
+    );
+    const order = zam[0];
+    if (!order) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Zamowienie nie istnieje" }); }
+    // Praca nad pozycja ma sens dopiero po zaplacie i przed wysylka paczki.
+    if (!["paid", "details", "queued", "in_production", "ready"].includes(order.status)) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({
+        error: `Zamowienie ma status ${order.status}, prac nad pozycjami juz sie nie przestawia`,
+        code: "too_late",
+      });
+    }
+
+    const { rows: poz } = await client.query(
+      `SELECT id, stage FROM order_items WHERE order_id = $1 ORDER BY id FOR UPDATE`, [order.id]
+    );
+    const pozycja = poz.find((i) => Number(i.id) === itemId);
+    if (!pozycja) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Nie ma takiej pozycji" }); }
+
+    const wolno = wolnoEtapPozycji(pozycja.stage, etap);
+    if (!wolno.ok) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: wolno.powod, code: "bad_transition", z: wolno.z });
+    }
+
+    // Stempel czasu tylko przy wejsciu w etap, ktory go ma. Cofniecie zostawia
+    // poprzedni stempel: chcemy wiedziec, kiedy sztuka byla gotowa pierwszy raz.
+    await client.query(
+      wolno.pole
+        ? `UPDATE order_items SET stage = $2, ${wolno.pole} = COALESCE(${wolno.pole}, NOW()) WHERE id = $1`
+        : `UPDATE order_items SET stage = $2 WHERE id = $1`,
+      [itemId, etap]
+    );
+
+    const { rows: poNowemu } = await client.query(
+      `SELECT stage FROM order_items WHERE order_id = $1`, [order.id]
+    );
+    const etapCalosci = etapZamowieniaZPozycji(poNowemu);
+    await client.query("COMMIT");
+    res.json({ ok: true, stage: etap, orderStage: etapCalosci });
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("[etap pozycji]", err.message);
+    res.status(500).json({ error: "Nie udalo sie przestawic etapu pozycji" });
+  } finally {
+    client.release();
+  }
+});
+
 app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

@@ -1864,6 +1864,20 @@ app.post("/queue/:ref/item/:id/details", requireAuth, async (req, res) => {
   } catch (err) { back(res, powrot, { err: err.message }); }
 });
 
+// Etap pracy PRZY POZYCJI. Osobna trasa od `/queue/:ref/stage`, bo tamta
+// przestawia cale zamowienie, czyli platnosc i wysylke, a ta samo wykonanie
+// jednej sztuki.
+app.post("/queue/:ref/item/:id/stage", requireAuth, async (req, res) => {
+  const powrot = req.body.back || "/queue";
+  try {
+    const r = await shopApi(
+      `/api/orders/${encodeURIComponent(req.params.ref)}/items/${encodeURIComponent(req.params.id)}/stage`,
+      { method: "POST", body: { stage: req.body.stage } }
+    );
+    back(res, powrot, { msg: `${req.params.ref}: pozycja na etapie ${r.stage}, całość ${r.orderStage}` });
+  } catch (err) { back(res, powrot, { err: err.message }); }
+});
+
 app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
   try {
     const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/production`, {
