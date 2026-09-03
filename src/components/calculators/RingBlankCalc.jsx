@@ -4,7 +4,7 @@
 // Formula: length_mm = PI * (d_inner + thickness) * width
 // This is a free tool - no pricing, just geometry + mass estimate.
 // ============================================================
-import { useState, useMemo } from "react";
+import { useId, useState, useMemo } from "react";
 import { CalcCard, Chips, InquiryForm, t } from "./calcShared.jsx";
 
 const METALS = {
@@ -68,6 +68,41 @@ const LABELS = {
 
 const TECH_LABEL = { pl: "Kalkulator blanku obrączki", en: "Ring Blank Calculator", de: "Ring-Rohling-Rechner" };
 
+/**
+ * Suwak wymiaru z etykieta, wartoscia i koncami zakresu.
+ *
+ * Trzy takie suwaki stanowily wczesniej trzy kopie tego samego bloku, a kazda
+ * miala `<label>` bez `htmlFor`: napis byl widoczny, ale nie nalezal do
+ * suwaka, wiec czytnik ekranu oglaszal trzy razy "suwak" i ani razu, czego
+ * dotyczy. Identyfikator sklada `useId` (ADR-0025).
+ */
+function Suwak({ etykieta, wartosc, onChange, min, max, step, jednostka }) {
+  const idPola = useId();
+
+  return (
+    <div>
+      <div className="flex justify-between items-baseline mb-1.5">
+        <label htmlFor={idPola} className="text-sm text-neutral-300">{etykieta}</label>
+        <span className="text-amber-400 font-semibold text-sm">{wartosc} {jednostka}</span>
+      </div>
+      <input
+        id={idPola}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={wartosc}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-amber-400 cursor-pointer"
+      />
+      <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
+        <span>{min} {jednostka}</span>
+        <span>{max} {jednostka}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function RingBlankCalc({ lang = "pl" }) {
   const l = LABELS[lang] || LABELS.en;
 
@@ -108,68 +143,9 @@ export default function RingBlankCalc({ lang = "pl" }) {
       {/* Step 2 - Dimensions */}
       <CalcCard stepNum="②" label={l.step2}>
         <div className="space-y-5">
-          {/* Inner diameter */}
-          <div>
-            <div className="flex justify-between items-baseline mb-1.5">
-              <label className="text-sm text-neutral-300">{l.dInner}</label>
-              <span className="text-amber-400 font-semibold text-sm">{dInner} {l.mm}</span>
-            </div>
-            <input
-              type="range"
-              min={14}
-              max={25}
-              step={0.5}
-              value={dInner}
-              onChange={(e) => setDInner(Number(e.target.value))}
-              className="w-full accent-amber-400 cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
-              <span>14 {l.mm}</span>
-              <span>25 {l.mm}</span>
-            </div>
-          </div>
-
-          {/* Thickness */}
-          <div>
-            <div className="flex justify-between items-baseline mb-1.5">
-              <label className="text-sm text-neutral-300">{l.thickness}</label>
-              <span className="text-amber-400 font-semibold text-sm">{thickness} {l.mm}</span>
-            </div>
-            <input
-              type="range"
-              min={0.5}
-              max={3.0}
-              step={0.1}
-              value={thickness}
-              onChange={(e) => setThickness(Number(e.target.value))}
-              className="w-full accent-amber-400 cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
-              <span>0.5 {l.mm}</span>
-              <span>3.0 {l.mm}</span>
-            </div>
-          </div>
-
-          {/* Width */}
-          <div>
-            <div className="flex justify-between items-baseline mb-1.5">
-              <label className="text-sm text-neutral-300">{l.width}</label>
-              <span className="text-amber-400 font-semibold text-sm">{width} {l.mm}</span>
-            </div>
-            <input
-              type="range"
-              min={3}
-              max={15}
-              step={0.5}
-              value={width}
-              onChange={(e) => setWidth(Number(e.target.value))}
-              className="w-full accent-amber-400 cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
-              <span>3 {l.mm}</span>
-              <span>15 {l.mm}</span>
-            </div>
-          </div>
+          <Suwak etykieta={l.dInner} wartosc={dInner} onChange={setDInner} min={14} max={25} step={0.5} jednostka={l.mm} />
+          <Suwak etykieta={l.thickness} wartosc={thickness} onChange={setThickness} min={0.5} max={3.0} step={0.1} jednostka={l.mm} />
+          <Suwak etykieta={l.width} wartosc={width} onChange={setWidth} min={3} max={15} step={0.5} jednostka={l.mm} />
         </div>
       </CalcCard>
 

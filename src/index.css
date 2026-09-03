@@ -712,6 +712,37 @@ a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) {
 [data-theme="light"] button:has(.from-black\/95):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.60) saturate(1.12) !important; }
 [data-theme="light"] a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.56) saturate(1.12) !important; }
 
+/* ── Kafelek wybrany: DODAJEMY SWIATLO, nie mnozymy jasnosci ───────────
+   Zdjecia produktowe w kafelkach sa prawie czarne. `brightness()` jest
+   mnoznikiem, wiec na czerni nie ma czego mnozyc: pomiar prawdziwych pikseli
+   pokazal, ze podniesienie z 1,38 do 3,00 rusza srednia jasnosc kafelka
+   o piec poziomow na 255. Gorzej: kafelek WYBRANY byl przez to CIEMNIEJSZY
+   niz wygaszone (23 wobec 32 w motywie ciemnym, 99 wobec 115 w jasnym), bo
+   wygaszanie idzie przez odbarwienie, a szarosc ma wyzsza srednia niz
+   nasycona czern. Zaznaczenie dzialalo wiec na odwrot, niz mialo.
+
+   `plus-lighter` DODAJE skladowe zamiast je mnozyc, wiec podnosi czern.
+   Szesc procent bieli podnosi kafelek z 23 na 49, czyli ponad dwukrotnie.
+   Warstwa jest osobnym elementem w kafelku (`tile-lift`), a nie filtrem na
+   zdjeciu, bo ma dzialac takze tam, gdzie zdjecia nie ma. */
+.tile-lift {
+  background: rgba(255, 255, 255, 0.11);
+  mix-blend-mode: plus-lighter;
+  pointer-events: none;
+}
+/* MOTYW JASNY POTRZEBUJE WIECEJ, NIE MNIEJ, i to jest wynik pomiaru, a nie
+   przeczucia. Wygaszone kafelki dostaja tu mocniejsze rozjasnienie
+   (`--tile-jasnosc: 1.50`), wiec startuja z 115 na 255. Szesc procent bieli
+   dawalo wybranemu 107, czyli dalej mniej niz sasiadom. Osiemnascie procent
+   daje 123 i przewaga jest widoczna. */
+[data-theme="light"] .tile-lift { background: rgba(255, 255, 255, 0.18); }
+
+/* Najazd myszka na kafelek NIEWYBRANY tez ma dodac swiatla, zeby przegladanie
+   oferty nie odbywalo sie po ciemnych miniaturach. Zostaje ponizej wybranego,
+   bo najazd to zapowiedz wyboru, a nie wybor. */
+button:has(.from-black\/95):hover .tile-lift { background: rgba(255, 255, 255, 0.15); }
+[data-theme="light"] button:has(.from-black\/95):hover .tile-lift { background: rgba(255, 255, 255, 0.24); }
+
 /* ── Napis na zdjeciu: ciemna obwodka, a nie sam cien ──────────────────
    Kafelki kalkulatorow maja pod tekstem fotografie, a fotografia bywa jasna
    w dowolnym miejscu. Sam `drop-shadow` tego nie ratuje: rozmyty cien pod

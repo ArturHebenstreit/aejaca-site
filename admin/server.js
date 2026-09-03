@@ -1345,7 +1345,12 @@ app.get("/email-threads/:id", requireAuth, async (req, res) => {
         LEFT JOIN leads l ON l.id = et.lead_id
         WHERE et.id = $1
       `, [req.params.id]),
-      pool.query("SELECT * FROM email_messages WHERE thread_id = $1 ORDER BY received_at ASC", [req.params.id]),
+      // OD NAJNOWSZEJ. Przegladajacy watek szuka tego, co przyszlo teraz, a nie
+      // tego, od czego rozmowa sie zaczela: przy dlugiej korespondencji ostatnia
+      // wiadomosc lezala na samym dole i trzeba bylo przewinac cala historie.
+      // Widok rysuje miedzy wiadomosciami strzalke w GORE, zeby kierunek czasu
+      // zgadzal sie z kolejnoscia. Polecenie wlasciciela, 2026-09-03.
+      pool.query("SELECT * FROM email_messages WHERE thread_id = $1 ORDER BY received_at DESC", [req.params.id]),
     ]);
     if (!thread.rows[0]) return res.status(404).render("error", { message: "Thread not found" });
     res.render("email-thread", {
@@ -1856,6 +1861,20 @@ app.post("/queue/:ref/item/:id/details", requireAuth, async (req, res) => {
     );
     const ile = r.remaining > 0 ? `, zostało do ustalenia: ${r.remaining}` : ", wszystkie ustalenia domknięte";
     back(res, powrot, { msg: `${req.params.ref}: ${r.status}${ile}` });
+  } catch (err) { back(res, powrot, { err: err.message }); }
+});
+
+// Etap pracy PRZY POZYCJI. Osobna trasa od `/queue/:ref/stage`, bo tamta
+// przestawia cale zamowienie, czyli platnosc i wysylke, a ta samo wykonanie
+// jednej sztuki.
+app.post("/queue/:ref/item/:id/stage", requireAuth, async (req, res) => {
+  const powrot = req.body.back || "/queue";
+  try {
+    const r = await shopApi(
+      `/api/orders/${encodeURIComponent(req.params.ref)}/items/${encodeURIComponent(req.params.id)}/stage`,
+      { method: "POST", body: { stage: req.body.stage } }
+    );
+    back(res, powrot, { msg: `${req.params.ref}: pozycja na etapie ${r.stage}, całość ${r.orderStage}` });
   } catch (err) { back(res, powrot, { err: err.message }); }
 });
 

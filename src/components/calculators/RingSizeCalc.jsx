@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Link } from "../../i18n/nav.jsx";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
@@ -225,11 +225,21 @@ function MeasureSlider({ mode, value, onChange, L }) {
   // percent for custom thumb track fill
   const pct = ((value - min) / (max - min)) * 100;
 
+  // Napis nad suwakiem byl zwyklym `span`, wiec ani suwak, ani pole liczbowe
+  // nie mialy nazwy dostepnej: czytnik ekranu oglaszal "suwak" i "pole edycji",
+  // a oba dotycza tej samej miary. Suwak bierze nazwe przez `htmlFor`, pole
+  // liczbowe przez `aria-labelledby`, bo druga etykieta opisywalaby to samo
+  // (ADR-0025).
+  const id = useId();
+  const idEtykiety = `${id}-etykieta`;
+  const idSuwaka = `${id}-suwak`;
+  const idPola = `${id}-pole`;
+
   return (
     <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-4">
       {/* label + live value */}
       <div className="flex items-baseline justify-between">
-        <span className="text-xs uppercase tracking-widest text-amber-400">{label}</span>
+        <label id={idEtykiety} htmlFor={idSuwaka} className="text-xs uppercase tracking-widest text-amber-400">{label}</label>
         <span className="font-mono text-2xl font-bold text-white">
           {value.toFixed(isCirc ? 0 : 1)}
           <span className="text-sm font-normal text-neutral-400 ml-1">{unit}</span>
@@ -239,6 +249,7 @@ function MeasureSlider({ mode, value, onChange, L }) {
       {/* range input */}
       <div className="relative">
         <input
+          id={idSuwaka}
           type="range"
           min={min}
           max={max}
@@ -260,6 +271,8 @@ function MeasureSlider({ mode, value, onChange, L }) {
       {/* manual number input */}
       <div className="flex items-center gap-2">
         <input
+          id={idPola}
+          aria-labelledby={idEtykiety}
           type="number"
           min={min}
           max={max}

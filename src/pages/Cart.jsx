@@ -23,6 +23,7 @@ import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { useAvailability } from "../shop/availability.js";
 import { FREE_SHIPPING_FROM_GROSZE, ZONES } from "../pricing/shipping.js";
+import { terminZamowienia, opisTerminu } from "../pricing/terminy.js";
 
 const LOCKER_GROSZE = ZONES.pl.lockerGrosze;
 const COURIER_GROSZE = ZONES.pl.courierGrosze;
@@ -140,6 +141,12 @@ export default function Cart() {
   const { items, subtotalGrosze, remove, setQty, update, hasVolatile, ready } = useCart();
   // Prog dotyczy wylacznie Polski, dlatego tekst mowi o Polsce wprost.
   const freeLeftGrosze = Math.max(0, FREE_SHIPPING_FROM_GROSZE - subtotalGrosze);
+  // SZACOWANY CZAS REALIZACJI STOI PRZY KWOCIE, a nie w opisie produktu.
+  // Wyrob na zamowienie nie lezy na polce i klient ma to wiedziec, zanim
+  // przejdzie do kasy. Liczy jeden rdzen (`src/pricing/terminy.js`), ten sam,
+  // z ktorego serwer zapisuje `orders.lead_days`, wiec ekran i baza nie moga
+  // podac dwoch roznych liczb.
+  const termin = opisTerminu(terminZamowienia(items), lang);
 
   // Pozycja z polki mogla sprzedac sie komus innemu, odkad wladowala sie do
   // koszyka. Pytamy o dostepnosc na zywo i blokujemy przejscie do kasy, zeby
@@ -335,6 +342,19 @@ export default function Cart() {
                   <span className="text-neutral-300 text-sm">{u.subtotal}</span>
                   <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
                 </div>
+                {termin && (
+                  <div className="mt-3 pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-300 text-sm">{termin.etykieta}</span>
+                      <span className="text-white font-semibold text-sm">{termin.zakres}</span>
+                    </div>
+                    {termin.dodatki && (
+                      <p className="text-neutral-400 text-xs mt-1 leading-relaxed">{termin.dodatki}</p>
+                    )}
+                    <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">{termin.zastrzezenie}</p>
+                  </div>
+                )}
+
                 {/* Koszt dostawy pokazujemy TU, a nie dopiero na kasie.
                     Paczkomat to 15,90 zl, co przy malym zamowieniu bywa polowa
                     jego wartosci; niespodzianka na kasie jest najczestsza

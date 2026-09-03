@@ -468,5 +468,45 @@ console.log("\n14. Prosba o ocene jest decyzja, a nie automatem\n");
   ma(KOLEJKA, /Prośba o opinię wysłana/, "a po wyslaniu widac date zamiast przelacznika");
 }
 
+// ============================================================
+// ETAP PRACY PRZY POZYCJI
+// ============================================================
+// Jedna platnosc to jedna paczka, ale dwie rozne roboty. Bez etapu przy
+// pozycji pracownia trzymala szybsza sztuke na wolniejszej.
+console.log("\nEtap pracy przy pozycji\n");
+{
+  const { ETAPY_POZYCJI, znanyEtapPozycji, wolnoEtapPozycji, etapZamowieniaZPozycji } =
+    await import("../chat-api/productionQueue.js");
+
+  if (!znanyEtapPozycji("queued") || !znanyEtapPozycji("ready")) zle("nie znamy wlasnych etapow pozycji");
+  // Dziedziczona nazwa nie moze udawac etapu: `ETAPY_POZYCJI["toString"]`
+  // oddaje cos prawdziwego, wiec walidacja bez `Object.hasOwn` przepuscilaby ja.
+  if (znanyEtapPozycji("toString") || znanyEtapPozycji("__proto__")) zle("dziedziczona nazwa udaje etap pozycji");
+  else ok("znamy tylko wypisane etapy, dziedziczone nazwy odpadaja");
+
+  if (wolnoEtapPozycji("waiting", "ready").ok) zle("z czekania da sie skoczyc na gotowe");
+  else if (!wolnoEtapPozycji("waiting", "queued").ok
+    || !wolnoEtapPozycji("queued", "in_production").ok
+    || !wolnoEtapPozycji("in_production", "ready").ok) zle("droga naprzod jest zablokowana");
+  else ok("droga naprzod idzie krok po kroku, bez przeskokow");
+
+  if (!wolnoEtapPozycji("ready", "in_production").ok) zle("cofniecie o jeden krok ma byc dozwolone");
+  else if (wolnoEtapPozycji("ready", "ready").ok) zle("ten sam etap nie jest przejsciem");
+  else ok("cofniecie o jeden krok wolno, przestawienie na ten sam etap nie");
+
+  // CALOSC IDZIE ZA NAJMNIEJ ZAAWANSOWANA SZTUKA. Ta sama regula co przy
+  // terminie (ADR-0027 punkt 3), tylko po drugiej stronie: tam najdluzszy
+  // termin, tu najmniej zaawansowany etap.
+  if (etapZamowieniaZPozycji([{ stage: "ready" }, { stage: "in_production" }]) !== "in_production") zle("calosc wyprzedza najwolniejsza sztuke");
+  else if (etapZamowieniaZPozycji([{ stage: "ready" }, { stage: "ready" }]) !== "ready") zle("dwie gotowe sztuki nie daja gotowej calosci");
+  else if (etapZamowieniaZPozycji([{ stage: "ready" }, {}]) !== "waiting") zle("pozycja bez etapu ma czekac");
+  else if (etapZamowieniaZPozycji([]) !== null) zle("zamowienie bez pozycji nie ma etapu pracy");
+  else ok("etap calosci idzie za najmniej zaawansowana sztuka");
+
+  if (Object.keys(ETAPY_POZYCJI).some((e) => e === "shipped" || e === "completed")) {
+    zle("wysylka albo zamkniecie trafily do etapow pozycji, a paczka wychodzi jedna");
+  } else ok("wysylka i zamkniecie zostaja przy zamowieniu, nie przy sztuce");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nKolejka pracowni: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

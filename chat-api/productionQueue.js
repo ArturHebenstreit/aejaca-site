@@ -57,6 +57,77 @@ export const ETAPY_PRACY = {
  */
 export const ETAP_STARTU_ZEGARA = "queued";
 
+/**
+ * ETAPY PRACY PRZY POZYCJI, a nie tylko przy zamowieniu.
+ *
+ * Jedna platnosc to jedna paczka, jedna faktura i jeden prog darmowej dostawy,
+ * ale nie jedna robota. Dwa odlewy zamowione razem, jeden z wykonczeniem
+ * podstawowym, drugi z pelnym plus rodowanie, maja rozny harmonogram: pierwszy
+ * bywa gotowy dwa tygodnie przed drugim. Dopoki etap istnial wylacznie przy
+ * zamowieniu, pracownia trzymala szybsza sztuke na wolniejszej, bo nie miala
+ * gdzie zapisac, ze tamta jest skonczona.
+ *
+ * Zamowienie NIE przestaje miec swojego statusu: on nadal opisuje platnosc
+ * i wysylke, czyli rzeczy wspolne dla calej paczki. Etap pozycji opisuje samo
+ * wykonanie i jest od niego niezalezny. Etap pracy calego zamowienia
+ * WYLICZAMY z pozycji (`etapZamowieniaZPozycji`), bo zamowienie jest gotowe
+ * dopiero wtedy, gdy gotowa jest kazda sztuka.
+ *
+ * Polecenie wlasciciela, 2026-09-03.
+ */
+export const ETAPY_POZYCJI = {
+  // Czeka na ustalenia albo na kolejke. Stan poczatkowy kazdej pozycji.
+  waiting: { z: [], pole: null },
+  queued: { z: ["waiting", "in_production"], pole: "queued_at" },
+  in_production: { z: ["waiting", "queued", "ready"], pole: "production_started_at" },
+  ready: { z: ["in_production"], pole: "ready_at" },
+};
+
+/** Kolejnosc etapow pozycji, od najmniej do najbardziej zaawansowanego. */
+export const KOLEJNOSC_ETAPOW_POZYCJI = ["waiting", "queued", "in_production", "ready"];
+
+/** Czy taki etap pozycji istnieje. Patrz komentarz przy `znanyEtap`. */
+export function znanyEtapPozycji(etap) {
+  return Object.hasOwn(ETAPY_POZYCJI, String(etap));
+}
+
+/**
+ * Czy wolno przestawic pozycje na ten etap.
+ *
+ * Cofniecie jest dozwolone o JEDEN krok (`in_production` z powrotem do
+ * `queued`, `ready` z powrotem do `in_production`), bo pomylka w pracowni
+ * zdarza sie czesciej niz proba falszowania stanu, a bez cofniecia jedynym
+ * wyjsciem byloby grzebanie w bazie.
+ */
+export function wolnoEtapPozycji(obecny, etap) {
+  if (!znanyEtapPozycji(etap)) return { ok: false, powod: "Nie znamy takiego etapu pozycji" };
+  const regula = ETAPY_POZYCJI[etap];
+  const stan = znanyEtapPozycji(obecny) ? String(obecny) : "waiting";
+  if (stan === etap) return { ok: false, powod: "Pozycja juz jest na tym etapie" };
+  if (!regula.z.includes(stan)) {
+    return { ok: false, powod: `Z etapu ${stan} nie wchodzi sie w ${etap}`, z: regula.z };
+  }
+  return { ok: true, pole: regula.pole };
+}
+
+/**
+ * Etap pracy CALEGO zamowienia, wyliczony z pozycji: najmniej zaawansowany.
+ *
+ * Paczka wychodzi jedna, wiec zamowienie jest gotowe dopiero wtedy, gdy gotowa
+ * jest ostatnia sztuka. Ta sama regula, co przy terminie (ADR-0027, punkt 3),
+ * tylko po drugiej stronie: tam bierzemy NAJDLUZSZY termin, tu NAJMNIEJ
+ * zaawansowany etap, i obie mowia to samo zdanie o calosci.
+ *
+ * @returns {string|null} null, gdy zamowienie nie ma pozycji do wykonania
+ */
+export function etapZamowieniaZPozycji(pozycje) {
+  const etapy = (pozycje || [])
+    .map((p) => (znanyEtapPozycji(p.stage) ? String(p.stage) : "waiting"))
+    .map((e) => KOLEJNOSC_ETAPOW_POZYCJI.indexOf(e));
+  if (!etapy.length) return null;
+  return KOLEJNOSC_ETAPOW_POZYCJI[Math.min(...etapy)];
+}
+
 /** Etapy PO zaplacie: zamowienie jest nasze do zrobienia. */
 export const ETAPY_PO_ZAPLACIE = ["paid", "details", "queued", "in_production", "ready", "shipped", "completed"];
 

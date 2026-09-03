@@ -689,10 +689,16 @@ export default function JewelryCalc({ lang = "pl" }) {
               onClick={() => setClientSuppliesMetal(v => !v)}
               style={clientSuppliesMetal ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
             >
+              {/* PRZELACZNIK NIE MA W SOBIE NAPISU, tylko kolorowa kulke, wiec
+                  czytnik ekranu oglaszal "przelacznik" i nic wiecej. Napis stoi
+                  OBOK, a nie w srodku, wiec nazwa musi byc dopisana (ADR-0025).
+                  Ta sama tresc, ktora widzi patrzacy: jedno zrodlo, nie drugi
+                  slownik. */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={clientSuppliesMetal}
+                aria-label={{ pl: "Kruszec od klienta", en: "Client supplies metal", de: "Metall vom Kunden" }[lang]}
                 onClick={e => { e.stopPropagation(); setClientSuppliesMetal(v => !v); }}
                 className={`relative shrink-0 w-10 h-5 rounded-full transition-colors duration-200 ${
                   clientSuppliesMetal ? "bg-amber-500" : "bg-neutral-700"

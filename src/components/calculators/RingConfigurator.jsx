@@ -222,13 +222,21 @@ const GEM_GROUPS = [
 ];
 const GEM_BY_ID = Object.fromEntries(GEMSTONES.map((g) => [g.id, g]));
 
-function GemSelect({ value, onChange, lang, groupLabels }) {
+/**
+ * Lista kamieni. `etykieta` idzie ze slownika ("Kamien", "Kamienie boczne"),
+ * bo bez niej `<select>` nie ma nazwy: na jednym ekranie takich list jest
+ * cztery, a czytnik ekranu oglaszal je wszystkie jako "lista wyboru". Napis
+ * widoczny nalezy do `Group`, ktory oprawia takze przyciski, wiec nie moze byc
+ * `<label>` (ADR-0025).
+ */
+function GemSelect({ value, onChange, lang, groupLabels, etykieta }) {
   const o = gemOptics(value);
   return (
     <div className="flex items-center gap-2">
       <span aria-hidden="true" className="w-3.5 h-3.5 shrink-0 rounded-full border border-black/40"
         style={{ background: o?.color || "#888" }} />
       <select
+        aria-label={etykieta}
         value={value} onChange={(e) => onChange(e.target.value)}
         className="min-h-[44px] w-full rounded-sm border border-white/10 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-200"
       >
@@ -622,7 +630,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                       ]} />
                   </Group>
                   <Group label={t.gem}>
-                    <GemSelect value={p.halo.material} lang={lang} groupLabels={t.gemGroups}
+                    <GemSelect value={p.halo.material} lang={lang} groupLabels={t.gemGroups} etykieta={t.gem}
                       onChange={(id) => setP((prev) => { setPresetId(null);
                         return { ...prev, halo: { ...prev.halo, material: id } }; })} />
                   </Group>
@@ -645,7 +653,7 @@ export default function RingConfigurator({ lang = "pl" }) {
               ) : null}
 
               <Group label={t.gem}>
-                <GemSelect value={p.stone.material} lang={lang} groupLabels={t.gemGroups}
+                <GemSelect value={p.stone.material} lang={lang} groupLabels={t.gemGroups} etykieta={t.gem}
                   onChange={(id) => setStone({ material: id })} />
               </Group>
 
@@ -691,7 +699,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                       options={Object.entries(SIDE_SETTINGS).map(([id, v]) => ({ id, label: nameOf(v, lang) }))} />
                   </Group>
                   <Group label={t.sideGem}>
-                    <GemSelect value={p.side.material} lang={lang} groupLabels={t.gemGroups}
+                    <GemSelect value={p.side.material} lang={lang} groupLabels={t.gemGroups} etykieta={t.sideGem}
                       onChange={(id) => setSide({ material: id })} />
                   </Group>
 
@@ -731,7 +739,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                     onChange={(v) => setP((prev) => { setFitNotice(null); setPresetId(null);
                       return { ...prev, band: { ...prev.band, size: v } }; })} />
                   <Group label={t.gem}>
-                    <GemSelect value={p.band.material} lang={lang} groupLabels={t.gemGroups}
+                    <GemSelect value={p.band.material} lang={lang} groupLabels={t.gemGroups} etykieta={t.gem}
                       onChange={(id) => setP((prev) => { setPresetId(null);
                         return { ...prev, band: { ...prev.band, material: id } }; })} />
                   </Group>

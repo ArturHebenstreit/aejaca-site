@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { getProductType, EU_RING_SIZES, US_RING_SIZES, UK_RING_SIZES, JP_RING_SIZES, getRingInnerDiameter } from "./productConfig.js";
 import { t } from "../calcShared.jsx";
 import { sciezkaJezyka } from "../../../routes.js";
@@ -8,27 +9,51 @@ const SIZER_LINK = {
   de: "Größe unbekannt?",
 };
 
+/**
+ * Pole liczbowe z suwakiem.
+ *
+ * Etykieta widoczna dlugo stala sama: `<label>` bez `htmlFor` niczego nie
+ * nazywa, wiec czytnik ekranu oglaszal "pole edycji" i "suwak", a osoba
+ * niewidoma nie wiedziala, czy wpisuje szerokosc, czy grubosc. Pole liczbowe
+ * bierze nazwe przez `htmlFor`, suwak przez `aria-labelledby`, bo dotyczy tej
+ * samej wartosci i drugiej etykiety by nie potrzebowal. Zakres pod polem jest
+ * opisem, nie nazwa, wiec idzie przez `aria-describedby` (ADR-0025).
+ *
+ * Identyfikatory sklada `useId`, a nie `field.id`: to samo pole potrafi stanac
+ * na stronie dwa razy (dwie pozycje w koszyku), a powtorzony identyfikator
+ * wiaze etykiete z cudzym polem.
+ */
 function NumberField({ field, value, onChange, lang }) {
   const val = value !== undefined ? value : field.default;
+  const id = useId();
+  const idEtykiety = `${id}-etykieta`;
+  const idPola = `${id}-pole`;
+  const idZakresu = `${id}-zakres`;
 
   return (
     <div>
-      <label className="block text-xs font-medium text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide">
+      <label
+        id={idEtykiety}
+        htmlFor={idPola}
+        className="block text-xs font-medium text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide"
+      >
         {t(field.label, lang)}
       </label>
       <div className="flex items-center gap-2">
         <input
+          id={idPola}
           type="number"
           min={field.min}
           max={field.max}
           step={field.step ?? 1}
           value={val}
+          aria-describedby={idZakresu}
           onChange={(e) => onChange(field.id, Number(e.target.value))}
           className="w-full bg-transparent border border-white/10 [data-theme='light']:border-black/10 rounded-lg px-3 py-2 text-sm text-white [data-theme='light']:text-neutral-900 focus:outline-none focus:border-amber-400/50"
         />
         <span className="text-xs text-neutral-500 ml-2 shrink-0">{field.unit}</span>
       </div>
-      <div className="text-xs text-neutral-600 mt-0.5">
+      <div id={idZakresu} className="text-xs text-neutral-600 mt-0.5">
         {field.min}–{field.max} {field.unit}
       </div>
       <input
@@ -37,6 +62,8 @@ function NumberField({ field, value, onChange, lang }) {
         max={field.max}
         step={field.step ?? 1}
         value={val}
+        aria-labelledby={idEtykiety}
+        aria-describedby={idZakresu}
         onChange={(e) => onChange(field.id, Number(e.target.value))}
         className="w-full accent-amber-400 mt-1"
       />
@@ -117,6 +144,21 @@ const SYSTEM_DEFAULTS = {
   mm: 17.2,
 };
 
+/**
+ * Nazwa dostepna list rozmiaru.
+ *
+ * `<select>` bez etykiety nie ma nazwy: czytnik ekranu oglasza "lista wyboru"
+ * i nic wiecej, a na tej stronie takich list jest piec, po jednej na system
+ * rozmiarowania. Etykieta widoczna stoi wyzej i dotyczy calego pola, wiec
+ * dopisujemy nazwe niewidoczna, ze slownika, tak jak reszta nazw dostepnych
+ * w serwisie (ADR-0025).
+ */
+const NAZWA_ROZMIARU = {
+  pl: (system) => `Rozmiar w systemie ${system}`,
+  en: (system) => `Size in the ${system} system`,
+  de: (system) => `Größe im System ${system}`,
+};
+
 function RingSizeField({ field, value, onChange, lang }) {
   const val = (value && typeof value === "object") ? value : field.default;
   const system = val.system || "EU";
@@ -178,6 +220,7 @@ function RingSizeField({ field, value, onChange, lang }) {
       <div>
         {system === "EU" && (
           <select
+            aria-label={(NAZWA_ROZMIARU[lang] || NAZWA_ROZMIARU.en)("EU")}
             value={sizeValue}
             onChange={(e) => changeValue(Number(e.target.value))}
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 [data-theme='light']:bg-white [data-theme='light']:text-neutral-900 [data-theme='light']:border-black/10"
@@ -192,6 +235,7 @@ function RingSizeField({ field, value, onChange, lang }) {
 
         {system === "US" && (
           <select
+            aria-label={(NAZWA_ROZMIARU[lang] || NAZWA_ROZMIARU.en)("US")}
             value={String(sizeValue)}
             onChange={(e) => changeValue(e.target.value)}
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 [data-theme='light']:bg-white [data-theme='light']:text-neutral-900 [data-theme='light']:border-black/10"
@@ -206,6 +250,7 @@ function RingSizeField({ field, value, onChange, lang }) {
 
         {system === "UK" && (
           <select
+            aria-label={(NAZWA_ROZMIARU[lang] || NAZWA_ROZMIARU.en)("UK")}
             value={String(sizeValue)}
             onChange={(e) => changeValue(e.target.value)}
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 [data-theme='light']:bg-white [data-theme='light']:text-neutral-900 [data-theme='light']:border-black/10"
@@ -220,6 +265,7 @@ function RingSizeField({ field, value, onChange, lang }) {
 
         {system === "JP" && (
           <select
+            aria-label={(NAZWA_ROZMIARU[lang] || NAZWA_ROZMIARU.en)("JP")}
             value={String(sizeValue)}
             onChange={(e) => changeValue(Number(e.target.value))}
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 [data-theme='light']:bg-white [data-theme='light']:text-neutral-900 [data-theme='light']:border-black/10"

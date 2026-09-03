@@ -7,7 +7,7 @@
 // lookup table with per-alloy pattern sizing.
 // Free tool, no pricing, just geometry.
 // ============================================================
-import { useState, useMemo } from "react";
+import { useId, useState, useMemo } from "react";
 import { CalcCard, Chips, InquiryForm, t } from "./calcShared.jsx";
 import { CASTING_ALLOYS } from "../../data/castingAlloys.js";
 
@@ -97,6 +97,7 @@ const TECH_LABEL = {
 
 export default function ShrinkageCalc({ lang = "pl" }) {
   const l = LABELS[lang] || LABELS.en;
+  const idWymiaru = useId();
 
   const [alloyId, setAlloyId] = useState("ag925");
   const [direction, setDirection] = useState("toPattern");
@@ -142,11 +143,14 @@ export default function ShrinkageCalc({ lang = "pl" }) {
       {/* Step 3, Dimension */}
       <CalcCard stepNum="③" label={l.step3}>
         <div>
-          <label className="block text-sm text-neutral-300 mb-1.5">
+          {/* `<label>` bez `htmlFor` niczego nie nazywa: czytnik ekranu oglaszal
+              samo "pole edycji", chociaz napis stal tuz nad polem (ADR-0025). */}
+          <label htmlFor={idWymiaru} className="block text-sm text-neutral-300 mb-1.5">
             {isToPattern ? l.inputToPattern : l.inputToResult}
           </label>
           <div className="flex items-center gap-2">
             <input
+              id={idWymiaru}
               type="number"
               min={0}
               step={0.1}

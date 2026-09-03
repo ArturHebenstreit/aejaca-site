@@ -3,7 +3,7 @@
 // Regeneracja: npm run sync:pricing
 
 import { calcNew } from "./jewelry.js";
-import { PLATING } from "./jewelryConfig.js";
+import { PLATING, ENGRAVING_OPTIONS } from "./jewelryConfig.js";
 import { fmtCost } from "./config.js";
 
 export const PRECIOUS_METAL_CASTING_BUILD = "1.009";
@@ -100,6 +100,17 @@ export function castingFinishesFor(materialSourceId) {
 // dawac kwote wiazaca; nietypowe pokrycie idzie zapytaniem.
 export const CASTING_PLATINGS = PLATING.filter((p) => !p.custom);
 
+// GRAWER DOMAWIA SIE DO WYKONCZENIA JUBILERSKIEGO, tak samo jak powloka.
+// Grawerujemy laserem po wypolerowaniu: na szorstkiej powierzchni slad ginie,
+// a polerowanie po grawerze zaokragliloby jego krawedzie. Ceny ida z tej samej
+// tabeli, ktora widzi klient w kalkulatorze jubilerskim, zeby ten sam grawer
+// nie kosztowal w dwoch miejscach dwoch roznych kwot.
+// Polecenie wlasciciela, 2026-09-03.
+export const CASTING_ENGRAVINGS = ENGRAVING_OPTIONS;
+export function castingEngravingAvailable(finishId) {
+  return finishId === CASTING_PLATING_REQUIRES_FINISH;
+}
+
 // Powloka klada sie DOPIERO na wypolerowana powierzchnie. Galwanika odwzorowuje
 // to, co pod nia lezy, wiec na szorstkim odlewie dalaby matowy, nierowny efekt.
 export const CASTING_PLATING_REQUIRES_FINISH = "polished";
@@ -176,7 +187,8 @@ export function calculate(params, lang = "pl", rates) {
   // `qty` to RZECZYWISTA liczba sztuk. Bez niej silnik liczy po nakladzie
   // reprezentatywnym progu, wiec klient zamawiajacy dwie sztuki dostawalby
   // cene policzona dla trzech. Patrz `Brand_Reference`, sekcja 6.0g.
-  const { variantId, materialSourceId, metalId, finishId, platingId = "none", qtyId = "1", qty: sztuk, stlData } = params || {};
+  const { variantId, materialSourceId, metalId, finishId, platingId = "none",
+    engravingId = "none", qtyId = "1", qty: sztuk, stlData } = params || {};
   if (!CASTING_VARIANTS.some((v) => v.id === variantId)
     || !CASTING_MATERIAL_SOURCES.some((v) => v.id === materialSourceId)
     || !CASTING_METALS.some((v) => v.id === metalId)
@@ -199,7 +211,9 @@ export function calculate(params, lang = "pl", rates) {
     // warsztatowa siedzi na robociznie razem z nia), wiec kwota jest ta sama
     // po obu stronach serwisu. Poza wykonczeniem jubilerskim powloki nie ma.
     platingId: castingPlatingAvailable(finishId) && CASTING_PLATINGS.some((v) => v.id === platingId) ? platingId : "none",
-    stoneRows: [], qtyId, qty: sztuk, engravingId: "none",
+    stoneRows: [], qtyId, qty: sztuk,
+    // Grawer tym samym torem co powloka i z tej samej tabeli cen.
+    engravingId: castingEngravingAvailable(finishId) && CASTING_ENGRAVINGS.some((v) => v.id === engravingId) ? engravingId : "none",
     clientSuppliesMetal: false, overrideWeightG: requiredMassG,
   }, lang, rates, undefined, {
     // Wewnętrzna opcja, nie parametr zamówienia: klient nie może nią sterować.

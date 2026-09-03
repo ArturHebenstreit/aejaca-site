@@ -710,7 +710,24 @@
                       <% o.items.forEach(function (it) { %>
                         <li class="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
                           <div class="flex items-start justify-between gap-3">
-                            <div class="text-xs text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                            <div class="text-xs text-neutral-200">
+                              <%= it.qty %> &times; <%= it.title %>
+                              <%# TERMIN TEJ POZYCJI, obok jej nazwy. Zamowienie
+                                  niesie termin najdluzszej sztuki, wiec bez tej
+                                  liczby pracownia nie widzi, ze druga robi sie
+                                  krocej, i trzyma ja razem z wolniejsza. %>
+                              <% if (it.leadDays) { %>
+                                <span class="ml-1 text-[10px] text-neutral-500"><%= it.leadDays %> dni</span>
+                              <% } %>
+                              <%# ETAP TEJ SZTUKI, przestawiany osobno. Dwa odlewy
+                                  w jednej paczce maja rozny harmonogram, wiec
+                                  szybsza sztuka ma dac sie odhaczyc jako gotowa,
+                                  nie czekajac na wolniejsza. %>
+                              <% var ETYKIETY = { waiting: "czeka", queued: "w kolejce", in_production: "w robocie", ready: "gotowe" }; %>
+                              <span class="ml-1 text-[10px] <%= it.stage === "ready" ? "text-emerald-300" : it.stage === "in_production" ? "text-amber-300" : "text-neutral-500" %>">
+                                <%= ETYKIETY[it.stage] || "czeka" %>
+                              </span>
+                            </div>
                             <%# Znacznik pojawia sie WYLACZNIE przy pozycji, ktora
                                 wymagala ustalen. Pole zaznaczane przy pozycji,
                                 ktora ich nie wymaga, kazaloby pytac, czego
@@ -718,6 +735,20 @@
                                 Zaznaczenie znaczy: mamy komplet dla TEJ pozycji.
                                 Zegar calego zlecenia rusza, gdy zaznaczone sa
                                 wszystkie wymagane. %>
+                            <%# Przyciski etapu stoja przy pozycji, po jednym na
+                                nastepny krok. Cofniecie o jeden krok tez, bo
+                                pomylka w pracowni zdarza sie czesciej niz
+                                potrzeba grzebania w bazie. %>
+                            <% var NASTEPNY = { waiting: ["queued"], queued: ["in_production"], in_production: ["ready", "queued"], ready: ["in_production"] }; %>
+                            <% (NASTEPNY[it.stage] || NASTEPNY.waiting).forEach(function (cel) { %>
+                              <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/stage" class="shrink-0">
+                                <input type="hidden" name="stage" value="<%= cel %>" />
+                                <input type="hidden" name="back" value="<%= POWROT %>" />
+                                <button type="submit" class="px-2 py-0.5 rounded border border-white/10 text-[10px] text-neutral-300 hover:border-white/30 hover:text-white">
+                                  <%= ETYKIETY[cel] %>
+                                </button>
+                              </form>
+                            <% }); %>
                             <% if (it.requiresDetails) { %>
                               <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/item/<%= it.id %>/details" class="shrink-0 flex items-center gap-3">
                                 <input type="hidden" name="back" value="<%= POWROT %>" />

@@ -21,6 +21,7 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
+import { terminZamowienia } from "./pricing/terminy.js";
 import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
 import { brakPodloza } from "./pricing/laserSubstrate.js";
 import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
@@ -60,7 +61,8 @@ import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { ETAPY_PRACY, przejscie, znanyEtap, korekta, etapPoZaplacie, terminRealizacji,
          dniDoTerminu, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM,
-         ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia } from "./productionQueue.js";
+         ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia,
+         znanyEtapPozycji, wolnoEtapPozycji, etapZamowieniaZPozycji } from "./productionQueue.js";
 import { progDoWyslania, szturchnacSzczegoly } from "./deadlineReminders.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -426,6 +428,22 @@ if (pool) {
   pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
   pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
+  // TERMIN PRZY POZYCJI, a nie tylko przy zamowieniu. Dwa odlewy zaplacone
+  // jedna platnoscia to jedna paczka i jedna faktura, ale DWIE rozne roboty:
+  // klucz z wykonczeniem podstawowym i klucz z pelnym wykonczeniem plus
+  // rodowanie maja inny harmonogram. Zamowienie dalej niesie termin calosci
+  // (najdluzszy z pozycji), a to jest termin kazdej z osobna, zeby pracownia
+  // widziala, co robi sie krocej, i nie trzymala szybszej sztuki na wolniejszej.
+  // Polecenie wlasciciela, 2026-09-03.
+  pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`)
+    .catch((e) => console.error("[migracja] order_items.lead_days:", e.message));
+  // Etap pracy przy POZYCJI. Status zamowienia zostaje tam, gdzie byl, bo
+  // opisuje platnosc i wysylke, czyli rzeczy wspolne dla calej paczki. To jest
+  // stan samego wykonania jednej sztuki. Patrz `ETAPY_POZYCJI`.
+  for (const kolumna of ["stage TEXT", "queued_at TIMESTAMPTZ", "production_started_at TIMESTAMPTZ", "ready_at TIMESTAMPTZ"]) {
+    pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS ${kolumna}`)
+      .catch((e) => console.error(`[migracja] order_items.${kolumna.split(" ")[0]}:`, e.message));
+  }
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS deadline_at DATE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminders_sent JSONB NOT NULL DEFAULT '[]'::jsonb`).catch(() => {});
@@ -3806,11 +3824,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze, inbound_delivery, session_id)
+         discount_code, discount_grosze, inbound_delivery, session_id, lead_days)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27, $28, $29)
+         $26, $27, $28, $29, $30)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -3829,7 +3847,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        // Wizyta, z ktorej wzielo sie zamowienie. Sluzy WYLACZNIE statystyce:
        // pokazuje, z jakiego zrodla ruchu i z ktorej strony wejscia przyszedl
        // przychod. Identyfikator jest losowy i nie laczy dwoch wizyt.
-       String(req.body?.sessionId || "").slice(0, 50) || null]
+       String(req.body?.sessionId || "").slice(0, 50) || null,
+       // TERMIN REALIZACJI ZAPISUJEMY JUZ TERAZ. Do tej pory zamowienie ze
+       // sklepu szlo do bazy bez `lead_days`, wiec kolejka pracowni nie
+       // wiedziala, na kiedy to ma byc, przypomnienia nie mialy od czego
+       // liczyc, a klient widzial termin tylko w koszyku i nigdzie potem.
+       // Liczy ten sam rdzen, ktory pokazal go w koszyku, wiec baza nie moze
+       // trzymac innej liczby, niz zobaczyl klient. Zapisujemy GORNA granice:
+       // to ona jest obietnica, a nie dolna.
+       terminZamowienia(priced)?.max ?? null]
     );
     const orderId = rows[0].id;
 
@@ -3910,8 +3936,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
       await pool.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
-           params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id)
-         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+           params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id, lead_days)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
          JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization, packagingText: i.packagingText, packagingTextBack: i.packagingTextBack, description: i.description }),
          JSON.stringify(i.breakdown ?? []),
@@ -3919,7 +3945,10 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          i.geometry?.sha256 ?? uploadRow?.file_sha256 ?? null,
          uploadRow?.drive_url ?? null,
          i.geometry ? JSON.stringify(i.geometry) : (uploadRow?.geometry ? JSON.stringify(uploadRow.geometry) : null),
-         uploadRow?.id ?? null]
+         uploadRow?.id ?? null,
+         // Termin TEJ pozycji, liczony tym samym rdzeniem, ktory pokazal go
+         // klientowi w koszyku. Zamowienie niesie najdluzszy z nich.
+         terminZamowienia([i])?.max ?? null]
       );
     }
 
@@ -4630,7 +4659,8 @@ app.get("/api/orders/queue", async (req, res) => {
 
   const { rows: pozycje } = await pool.query(
     `SELECT id, order_id, title, qty, calculator, file_name, file_url, params,
-            requires_details, details_settled_at, details_note
+            requires_details, details_settled_at, details_note, lead_days,
+            stage, queued_at, production_started_at, ready_at
        FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
     [rows.map((o) => o.id)]
   );
@@ -4647,6 +4677,14 @@ app.get("/api/orders/queue", async (req, res) => {
       requiresDetails: p.requires_details === true,
       detailsSettledAt: p.details_settled_at,
       detailsNote: p.details_note || null,
+      // Termin TEJ pozycji. Zamowienie ma swoj, najdluzszy, ale pracownia
+      // planuje prace sztuka po sztuce, wiec musi widziec obie liczby.
+      leadDays: p.lead_days != null ? Number(p.lead_days) : null,
+      // Etap tej sztuki. `waiting` znaczy: jeszcze nie wzieta do roboty.
+      stage: znanyEtapPozycji(p.stage) ? String(p.stage) : "waiting",
+      queuedAt: dataISO(p.queued_at),
+      productionStartedAt: dataISO(p.production_started_at),
+      readyAt: dataISO(p.ready_at),
       // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
       // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
       description: p.params?.description ?? null,
@@ -5042,6 +5080,80 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
  * temat za zamkniety, i termin liczony dalej bylby terminem na prace, ktorej
  * nie mozemy zaczac.
  */
+// ============================================================
+// ETAP PRACY PRZY POJEDYNCZEJ POZYCJI
+// ============================================================
+// Jedna platnosc, jedna paczka, ale dwie rozne roboty. Ta trasa przestawia
+// etap JEDNEJ sztuki, a status calego zamowienia dociaga do najmniej
+// zaawansowanej z nich, zeby zamowienie nie oglosilo sie gotowym, dopoki
+// cokolwiek jeszcze lezy w robocie. Patrz `ETAPY_POZYCJI`.
+app.post("/api/orders/:ref/items/:id/stage", express.json({ limit: "2kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const itemId = Number(req.params.id);
+  const etap = String(req.body?.stage || "");
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return res.status(400).json({ error: "Zla pozycja", code: "bad_item" });
+  }
+  if (!znanyEtapPozycji(etap)) {
+    return res.status(400).json({ error: "Nie znamy takiego etapu pozycji", code: "bad_stage" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: zam } = await client.query(
+      `SELECT id, status FROM orders WHERE order_ref = $1 FOR UPDATE`, [ref]
+    );
+    const order = zam[0];
+    if (!order) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Zamowienie nie istnieje" }); }
+    // Praca nad pozycja ma sens dopiero po zaplacie i przed wysylka paczki.
+    if (!["paid", "details", "queued", "in_production", "ready"].includes(order.status)) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({
+        error: `Zamowienie ma status ${order.status}, prac nad pozycjami juz sie nie przestawia`,
+        code: "too_late",
+      });
+    }
+
+    const { rows: poz } = await client.query(
+      `SELECT id, stage FROM order_items WHERE order_id = $1 ORDER BY id FOR UPDATE`, [order.id]
+    );
+    const pozycja = poz.find((i) => Number(i.id) === itemId);
+    if (!pozycja) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Nie ma takiej pozycji" }); }
+
+    const wolno = wolnoEtapPozycji(pozycja.stage, etap);
+    if (!wolno.ok) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: wolno.powod, code: "bad_transition", z: wolno.z });
+    }
+
+    // Stempel czasu tylko przy wejsciu w etap, ktory go ma. Cofniecie zostawia
+    // poprzedni stempel: chcemy wiedziec, kiedy sztuka byla gotowa pierwszy raz.
+    await client.query(
+      wolno.pole
+        ? `UPDATE order_items SET stage = $2, ${wolno.pole} = COALESCE(${wolno.pole}, NOW()) WHERE id = $1`
+        : `UPDATE order_items SET stage = $2 WHERE id = $1`,
+      [itemId, etap]
+    );
+
+    const { rows: poNowemu } = await client.query(
+      `SELECT stage FROM order_items WHERE order_id = $1`, [order.id]
+    );
+    const etapCalosci = etapZamowieniaZPozycji(poNowemu);
+    await client.query("COMMIT");
+    res.json({ ok: true, stage: etap, orderStage: etapCalosci });
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("[etap pozycji]", err.message);
+    res.status(500).json({ error: "Nie udalo sie przestawic etapu pozycji" });
+  } finally {
+    client.release();
+  }
+});
+
 app.post("/api/orders/:ref/items/:id/details", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
