@@ -7,7 +7,7 @@
 // Cena pochodzi wylacznie z /api/price. Ten komponent jej nie liczy,
 // tylko pokazuje to, co odpowiedzial backend.
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
 import { Link } from "../../i18n/nav.jsx";
 import { claimHandoff } from "../../data/calcHandoff.js";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
@@ -15,7 +15,8 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QuantityStepper, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
+import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
+import PolaUslugi from "./PolaUslugi.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -251,7 +252,6 @@ const UI = {
 
 
 /** Pola, ktore lepiej czytaja sie jako suwak niz jako kafelki */
-const SLIDER_FIELDS = new Set(["sizeId", "infillId", "precisionId", "layerId", "areaId", "pathId", "volumeId", "quantityId"]);
 
 export default function ServiceConfigurator({ card, lang, accent = "blue", onPriceChange }) {
   const { money } = useMoney();
@@ -704,12 +704,6 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
     setAdded(true);
   }
 
-  // `ukryjGdy` chowa pole zalezne od innego wyboru, np. powloke galwaniczna,
-  // ktora ma sens dopiero przy wykonczeniu jubilerskim. Pole schowane nie
-  // znika z parametrow, tylko przestaje byc pytaniem.
-  const visibleFields = service.fields.filter(
-    (f) => !(f.hiddenWithFile && uploadToken) && !(f.ukryjGdy && f.ukryjGdy(params))
-  );
   // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
   // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
   // wielkosci, ktora wycena odrzuci.
@@ -807,84 +801,21 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
           moze kupic te sama usluge tu, bez przechodzenia przez kalkulator. */}
       {service.group === "laser" && <MaterialNotice lang={lang} className="mb-6" />}
 
-      {visibleFields.map((f) => {
-        const options = f.optionsFrom ? f.optionsFrom(params) : f.options;
-        // Licznik sztuk stoi TUZ POD progiem nakladu, bo to jedna decyzja
-        // pokazana dwoma kontrolkami. Rozdzielone przez pol formularza
-        // wygladaly jak dwa niezalezne pola o tym samym znaczeniu.
-        const licznik = f.key === tierKey ? (
-          <QuantityStepper
-            key={`${f.key}-licznik`}
-            label={u.qty}
-            value={qty}
-            onChange={changeQty}
-            min={1}
-            max={qtyMax}
-            openValue={qtyOpen}
-            lang={lang}
-            accent={accent}
-          />
-        ) : null;
-        if (f.multi) {
-          return (
-            <div key={f.key} className="mb-6">
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{t(f.label, lang)}</div>
-              <div className="grid grid-cols-2 gap-2">
-                {options.map((o) => {
-                  const list = params[f.key] || [];
-                  const on = list.includes(o.id);
-                  return (
-                    <button
-                      key={String(o.id)}
-                      type="button"
-                      onClick={() => setParam(f.key, on ? list.filter((x) => x !== o.id) : [...list, o.id])}
-                      className={`relative text-left px-3 py-2.5 rounded-xl border text-xs transition-all ${
-                        on
-                          ? accent === "amber"
-                            ? "border-amber-400 bg-amber-400/10 text-amber-200"
-                            : "border-blue-400 bg-blue-400/10 text-blue-200"
-                          : "border-white/10 bg-white/[0.02] text-neutral-300 hover:border-white/25"
-                      }`}
-                    >
-                      {on && <Check className="w-3.5 h-3.5 absolute top-2 right-2" />}
-                      <span className="pr-4 block leading-snug">{t(o.label, lang)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        }
-        if (SLIDER_FIELDS.has(f.key) && options.length >= 3 && options.length <= 7) {
-          return (
-            <Fragment key={f.key}>
-              <StepSlider
-                label={t(f.label, lang)}
-                options={options}
-                value={params[f.key]}
-                onChange={(v) => setParam(f.key, v)}
-                lang={lang}
-                accent={accent}
-              />
-              {licznik}
-            </Fragment>
-          );
-        }
-        return (
-          <Fragment key={f.key}>
-            <TileGroup
-              label={t(f.label, lang)}
-              options={options}
-              value={params[f.key]}
-              onChange={(v) => setParam(f.key, v)}
-              lang={lang}
-              accent={accent}
-              columns={options.length > 8 ? 4 : 3}
-            />
-            {licznik}
-          </Fragment>
-        );
-      })}
+      <PolaUslugi
+        service={service}
+        params={params}
+        setParam={setParam}
+        lang={lang}
+        wyglad="sklep"
+        accent={accent}
+        uploadToken={uploadToken}
+        tierKey={tierKey}
+        qty={qty}
+        onQty={changeQty}
+        qtyMax={qtyMax}
+        qtyOpen={qtyOpen}
+        qtyLabel={u.qty}
+      />
 
       {/* Sztuka na proby albo nazwa materialu, zaleznie od wybranego podloza.
           Pole `podloze` renderuje sie wyzej razem z reszta parametrow uslugi,

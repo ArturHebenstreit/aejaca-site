@@ -117,13 +117,30 @@ const DROGI = [
   "src/components/calculators/FiberLaserCalc.jsx",
   "src/components/calculators/CO2LaserCalc.jsx",
   "src/components/calculators/JewelryCalc.jsx",
+  "src/components/calculators/MetalCastCalc.jsx",
 ];
+
+// Ekran spelnia regule na dwa sposoby: rysuje licznik sam albo oddaje pola
+// wspolnej warstwie i podaje jej prog nakladu razem z zapisem liczby sztuk.
+// Sam `PolaUslugi` bez `tierKey` i bez `onQty` narysuje kafelki progu i nie
+// narysuje licznika, wiec obecnosc komponentu to za malo, zeby uznac droge
+// za zabezpieczona.
+const maLicznik = (tresc) =>
+  /QuantityStepper/.test(tresc)
+  || (/<PolaUslugi/.test(tresc) && /tierKey=/.test(tresc) && /onQty=/.test(tresc));
 
 for (const plik of DROGI) {
   const tresc = czytaj(plik);
-  if (!/QuantityStepper/.test(tresc)) zle(`${plik} pozwala wybrac naklad bez licznika sztuk`);
+  if (!maLicznik(tresc)) zle(`${plik} pozwala wybrac naklad bez licznika sztuk`);
   else ok(`${plik.split("/").pop()} ma licznik sztuk`);
 }
+
+// Wspolna warstwa jest teraz jedynym miejscem, w ktorym licznik naprawde
+// powstaje dla dwoch ekranow naraz. Gdyby ktos go stamtad usunal, obie drogi
+// powyzej dalej wygladalyby poprawnie w tym tescie.
+const wspolna = czytaj("src/components/shop/PolaUslugi.jsx");
+if (!/QuantityStepper/.test(wspolna)) zle("PolaUslugi.jsx nie rysuje licznika sztuk");
+else ok("wspolna warstwa pol rysuje licznik sztuk");
 
 // Kalkulator ma podac koszykowi PRAWDZIWA liczbe sztuk. Bez tego propa koszyk
 // wraca do nakladu reprezentatywnego progu, czyli do wady, ktora tu naprawiamy.

@@ -151,7 +151,16 @@ export const SERVICES = [
       "Modell, 3D-Datei oder Idee. Guss in Silber und Gold."
     ),
     fields: [
-      { key: "variantId", label: L("Co nam przekazujesz", "What you provide", "Was Sie liefern"), options: CASTING_VARIANTS },
+      // ZDJECIE ZAMIAST TRZECH LINIJEK OPISU. Wzorzec, model i pomysl to trzy
+      // rozne drogi wspolpracy, nie trzy warianty tego samego, wiec kafelek
+      // pokazuje dokladnie to, co wariant obiecuje. Zdjecia stoja przy polu,
+      // a nie przy ekranie, bo oba ekrany pytaja o to samo.
+      { key: "variantId", label: L("Co nam przekazujesz", "What you provide", "Was Sie liefern"),
+        options: CASTING_VARIANTS, widok: "zdjecia", obrazy: {
+          ready_pattern: "/img/calc/3d_apps/casting.webp",
+          model_3d: "/img/b2b/pillar_cad.webp",
+          client_idea: "/img/shop/service/cad_project.webp",
+        } },
       { key: "materialSourceId", label: L("Źródło kruszcu", "Metal source", "Metallquelle"), options: CASTING_MATERIAL_SOURCES },
       { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: CASTING_METALS },
       // Lista poziomow zalezy od zrodla kruszcu: przy metalu AEJaCA nie wydajemy
@@ -161,7 +170,12 @@ export const SERVICES = [
       // Powloka pojawia sie dopiero przy wykonczeniu jubilerskim, bo galwanika
       // odwzorowuje powierzchnie pod soba.
       { key: "platingId", label: L("Powłoka galwaniczna", "Galvanic plating", "Galvanische Beschichtung"),
-        options: CASTING_PLATINGS, ukryjGdy: (v) => !castingPlatingAvailable(v.finishId) },
+        options: CASTING_PLATINGS, ukryjGdy: (v) => !castingPlatingAvailable(v.finishId),
+        uwaga: L(
+          "Powłokę kładziemy na wypolerowaną powierzchnię. Rod daje biel na srebrze i złocie, złocenie żółte albo różowe zmienia barwę wierzchu. Warstwa galwaniczna z czasem się ściera i odnawia się ją serwisowo.",
+          "Plating goes on a polished surface. Rhodium gives a white finish on silver and gold; yellow or rose plating changes the surface colour. A galvanic layer wears with time and is renewed as a service.",
+          "Die Beschichtung kommt auf eine polierte Oberfläche. Rhodium ergibt Weiß auf Silber und Gold, Gelb- oder Roségold ändert die Oberflächenfarbe. Eine galvanische Schicht nutzt sich mit der Zeit ab und wird im Service erneuert."
+        ) },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
     defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", platingId: "none", qtyId: "1" },
