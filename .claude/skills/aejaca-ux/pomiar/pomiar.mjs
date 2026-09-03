@@ -56,6 +56,19 @@ async function serwujDist() {
     console.error("Brak dist/index.html. Najpierw `npm run build`.");
     process.exit(2);
   }
+  // BRAK PLIKU TO CO INNEGO NIZ NIEUDANY ODCZYT, i to rozroznienie jest tu
+  // wazniejsze, niz wyglada. Pierwsza wersja lapala kazdy blad jednym `catch`
+  // i oddawala 404. Przy pelnym przebiegu, gdy kilka kontekstow przegladarki
+  // ciagnie strony naraz, chwilowe niepowodzenie odczytu (wyczerpane uchwyty
+  // plikow) wygladalo wtedy jak brakujaca strona: audyt dostawal zaslepke 404
+  // i melodwal na niej brak atrybutu `lang`, brak `main` i tresc poza
+  // punktem orientacyjnym. Siedem stron z 354 dostalo w ten sposob trzy
+  // znaleziska KRYTYCZNE, ktorych w serwisie nie ma.
+  //
+  // Teraz brak pliku dalej daje 404, a kazdy inny blad daje 500 i lezy w
+  // konsoli. 500 jest widoczne w audycie jako awaria pomiaru, a nie jako
+  // usterka strony.
+  let bledyOdczytu = 0;
   const serwer = createServer(async (req, res) => {
     const sciezka = decodeURIComponent(req.url.split("?")[0]);
     let kandydat = join(DIST, sciezka);
@@ -64,9 +77,16 @@ async function serwujDist() {
       const dane = await readFile(kandydat);
       res.writeHead(200, { "Content-Type": TYPY[extname(kandydat)] || "application/octet-stream" });
       res.end(dane);
-    } catch {
-      res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
-      res.end("<!doctype html><title>404</title><h1>404</h1>");
+    } catch (err) {
+      if (err.code === "ENOENT" || err.code === "ENOTDIR") {
+        res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+        res.end("<!doctype html><title>404</title><h1>404</h1>");
+        return;
+      }
+      bledyOdczytu += 1;
+      console.error(`  ! serwer pomiaru nie odczytal ${sciezka}: ${err.code || err.message}`);
+      res.writeHead(500, { "Content-Type": "text/html; charset=utf-8" });
+      res.end("<!doctype html><title>500</title><h1>500 awaria pomiaru</h1>");
     }
   });
   // Port STALY, nie losowy. Mapa zapisuje pelne adresy, wiec `--tylko=bledy`

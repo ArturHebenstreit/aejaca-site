@@ -112,6 +112,9 @@ async function main() {
   // strony pomiar NAPRAWDE sprawdzil, a ile tylko obejrzal.
   const niepewneMap = new Map(); // klucz: "regula||powod"
   const stronyZUdanymBiegiem = new Set();
+  // Przebiegi, w ktorych serwer nie oddal strony. To awaria POMIARU, nie
+  // usterka serwisu, wiec ma wlasna liste i wlasne zdanie w podsumowaniu.
+  const nieudane = [];
   let udaneUruchomienia = 0;
 
   for (const url of adresy) {
@@ -131,10 +134,25 @@ async function main() {
           ctx = await nowyKontekst(przegladarka, { host, ekran: EKRANY[ekranNazwa], motyw, lang: jezykAdresu(url) });
           const page = await ctx.newPage();
 
+          let odpowiedz = null;
           try {
-            await page.goto(url, { waitUntil: "networkidle", timeout: 20_000 });
+            odpowiedz = await page.goto(url, { waitUntil: "networkidle", timeout: 20_000 });
           } catch {
-            await page.goto(url, { waitUntil: "load", timeout: 20_000 });
+            odpowiedz = await page.goto(url, { waitUntil: "load", timeout: 20_000 });
+          }
+
+          // STRONY, KTOREJ NIE DOSTALISMY, NIE AUDYTUJEMY. Zaslepka 404 albo
+          // 500 to poprawny dokument HTML: axe zmierzy ja bez mrugniecia i
+          // zamelduje brak `lang`, brak `main` i tresc poza punktem
+          // orientacyjnym, czyli trzy znaleziska KRYTYCZNE, ktorych w serwisie
+          // nie ma. W pelnym przebiegu na 354 strony trafilo sie tak siedem
+          // razy, gdy serwer pomiaru chwilowo nie zdolal odczytac pliku.
+          // Liczymy to jako awarie POMIARU i mowimy o niej osobno.
+          const kod = odpowiedz?.status?.() ?? 200;
+          if (kod >= 400) {
+            nieudane.push({ url, kombinacja: etykietaKombinacji, kod });
+            await ctx.close();
+            continue;
           }
 
           await page
@@ -259,6 +277,14 @@ async function main() {
   zapiszJson(plikWyjsciowy, wynik);
 
   wypiszTabelke(findings);
+  if (nieudane.length) {
+    const strony = [...new Set(nieudane.map((n) => n.url))];
+    console.log(`\nSerwer pomiaru nie oddal ${nieudane.length} przebiegow na ${strony.length} stronach.`);
+    console.log("To awaria pomiaru, nie serwisu: te strony NIE zostaly zbadane.");
+    strony.slice(0, 10).forEach((u) => console.log(`  ${u}`));
+    if (strony.length > 10) console.log(`  ...i ${strony.length - 10} wiecej`);
+  }
+
   console.log(`\nZapisano: ${plikWyjsciowy}`);
   console.log(`Stron: ${wynik.pages_audited}, przebiegow: ${wynik.runs}, znalezisk: ${findings.length}`);
   const niepewneRazem = [...niepewneMap.values()].reduce((a, b) => a + b, 0);

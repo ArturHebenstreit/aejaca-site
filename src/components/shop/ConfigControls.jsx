@@ -5,7 +5,7 @@
 // kupic. Dlatego zamiast list rozwijanych sa kafelki, zamiast pola liczbowego
 // suwak z podpowiedziami, a cena aktualizuje sie w miejscu, bez przeladowania.
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { Upload, X, Check, Loader2, CircleAlert } from "lucide-react";
 import { t } from "../../pricing/config.js";
 
@@ -128,9 +128,16 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
   const wDol = () => onChange(otwarty ? max : Math.max(min, value - 1));
   const wGore = () => onChange(przyGorze ? gora : Math.min(gora, value + 1));
 
+  // Napis nad licznikiem byl zwyklym `div`, wiec pole liczbowe nie mialo nazwy:
+  // czytnik ekranu oglaszal samo "pole edycji", a licznik sztuk stoi na kazdej
+  // karcie uslugi i w kazdym kalkulatorze. Etykieta wiaze sie z polem przez
+  // `htmlFor`, identyfikator sklada `useId`, bo na jednej stronie licznikow
+  // bywa kilka (ADR-0025).
+  const idPola = useId();
+
   return (
     <div className="mb-6">
-      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <label htmlFor={idPola} className="block text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</label>
       <div className="flex items-center gap-3">
         <button type="button" className={btn(value <= min)} onClick={wDol} disabled={value <= min} aria-label={{ pl: "Mniej", en: "Decrease", de: "Weniger" }[lang]}>
           &minus;
@@ -144,6 +151,7 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
           </div>
         ) : (
           <input
+            id={idPola}
             type="number"
             value={value}
             min={min}
