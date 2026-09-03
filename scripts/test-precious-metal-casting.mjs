@@ -17,12 +17,12 @@ import { SUPPORTED_EXTENSIONS } from "../src/pricing/mesh.js";
 import { QTY_TIERS } from "../src/pricing/jewelryConfig.js";
 import { QUANTITY_TIERS } from "../src/pricing/config.js";
 
-assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.007");
+assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.008");
 
 // KOLBA JEST JEDYNYM ZRODLEM ROZMIARU. Limit modelu ma sie z niej liczyc, a nie
 // stac obok niej wpisany z reki: przy poprzedniej wersji te dwie liczby zyly
 // osobno i rozjechaly sie po pierwszej zmianie sprzetu.
-assert.deepEqual(CASTING_FLASK_MM, { diameter: 80, depth: 80 });
+assert.deepEqual(CASTING_FLASK_MM, { diameter: 80, depth: 90 });
 const swiatlo = CASTING_FLASK_MM.diameter - 20;
 assert.deepEqual(CASTING_ENVELOPE_MM, [
   Math.floor(swiatlo / Math.SQRT2),
@@ -38,7 +38,21 @@ assert.equal(CASTING_ENVELOPE_LABEL, `${CASTING_ENVELOPE_MM.join(" x ")} mm`);
 assert.equal(fitsCastingFlask({ x: 2.0, y: 2.2, z: 3.0 }), true);
 assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }), false);
 assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }, 0.9), true);
-assert.ok(Math.abs(maxCastingScaleForBBox({ x: 3.0, y: 2.0, z: 1.0 }) - (CASTING_ENVELOPE_MM[2] / 30)) < 1e-9);
+
+// NAJWIEKSZA SKALA TO NAJCIASNIEJSZA OS PO OBROCIE, i nie wolno zakladac,
+// KTORA to os. Do 3 wrzesnia 2026 test porownywal wynik z `ENVELOPE[2] / 30`,
+// czyli z gory przyjmowal, ze wiaze glebokosc. Bylo to prawda tylko przy kolbie
+// 80 x 80: po poglębieniu do 90 mm limit wysokosci urosl do 65 i dla modelu
+// 30 x 20 x 10 mm wiaze juz szerokosc (42/20 = 2,1 wobec 65/30 = 2,17).
+// Liczymy wiec minimum ze wszystkich osi, tak jak robi to sam silnik.
+{
+  const bok = [10, 20, 30]; // milimetry, posortowane rosnaco, jak w silniku
+  const oczekiwana = Math.min(...bok.map((mm, i) => CASTING_ENVELOPE_MM[i] / mm));
+  assert.ok(Math.abs(maxCastingScaleForBBox({ x: 3.0, y: 2.0, z: 1.0 }) - oczekiwana) < 1e-9);
+  // Model dokladnie na granicy limitu ma dostac skale 1, ani mniej, ani wiecej.
+  const naGranicy = { x: CASTING_ENVELOPE_MM[0] / 10, y: CASTING_ENVELOPE_MM[1] / 10, z: CASTING_ENVELOPE_MM[2] / 10 };
+  assert.ok(Math.abs(maxCastingScaleForBBox(naGranicy) - 1) < 1e-9, "model rowny limitowi ma miescic sie w skali 1");
+}
 
 // PIEC POZIOMOW OBROBKI, drozej za kazdy kolejny. Identyfikatory `raw`,
 // `clean` i `polished` zostaja, bo leza w zapisanych zamowieniach i w mapie

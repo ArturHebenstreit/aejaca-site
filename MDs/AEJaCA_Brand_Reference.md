@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-09-01 | Wersja: 6.6*
+*Wygenerowano: 2026-09-03 | Wersja: 6.6*
 
 ---
 
@@ -266,14 +266,14 @@ Wysyłka: 24-48h
 | Prototyp w srebrze | 180-300 + materiał | 42-70 + material |
 | Odlew z wykończeniem | wycena wg wagi, próby i złożoności w 24h | - |
 
-#### Produkt sklepu: odlew z metali szlachetnych, Build 1.007
+#### Produkt sklepu: odlew z metali szlachetnych, Build 1.008
 
 - wariant 1: odlew z dostarczonego wzorca z wosku lub żywicy odlewniczej;
 - wariant 2: wydruk i odlew z przesłanego STL, OBJ, 3MF albo STEP;
 - wariant 3: projekt CAD, wydruk wzorca i odlew od pomysłu klienta;
 - kruszce: Ag 800/925 i Au 9k/14k/18k/24k, własne AEJaCA albo powierzone;
-- kolba odlewnicza: 80 mm średnicy i 80 mm głębokości. To jedyna liczba wpisana z ręki; limit modelu liczy się z niej w `src/pricing/preciousMetalCasting.js`;
-- wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się po wybranej skali w 42 x 42 x 55 mm. Limit to kolba pomniejszona o 10 mm masy formierskiej przy ścianie, 15 mm na stożek i kanał główny oraz 10 mm masy nad najwyższym punktem modelu;
+- kolba odlewnicza: 80 mm średnicy i 90 mm głębokości (doprecyzowane 2026-09-03, wcześniej w kodzie stało 80 mm i limit wysokości wychodził o 10 mm za mały). To jedyna liczba wpisana z ręki; limit modelu liczy się z niej w `src/pricing/preciousMetalCasting.js`;
+- wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się po wybranej skali w 42 x 42 x 65 mm. Limit to kolba pomniejszona o 10 mm masy formierskiej przy ścianie, 15 mm na stożek i kanał główny oraz 10 mm masy nad najwyższym punktem modelu;
 - zakres wykończenia ma pięć poziomów, każdy droższy od poprzedniego: surowy odlew z kanałami wlewowymi (0 PLN), surowy odlew z odciętymi kanałami (30 PLN), odcięte kanały wlewowe, czyli ślad zlicowany z powierzchnią (70 PLN), wyszlifowany (110 PLN), wykończenie jubilerskie, czyli szlifowanie i polerowanie (160 PLN);
 - karta usługi wisi w dwóch działach sklepu. W AEJaCA sTuDiO nazywa się „Odlew z metali szlachetnych", w AEJaCA Biżuteria „Odlew biżuterii". Adres jest jeden, więc nie powstaje druga strona z tym samym opisem ani drugi zestaw danych strukturalnych;
 - model można jednolicie przeskalować do limitu; kontrola wymiarów nie zastępuje sprawdzenia minimalnych grubości ścianek, krap i kanałów;
@@ -635,7 +635,7 @@ maszynie: Druk 3D, Laser CO2, Laser Fiber, Odlewy żywiczne.
 
 **Piąty kafelek wrócił, z innego powodu (2026-08-25).** „Odlew w metalu" to nie jest to samo
 pytanie zadane drugi raz, tylko osobna usługa: inny materiał, inny silnik wyceny i inna granica
-maszyny (kolba 80 x 80 mm, limit modelu 42 x 42 x 55 mm, zamiast pola roboczego drukarki). Powód zdjęcia kafelka „Druk
+maszyny (kolba 80 x 90 mm, limit modelu 42 x 42 x 65 mm, zamiast pola roboczego drukarki). Powód zdjęcia kafelka „Druk
 żywiczny" go nie dotyczy, bo nic nie dubluje. Aktualna lista: Druk 3D, Laser CO2, Laser Fiber,
 Odlewy żywiczne, Odlew w metalu. Siatka kafelków idzie od dużego ekranu na pięć kolumn.
 
@@ -953,7 +953,7 @@ zamówieniach i w mapie z szybkiej wyceny.
 **Rezerwa procesowa:** 12% masy, na kruszec zostający w kanałach i na zgarze.
 
 **Wiążąca cena automatyczna wyłącznie dla:** wariantu z modelem 3D + kruszcu
-AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 42 x 42 x 55 mm.
+AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 42 x 42 x 65 mm.
 Każda inna kombinacja kończy się wyceną indywidualną i tak jest nazwana na
 ekranie, zamiast pokazywać liczbę nie do dotrzymania.
 
