@@ -1,13 +1,21 @@
 // ============================================================
 // 3D PRINT ESTIMATOR - Bambu Lab H2D  v1.3
+//
+// PYTANIA SA WZIETE ZE SKLEPU (`orderCatalog.js`, rysuje `PolaUslugi`).
+// Wybor technologii zostaje tutaj, bo to nie jest pole uslugi, tylko wybor
+// MIEDZY dwiema uslugami: drukiem z filamentu i drukiem zywicznym.
+// Segment zywicy przeniosl sie stad do katalogu: dopoki stal tu, karta uslugi
+// w sklepie wykladala wszystkie trzynascie zywic w jednej siatce.
+// Decyzja: ADR-0037.
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import DimensionBox from "./DimensionBox.jsx";
 import { uniformScale, isUniform, dimsFor, volumeFactor, fitsBox, parseScale, serializeScale, describeDims } from "../../utils/dimScale.js";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, LicenseNotice, NextStepPanel } from "./calcShared.jsx";
+import { QUANTITY_TIERS, t, CalcCard, ResultHeader, ResultDisplay, HeroCards, LicenseNotice, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
-import { QuantityStepper } from "../shop/ConfigControls.jsx";
+import PolaUslugi, { poprawkiWyboru } from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import CalcToCart from "./CalcToCart.jsx";
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -15,14 +23,14 @@ import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 
 /** Te same formaty, ktore przyjmuje konfigurator w sklepie */
 const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
-import { RESIN_SEGMENTS, RESIN_COLORS, getResinsBySegment, getResin } from "../../data/resins.js";
+import { RESIN_COLORS, getResin } from "../../data/resins.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
 import {
   PRINT_CONFIG, MSLA_CONFIG, MSLA_BUILD_VOL_CM, BUILD_VOL_CM,
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, FILAMENTS, SIZES, INFILL, INFILL_OPTIONS, COLORS, PRECISION,
-  isCastable, getAvailableResins, estimateTimeFromVolume, estimatePcsPerPlate, estimatePcsPerPlateMSLA,
+  isCastable, estimateTimeFromVolume, estimatePcsPerPlate, estimatePcsPerPlateMSLA,
   maxScaleForBuildVolume,
   calculate, calculateMSLA,
   LBL, MSLA_LBL,
@@ -35,67 +43,6 @@ export {
 };
 
 
-
-
-
-// Resin segment tiles (hero cards), images generated for the 3 RESIN_SEGMENTS buckets
-const RESIN_SEGMENT_IMG = {
-  standard: "/img/calc/3d_resins/standard.webp",
-  technical: "/img/calc/3d_resins/technical.webp",
-  precision: "/img/calc/3d_resins/high_precision.webp",
-};
-
-const RESIN_SEGMENT_OPTIONS = Object.entries(RESIN_SEGMENTS).map(([id, seg]) => ({
-  id, label: seg.label, desc: seg.desc, img: RESIN_SEGMENT_IMG[id],
-}));
-
-
-
-
-
-/** Text-based resin option cards: label, short desc, price hint. Mirrors MaterialCards but adds desc/price text. */
-function ResinCards({ options, value, onChange, lang }) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-      {options.map(o => {
-        const active = value === o.id;
-        return (
-          <button key={o.id} onClick={() => onChange(o.id)}
-            className={`text-left p-3 rounded-xl border transition-all duration-200 ${
-              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-            }`}>
-            <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${active ? "text-blue-300" : "text-white"}`}>{t(o.label, lang)}</div>
-            <div className="text-xs text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
-            <div className={`text-xs font-medium ${active ? "text-blue-300" : "text-neutral-500"}`}>{o.priceHint}</div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-const FILAMENT_IMG = {
-  "PLA": "/img/calc/3d_filaments/pla.webp", "PLA Silk": "/img/calc/3d_filaments/pla_silk.webp",
-  "PLA Matte": "/img/calc/3d_filaments/pla_matte.webp", "PLA Wood": "/img/calc/3d_filaments/pla_wood.webp",
-  "PLA Marble": "/img/calc/3d_filaments/pla_marble.webp", "PETG": "/img/calc/3d_filaments/petg.webp",
-  "PETG-CF": "/img/calc/3d_filaments/petg_cf.webp", "TPU 95A": "/img/calc/3d_filaments/tpu.webp",
-  "PVA": "/img/calc/3d_filaments/pva.webp", "ASA": "/img/calc/3d_filaments/asa.webp",
-  "ABS": "/img/calc/3d_filaments/abs.webp",
-  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.webp", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.webp",
-  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.webp", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.webp",
-  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.webp", "PC": "/img/calc/3d_filaments/pc.webp",
-  "PC-ABS": "/img/calc/3d_filaments/pc_abs.webp", "PET-CF": "/img/calc/3d_filaments/pet_cf.webp",
-  "PPS": "/img/calc/3d_filaments/pps.webp", "PPS-CF": "/img/calc/3d_filaments/pps_cf.webp",
-};
-
-const SEGMENTS = [
-  { id: "standard", label: "Standard",
-    desc: { pl: "PLA, PETG, TPU, ASA, ABS", en: "PLA, PETG, TPU, ASA, ABS", de: "PLA, PETG, TPU, ASA, ABS" },
-    img: "/img/calc/3d_segments/standard.webp" },
-  { id: "engineering", label: "Engineering",
-    desc: { pl: "PA-CF, PPA-CF, PC, PET-CF, PPS", en: "PA-CF, PPA-CF, PC, PET-CF, PPS", de: "PA-CF, PPA-CF, PC, PET-CF, PPS" },
-    img: "/img/calc/3d_segments/engineering.webp" },
-];
 
 
 
@@ -315,6 +262,9 @@ const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
+/** Opisy obu uslug wspolne ze sklepem: stad biora sie pytania i stan startowy. */
+const USLUGI = { fdm: getService("print_fdm"), msla: getService("print_msla") };
+
 export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff = null, onHandoffUsed = null }) {
   const l = LBL[lang] || LBL.en;
   const sl = STL_LBL[lang] || STL_LBL.en;
@@ -326,12 +276,18 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
   const [tech, setTech] = useState(initialTech);
 
   // ---- FDM state ----
-  const [segment, setSegment] = useState("standard");
-  const [materialKey, setMaterialKey] = useState("PLA");
-  const [sizeId, setSizeId] = useState("S");
-  const [infillId, setInfillId] = useState("low");
-  const [colorId, setColorId] = useState(1);
-  const [precisionId, setPrecisionId] = useState("standard_04");
+  // STAN POCZATKOWY OBU USLUG IDZIE Z KATALOGU, tego samego, ktory czyta
+  // karta uslugi. Kazda technologia ma wlasny zestaw, zeby przelaczenie nie
+  // kasowalo tego, co klient ustawil po drugiej stronie.
+  const [fdmParams, setFdmParams] = useState(() => ({ ...USLUGI.fdm.defaults }));
+  const [mslaParams, setMslaParams] = useState(() => ({ ...USLUGI.msla.defaults }));
+  // Wybor spoza listy przystawiamy w RENDERZE ta sama funkcja, ktorej uzywa
+  // sklep: material musi nalezec do segmentu, a zywica do swojego rodzaju.
+  const poprawkiFdm = poprawkiWyboru(USLUGI.fdm, fdmParams);
+  if (poprawkiFdm) setFdmParams((x) => ({ ...x, ...poprawkiFdm }));
+  const poprawkiMsla = poprawkiWyboru(USLUGI.msla, mslaParams);
+  if (poprawkiMsla) setMslaParams((x) => ({ ...x, ...poprawkiMsla }));
+  const { segment, materialKey, sizeId, infillId, colorId, precisionId } = { ...fdmParams, ...poprawkiFdm };
   // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
   // licznik nigdy nie pokazaly sprzecznych wartosci.
   const [fdmQty, setFdmQty] = useState(1);
@@ -347,38 +303,34 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
   const [stlZapamietana, setStlZapamietana] = useState(null);
 
   // ---- MSLA state ----
-  const [applicationId, setApplicationId] = useState("prototype");
-  const [resinSegmentId, setResinSegmentId] = useState("standard");
-  const [resinKey, setResinKey] = useState("standard");
+  const { applicationId, resinSegmentId, resinKey, layerId, sizeId: mslaSizeId } = { ...mslaParams, ...poprawkiMsla };
+  // Kolor jest PREFERENCJA, nie parametrem wyceny: nie wchodzi do kwoty, wiec
+  // nie stoi w katalogu razem z pytaniami, ktore o kwocie decyduja.
   const [resinColor, setResinColor] = useState("");
-  const [layerId, setLayerId] = useState("standard");
-  const [mslaSizeId, setMslaSizeId] = useState("S");
   const [mslaQty, setMslaQty] = useState(1);
   const mslaQuantityId = tierForQty(mslaQty, QUANTITY_TIERS).id;
 
-  useEffect(() => {
-    const mats = Object.keys(FILAMENTS[segment].materials);
-    if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
-  }, [segment]);
-
-  // Casting patterns require the precision segment, figurines default to standard segment
-  useEffect(() => {
-    if (applicationId === "casting") setResinSegmentId("precision");
-    else if (applicationId === "figurine") setResinSegmentId("standard");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applicationId]);
-
-  // Keep the selected resin valid for the current segment / application, reset to the first match otherwise
-  useEffect(() => {
-    const avail = getAvailableResins(resinSegmentId, applicationId);
-    if (!avail.find(r => r.id === resinKey)) setResinKey(avail[0]?.id || "standard");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resinSegmentId, applicationId]);
-
-  // Reset the preferred color whenever the resin changes
-  useEffect(() => {
-    setResinColor("");
-  }, [resinKey]);
+  /** Zapis pola, osobny dla kazdej technologii. */
+  const setParam = (klucz, wartosc) => {
+    if (tech === "msla") {
+      if (klucz === "quantityId") { setMslaQty(qtyForTier(wartosc, QUANTITY_TIERS)); return; }
+      // Zmiana zywicy kasuje kolor: paleta zalezy od zywicy, wiec kolor
+      // wybrany przy poprzedniej moglby przy nowej nie istniec.
+      if (klucz === "resinKey") setResinColor("");
+      // Zastosowanie PODPOWIADA rodzaj zywicy, a nie tylko go ogranicza:
+      // wzorzec odlewniczy wymaga precyzyjnych, figurka zaczyna od
+      // standardowych. Samo `optionsFrom` przystawiloby tylko odlew.
+      if (klucz === "applicationId") {
+        const podpowiedz = wartosc === "casting" ? "precision" : wartosc === "figurine" ? "standard" : null;
+        setMslaParams((x) => ({ ...x, applicationId: wartosc, ...(podpowiedz ? { resinSegmentId: podpowiedz } : {}) }));
+        return;
+      }
+      setMslaParams((x) => ({ ...x, [klucz]: wartosc }));
+      return;
+    }
+    if (klucz === "quantityId") { setFdmQty(qtyForTier(wartosc, QUANTITY_TIERS)); return; }
+    setFdmParams((x) => ({ ...x, [klucz]: wartosc }));
+  };
 
   async function handleSTLUpload(e) {
     const file = e.target.files?.[0];
@@ -435,20 +387,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
   const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, qty: mslaQty, stlData: scaledStlData }, lang),
     [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, mslaQty, scaledStlData, lang]);
 
-  const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
-    id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
-  }));
-
-  const resinSegmentOptions = applicationId === "casting"
-    ? RESIN_SEGMENT_OPTIONS.filter(s => s.id === "precision")
-    : RESIN_SEGMENT_OPTIONS;
-
-  const availableResins = getAvailableResins(resinSegmentId, applicationId);
-  const resinOptions = availableResins.map(r => ({
-    id: r.id, label: r.label, desc: r.desc,
-    priceHint: lang === "pl" ? `od ${Math.round(r.price_kg)} zł/kg` : `from ${Math.round(r.price_kg / CONFIG.EUR_PLN_RATE)} EUR/kg`,
-  }));
-
   const selectedResin = getResin(resinKey);
 
   const stlSummary = stlData
@@ -475,47 +413,55 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
           <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />
         </CalcCard>
 
-        <CalcCard stepNum="②" label={ml.application}>
-          <MaterialCards options={APPLICATIONS} value={applicationId} onChange={setApplicationId} lang={lang} cols="grid-cols-3" />
-        </CalcCard>
-
-        <CalcCard stepNum="③" label={ml.resinSegment}>
-          <HeroCards options={resinSegmentOptions} value={resinSegmentId} onChange={setResinSegmentId} lang={lang} cols="grid-cols-3" minH={130} />
-        </CalcCard>
-
-        <CalcCard stepNum="④" label={ml.resin}>
-          <ResinCards options={resinOptions} value={resinKey} onChange={setResinKey} lang={lang} />
-        </CalcCard>
-
-        {selectedResin?.colorable && (
-          <CalcCard label={ml.color}>
-            <select value={resinColor} onChange={(e) => setResinColor(e.target.value)}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors">
-              <option value="">{ml.colorDefault}</option>
-              {RESIN_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </CalcCard>
-        )}
-
-        {isFigurine && <LicenseNotice lang={lang} />}
-
-        <CalcCard stepNum="⑤" label={ml.layer}>
-          <Chips options={LAYER_HEIGHTS} value={layerId} onChange={setLayerId} lang={lang} />
-        </CalcCard>
-
-        <CalcCard stepNum="⑥" label={stlData ? sl.stlSize : ml.size} id="file-upload">
-          <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale}
-            sync={stlSync} onSyncChange={setStlSync} zapamietana={stlZapamietana} onZapamietanaChange={setStlZapamietana}
-            onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang}
-            buildVolCm={MSLA_BUILD_VOL_CM} sizePresets={MSLA_SIZE_PRESETS} />
-          {!stlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
-        </CalcCard>
-
-        <CalcCard stepNum="⑦" label={ml.qty}>
-          <Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={(id) => setMslaQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-          <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={mslaQty} onChange={setMslaQty}
-            min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-        </CalcCard>
+        <PolaUslugi
+          service={USLUGI.msla}
+          params={{ ...mslaParams, ...poprawkiMsla, quantityId: mslaQuantityId }}
+          setParam={setParam}
+          lang={lang}
+          wyglad="kalkulator"
+          pierwszyNumer={2}
+          tierKey="quantityId"
+          qty={mslaQty}
+          onQty={setMslaQty}
+          qtyMax={qtyLimit(QUANTITY_TIERS)}
+          qtyOpen={qtyOpenValue(QUANTITY_TIERS)}
+          qtyLabel={t(QTY_STEPPER_LBL, lang)}
+          wstawki={[
+            // Ostrzezenie licencyjne dotyczy figurek, a nie wyceny, wiec nie
+            // jest pytaniem: stoi jako kartka miedzy zywica a warstwa.
+            { po: "resinKey", label: null, render: () => (isFigurine ? <LicenseNotice lang={lang} /> : null) },
+          ]}
+          dodatki={{
+            // Kolor jest preferencja do zywicy, wiec stoi pod nia, a nie
+            // w osobnym kroku z wlasnym numerem.
+            resinKey: {
+              po: () => (selectedResin?.colorable ? (
+                <div className="mt-3">
+                  <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{ml.color}</div>
+                  <select value={resinColor} onChange={(e) => setResinColor(e.target.value)}
+                    aria-label={ml.color}
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors">
+                    <option value="">{ml.colorDefault}</option>
+                    {RESIN_COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              ) : null),
+            },
+            // Wgrany model zastepuje wybor rozmiaru z listy i przejmuje
+            // etykiete kartki: to ta sama odpowiedz, tylko zmierzona.
+            sizeId: {
+              id: "file-upload",
+              etykieta: stlData ? sl.stlSize : null,
+              ukryjWarianty: Boolean(stlData),
+              przed: () => (
+                <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale}
+                  sync={stlSync} onSyncChange={setStlSync} zapamietana={stlZapamietana} onZapamietanaChange={setStlZapamietana}
+                  onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang}
+                  buildVolCm={MSLA_BUILD_VOL_CM} sizePresets={MSLA_SIZE_PRESETS} />
+              ),
+            },
+          }}
+        />
 
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
@@ -568,28 +514,32 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
         <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
-      <CalcCard stepNum="②" label={l.segment}>
-        <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
-      </CalcCard>
-
-      <CalcCard stepNum="③" label={`${l.filament} - ${FILAMENTS[segment].label}`}>
-        <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
-      </CalcCard>
-
-      <CalcCard stepNum="④" label={stlData ? sl.stlSize : l.size} id="file-upload">
-        <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang}
-          sync={stlSync} onSyncChange={setStlSync} zapamietana={stlZapamietana} onZapamietanaChange={setStlZapamietana} />
-        {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
-      </CalcCard>
-
-      <CalcCard stepNum="⑤" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
-      <CalcCard stepNum="⑥" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="⑦" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="⑧" label={l.qty}>
-        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setFdmQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={fdmQty} onChange={setFdmQty}
-          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-      </CalcCard>
+      <PolaUslugi
+        service={USLUGI.fdm}
+        params={{ ...fdmParams, ...poprawkiFdm, quantityId }}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        pierwszyNumer={2}
+        tierKey="quantityId"
+        qty={fdmQty}
+        onQty={setFdmQty}
+        qtyMax={qtyLimit(QUANTITY_TIERS)}
+        qtyOpen={qtyOpenValue(QUANTITY_TIERS)}
+        qtyLabel={t(QTY_STEPPER_LBL, lang)}
+        dodatki={{
+          sizeId: {
+            id: "file-upload",
+            etykieta: stlData ? sl.stlSize : null,
+            ukryjWarianty: Boolean(stlData),
+            przed: () => (
+              <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale}
+                onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang}
+                sync={stlSync} onSyncChange={setStlSync} zapamietana={stlZapamietana} onZapamietanaChange={setStlZapamietana} />
+            ),
+          },
+        }}
+      />
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />

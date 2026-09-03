@@ -18,7 +18,7 @@ import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { t } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QuantityStepper } from "./ConfigControls.jsx";
-import { CalcCard, Chips, HeroCards, MaterialCards } from "../calculators/calcShared.jsx";
+import { CalcCard, Chips, HeroCards, MaterialCards, CONFIG } from "../calculators/calcShared.jsx";
 
 /** Numery krokow w skorze kalkulatora. Dziesiec wystarcza z zapasem. */
 const NUMERY = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
@@ -64,6 +64,19 @@ export function poprawkiWyboru(service, params, opcje = {}) {
     if (!warianty.some((o) => o.id === params[f.key])) zmiany[f.key] = warianty[0].id;
   }
   return Object.keys(zmiany).length ? zmiany : null;
+}
+
+/**
+ * Podpowiedz ceny materialu, w walucie jezyka.
+ *
+ * Regula walutowa serwisu: polski czyta zlotowki, reszta euro. Kurs stoi
+ * w jednym miejscu (`CONFIG.EUR_PLN_RATE`), zeby dwie drogi do zamowienia
+ * nie podawaly dwoch roznych przelicznikow.
+ */
+function podpowiedzCeny(pricePerKg, lang) {
+  if (lang === "pl") return `od ${Math.round(pricePerKg)} zł/kg`;
+  const wEuro = Math.round(pricePerKg / CONFIG.EUR_PLN_RATE);
+  return lang === "de" ? `ab ${wEuro} EUR/kg` : `from ${wEuro} EUR/kg`;
 }
 
 /** Etykieta pola w skorze sklepu; w kalkulatorze rysuje ja kartka. */
@@ -124,6 +137,41 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
         cols={f.kolumny || "grid-cols-1 sm:grid-cols-3"}
         minH={f.wysokosc || 150}
       />
+    );
+  }
+
+  // Karty opisowe: nazwa, zdanie opisu i podpowiedz cenowa. Uzywamy ich tam,
+  // gdzie wariant rozni sie wlasciwosciami, a nie wygladem: zywica twarda i
+  // zywica elastyczna wygladaja na zdjeciu tak samo.
+  if (f.widok === "opisowe") {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+        {warianty.map((o) => {
+          const on = params[f.key] === o.id;
+          return (
+            <button
+              key={String(o.id)}
+              type="button"
+              onClick={() => setParam(f.key, o.id)}
+              className={`text-left p-3 rounded-xl border transition-all duration-200 ${
+                on
+                  ? accent === "amber"
+                    ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
+                    : "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
+                  : "border-white/10 bg-white/[0.02] hover:border-white/20"
+              }`}
+            >
+              <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${on ? (accent === "amber" ? "text-amber-300" : "text-blue-300") : "text-white"}`}>{t(o.label, lang)}</div>
+              {o.desc && <div className="text-xs text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>}
+              {o.price_kg != null && (
+                <div className={`text-xs font-medium ${on ? (accent === "amber" ? "text-amber-300" : "text-blue-300") : "text-neutral-500"}`}>
+                  {podpowiedzCeny(o.price_kg, lang)}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
     );
   }
 
@@ -204,8 +252,17 @@ export default function PolaUslugi({
 
   // Ciag krokow: pola z katalogu plus wstawki, kazda za polem, ktore wskazala.
   // Wstawka z `po: null` staje na poczatku.
+  //
+  // TRESC WSTAWKI RYSUJEMY OD RAZU, zeby wyrzucic te, ktore nic nie zwracaja.
+  // Wstawka warunkowa (ostrzezenie licencyjne przy figurkach) zajmowala numer
+  // takze wtedy, gdy nie miala co pokazac, wiec ekran szedl od ④ do ⑥.
   const ciag = [];
-  const doda = (po) => wstawki.filter((w) => (w.po ?? null) === po).forEach((w) => ciag.push({ typ: "wstawka", w }));
+  const doda = (po) => wstawki
+    .filter((w) => (w.po ?? null) === po)
+    .forEach((w) => {
+      const tresc = w.render();
+      if (tresc != null) ciag.push({ typ: "wstawka", w, tresc });
+    });
   doda(null);
   for (const f of pola) {
     ciag.push({ typ: "pole", f });
@@ -221,9 +278,7 @@ export default function PolaUslugi({
         const numer = wyglad === "kalkulator" ? NUMERY[i + pierwszyNumer - 1] : null;
 
         if (krok.typ === "wstawka") {
-          const { w } = krok;
-          const tresc = w.render();
-          if (tresc == null) return null;
+          const { w, tresc } = krok;
           return wyglad === "kalkulator"
             ? <CalcCard key={`w-${i}`} stepNum={numer} label={t(w.label, lang)} id={w.id}>{tresc}</CalcCard>
             : <div key={`w-${i}`} className="mb-6" id={w.id}>{w.label && <Etykieta>{t(w.label, lang)}</Etykieta>}{tresc}</div>;

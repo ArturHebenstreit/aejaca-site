@@ -16,7 +16,7 @@ import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
 import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
-import PolaUslugi from "./PolaUslugi.jsx";
+import PolaUslugi, { poprawkiWyboru } from "./PolaUslugi.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -704,6 +704,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
     setAdded(true);
   }
 
+  // WYBOR SPOZA LISTY PRZYSTAWIAMY DO NAJBLIZSZEJ DOSTEPNEJ WARTOSCI, w
+  // renderze, ta sama funkcja co kalkulator. Bez tego pole zalezne od innego
+  // potrafilo zostac puste: wybor wzorca odlewniczego zwezal rodzaj zywicy do
+  // precyzyjnych, a `resinSegmentId` zostawal na "standardowych", wiec lista
+  // zywic wychodzila pusta i nie bylo czego wybrac.
+  const poprawki = poprawkiWyboru(service, params, { uploadToken });
+  if (poprawki) setParams((p) => ({ ...p, ...poprawki }));
+
   // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
   // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
   // wielkosci, ktora wycena odrzuci.
@@ -803,7 +811,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
 
       <PolaUslugi
         service={service}
-        params={params}
+        params={{ ...params, ...poprawki }}
         setParam={setParam}
         lang={lang}
         wyglad="sklep"
