@@ -362,6 +362,19 @@ export const CHAIN_CLASPS = [
   { id: "custom_clasp", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 
+/**
+ * Rodzaje, ktore sa lancuchem, a nie bryla.
+ *
+ * LANCUCH LICZY SIE INACZEJ NIZ RESZTA: `calcChain` bierze splot, zapiecie,
+ * dlugosc i szerokosc, a `calcNew` na tych samych identyfikatorach oddaje
+ * `null`. Do tej pory ta lista stala w kalkulatorze jubilerskim, wiec karta
+ * uslugi w sklepie pytala przy lancuchu o masywnosc i metode wykonania,
+ * ktore dla lancucha nic nie znacza, i konczyla brakiem ceny bez wyjasnienia.
+ * Tu stoi raz i czytaja ja obie drogi. Decyzja: ADR-0037.
+ */
+export const CHAIN_TYPE_IDS = ["chain_m", "bracelet_m", "necklace"];
+export const isChainType = (id) => CHAIN_TYPE_IDS.includes(id);
+
 // Default chain length per type (mm)
 export const CHAIN_DEFAULT_LENGTH = {
   necklace:   450,

@@ -5,7 +5,7 @@
 // wprost z rdzenia cenowego, wiec kreator nigdy nie zaproponuje
 // wyboru, ktorego kalkulator nie zna.
 
-import { QUANTITY_TIERS } from "../pricing/config.js";
+import { QUANTITY_TIERS, CONFIG } from "../pricing/config.js";
 import { SUBSTRATE_LABEL, SUBSTRATES } from "./laserSubstrate.js";
 import {
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, SIZES, INFILL_OPTIONS, COLORS, PRECISION, FILAMENTS,
@@ -14,7 +14,7 @@ import {
 import { RESIN_TYPES, RESIN_SEGMENTS } from "../data/resins.js";
 import {
   QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
-  SHAPE_COMPLEXITY,
+  SHAPE_COMPLEXITY, isChainType,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
 } from "../pricing/jewelryConfig.js";
 import {
@@ -170,7 +170,8 @@ export const SERVICES = [
       "Reinigung, Rhodinierung, Vergoldung, Fassungskontrolle."
     ),
     fields: [
-      { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
+      { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES,
+        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4" },
       { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: RENOVATION_METALS },
       { key: "services", label: L("Zakres usług", "Services", "Leistungen"), options: RENOVATION_SERVICES, multi: true },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
@@ -189,7 +190,8 @@ export const SERVICES = [
       "Weitenänderung, Krappenreparatur, Verschlusstausch, Löten."
     ),
     fields: [
-      { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
+      { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES,
+        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4" },
       { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: REPAIR_METALS },
       { key: "repairId", label: L("Rodzaj naprawy", "Repair type", "Reparaturart"), options: REPAIR_SERVICES },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
@@ -250,13 +252,30 @@ export const SERVICES = [
       "Trauringe, Siegelringe, Anhänger aus reinem Metall. Stücke mit Steinen individuell."
     ),
     fields: [
-      { key: "lineId", label: L("Linia", "Line", "Linie"), options: PRODUCT_LINES },
-      { key: "typeId", label: L("Rodzaj", "Type", "Art"), optionsFrom: (v) => JEWELRY_TYPES[v.lineId] || JEWELRY_TYPES.woman },
-      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: METALS },
-      { key: "weightId", label: L("Masywność", "Boldness", "Massivität"), options: WEIGHTS },
-      { key: "methodId", label: L("Metoda", "Method", "Methode"), options: METHODS },
-      { key: "platingId", label: L("Powłoka", "Plating", "Beschichtung"), options: PLATING },
-      { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS },
+      { key: "lineId", label: L("Linia", "Line", "Linie"), options: PRODUCT_LINES,
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 180 },
+      { key: "typeId", label: L("Rodzaj", "Type", "Art"), widok: "kafelki",
+        kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
+        optionsFrom: (v) => JEWELRY_TYPES[v.lineId] || JEWELRY_TYPES.woman },
+      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: METALS,
+        widok: "kafelki", kolumny: "grid-cols-3 sm:grid-cols-4" },
+      // Lancuch nie ma masywnosci ani metody wykonania: liczy go `calcChain`
+      // ze splotu, dlugosci i szerokosci. Pytanie o nie bylo pytaniem bez
+      // wplywu na nic, a odpowiedz i tak konczyla sie brakiem ceny.
+      { key: "weightId", label: L("Masywność", "Boldness", "Massivität"), options: WEIGHTS,
+        widok: "zdjecia", kolumny: "grid-cols-2 sm:grid-cols-4", wysokosc: 130,
+        ukryjGdy: (v) => isChainType(v.typeId) },
+      { key: "methodId", label: L("Metoda", "Method", "Methode"), options: METHODS,
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-2", wysokosc: 150,
+        ukryjGdy: (v) => isChainType(v.typeId) },
+      { key: "platingId", label: L("Powłoka", "Plating", "Beschichtung"), options: PLATING,
+        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-5" },
+      // Doplata za grawer stoi przy wariancie, bo to ona rozstrzyga wybor.
+      // W walucie jezyka: polski czyta zlotowki, reszta euro.
+      { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS,
+        podpis: (o, lang) => (o.cost
+          ? (lang === "pl" ? `+${o.cost} zł` : `+${Math.round(o.cost / CONFIG.EUR_PLN_RATE)} EUR`)
+          : null) },
       { key: "complexityId", label: L("Złożoność kształtu", "Shape complexity", "Formkomplexität"), options: SHAPE_COMPLEXITY },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],

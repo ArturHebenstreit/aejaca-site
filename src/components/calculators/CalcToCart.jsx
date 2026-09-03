@@ -481,6 +481,59 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     onUnavailable(error && !busy ? (errorMsg || u.unavailable) : null);
   }, [onUnavailable, error, busy, errorMsg, u.unavailable]);
 
+  // ============================================================
+  // WSZYSTKIE HOOKI MUSZA STAC PRZED KAZDYM `return`
+  // ============================================================
+  // Ponizej sa dwa wczesne wyjscia: brak karty uslugi i konfiguracja, ktorej
+  // nie wycenimy wiazaco. Efekt zglaszajacy kwote kalkulatorowi stal PO nich,
+  // wiec w chwili, gdy `blocked` przechodzilo z falszu w prawde przy zywym
+  // komponencie, React liczyl mniej hookow niz w poprzednim renderze i gasil
+  // caly kalkulator: wystarczylo wybrac lancuszek w kalkulatorze jubilerskim,
+  // zeby ekran zniknal. Dlatego stan opakowania, kwota linii i ten efekt stoja
+  // tutaj, nad wyjsciami, i nie zaleza od tego, ktora galezia poleci render.
+
+  // Usluga cyfrowa nie jedzie w pudelku, wiec pytanie o opakowanie nie ma
+  // sensu. Ten sam warunek co w sklepie, zeby obie drogi pytaly tak samo.
+  const isDigital = Boolean(svc?.digital);
+  const pack = isDigital ? null : getPackaging(packagingId);
+  const packGrosze = pack?.grosze || 0;
+  const packLimit = pack?.maxLength ?? ENGRAVING_LIMITS.packaging;
+  const packOver = Boolean(pack?.personalizable)
+    && (packEngraving.trim().length > packLimit || lidBackText.trim().length > packLimit);
+  // Pudelko z grawerem bez tresci graweru jest zamowieniem niekompletnym,
+  // wiec blokuje koszyk tak samo jak w sklepie.
+  const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
+
+  // Licznik z kalkulatora ma pierwszenstwo przed nakladem reprezentatywnym
+  // progu. `price.qty` to srodek przedzialu, na ktorym opiera sie rabat, wiec
+  // klient proszacy o trzy sztuki dostawal do koszyka szesc.
+  const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
+  // Kwota linii tak samo jak w koszyku: opakowanie doliczamy za sztuke.
+  const lineGrosze = ((price?.unitGrosze || 0) + packGrosze) * qty;
+
+  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
+  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
+  useEffect(() => {
+    if (!onBinding) return;
+    if (blocked || !price?.unitGrosze) { onBinding(null); return; }
+    // GOTOWE NAPISY, NIE SAME LICZBY. Kwote wiazaca pokazuje teraz karta
+    // wyceny na gorze, ale etykiety i formatowanie kwot maja zostac w jednym
+    // miejscu. Przekazanie samych groszy znaczyloby druga kopie tlumaczen
+    // i drugi formater, a te rozjezdzaja sie po cichu.
+    onBinding({
+      unitGrosze: price.unitGrosze,
+      qty,
+      lineGrosze,
+      etykieta: qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding,
+      suma: money(lineGrosze),
+      sumaDruga: moneyDruga(lineGrosze),
+      // Za sztuke liczy sie TAK SAMO jak suma, czyli razem z opakowaniem.
+      // Inaczej mnozenie kwoty za sztuke przez naklad nie dawaloby sumy pod nia.
+      zaSztuke: qty > 1 ? `${money(price.unitGrosze + packGrosze)} ${u.perPc}` : null,
+      uwaga: u.note,
+    });
+  }, [onBinding, blocked, price, qty, lineGrosze, packGrosze, u, showEur, plnPerEur]);
+
   if (!card) return null;
 
   // Sciezka wektorowa nie da sie policzyc z presetu pola, wiec zamiast
@@ -540,17 +593,6 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const substrateGap = brakPodloza({ calculator, params });
   const substrateOk = !substrateGap;
 
-  // Usluga cyfrowa nie jedzie w pudelku, wiec pytanie o opakowanie nie ma
-  // sensu. Ten sam warunek co w sklepie, zeby obie drogi pytaly tak samo.
-  const isDigital = Boolean(svc?.digital);
-  const pack = isDigital ? null : getPackaging(packagingId);
-  const packGrosze = pack?.grosze || 0;
-  const packLimit = pack?.maxLength ?? ENGRAVING_LIMITS.packaging;
-  const packOver = Boolean(pack?.personalizable)
-    && (packEngraving.trim().length > packLimit || lidBackText.trim().length > packLimit);
-  // Pudelko z grawerem bez tresci graweru jest zamowieniem niekompletnym,
-  // wiec blokuje koszyk tak samo jak w sklepie.
-  const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
 
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
@@ -560,35 +602,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // czegos, czego kasa nie przyjmie.
   const ready = descriptionOk && artworkOk && engravingOk && substrateOk && packEngravingOk && binding && !gatedShape && !hold && !modelError;
 
-  // Licznik z kalkulatora ma pierwszenstwo przed nakladem reprezentatywnym
-  // progu. `price.qty` to srodek przedzialu, na ktorym opiera sie rabat, wiec
-  // klient proszacy o trzy sztuki dostawal do koszyka szesc.
-  const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
-  // Kwota linii tak samo jak w koszyku: opakowanie doliczamy za sztuke.
-  const lineGrosze = ((price?.unitGrosze || 0) + packGrosze) * qty;
 
-  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
-  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
-  useEffect(() => {
-    if (!onBinding) return;
-    if (blocked || !price?.unitGrosze) { onBinding(null); return; }
-    // GOTOWE NAPISY, NIE SAME LICZBY. Kwote wiazaca pokazuje teraz karta
-    // wyceny na gorze, ale etykiety i formatowanie kwot maja zostac w jednym
-    // miejscu. Przekazanie samych groszy znaczyloby druga kopie tlumaczen
-    // i drugi formater, a te rozjezdzaja sie po cichu.
-    onBinding({
-      unitGrosze: price.unitGrosze,
-      qty,
-      lineGrosze,
-      etykieta: qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding,
-      suma: money(lineGrosze),
-      sumaDruga: moneyDruga(lineGrosze),
-      // Za sztuke liczy sie TAK SAMO jak suma, czyli razem z opakowaniem.
-      // Inaczej mnozenie kwoty za sztuke przez naklad nie dawaloby sumy pod nia.
-      zaSztuke: qty > 1 ? `${money(price.unitGrosze + packGrosze)} ${u.perPc}` : null,
-      uwaga: u.note,
-    });
-  }, [onBinding, blocked, price, qty, lineGrosze, packGrosze, u, showEur, plnPerEur]);
 
   // Plik glowny idzie do zamowienia razem z reszta, a nie osobna sciezka.
   // Kolejnosc jest zamierzona: rysunek, na ktorym liczylismy cene, ma byc

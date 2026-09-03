@@ -20,8 +20,14 @@ import { t } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QuantityStepper } from "./ConfigControls.jsx";
 import { CalcCard, Chips, HeroCards, MaterialCards, CONFIG } from "../calculators/calcShared.jsx";
 
-/** Numery krokow w skorze kalkulatora. Dziesiec wystarcza z zapasem. */
-const NUMERY = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
+/**
+ * Numery krokow w skorze kalkulatora.
+ *
+ * Kalkulator jubilerski ma jedenascie krokow razem z wyborem uslugi, wiec
+ * dziesiec nie wystarczylo: jedenasty wracal do ① i ekran mial dwie jedynki.
+ */
+const NUMERY = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩",
+  "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳"];
 
 /** Pola, ktore w sklepie rysuje suwak, bo ich wartosci sa uporzadkowane. */
 export const POLA_SUWAKOWE = new Set(["sizeId", "infillId", "precisionId", "layerId", "areaId", "pathId", "volumeId", "quantityId"]);
@@ -114,7 +120,14 @@ function WyborWielu({ f, warianty, params, setParam, lang, accent }) {
 }
 
 /** Sama kontrolka pola, bez etykiety i bez kartki. */
-function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
+function Kontrolka({ f, warianty: surowe, params, setParam, lang, accent, wyglad }) {
+  // PODPIS POD WARIANTEM LICZY SIE Z JEZYKIEM, wiec nie moze powstac w
+  // `optionsFrom`, ktore jezyka nie widzi. Stad osobne `podpis(wariant, lang)`:
+  // dopisek o doplacie ma byc w zlotowkach po polsku i w euro poza Polska,
+  // tak jak reszta kwot w serwisie.
+  const warianty = f.podpis
+    ? surowe.map((o) => ({ ...o, sub: f.podpis(o, lang) ?? o.sub }))
+    : surowe;
   if (f.multi) return <WyborWielu {...{ f, warianty, params, setParam, lang, accent }} />;
 
   // ZDJECIA WYGRYWAJA Z NAPISAMI tam, gdzie wybor dotyczy rzeczy, a nie liczby.
@@ -258,10 +271,31 @@ export default function PolaUslugi({
   // TRESC WSTAWKI RYSUJEMY OD RAZU, zeby wyrzucic te, ktore nic nie zwracaja.
   // Wstawka warunkowa (ostrzezenie licencyjne przy figurkach) zajmowala numer
   // takze wtedy, gdy nie miala co pokazac, wiec ekran szedl od ④ do ⑥.
+  // WSTAWKA ZACZEPIONA O UKRYTE POLE NIE MOZE ZNIKNAC RAZEM Z NIM. Karta
+  // dlugosci lancuszka stoi za masywnoscia, a przy lancuchu masywnosci nie ma,
+  // bo nic nie znaczy. Zaczepienie liczymy wiec po KOLEJNOSCI w katalogu:
+  // wstawka ladzie za najblizszym widocznym polem przed swoja kotwica.
+  const kolejnosc = service.fields.map((f) => f.key);
+  const widoczne = new Set(pola.map((f) => f.key));
+  const kotwica = (po) => {
+    if (po == null || widoczne.has(po)) return po ?? null;
+    // KOTWICA, KTOREJ TA USLUGA W OGOLE NIE MA, znaczy, ze wstawka nie nalezy
+    // do tego ekranu. Bez tego karta wymiarow wyrobu z galezi "nowa bizuteria"
+    // wskakiwala na poczatek renowacji, gdzie nie ma czego wymierzac.
+    if (!kolejnosc.includes(po)) return false;
+    for (let i = kolejnosc.indexOf(po) - 1; i >= 0; i -= 1) {
+      if (widoczne.has(kolejnosc[i])) return kolejnosc[i];
+    }
+    return null;
+  };
+  const przypisane = wstawki
+    .map((w) => ({ w, gdzie: kotwica(w.po ?? null) }))
+    .filter((x) => x.gdzie !== false);
+
   const ciag = [];
-  const doda = (po) => wstawki
-    .filter((w) => (w.po ?? null) === po)
-    .forEach((w) => {
+  const doda = (po) => przypisane
+    .filter((x) => x.gdzie === po)
+    .forEach(({ w }) => {
       const tresc = w.render();
       if (tresc != null) ciag.push({ typ: "wstawka", w, tresc });
     });
