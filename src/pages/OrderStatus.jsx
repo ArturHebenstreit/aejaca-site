@@ -12,7 +12,8 @@ import { Link } from "../i18n/nav.jsx";
 import { sciezkaJezyka } from "../routes.js";
 import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
-import { DELIVERY_METHODS } from "../data/orderCatalog.js";
+import { DELIVERY_METHODS, uslugaKalkulatora } from "../data/orderCatalog.js";
+import { ustaleniaPozycji } from "../data/describeParams.js";
 import { przewoznicyZNazwy, sledzenieUrl } from "../pricing/shipping.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { WZOR_ZAMOWIENIA, WZOR_OFERTY, PRZYKLAD_OFERTY, PRZYKLAD_ZAMOWIENIA } from "../shop/numerySpraw.js";
@@ -1058,12 +1059,26 @@ export default function OrderStatus() {
               {order && order.items && order.items.length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-4 text-left">
                   <div className="text-neutral-500 text-xs mb-2">{u.itemsTitle}</div>
+                  {/* USTALENIA POZYCJI, te same, ktore klient widzial w koszyku.
+                      Do 2026-09-03 stala tu sama nazwa i kwota, wiec po zaplacie
+                      klient tracil dostep do tego, na co sie zgodzil: kruszec,
+                      wykonczenie, opakowanie, swoj opis i nazwe pliku. Lista
+                      powstaje z tego samego slownika co koszyk i co potwierdzenie
+                      mailem, wiec trzy miejsca nie moga powiedziec trzech
+                      roznych rzeczy. */}
                   {order.items.map((it, i) => (
-                    <div key={`${it.title}-${i}`} className="flex justify-between gap-4 py-1.5 border-b border-white/5">
-                      <span className="text-neutral-200 min-w-0">
-                        {it.title}{it.qty > 1 ? ` \u00d7 ${it.qty}` : ""}
-                      </span>
-                      <span className="text-neutral-200 shrink-0 tabular-nums">{zlote(it.lineGrosze)}</span>
+                    <div key={`${it.title}-${i}`} className="py-1.5 border-b border-white/5">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-neutral-200 min-w-0">
+                          {it.title}{it.qty > 1 ? ` \u00d7 ${it.qty}` : ""}
+                        </span>
+                        <span className="text-neutral-200 shrink-0 tabular-nums">{zlote(it.lineGrosze)}</span>
+                      </div>
+                      {ustaleniaPozycji({ ...it, serviceId: uslugaKalkulatora(it.calculator) }, lang).map((w) => (
+                        <div key={w.label} className="text-neutral-500 text-xs mt-0.5">
+                          {w.label}: <span className="text-neutral-400">{w.value}</span>
+                        </div>
+                      ))}
                     </div>
                   ))}
                   {order.shippingGrosze != null && (

@@ -45,6 +45,15 @@ const EXTRA = [
   // pierwszej zmianie, a objawem bylby blad dopiero przy platnosci.
   { from: join(ROOT, "src", "data", "inboundDelivery.js"), name: "inboundDelivery.js", source: "src/data/inboundDelivery.js" },
   { from: join(ROOT, "src", "data", "laserSubstrate.js"), name: "laserSubstrate.js", source: "src/data/laserSubstrate.js" },
+  // KATALOG PYTAN I OPISYWANIE ODPOWIEDZI. Jada tu razem, bo drugie czyta
+  // pierwsze. Do 2026-09-03 serwer pocztowy ich nie widzial i wkladal do maila
+  // dla pracowni surowy JSON parametrow, a do potwierdzenia dla klienta nie
+  // wkladal ich wcale: pozycja, ktora w koszyku miala osiem wierszy opisu,
+  // po zaplacie kurczyla sie do nazwy uslugi i kwoty. Kopia slownika napisana
+  // dla serwera rozjechalaby sie z katalogiem przy pierwszej zmianie oferty,
+  // a objawem bylby mail wygladajacy poprawnie i mowiacy nieprawde.
+  { from: join(ROOT, "src", "data", "orderCatalog.js"), name: "orderCatalog.js", source: "src/data/orderCatalog.js" },
+  { from: join(ROOT, "src", "data", "describeParams.js"), name: "describeParams.js", source: "src/data/describeParams.js" },
   // Skala w osobnych osiach: liczy z niej i przegladarka, i kwota wiazaca.
   // Objetosc rosnie iloczynem osi, wiec dwie kopie tego wzoru rozjechalyby sie
   // przy pierwszej poprawce, a objawem bylaby cena wygladajaca poprawnie.

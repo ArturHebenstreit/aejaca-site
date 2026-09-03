@@ -145,7 +145,7 @@ assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierd
 
   const goly = doNas();
   assert.doesNotMatch(goly, /kalkulator: null/, "pusty kalkulator nie ma o czym mowic");
-  assert.doesNotMatch(goly, /parametry: \{"fromQuote"/, "numer oferty nie jest zrzutem JSON");
+  assert.doesNotMatch(goly, /fromQuote/, "numer oferty ma wlasny wiersz, a nie zrzut parametrow");
   assert.doesNotMatch(goly, /"description":null/, "pusty opis nie jest trescia");
   assert.match(goly, /z oferty: WY20260825-F84D7EEB/, "numer oferty ma wlasny wiersz");
 
@@ -156,12 +156,32 @@ assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierd
     params: { fromQuote: "WY1", description: "zielony", warstwa: "0.1 mm" },
   }]).find((m) => m.to !== order.customer_email).text;
   assert.match(zParametrami, /kalkulator: print_3d/);
-  assert.match(zParametrami, /parametry: \{"warstwa":"0.1 mm"\}/, "parametr o tresci zostaje");
+  // Od 2026-09-03 parametry ida do pracowni PO LUDZKU, tym samym slownikiem co
+  // koszyk, a nie zrzutem JSON. `print_3d` nie jest kalkulatorem z katalogu
+  // (pozycja z oferty), wiec katalog nie zna tego pola i nie umie go nazwac.
+  // Wtedy wychodzi surowa para, a nie nic: pracownia nie moze stracic niczego,
+  // co klient wybral, nawet gdy nie umiemy tego ladnie nazwac.
+  assert.match(zParametrami, /pozostale: warstwa=0\.1 mm/, "parametr o tresci zostaje, takze nienazwany");
+  assert.doesNotMatch(zParametrami, /\{"warstwa"/, "i nie jest juz zrzutem JSON");
   assert.match(zParametrami, /OPIS OD KLIENTA: zielony/, "opis ma wlasny akapit, a nie JSON");
 
+  // Kalkulator Z KATALOGU dostaje pelne nazwy pol, nie surowe klucze.
+  const zKatalogu = buildOrderMessages(order, [{
+    ...zOferty[0], calculator: "jewelry_casting",
+    params: { metalId: "silver", finishId: "clean", description: "klucz" },
+  }]).find((m) => m.to !== order.customer_email).text;
+  assert.match(zKatalogu, /Kruszec i próba: Srebro 925/, "wybor nazwany slowami, nie identyfikatorem");
+  assert.doesNotMatch(zKatalogu, /metalId/, "identyfikator pola nie wychodzi do pracowni");
+
   // Termin: po zaplacie to jedyna rzecz, ktora naprawde zmienia prace pracowni.
+  // JEDNA NAZWA I JEDEN KSZTALT DATY. `deadline_at` to moment zakonczenia pracy
+  // (ADR-0027), wiec mail do pracowni nazywa go tak samo jak mail do klienta,
+  // a nie "wysylka", ktora jest pozniej. Data po ludzku, bo RRRR-MM-DD w zdaniu
+  // do czlowieka lamie regule z PROJECT_RULES.
   assert.match(doNas({ lead_days: 14, deadline_at: "2026-09-12" }),
-    /TERMIN: 14 dni, planowana wysylka 2026-09-12/);
+    /TERMIN: 14 dni, planowana finalizacja 12\.09\.2026/);
+  assert.doesNotMatch(doNas({ lead_days: 14, deadline_at: "2026-09-12" }),
+    /2026-09-12/, "data nie wychodzi w ksztalcie bazodanowym");
   assert.match(doNas({ lead_days: 14, requires_details: true }),
     /TERMIN: zegar STOI/, "zlecenie czekajace na ustalenia mowi to wprost");
   assert.match(goly, /TERMIN: nie ustalony/, "brak terminu tez jest informacja");

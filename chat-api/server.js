@@ -6130,7 +6130,8 @@ app.get("/api/orders/:ref", async (req, res) => {
   // wlasciwie zamowil; podsumowanie mial wylacznie w mailu, ktory bywa
   // zarchiwizowany albo skasowany. Tu jada te same wiersze, co w mailu.
   const { rows: pozycje } = await pool.query(
-    `SELECT title, qty, unit_grosze, line_grosze, requires_details, details_settled_at, details_note
+    `SELECT title, qty, unit_grosze, line_grosze, requires_details, details_settled_at, details_note,
+            calculator, params, file_name
        FROM order_items WHERE order_id = $1 ORDER BY id`,
     [o.id]
   );
@@ -6150,6 +6151,15 @@ app.get("/api/orders/:ref", async (req, res) => {
     items: pozycje.map((i) => ({
       title: i.title, qty: i.qty,
       unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      // USTALENIA POZYCJI. Do 2026-09-03 strona zamowienia pokazywala z pozycji
+      // nazwe i kwote, tak samo jak potwierdzenie mailem, wiec po zaplacie
+      // klient tracil dostep do tego, na co sie zgodzil: kruszec, wykonczenie,
+      // opakowanie, swoj opis i nazwe pliku widzial ostatni raz w koszyku.
+      // Kalkulator jedzie razem z parametrami, bo to on wskazuje karte pytan,
+      // ktora te parametry nazywa (`uslugaKalkulatora`).
+      calculator: i.calculator || null,
+      params: i.params || null,
+      fileName: i.file_name || null,
       // Klient ma prawo wiedziec, NA CO czekamy. "Ustalamy szczegoly" bez
       // wskazania pozycji brzmi jak zwloka, a nie jak konkretne pytanie,
       // ktore do niego wyslalismy.
