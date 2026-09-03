@@ -18,6 +18,12 @@ i nie jest dowodem, ze funkcja istnieje. Przy watpliwosci sprawdz kod i testy.
 | `AEJaCA_Geometria_Kreatora_Zasady.md` | Reguly geometrii i dziennik pomiarow | Implementator geometrii | Przy kazdej zmianie bryly |
 | `AEJaCA_Inwentarz_Sprzet_Procesy.md` | Sprzet, materialy i realne procesy | Artur | Po zmianie sprzetu lub procesu |
 | `B2B_Architektura.md` | Zatwierdzona architektura oferty B2B | Artur | Po zmianie oferty B2B |
+| `MAPA_CEN.md` | Gdzie stoi ktora kwota, co jest kosztem, a co cena dla klienta, i co zrobic przed zmiana cennika | Implementator wycen | Po dolozeniu tabeli cenowej albo zmianie marzy |
+| `MAPA_BRAMEK.md` | Spis wszystkich sprawdzianow z `npm run build` razem z powodem, dla ktorego powstaly. **Generowany**: `npm run mapa:bramki` | nikt recznie | sam, przez bramke `mapa-bramek.mjs --check` |
+
+**Model, ktory widzi to repozytorium pierwszy raz, zaczyna od tych dwoch.**
+`MAPA_CEN.md` mowi, gdzie ruszac, a `MAPA_BRAMEK.md`, czego build nie przepusci.
+Bez nich obie te rzeczy poznaje sie przez padajacy build, regula po regule.
 
 ## Audyty ze stanem wykonania
 
@@ -48,6 +54,15 @@ i nie jest dowodem, ze funkcja istnieje. Przy watpliwosci sprawdz kod i testy.
 | `Prompty_Grafiki_MSLA.md` | Prompty produkcyjne dla grafik. |
 | `kreator-pierscionkow-plan.html` | Wizualny material planistyczny. |
 | `CLAUDE.md` | Historyczna kopia. Aktywna instrukcja Claude Code jest w katalogu glownym. |
+
+## Katalogi
+
+| Katalog | Co w nim lezy |
+|---|---|
+| `decisions/` | decyzje architektoniczne (ADR), jedna decyzja na plik, numeracja ciagla |
+| `handoffs/` | przekazania pracy miedzy modelami, wzor w `HANDOFF_TEMPLATE.md` |
+| `zlecenia/` | opisy zadan do wykonania, spisane zanim ktokolwiek zaczal je robic |
+| `skill-observations/` | wnioski z sesji zbierane przez skill `task-observer` |
 
 ## Dokumenty koordynacyjne
 
