@@ -14,7 +14,7 @@ import { t, fmtCost, orderQty, tierDiscount } from "./config.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
-  ENGRAVING_OPTIONS,
+  engravingPricePLN, normalizeEngravingId,
   metalPricePerG,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
@@ -92,6 +92,48 @@ function applyJewelryPricing(sellPrice, discountRate, qty, eurPln = EUR_PLN) {
     totalPLN: { min: Math.max(1, perMin) * qty, max: Math.max(1, perMax) * qty },
     totalEUR: { min: Math.round((Math.max(1, perMin) * qty) / eurPln), max: Math.round((Math.max(1, perMax) * qty) / eurPln) },
   };
+}
+
+/**
+ * Doplata za grawer dokleja sie PO marzy i PO rabacie, jako stala kwota od
+ * sztuki. Trzy powody, zeby nie wpuszczac jej z powrotem do `workCost`, gdzie
+ * stala do 2026-09-03: klient ma zaplacic dokladnie te kwote, ktora przeczytal
+ * na kafelku, a nie jej czterdziestoprocentowe narzuty; "polowa ceny
+ * podstawowej" ma wychodzic co do zlotowki; a prog gratisu porownuje sie
+ * z cena sztuki BEZ graweru, wiec doplata moze powstac dopiero wtedy, gdy ta
+ * cena jest juz policzona.
+ *
+ * Widelki tolerancji przesuwaja sie o te sama kwote, bo doplata jest stala:
+ * niepewnosc dotyczy odlewu i robocizny, a nie ceny graweru.
+ */
+export function withEngraving(pricing, engravingId, qty, eurPln = EUR_PLN) {
+  const doplataPLN = engravingPricePLN(engravingId, pricing.unitGrosze / 100);
+  if (!doplataPLN) return { ...pricing, engravingPLN: 0 };
+  const perPcPLN = {
+    min: pricing.perPcPLN.min + doplataPLN,
+    max: pricing.perPcPLN.max + doplataPLN,
+  };
+  const totalPLN = { min: perPcPLN.min * qty, max: perPcPLN.max * qty };
+  return {
+    ...pricing,
+    engravingPLN: doplataPLN,
+    unitGrosze: pricing.unitGrosze + doplataPLN * 100,
+    perPcPLN,
+    perPcEUR: { min: Math.round(perPcPLN.min / eurPln), max: Math.round(perPcPLN.max / eurPln) },
+    totalPLN,
+    totalEUR: { min: Math.round(totalPLN.min / eurPln), max: Math.round(totalPLN.max / eurPln) },
+  };
+}
+
+/**
+ * Wiersz rozpiski o grawerze. Wybrany grawer POKAZUJE SIE ZAWSZE, takze gdy
+ * nic nie kosztuje: "w cenie" jest informacja o tym, ze zamowienie przekroczylo
+ * prog, a pusty wiersz wygladalby, jakby grawer wypadl z zamowienia.
+ */
+function wierszGraweru(engravingId, doplataPLN, l, lang) {
+  if (normalizeEngravingId(engravingId) === "none") return [];
+  const wCenie = { pl: "w cenie", en: "included", de: "inklusive" }[lang] ?? "included";
+  return [{ label: l.engraving, value: doplataPLN > 0 ? fmtCost(doplataPLN, lang) : wCenie }];
 }
 
 // Stawka kruszcu jest JEDNA dla calego serwisu i mieszka w `jewelryConfig.js`.
@@ -181,20 +223,19 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   // Plating
   const platingCost = plat.cost;
 
-  // Engraving
-  const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
-  const engravingCost = engraving?.cost ?? 0;
-
   // Split markup: raw material (metal + stone) carries only a modest handling markup;
-  // the workshop margin lives on labor + setting + plating + engraving.
+  // the workshop margin lives on labor + setting + plating.
+  // GRAWERU TU NIE MA: jego cena jest ceną dla klienta i dokleja się po marży,
+  // przez `withEngraving` niżej. Patrz komentarz przy `ENGRAVING_OPTIONS`.
   const materialCost = metalCost + gemCost;
-  const workCost = laborCost + settingCost + platingCost + engravingCost;
+  const workCost = laborCost + settingCost + platingCost;
   const estCost = materialCost * (1 + MATERIAL_MARKUP) + workCost * (1 + MARGIN);
   const workshopCost = estCost - (materialCost + workCost); // combined markup+margin (shown as workshop line)
   const qty = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
   const rabat = tierDiscount(qtyId, qty, QTY_TIERS);
   const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing = applyJewelryPricing(estCost, rabat, qty, liveEurPln);
+  const bezGraweru = applyJewelryPricing(estCost, rabat, qty, liveEurPln);
+  const pricing = withEngraving(bezGraweru, engravingId, qty, liveEurPln);
 
   return {
     type: "calculated", ...pricing, qty, discount: rabat,
@@ -205,11 +246,13 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
       ...(gemCost > 0 ? [{ label: l.gemCost, value: fmtCost(gemCost, lang) }] : []),
       ...(settingCost > 0 ? [{ label: l.settingCost, value: fmtCost(settingCost, lang) }] : []),
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
-      ...(engravingCost > 0 ? [{ label: { pl: "Grawerowanie laserowe", en: "Laser engraving", de: "Lasergravur" }[lang] ?? "Laser engraving", value: fmtCost(engravingCost, lang) }] : []),
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      // Grawer stoi POD rabatem, bo doplata jest stala i rabat jej nie dotyczy.
+      // Nad rabatem czytaloby sie tak, jakby procent obejmowal takze grawer.
+      ...wierszGraweru(engravingId, pricing.engravingPLN, l, lang),
     ],
   };
 }
@@ -235,7 +278,6 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const clasp = CHAIN_CLASPS.find(c => c.id === claspId);
   const plat = PLATING.find(p => p.id === platingId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
-  const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
 
   if (!metal || !weave || !clasp || !plat || !qTier) return null;
   if (metal.custom || plat.custom || qTier.custom || weave.custom || clasp.custom) return { type: "custom" };
@@ -288,16 +330,17 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
                      + netMassG * MASS_LABOR_PLN_PER_G * (weave.massLaborMul ?? 0.4) * metal.laborMul;
   const claspCost    = clasp.cost;
   const platingCost  = plat.cost;
-  const engravingCost = engraving?.cost ?? 0;
 
   // Split markup: raw metal carries only handling markup; labor/clasp/finish carry full margin.
-  const workChainCost = laborCost + claspCost + platingCost + engravingCost;
+  // Graweru tu nie ma: dokleja sie po marzy, przez `withEngraving`.
+  const workChainCost = laborCost + claspCost + platingCost;
   const estCost       = metalCost * (1 + MATERIAL_MARKUP) + workChainCost * (1 + MARGIN);
   const workshopCost  = estCost - (metalCost + workChainCost);
   const qty           = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
   const rabat         = tierDiscount(qtyId, qty, QTY_TIERS);
   const liveEurPln    = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing       = applyJewelryPricing(estCost, rabat, qty, liveEurPln);
+  const pricing       = withEngraving(applyJewelryPricing(estCost, rabat, qty, liveEurPln),
+                                      engravingId, qty, liveEurPln);
 
   return {
     type: "calculated", ...pricing, qty, discount: rabat,
@@ -333,11 +376,11 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
       { label: l.laborCost, value: fmtCost(laborCost, lang) },
       { label: ln("Zapięcie", "Clasp", "Verschluss"), value: fmtCost(claspCost, lang) },
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
-      ...(engravingCost > 0 ? [{ label: l.engraving, value: fmtCost(engravingCost, lang) }] : []),
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...wierszGraweru(engravingId, pricing.engravingPLN, l, lang),
     ],
     tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
   };

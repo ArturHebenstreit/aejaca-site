@@ -22,7 +22,7 @@ import { SELLER } from "../chat-api/pricing/sellerInfo.js";
 import {
   buildKalkulatorEstimate, buildFollowUp48, buildRabat7,
   buildKontaktPotwierdzenie, buildNewsletterPowitanie, buildAutoOdpowiedz,
-  buildPrzypomnienieKodu,
+  buildPrzypomnienieKodu, buildPrezent,
 } from "../chat-api/leadMail.js";
 
 /** Adres w atrapach maili sprzed zamowienia. */
@@ -72,6 +72,7 @@ function doKlienta(lang) {
     ["kontakt", buildKontaktPotwierdzenie({ lang, to: ODBIORCA, wiadomosc: "Dzień dobry, czy zrobicie sygnet z herbem?" })],
     ["newsletter", buildNewsletterPowitanie({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026" })],
     ["przypomnienieKodu", buildPrzypomnienieKodu({ lang, to: ODBIORCA, kod: "AEJ10-4H7PQW", procent: "10%", waznyDo: "15.10.2026", dni: "5 dni" })],
+    ["prezent", buildPrezent({ lang, to: ODBIORCA, kod: "AEJP-3M8QRT", wartosc: lang === "pl" ? "200.00 PLN" : "47.00 EUR", waznyOd: "03.09.2026", waznyDo: "02.12.2026", powod: "Za cierpliwość przy opóźnieniu odlewu" })],
     ["autoodpowiedz", buildAutoOdpowiedz({ lang, to: ODBIORCA, temat: "Zapytanie o sygnet", inReplyTo: "<abc@mail.gmail.com>", threadId: "t1" })],
     // Podziekowanie z prosba o ocene, trzy dni po odbiorze.
     ["ocena", buildProsbaOOcene({ ...zam, status: "completed", completed_at: "2026-08-28T12:00:00Z" })],
@@ -430,6 +431,46 @@ console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n"
   ok(/10%/.test(przyp.subject) && /5 dni/.test(przyp.subject), "temat podaje stawke i termin");
   ok(!/AEJ10-4H7PQW/.test(przyp.subject), "temat nie niesie samego kodu");
   ok(/AEJ10-4H7PQW/.test(przyp.text), "kod stoi w tresci wiadomosci");
+}
+
+console.log("\n4l. Prezent: obie daty, powod doslownie i zdanie o newsletterze\n");
+
+// Prezent idzie do kogos, kto NIE zapisywal sie na nic. Stad trzy rzeczy,
+// ktorych pozostale maile z kodem nie potrzebuja (polecenie wlasciciela,
+// 2026-09-03).
+{
+  const pol = buildPrezent({
+    lang: "pl", to: ODBIORCA, kod: "AEJP-3M8QRT", wartosc: "200.00 PLN",
+    waznyOd: "03.09.2026", waznyDo: "02.12.2026", powod: "Za cierpliwość przy opóźnieniu odlewu",
+  });
+  const caly = `${pol.html}\n${pol.text}`;
+  // OBIE daty, a nie sama koncowa: prezent bywa szykowany z wyprzedzeniem,
+  // wiec "od kiedy" jest pytaniem, ktore odbiorca zada.
+  ok(/Kod działa od 03\.09\.2026 do 02\.12\.2026\./.test(caly), "podaje obie daty ważności");
+  ok(/pięć dni przed końcem ważności przypomnimy/i.test(caly), "zapowiada jedno przypomnienie");
+  // Powod idzie doslownie: to zdanie jest osobiste i nikt go nie przerabia.
+  ok(caly.includes("Za cierpliwość przy opóźnieniu odlewu"), "niesie powód słowo w słowo");
+  // Adres trafil do nas od kogos innego niz jego wlasciciel, wiec zdanie
+  // o newsletterze jest tu potrzebniejsze niz gdziekolwiek indziej.
+  ok(/[Nn]ie dopisujemy nikogo do newslettera bez zapisu/.test(caly), "mówi, że nie dopisuje do newslettera");
+  ok(/jednorazowy i wystawiony na Twój adres/.test(caly), "mówi, że kod jest jednorazowy i imienny");
+
+  // Temat mowi, CO TO JEST, a nie jak brzmi kod: ciag znakow zjada cala
+  // szerokosc widoczna na telefonie. Ta sama zasada co przy przypomnieniu.
+  ok(!/AEJP-3M8QRT/.test(pol.subject), "temat nie niesie samego kodu");
+  ok(/AEJP-3M8QRT/.test(pol.text), "kod stoi w treści wiadomości");
+
+  // Trzy jezyki, kazdy z wlasnym tematem i wlasnym zdaniem o waznosci.
+  for (const [lang, wzorzec] of [["en", /works from 03\.09\.2026 until 02\.12\.2026/], ["de", /gilt vom 03\.09\.2026 bis zum 02\.12\.2026/]]) {
+    const m = buildPrezent({ lang, to: ODBIORCA, kod: "AEJP-3M8QRT", wartosc: "47.00 EUR", waznyOd: "03.09.2026", waznyDo: "02.12.2026", powod: "For your patience" });
+    ok(wzorzec.test(m.text), `${lang}: obie daty w zdaniu o ważności`);
+    ok(m.subject.length > 0 && !/AEJP/.test(m.subject), `${lang}: temat bez kodu`);
+  }
+
+  // Bez powodu wiadomosc ma sie zlozyc tak samo, tylko bez cytatu: prezent
+  // wreczony bez slowa wyjasnienia tez sie zdarza.
+  const bezPowodu = buildPrezent({ lang: "pl", to: ODBIORCA, kod: "AEJP-3M8QRT", wartosc: "10%", waznyOd: "03.09.2026", waznyDo: "02.12.2026" });
+  ok(/AEJP-3M8QRT/.test(bezPowodu.text) && !/Za co/.test(bezPowodu.text), "bez powodu nie zostawia pustej ramki");
 }
 
 console.log("\n4m. Prosba o ocene: dwa miejsca, jeden raz, i wyjscie dla niezadowolonych\n");

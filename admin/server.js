@@ -1456,16 +1456,23 @@ app.post("/products/:slug/status", requireAuth, async (req, res) => {
 });
 
 // --- Kody rabatowe ---
+// Gorna granica zniżki procentowej. Sprawdza ja serwer sklepu (`MAX_PERCENT`
+// w `chat-api/discounts.js`) i warunek `discount_percent_range` w bazie, ale
+// formularz musi ja znac SAM, zeby powiedziec to przy polu, a nie bledem po
+// przeladowaniu strony. Panel wdraza sie osobno i nie importuje z `chat-api`,
+// wiec liczba stoi tu drugi raz; ze zrodlem porownuje ja `admin/check-views.mjs`.
+const MAX_PERCENT = 80;
+
 app.get("/discounts", requireAuth, async (req, res) => {
   try {
     const { codes } = await shopApi("/api/admin/discounts");
     res.render("discounts", {
-      user: req.user, codes,
+      user: req.user, codes, maxPercent: MAX_PERCENT,
       created: req.query.created ? req.query.created.split(",") : [],
       msg: req.query.msg, err: req.query.err,
     });
   } catch (err) {
-    res.render("discounts", { user: req.user, codes: [], created: [], msg: null, err: err.message });
+    res.render("discounts", { user: req.user, codes: [], created: [], msg: null, maxPercent: MAX_PERCENT, err: err.message });
   }
 });
 
@@ -1498,24 +1505,57 @@ app.post("/discounts", requireAuth, async (req, res) => {
   } catch (err) { back(res, "/discounts", { err: err.message }); }
 });
 
+// Prezent: jeden formularz zamiast pieciu czynnosci. Dwa przyciski wysylaja
+// ten sam formularz i roznia sie jedna wartoscia, bo "wyslij" i "zapisz" to ta
+// sama akcja z inna decyzja o poczcie, a nie dwie osobne drogi.
+app.post("/discounts/gift", requireAuth, async (req, res) => {
+  const b = req.body;
+  try {
+    const wynik = await shopApi("/api/admin/discounts/gift", {
+      method: "POST",
+      body: {
+        email: b.email || null,
+        kind: b.kind === "amount" ? "amount" : "percent",
+        // Kwote podajesz w zlotych, baza liczy w groszach. Ta sama zamiana co
+        // przy zakladaniu i poprawianiu kodu.
+        value: b.kind === "amount" ? Math.round(Number(b.value) * 100) : parseInt(b.value, 10),
+        days: b.days ? parseInt(b.days, 10) : 90,
+        note: b.note || null,
+        lang: ["pl", "en", "de"].includes(b.lang) ? b.lang : "pl",
+        send: b.send === "true",
+      },
+    });
+    // Kod pokazujemy zawsze, takze po wyslaniu: wlasciciel czesto chce go miec
+    // pod reka na wypadek pytania "co dostalem", a po przeladowaniu listy nie
+    // ma juz gdzie go szukac miedzy piecdziesiecioma innymi.
+    back(res, "/discounts", {
+      created: wynik.code,
+      msg: wynik.sent ? `Prezent ${wynik.code} wysłany na ${b.email}` : `Prezent ${wynik.code} zapisany do wręczenia`,
+    });
+  } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
 app.post("/discounts/:code/delete", requireAuth, async (req, res) => {
   try {
     await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, { method: "DELETE" });
     back(res, "/discounts", { msg: `${req.params.code}: skasowany` });
-  } catch (err) { back(res, "/discounts", { err: err.message }); }
+  } catch (err) {
+    // Odmowa kasowania (kod juz uzyty) wraca do wiersza, zeby powod stal przy
+    // kodzie, ktorego dotyczy, a nie nad lista czterdziestu innych.
+    back(res, "/discounts", { err: err.message, otwarte: req.params.code });
+  }
 });
 
 // Poprawianie kodu, ktory juz gdzies poszedl. Nazwy i licznika uzyc nie
 // ruszamy: pierwsza stoi przy zamowieniach, drugi jest zapisem tego, co sie
 // stalo. Resztę wolno zmienic, bo akcja potrafi sie przeciagnac albo zmienic
 // zasady, a alternatywa jest kasowanie kodu, ktory ktos ma juz w skrzynce.
-app.get("/discounts/:code/edit", requireAuth, async (req, res) => {
-  try {
-    const { codes } = await shopApi("/api/admin/discounts");
-    const kod = (codes || []).find((c) => c.code === req.params.code);
-    if (!kod) return res.status(404).render("error", { message: "Nie znamy takiego kodu" });
-    res.render("discount-edit", { user: req.user, kod, err: req.query.err || null });
-  } catch (err) { res.status(500).render("error", { message: err.message }); }
+// Edycja przeniosla sie na liste, w rozwijany wiersz, tak samo jak przy
+// zamowieniach (polecenie wlasciciela, 2026-09-03). Stary adres zostaje jako
+// przekierowanie: byl w zakladkach i w historii przegladarki, a 404 w panelu
+// wyglada jak awaria, nie jak przeprowadzka.
+app.get("/discounts/:code/edit", requireAuth, (req, res) => {
+  res.redirect(`/discounts?otwarte=${encodeURIComponent(req.params.code)}`);
 });
 
 app.post("/discounts/:code/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
@@ -1539,21 +1579,24 @@ app.post("/discounts/:code/update", requireAuth, express.urlencoded({ extended: 
         campaign: b.campaign || null,
         issuedTo: b.issuedTo || null,
         note: b.note || null,
+        // Aktywnosc przyjezdza razem z reszta pola, a nie osobnym wlacznikiem
+        // z listy: jedna wartosc ma miec jedna kontrolke. Formularz niesie
+        // ukryte "false" przed polem zaznaczanym, bo niezaznaczone nie wysyla
+        // niczego i serwer nie odroznilby "wylacz" od "nie ruszaj".
+        //
+        // Zaznaczone pole daje wiec DWIE wartosci pod ta sama nazwa, a
+        // `express.urlencoded({ extended: true })` sklada je w tablice.
+        // Porownanie `b.active === "true"` odczytywalo tablice jako "nie",
+        // czyli zaznaczony kod wylaczalby sie przy kazdym zapisie.
+        active: Array.isArray(b.active) ? b.active.includes("true") : b.active === "true",
       },
     });
-    back(res, "/discounts", { msg: `${req.params.code}: zapisany` });
+    // Wracamy do tego samego wiersza, otwartego. Bez tego kod zamykal sie po
+    // zapisie, a przy dluzszej liscie znikal takze z ekranu.
+    back(res, "/discounts", { msg: `${req.params.code}: zapisany`, otwarte: req.params.code });
   } catch (err) {
-    res.redirect(`/discounts/${encodeURIComponent(req.params.code)}/edit?err=${encodeURIComponent(err.message)}`);
+    back(res, "/discounts", { err: err.message, otwarte: req.params.code });
   }
-});
-
-app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
-  try {
-    const { active } = await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, {
-      method: "PATCH", body: { active: req.body.active === "true" },
-    });
-    back(res, "/discounts", { msg: `${req.params.code}: ${active ? "aktywny" : "wylaczony"}` });
-  } catch (err) { back(res, "/discounts", { err: err.message }); }
 });
 
 // --- Przelewy czekajace na potwierdzenie ---

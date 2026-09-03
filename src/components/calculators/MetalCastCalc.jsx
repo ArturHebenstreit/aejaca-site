@@ -33,6 +33,7 @@ import { useMarketRates } from "../../hooks/useMarketRates.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
   CASTING_PLATINGS, castingPlatingAvailable, CASTING_ENGRAVINGS, castingEngravingAvailable,
+  normalizeEngravingId,
   CASTING_ENVELOPE_MM, maxCastingScaleForBBox, calculate,
 } from "../../pricing/preciousMetalCasting.js";
 
@@ -183,7 +184,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
       ? [t(CASTING_PLATINGS.find((v) => v.id === platingId)?.label, lang)] : []),
     // Grawer w podsumowaniu tylko wtedy, gdy naprawde wchodzi do ceny.
     ...(castingEngravingAvailable(finishId) && engravingId && engravingId !== "none"
-      ? [t(CASTING_ENGRAVINGS.find((v) => v.id === engravingId)?.label, lang)] : []),
+      ? [t(CASTING_ENGRAVINGS.find((v) => v.id === normalizeEngravingId(engravingId))?.label, lang)] : []),
     ...(file ? [file.name] : []),
   ].join(" | ");
 

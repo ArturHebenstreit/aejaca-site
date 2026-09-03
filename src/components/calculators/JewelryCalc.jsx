@@ -15,7 +15,7 @@ import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
-  ENGRAVING_OPTIONS,
+  ENGRAVING_OPTIONS, normalizeEngravingId,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS,
@@ -335,13 +335,13 @@ export default function JewelryCalc({ lang = "pl" }) {
         t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
         `${chainLengthMm / 10}cm`,
         calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
-        engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+        engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === normalizeEngravingId(engravingId))?.label, lang) : null,
       ].filter(Boolean).join(" | ");
     }
     return [
       ...wspolne,
       t(METHODS.find(m => m.id === methodId)?.label, lang),
-      engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+      engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === normalizeEngravingId(engravingId))?.label, lang) : null,
       ...stoneRows.filter(r => r.gemId !== "none").map(r => {
         const gem = resolvedGemstones.find(g => g.id === r.gemId);
         const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);

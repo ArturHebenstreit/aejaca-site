@@ -67,7 +67,15 @@ export function poprawkiWyboru(service, params, opcje = {}) {
     if (f.multi) continue;
     const warianty = wariantyPola(f, params);
     if (!warianty?.length) continue;
-    if (!warianty.some((o) => o.id === params[f.key])) zmiany[f.key] = warianty[0].id;
+    if (warianty.some((o) => o.id === params[f.key])) continue;
+    // WYBOR, KTOREGO JUZ NIE MA, MA SWOJEGO NASTEPCE, jesli pole go zna.
+    // Bez tego kosz zapisany przed zmianą cennika cicho traci platny dodatek:
+    // "Tekst + wzor" wypadl z listy graweru, a `warianty[0]` to "Brak
+    // grawerowania", wiec klient dostawalby zamowienie bez tego, za co
+    // wczesniej zaplacil, i nikt by tego nie zobaczyl.
+    const zastepczy = f.zamiennik?.(params[f.key]);
+    zmiany[f.key] = zastepczy && warianty.some((o) => o.id === zastepczy)
+      ? zastepczy : warianty[0].id;
   }
   return Object.keys(zmiany).length ? zmiany : null;
 }

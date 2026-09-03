@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/data/describeParams.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // CO KLIENT WYBRAL, WYPISANE PO LUDZKU
 // ============================================================

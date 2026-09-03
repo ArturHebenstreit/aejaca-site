@@ -13,7 +13,7 @@ import { claimHandoff } from "../../data/calcHandoff.js";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
-import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
+import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
 import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
 import PolaUslugi, { poprawkiWyboru } from "./PolaUslugi.jsx";
@@ -450,7 +450,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   // sie wykonac, a tekst dluzszy niz limit to juz inna robota, wiec kierujemy
   // go do wyceny zamiast obiecywac cene z automatu.
   const wantsEngraving = Boolean(params.engravingId && params.engravingId !== "none");
-  const jewelryOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
+  // LIMIT ZALEZY OD WYBRANEGO WARIANTU. Wariant "Grafika lub dluzszy tekst"
+  // kosztuje dwa razy tyle co inicjaly, wiec musi tez przyjac dluzszy tekst:
+  // jeden limit dla obu byl cennikiem bez pokrycia.
+  const limitGraweru = engravingLimitFor(params.engravingId);
+  const jewelryOver = wantsEngraving && engraving.trim().length > limitGraweru;
   const jewelryEngravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !jewelryOver);
 
   // Grawer na wieku pudelka, wlasne pole i wlasny limit.
@@ -904,7 +908,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
           label={u.engravingLabel}
           value={engraving}
           onChange={setEngraving}
-          maxLength={ENGRAVING_LIMITS.jewelry}
+          maxLength={limitGraweru}
           placeholder={u.engravingPlaceholder}
           hint={u.engravingHint}
           overLimitNote={u.engravingOver}

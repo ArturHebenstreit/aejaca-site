@@ -25,6 +25,11 @@ import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./
 import { dataISO } from "./daty.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
 import { describeFinding, distortionLine } from "./pricing/quoteSummary.js";
+import { ustaleniaPozycji, parametryNieopisane } from "./opisPozycji.js";
+import { ETYKIETY_USTALEN } from "./pricing/describeParams.js";
+
+/** Centymetry z geometrii na milimetry, bez szumu zmiennoprzecinkowego. */
+const mm = (cm) => (Number.isFinite(Number(cm)) ? (Number(cm) * 10).toFixed(1) : "?");
 
 const SELLER = {
   ...SELLER_DATA,
@@ -664,15 +669,34 @@ function zdanieRoznicy(order, l) {
   return roznica > 0 ? l.nadplata(ile) : l.niedoplataDrobna(ile);
 }
 
+/**
+ * USTALENIA POZYCJI W POTWIERDZENIU.
+ *
+ * Do 2026-09-03 potwierdzenie pokazywalo z pozycji NAZWE I KWOTE, i nic wiecej.
+ * Klient, ktory w koszyku widzial kruszec, wykonczenie, powloke, opakowanie,
+ * naklad, swoj opis zlecenia i nazwe pliku, po zaplacie dostawal "Odlew
+ * z metali szlachetnych x 2" oraz liczbe. Zglosil to wlasciciel po prawdziwym
+ * zamowieniu (2026-09-03).
+ *
+ * To nie jest kwestia wygody. `describeParams.js` nazywa to w swoim naglowku:
+ * pozycja jest trescia umowy, klient zgodzil sie na to, co widzial, a awaria
+ * jest cicha i ujawnia sie dopiero przy sporze. Ten sam mail powoluje sie
+ * dwa akapity nizej na art. 38 pkt 3, czyli na to, ze rzecz jest wykonywana
+ * "wedlug specyfikacji konsumenta", wiec musi te specyfikacje zawierac.
+ */
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
   const rows = items
-    .map(
-      (i) => `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(i.title)}${i.qty > 1 ? ` &times; ${i.qty}` : ""}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">${money(i.line_grosze)}</td>
-      </tr>`
-    )
+    .map((i) => {
+      const ustalenia = ustaleniaPozycji(i, lang);
+      return `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(i.title)}${i.qty > 1 ? ` &times; ${i.qty}` : ""}${
+        ustalenia.length ? `<div style="margin-top:4px;font-size:12px;color:#777;line-height:1.5">${
+          ustalenia.map((w) => `${esc(w.label)}: ${esc(w.value)}`).join("<br>")
+        }</div>` : ""}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap;vertical-align:top">${money(i.line_grosze)}</td>
+      </tr>`;
+    })
     .join("");
 
   const deliveryName = l.deliveryNames[order.delivery_method] || order.delivery_method || "";
@@ -760,7 +784,13 @@ function customerHtml(order, items, lang) {
 
 function customerText(order, items, lang) {
   const l = T[lang] || T.pl;
-  const lines = items.map((i) => `- ${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}: ${money(i.line_grosze)}`);
+  // Ustalenia takze tutaj. Wersja tekstowa jest tym, co zostaje przy wylaczonym
+  // HTML i w czytniku ekranu, wiec nie moze byc krotsza od tej samej umowy
+  // pokazanej obok.
+  const lines = items.flatMap((i) => [
+    `- ${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}: ${money(i.line_grosze)}`,
+    ...ustaleniaPozycji(i, lang).map((w) => `    ${w.label}: ${w.value}`),
+  ]);
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
   const zmienioneWymiary = distortedItems(items, lang);
@@ -841,19 +871,29 @@ const SPARE_PL = {
 };
 
 /**
- * Parametry pozycji BEZ tego, co i tak stoi w mailu osobno.
+ * Parametry pozycji PO LUDZKU, tym samym slownikiem co koszyk.
  *
- * `fromQuote` ma wlasny wiersz, a `description` wlasny akapit. Zostawione
- * w zrzucie JSON pokazywaly sie drugi raz, w postaci nieczytelnej dla
- * czlowieka, i to one robily z tego maila sciane nawiasow: przy zamowieniu
- * z oferty caly zrzut to bylo dokladnie te dwa pola, z czego jedno puste.
+ * Do 2026-09-03 stal tu zrzut JSON. Pracownia dostawala wiersz
+ * `parametry: {"qtyId":"2-5","metalId":"silver","finishId":"clean",...}`,
+ * czyli tresc do odszyfrowania zamiast do przeczytania, a przy dluzszej
+ * pozycji sciane nawiasow na pol ekranu telefonu. Slownik istnial od dawna
+ * (`describeParams`), tylko mieszkal w przegladarce; teraz jezdzi do serwera
+ * razem z rdzeniem cenowym.
+ *
+ * Czego opis nie objal, wychodzi ponizej jako `klucz=wartosc`. Pracownia nie
+ * moze stracic niczego, co klient wybral: brzydki wiersz jest lepszy od
+ * cichego ubytku, przez ktory zrobilibysmy rzecz inna niz zamowiona.
  */
-function parametryDoPokazania(params) {
-  if (!params || typeof params !== "object") return null;
-  const reszta = { ...params };
-  delete reszta.fromQuote;
-  delete reszta.description;
-  return Object.keys(reszta).length ? JSON.stringify(reszta) : null;
+function parametryDoPokazania(item) {
+  const opis = ustaleniaPozycji(item, "pl")
+    // Opis zlecenia i plik maja w tym mailu wlasne, wyroznione wiersze.
+    .filter((w) => w.label !== ETYKIETY_USTALEN.pl.description && w.label !== ETYKIETY_USTALEN.pl.file);
+  const reszta = parametryNieopisane(item, "pl");
+  const linie = [
+    ...opis.map((w) => `    ${w.label}: ${w.value}`),
+    ...(reszta.length ? [`    pozostale: ${reszta.join(", ")}`] : []),
+  ];
+  return linie.length ? `\n${linie.join("\n")}` : null;
 }
 
 function internalText(order, items, attachments = []) {
@@ -866,9 +906,13 @@ function internalText(order, items, attachments = []) {
     }${
       i.params?.fromQuote ? `\n  z oferty: ${i.params.fromQuote}` : ""
     }${
-      parametryDoPokazania(i.params) ? `\n  parametry: ${parametryDoPokazania(i.params)}` : ""
+      parametryDoPokazania(i) ? `\n  wybor klienta:${parametryDoPokazania(i)}` : ""
     }${i.params?.wymiary ? `\n  WYMIARY: ${i.params.wymiary}` : ""}${i.params?.znieksztalcony ? `\n  !! WYROB ZNIEKSZTALCONY: osie zmieniane osobno, ksztalt inny niz w pliku` : ""}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
-      i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
+      // Objetosc zaokraglal juz `toFixed(2)`, wymiary nie: do pracowni szlo
+      // `bbox 2.2399999618530275x6.329999923706055x0.6199999809265136 cm`,
+      // czyli szum arytmetyki zmiennoprzecinkowej zamiast trzech liczb.
+      // Milimetry, bo w nich sie w pracowni mierzy, a nie w centymetrach.
+      i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bryla ${mm(i.geometry.bbox?.x)} x ${mm(i.geometry.bbox?.y)} x ${mm(i.geometry.bbox?.z)} mm` : ""
     }${
       // Wyroznione, bo w warsztacie to jest instrukcja: drukowac mimo wykrytej
       // wady. Zakopane w JSON-ie parametrow zostaloby przeoczone.
@@ -894,8 +938,14 @@ function internalText(order, items, attachments = []) {
     // rzeczy, ktora po zaplacie ma znaczenie dla pracowni: do kiedy.
     order.requires_details
       ? `TERMIN: zegar STOI, zlecenie czeka na ustalenie szczegolow${order.lead_days ? `. Po ustaleniach: ${order.lead_days} dni` : ""}`
+      // JEDNA NAZWA NA JEDNA DATE. `deadline_at` to skutek obietnicy z
+      // `lead_days` (ADR-0027), czyli moment ZAKONCZENIA pracy. Mail do klienta
+      // nazywa go "planowana finalizacja", a ten do pracowni nazywal go
+      // "planowana wysylka", chociaz wysylka jest pozniej i ma wlasny stempel
+      // `shipped_at`. Data po ludzku, bo `RRRR-MM-DD` w zdaniu do czlowieka
+      // lamie regule z `PROJECT_RULES.md`.
       : order.deadline_at
-      ? `TERMIN: ${order.lead_days} dni, planowana wysylka ${dataISO(order.deadline_at) || "?"}`
+      ? `TERMIN: ${order.lead_days} dni, planowana finalizacja ${dzien(order.deadline_at) || "?"}`
       : order.lead_days
       ? `TERMIN: ${order.lead_days} dni`
       : "TERMIN: nie ustalony przy pozycjach oferty",

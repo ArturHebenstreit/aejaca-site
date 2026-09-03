@@ -245,8 +245,7 @@ const ZESTAWY = {
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
-  discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null },
-  "discount-edit": { user: uzytkownik, kod, err: null },
+  discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null, maxPercent: 80 },
   materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
 
   // ZGLOSZENIA. Atrapa niesie jedno swieze i jedno juz przepisane do wyceny,
@@ -358,6 +357,94 @@ for (const plik of pliki) {
   }
 }
 
+// --- Pole liczbowe: `min` musi pasowac do `step` ---------------------------
+// Przegladarka przyjmuje w `<input type="number">` WYLACZNIE wartosci postaci
+// `min + n * step`. Pole znizki mialo `min="0.01"` przy `step="1"`, wiec zbiorem
+// dozwolonym bylo 0,01 · 1,01 · 2,01 i tak dalej, a okragle 10 odbijalo sie od
+// formularza. Wlasciciel zobaczyl tylko, ze "nie akceptuje liczby", bo
+// przegladarka nie mowi, o ktory atrybut chodzi, a w zadnym logu tego nie ma.
+//
+// Regula: gdy `step` jest liczba calkowita, `min` tez musi byc calkowite.
+// Reszta przypadkow (step 0.01 przy min 0.01, step 0.5 przy min 0) jest zgodna.
+//
+// Oba atrybuty bywaja wyrazeniem warunkowym, wiec kazdy niesie kilka mozliwych
+// wartosci. Zestawiamy je PARAMI: dwa warunki obok siebie zwykle patrza na to
+// samo pytanie, wiec pierwsza wartosc idzie z pierwsza. Gdy jedna strona jest
+// stala, a druga warunkiem, ta stala musi pasowac do KAZDEJ mozliwosci drugiej
+// i wlasnie tak wygladal blad zgloszony 2026-09-03: `step` szedl za rodzajem
+// kodu, a `min` zostalo jedno dla obu.
+for (const plik of pliki) {
+  const tresc = readFileSync(join(VIEWS, plik), "utf8");
+  const pola = [...tresc.matchAll(/<input(?:[^<>]|<%(?:[^%]|%(?!>))*%>)*?type="number"(?:[^<>]|<%(?:[^%]|%(?!>))*%>)*?>/gs)];
+  for (const pole of pola) {
+    const atrybut = (nazwa) => (pole[0].match(new RegExp(`\\b${nazwa}="([^"]*)"`)) || [])[1];
+    // Wartosci wyrazenia warunkowego stoja w nim w apostrofach; atrybut bez
+    // wstawki EJS jest po prostu jedna liczba.
+    const mozliwe = (v) => {
+      if (v == null) return [];
+      if (!v.includes("<%")) return [v.trim()];
+      return [...v.matchAll(/'([^']*)'/g)].map((m) => m[1]).filter((x) => x !== "");
+    };
+    const kroki = mozliwe(atrybut("step"));
+    const dolne = mozliwe(atrybut("min"));
+    if (!kroki.length || !dolne.length) continue;
+    const calkowita = (x) => Number.isInteger(Number(x));
+    const ile = Math.max(kroki.length, dolne.length);
+    for (let n = 0; n < ile; n += 1) {
+      const step = kroki[kroki.length === 1 ? 0 : n];
+      const min = dolne[dolne.length === 1 ? 0 : n];
+      if (step == null || min == null) continue;
+      if (calkowita(step) && !calkowita(min)) {
+        const nazwa = (pole[0].match(/name="([^"]*)"/) || [])[1] || "?";
+        zle(`${plik}: pole liczbowe "${nazwa}" laczy step=${step} z min=${min}, wiec przegladarka `
+          + "odrzuci kazda okragla wartosc: dozwolone sa tylko min + n*step");
+        break;
+      }
+    }
+  }
+}
+
+// --- Pole zaznaczane z ukrytym poprzednikiem oddaje TABLICE -----------------
+// Pole zaznaczane niezaznaczone nie wysyla niczego, wiec serwer nie odroznilby
+// "wylacz" od "nie ruszaj". Standardowa sztuczka stawia przed nim pole ukryte
+// z ta sama nazwa i wartoscia "false". Skutek uboczny: przy ZAZNACZONYM polu
+// pod jedna nazwa jada dwie wartosci, a `express.urlencoded({ extended: true })`
+// sklada je w tablice. Porownanie `body.pole === "true"` czyta wtedy tablice
+// jako "nie", czyli zaznaczone pole zapisuje sie jako odznaczone, cicho i za
+// kazdym razem.
+for (const plik of pliki) {
+  const tresc = readFileSync(join(VIEWS, plik), "utf8");
+  const ukryte = new Set(
+    [...tresc.matchAll(/<input[^<>]*type="hidden"[^<>]*name="(\w+)"[^<>]*value="false"/g)].map((m) => m[1])
+  );
+  for (const pole of tresc.matchAll(/<input[^<>]*type="checkbox"[^<>]*name="(\w+)"/g)) {
+    const nazwa = pole[1];
+    if (!ukryte.has(nazwa)) continue;
+    // Serwer musi umiec przeczytac obie postacie: napis i tablice.
+    const czyta = new RegExp(`Array\\.isArray\\(\\w+\\.${nazwa}\\)`).test(server);
+    if (!czyta) {
+      zle(`views/${plik}: pole "${nazwa}" ma ukrytego poprzednika, wiec zaznaczone przyjezdza `
+        + `jako tablica, a server.js nigdzie nie sprawdza Array.isArray dla "${nazwa}"`);
+    }
+  }
+}
+
+// --- Gorna granica procentu stoi w panelu i w sklepie -----------------------
+// Panel wdraza sie osobno i nie importuje z `chat-api`, wiec liczbe ma u siebie.
+// Rozjechana w dol pozwalalaby zalozyc kod, ktory serwer odrzuci; rozjechana
+// w gore blokowalaby kod, ktory serwer przyjmuje.
+{
+  const wSklepie = readFileSync(join(ROOT, "..", "chat-api", "discounts.js"), "utf8")
+    .match(/export const MAX_PERCENT\s*=\s*(\d+)/);
+  const wPanelu = readFileSync(join(ROOT, "server.js"), "utf8")
+    .match(/^const MAX_PERCENT = (\d+);/m);
+  if (!wSklepie) zle("chat-api/discounts.js: nie znalazlem MAX_PERCENT");
+  else if (!wPanelu) zle("admin/server.js: nie znalazlem MAX_PERCENT");
+  else if (wSklepie[1] !== wPanelu[1]) {
+    zle(`MAX_PERCENT rozjechany: sklep ${wSklepie[1]}, panel ${wPanelu[1]}`);
+  }
+}
+
 const globalne = Object.fromEntries(nazwyLokalnych.map((n) => [n, () => "-"]));
 
 for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
@@ -428,7 +515,7 @@ for (const f of pliki) {
 
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
-for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discounts", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
   if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
     zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
   }

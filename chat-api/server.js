@@ -30,6 +30,7 @@ import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry, PRZEWOZNICY } from "./pricing/shipping.js";
 import { LEAD_MAILE } from "./leadMail.js";
+import { fmtCost } from "./pricing/config.js";
 // Pod wlasna nazwa: w tym pliku `dni` jest juz lokalnym pomocnikiem liczacym
 // dni OD daty, i to w innym zakresie. Wolanie go tutaj przechodzilo kontrole
 // nieznanych funkcji, bo nazwa gdzies istnieje, a wywalilo by sie dopiero
@@ -42,7 +43,8 @@ import {
 } from "./products.js";
 import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
-  releaseOrderRedemptions, normalizeCode, randomCode, issueSingleUseCode, DiscountError, APPLIES_TO, MAX_PERCENT,
+  releaseOrderRedemptions, normalizeCode, randomCode, issueSingleUseCode, issueGiftCode,
+  DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
@@ -4375,6 +4377,85 @@ app.get("/api/admin/discounts", async (req, res) => {
 });
 
 /**
+ * Kod prezentowy: jedno wolanie zamiast czterech czynnosci.
+ *
+ * Do 2026-09-03 wreczenie prezentu znaczylo: wymysl nazwe kodu, ustaw mu
+ * wartosc, limit, oba terminy i kampanie, zapisz, a potem napisz maila z reki.
+ * Piec krokow, w kazdym co innego do zapamietania, i mail za kazdym razem
+ * o innej tresci.
+ *
+ * Tutaj sa dwa przyciski i jedna decyzja: WYSLAC teraz na podany adres, czy
+ * tylko ZAPISAC kod do wreczenia inna droga. Reszta warunkow jest taka sama
+ * jak w calym serwisie: jedno uzycie, caly asortyment, domyslnie 90 dni.
+ *
+ * `send` bez adresu jest odmawiane, a nie po cichu zamieniane na zapis:
+ * "wyslij" ma znaczyc wyslij.
+ */
+app.post("/api/admin/discounts/gift", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const b = req.body || {};
+  const wyslac = b.send === true;
+  const to = String(b.email || "").trim();
+  if (to && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    return res.status(400).json({ error: "Nieprawidlowy adres odbiorcy", code: "bad_email" });
+  }
+  if (wyslac && !to) {
+    return res.status(400).json({ error: "Zeby wyslac prezent, podaj adres odbiorcy", code: "no_email" });
+  }
+  const kind = b.kind === "amount" ? "amount" : "percent";
+  const value = Number(b.value);
+  if (!Number.isInteger(value) || value <= 0) {
+    return res.status(400).json({ error: "Wartosc musi byc liczba calkowita wieksza od zera" });
+  }
+  if (kind === "percent" && value > MAX_PERCENT) {
+    return res.status(400).json({ error: `Procent nie moze przekroczyc ${MAX_PERCENT}` });
+  }
+  const lang = ["pl", "en", "de"].includes(b.lang) ? b.lang : "pl";
+  const note = String(b.note || "").trim();
+
+  try {
+    const kod = await issueGiftCode(pool, {
+      email: to || null, kind, value, days: b.days, validFrom: b.validFrom || null,
+      note: note || null, lang,
+    });
+    if (!kod) return res.status(503).json({ error: "Nie udalo sie wystawic kodu", code: "no_code" });
+
+    if (!wyslac) return res.json({ ok: true, code: kod.code, sent: false, validTo: dataISO(kod.validTo) });
+
+    // Kwote pokazujemy w walucie jezyka, tak jak wszedzie indziej w serwisie:
+    // polski czyta zlotowki, reszta euro. Mail nie liczy, tylko pokazuje.
+    const dzien = (d) => (dataISO(d) || "").split("-").reverse().join(".");
+    // Waluta idzie za jezykiem maila, tym samym formaterem co reszta serwisu
+    // (`fmtCost`): polski czyta zlotowki, reszta euro. Kwota kodu jest zapisana
+    // w groszach, wiec dzielimy przez sto raz, tutaj, a nie w szablonie.
+    const wartosc = kind === "percent" ? `${value}%` : fmtCost(value / 100, lang);
+    const wiadomosc = LEAD_MAILE.prezent({
+      lang, to, kod: kod.code, wartosc,
+      waznyOd: dzien(kod.validFrom), waznyDo: dzien(kod.validTo),
+      powod: note || null,
+    });
+    const poszlo = await sendLeadMail([wiadomosc]);
+    // KOD ZOSTAJE, TAKZE GDY POCZTA PADLA. Skasowany zostawilby wlasciciela
+    // z pytaniem, czy prezent istnieje: latwiej wyslac go druga droga niz
+    // odtworzyc kod, ktorego juz nie ma.
+    if (!poszlo) {
+      return res.status(502).json({
+        error: "Kod powstal, ale poczta nie zadzialala. Wrecz go inna droga albo sprobuj wyslac ponownie.",
+        code: "mail_failed", codeIssued: kod.code,
+      });
+    }
+    await zapiszSladMaila(to, "prezent");
+    console.log(`[prezent] ${kod.code} do ${to}, jezyk ${lang}`);
+    res.json({ ok: true, code: kod.code, sent: true, validTo: dataISO(kod.validTo) });
+  } catch (e) {
+    console.error("[prezent] nie poszedl:", e.message);
+    res.status(500).json({ error: "Nie udalo sie wystawic prezentu" });
+  }
+});
+
+/**
  * Tworzenie kodow. Jedno wywolanie robi albo jeden kod o zadanej nazwie
  * (akcja), albo paczke kodow osobistych z losowa koncowka: wreczenie
  * dwudziestu roznych kodow ma byc jedna czynnoscia, a nie dwudziestoma.
@@ -6049,7 +6130,8 @@ app.get("/api/orders/:ref", async (req, res) => {
   // wlasciwie zamowil; podsumowanie mial wylacznie w mailu, ktory bywa
   // zarchiwizowany albo skasowany. Tu jada te same wiersze, co w mailu.
   const { rows: pozycje } = await pool.query(
-    `SELECT title, qty, unit_grosze, line_grosze, requires_details, details_settled_at, details_note
+    `SELECT title, qty, unit_grosze, line_grosze, requires_details, details_settled_at, details_note,
+            calculator, params, file_name
        FROM order_items WHERE order_id = $1 ORDER BY id`,
     [o.id]
   );
@@ -6069,6 +6151,15 @@ app.get("/api/orders/:ref", async (req, res) => {
     items: pozycje.map((i) => ({
       title: i.title, qty: i.qty,
       unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      // USTALENIA POZYCJI. Do 2026-09-03 strona zamowienia pokazywala z pozycji
+      // nazwe i kwote, tak samo jak potwierdzenie mailem, wiec po zaplacie
+      // klient tracil dostep do tego, na co sie zgodzil: kruszec, wykonczenie,
+      // opakowanie, swoj opis i nazwe pliku widzial ostatni raz w koszyku.
+      // Kalkulator jedzie razem z parametrami, bo to on wskazuje karte pytan,
+      // ktora te parametry nazywa (`uslugaKalkulatora`).
+      calculator: i.calculator || null,
+      params: i.params || null,
+      fileName: i.file_name || null,
       // Klient ma prawo wiedziec, NA CO czekamy. "Ustalamy szczegoly" bez
       // wskazania pozycji brzmi jak zwloka, a nie jak konkretne pytanie,
       // ktore do niego wyslalismy.

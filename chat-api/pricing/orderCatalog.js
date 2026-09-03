@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/data/orderCatalog.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // KATALOG KREATORA ZAMOWIEN
 // ============================================================

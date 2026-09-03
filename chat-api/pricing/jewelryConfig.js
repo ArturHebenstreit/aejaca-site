@@ -132,12 +132,55 @@ export const PLATING = [
 ];
 
 // --- ENGRAVING OPTIONS ---
+// CENNIK GRAWERU TO CENA DLA KLIENTA, nie koszt przed marza (polecenie
+// wlasciciela, 2026-09-03). Wczesniej te kwoty wchodzily do `workCost`
+// razem z robocizna i dostawaly czterdziestoprocentowa marze warsztatowa,
+// wiec wpis `cost: 80` konczyl sie 112 zlotymi na rachunku, a podpis pod
+// kafelkiem obiecywal "+80 zl". Teraz doplata dokleja sie PO marzy i klient
+// placi dokladnie te kwote, ktora przeczytal.
+//
+// Powyzej progu grawer jest zacheta do wiekszego zamowienia, a nie osobna
+// usluga: inicjaly wchodza w cene, grafika i dluzszy tekst kosztuja polowe.
+//
+// Prog porownuje sie z CENA SZTUKI bez graweru, nie z wartoscia koszyka:
+// karta uslugi w sklepie wycenia jedna pozycje i o koszyku nic nie wie, wiec
+// przy progu koszykowym nie umialaby podac kwoty wiazacej, a cena graweru
+// zmienialaby sie klientowi pod rekami przy kazdym dodaniu pozycji obok.
+// Doplata liczy sie OD SZTUKI, tak jak polerowanie i powloka: kazdy
+// egzemplarz grawerujemy osobno.
+export const ENGRAVING_FREE_ABOVE_PLN = 400;
+
 export const ENGRAVING_OPTIONS = [
-  { id: "none",    label: { pl: "Brak grawerowania", en: "No engraving", de: "Keine Gravur" }, cost: 0 },
-  { id: "text",    label: { pl: "Tekst / inicjały (laser)", en: "Text / initials (laser)", de: "Text / Initialen (Laser)" }, cost: 80 },
-  { id: "pattern", label: { pl: "Wzór / logo (laser)", en: "Pattern / logo (laser)", de: "Muster / Logo (Laser)" }, cost: 150 },
-  { id: "both",    label: { pl: "Tekst + wzór (obie strony)", en: "Text + pattern (both sides)", de: "Text + Muster (beide Seiten)" }, cost: 200 },
+  { id: "none",    label: { pl: "Brak grawerowania", en: "No engraving", de: "Keine Gravur" }, pricePLN: 0, aboveRate: 0 },
+  { id: "text",    label: { pl: "Inicjały lub krótki napis (laser)", en: "Initials or a short line (laser)", de: "Initialen oder kurze Zeile (Laser)" }, pricePLN: 50, aboveRate: 0 },
+  { id: "pattern", label: { pl: "Grafika lub dłuższy tekst (laser)", en: "Artwork or a longer text (laser)", de: "Grafik oder längerer Text (Laser)" }, pricePLN: 100, aboveRate: 0.5 },
 ];
+
+// Wariant `both` ("Tekst + wzor, obie strony") wypadl z biżuterii: dwie strony
+// to pojecie OPAKOWANIA, ktore ma osobne pole na wieko i na jego spod. Na
+// wyrobie grawerujemy jedna kompozycje, a o cenie rozstrzyga to, czy jest
+// napisem, czy grafika. Kosze, oferty i zamowienia zapisane ze starym `both`
+// przechodza przez `normalizeEngravingId`, zeby nie wycenily sie po cichu jako
+// brak graweru: klient zaplacilby mniej, niz wynika z jego wyboru, a warsztat
+// i tak dostalby zlecenie z grawerem.
+export function normalizeEngravingId(id) {
+  return id === "both" ? "pattern" : (id || "none");
+}
+
+/**
+ * Doplata za grawer, OD SZTUKI, w zlotowkach.
+ *
+ * `unitPricePLN` to cena jednej sztuki BEZ graweru, czyli ta, ktora klient
+ * widzi na karcie. Zero znaczy "nie znam ceny", wiec doplata wychodzi pelna:
+ * lepiej policzyc za duzo i obnizyc, niz obiecac gratis i zabrac go pozniej.
+ */
+export function engravingPricePLN(engravingId, unitPricePLN = 0) {
+  const o = ENGRAVING_OPTIONS.find((e) => e.id === normalizeEngravingId(engravingId));
+  if (!o) return 0;
+  return unitPricePLN > ENGRAVING_FREE_ABOVE_PLN
+    ? Math.round(o.pricePLN * o.aboveRate)
+    : o.pricePLN;
+}
 
 // --- GEMSTONES ---
 // basePLN: static fallback only - live prices fetched from /api/gemstone-prices and override these
