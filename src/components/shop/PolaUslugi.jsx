@@ -136,6 +136,7 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
         lang={lang}
         cols={f.kolumny || "grid-cols-1 sm:grid-cols-3"}
         minH={f.wysokosc || 150}
+        accent={accent}
       />
     );
   }
@@ -187,12 +188,13 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
         onChange={(v) => setParam(f.key, v)}
         lang={lang}
         cols={f.kolumny || "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"}
+        accent={accent}
       />
     );
   }
 
   if (wyglad === "kalkulator") {
-    return <Chips options={warianty} value={params[f.key]} onChange={(v) => setParam(f.key, v)} lang={lang} />;
+    return <Chips options={warianty} value={params[f.key]} onChange={(v) => setParam(f.key, v)} lang={lang} accent={accent} />;
   }
 
   // SUWAK NIE UMIE WYLACZYC PRZYSTANKU. Kiedy inne pole odbiera czesc
@@ -280,7 +282,7 @@ export default function PolaUslugi({
         if (krok.typ === "wstawka") {
           const { w, tresc } = krok;
           return wyglad === "kalkulator"
-            ? <CalcCard key={`w-${i}`} stepNum={numer} label={t(w.label, lang)} id={w.id}>{tresc}</CalcCard>
+            ? <CalcCard key={`w-${i}`} stepNum={numer} label={t(w.label, lang)} id={w.id} accent={accent}>{tresc}</CalcCard>
             : <div key={`w-${i}`} className="mb-6" id={w.id}>{w.label && <Etykieta>{t(w.label, lang)}</Etykieta>}{tresc}</div>;
         }
 
@@ -311,7 +313,7 @@ export default function PolaUslugi({
 
         if (wyglad === "kalkulator") {
           return (
-            <CalcCard key={f.key} stepNum={numer} label={etykieta} id={d.id}>
+            <CalcCard key={f.key} stepNum={numer} label={etykieta} id={d.id} accent={accent}>
               {przed}
               {kontrolka}
               {uwaga}
