@@ -1505,6 +1505,36 @@ app.post("/discounts", requireAuth, async (req, res) => {
   } catch (err) { back(res, "/discounts", { err: err.message }); }
 });
 
+// Prezent: jeden formularz zamiast pieciu czynnosci. Dwa przyciski wysylaja
+// ten sam formularz i roznia sie jedna wartoscia, bo "wyslij" i "zapisz" to ta
+// sama akcja z inna decyzja o poczcie, a nie dwie osobne drogi.
+app.post("/discounts/gift", requireAuth, async (req, res) => {
+  const b = req.body;
+  try {
+    const wynik = await shopApi("/api/admin/discounts/gift", {
+      method: "POST",
+      body: {
+        email: b.email || null,
+        kind: b.kind === "amount" ? "amount" : "percent",
+        // Kwote podajesz w zlotych, baza liczy w groszach. Ta sama zamiana co
+        // przy zakladaniu i poprawianiu kodu.
+        value: b.kind === "amount" ? Math.round(Number(b.value) * 100) : parseInt(b.value, 10),
+        days: b.days ? parseInt(b.days, 10) : 90,
+        note: b.note || null,
+        lang: ["pl", "en", "de"].includes(b.lang) ? b.lang : "pl",
+        send: b.send === "true",
+      },
+    });
+    // Kod pokazujemy zawsze, takze po wyslaniu: wlasciciel czesto chce go miec
+    // pod reka na wypadek pytania "co dostalem", a po przeladowaniu listy nie
+    // ma juz gdzie go szukac miedzy piecdziesiecioma innymi.
+    back(res, "/discounts", {
+      created: wynik.code,
+      msg: wynik.sent ? `Prezent ${wynik.code} wysłany na ${b.email}` : `Prezent ${wynik.code} zapisany do wręczenia`,
+    });
+  } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
 app.post("/discounts/:code/delete", requireAuth, async (req, res) => {
   try {
     await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, { method: "DELETE" });

@@ -62,6 +62,15 @@ const T = {
     rabatKoniec: "To ostatnia wiadomość w tej sprawie. Nie dopisujemy nikogo do newslettera bez zapisu.",
     kodPrzypomnimy: "Na pięć dni przed końcem ważności przypomnimy o kodzie jedną wiadomością, żeby nie przepadł niezauważony.",
 
+    // 8. Prezent od pracowni
+    prezentSubject: "Prezent od pracowni AEJaCA",
+    prezentIntro: "mamy dla Ciebie prezent: kod, którym obniżysz rachunek za zamówienie w naszej pracowni.",
+    prezentPowod: "Za co",
+    prezentKod: "Twój kod",
+    prezentWazny: (od, doKiedy) => `Kod działa od ${od} do ${doKiedy}.`,
+    prezentRaz: "Kod jest jednorazowy i wystawiony na Twój adres, więc zadziała u Ciebie.",
+    prezentKoniec: "Piszemy w tej jednej sprawie. Nie dopisujemy nikogo do newslettera bez zapisu.",
+
     // 4. Potwierdzenie formularza kontaktowego
     kontaktSubject: "Mamy Twoją wiadomość, AEJaCA",
     kontaktIntro: "dziękujemy za wiadomość. Odpowiadamy zwykle w ciągu jednego dnia roboczego, a przy pytaniach wymagających policzenia, do dwóch.",
@@ -119,6 +128,15 @@ const T = {
     rabatKoniec: "This is the last message on the subject. We never add anyone to the newsletter without them signing up.",
     kodPrzypomnimy: "Five days before it expires we will send one reminder, so the code does not lapse unnoticed.",
 
+    // 8. Prezent od pracowni
+    prezentSubject: "A gift from the AEJaCA workshop",
+    prezentIntro: "we have a gift for you: a code that takes money off an order in our workshop.",
+    prezentPowod: "What it is for",
+    prezentKod: "Your code",
+    prezentWazny: (od, doKiedy) => `The code works from ${od} until ${doKiedy}.`,
+    prezentRaz: "The code works once and is issued to your address, so it works for you.",
+    prezentKoniec: "We are writing about this one thing. We never add anyone to the newsletter without them signing up.",
+
     kontaktSubject: "We have your message, AEJaCA",
     kontaktIntro: "thank you for writing. We usually answer within one business day, and within two when the question needs calculating.",
     kontaktCytat: "Your message",
@@ -171,6 +189,15 @@ const T = {
     rabatJak: "Den Code geben Sie bei der Bestellung ein oder nennen ihn uns in einer Nachricht, wenn Sie die Details lieber im Gespräch klären.",
     rabatKoniec: "Das ist die letzte Nachricht dazu. Wir tragen niemanden ohne Anmeldung in den Newsletter ein.",
     kodPrzypomnimy: "Fünf Tage vor Ablauf senden wir eine einzige Erinnerung, damit der Code nicht unbemerkt verfällt.",
+
+    // 8. Prezent od pracowni
+    prezentSubject: "Ein Geschenk aus der AEJaCA-Werkstatt",
+    prezentIntro: "wir haben ein Geschenk für Sie: einen Code, der Ihre Bestellung in unserer Werkstatt günstiger macht.",
+    prezentPowod: "Wofür",
+    prezentKod: "Ihr Code",
+    prezentWazny: (od, doKiedy) => `Der Code gilt vom ${od} bis zum ${doKiedy}.`,
+    prezentRaz: "Der Code gilt einmal und ist auf Ihre Adresse ausgestellt, funktioniert also bei Ihnen.",
+    prezentKoniec: "Wir schreiben nur in dieser einen Sache. Wir tragen niemanden ohne Anmeldung in den Newsletter ein.",
 
     kontaktSubject: "Ihre Nachricht ist da, AEJaCA",
     kontaktIntro: "vielen Dank für Ihre Nachricht. Wir antworten in der Regel innerhalb eines Werktages, bei Fragen mit Rechenaufwand innerhalb von zwei.",
@@ -441,6 +468,55 @@ export function buildPrzypomnienieKodu({ lang = "pl", to, kod, procent, waznyDo,
   });
 }
 
+/**
+ * 8. Prezent od pracowni.
+ *
+ * Idzie do kogos, kto NIE zapisywal sie na nic: nie do klienta w trakcie
+ * sprawy i nie do subskrybenta. Stad trzy rzeczy, ktorych nie ma w pozostalych
+ * mailach z kodem. Powod stoi w wiadomosci wprost, bo prezent bez powodu
+ * czyta sie jak wysylka masowa. Sa OBIE daty waznosci, a nie sama koncowa
+ * (polecenie wlasciciela, 2026-09-03): prezent bywa wreczany z wyprzedzeniem,
+ * wiec "od kiedy" jest pytaniem, ktore odbiorca zada. I zdanie o newsletterze,
+ * bo adres trafil do nas od kogos innego niz jego wlasciciel.
+ *
+ * `wartosc` przychodzi gotowa ("15%" albo "200,00 zl"), tak samo jak `procent`
+ * w pozostalych szablonach: mail nie liczy kwot, tylko je pokazuje.
+ */
+export function buildPrezent({ lang = "pl", to, kod, wartosc, waznyOd, waznyDo, powod }) {
+  const l = T[jezyk(lang)];
+  const ile = wartosc ? l.rabatIle(wartosc) : "";
+  return zloz({
+    // TEMAT MOWI, CO TO JEST, a nie jak brzmi kod. Ciag znakow zjada cala
+    // szerokosc widoczna na telefonie i nie mowi czytajacemu niczego, a kod
+    // i tak stoi w tresci, po ktora trzeba siegnac, zeby go uzyc. Ta sama
+    // zasada co przy przypomnieniu o kodzie.
+    lang: jezyk(lang), to, subject: l.prezentSubject, naglowek: l.prezentSubject,
+    html: `
+      <p style="margin:0 0 16px;line-height:1.6">${esc(l.prezentIntro)}</p>
+      ${powod ? `
+        <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(l.prezentPowod)}</p>
+        <div style="border-left:3px solid #e2d5b8;padding:10px 14px;background:#faf9f6;border-radius:0 8px 8px 0;font-size:14px;color:#444;line-height:1.6;white-space:pre-wrap">${esc(powod)}</div>` : ""}
+      ${ramkaKodu(l.prezentKod, kod, ile)}
+      ${waznyOd && waznyDo ? `<p style="margin:14px 0 0;font-size:14px;font-weight:700">${esc(l.prezentWazny(waznyOd, waznyDo))}</p>` : ""}
+      <p style="margin:10px 0 0;line-height:1.6;font-size:14px;color:#444">${esc(l.rabatJak)}</p>
+      <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.prezentRaz)}</p>
+      <p style="margin:10px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.kodPrzypomnimy)}</p>
+      <p style="margin:14px 0 0;line-height:1.6;font-size:13px;color:#666">${esc(l.prezentKoniec)}</p>
+      ${przycisk(adres(jezyk(lang), "/shop/"), l.ctaSklep)}
+    `,
+    linie: [
+      l.prezentIntro,
+      ...(powod ? ["", `${l.prezentPowod}: ${powod}`] : []),
+      "", `${l.prezentKod}: ${kod}${ile ? ` (${ile})` : ""}`,
+      ...(waznyOd && waznyDo ? [l.prezentWazny(waznyOd, waznyDo)] : []),
+      "", l.rabatJak,
+      "", l.prezentRaz,
+      "", l.kodPrzypomnimy,
+      "", l.prezentKoniec,
+    ],
+  });
+}
+
 /** Wszystkie maile pod jedna nazwa, zeby trasa API nie miala wlasnego switcha. */
 export const LEAD_MAILE = {
   kalkulator: buildKalkulatorEstimate,
@@ -450,4 +526,5 @@ export const LEAD_MAILE = {
   newsletter: buildNewsletterPowitanie,
   autoodpowiedz: buildAutoOdpowiedz,
   przypomnienieKodu: buildPrzypomnienieKodu,
+  prezent: buildPrezent,
 };

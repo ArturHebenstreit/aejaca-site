@@ -252,6 +252,53 @@ export function randomCode(prefix = "AEJ", length = 6) {
 }
 
 /**
+ * Kod prezentowy. ZAWSZE nowy, nigdy odzyskany.
+ *
+ * `issueSingleUseCode` celowo oddaje kod juz wystawiony temu adresowi w tej
+ * samej kampanii: klient, ktory poprosil o wycene piec razy, ma dostac jeden
+ * rabat, a nie piec. Przy prezencie ta sama regula bylaby bledem. Dwa prezenty
+ * dla tej samej osoby to dwa rozne prezenty, czesto o roznej wartosci, wiec
+ * drugi dostawalby po cichu wartosc pierwszego, a pracownia widzialaby
+ * w panelu jeden kod zamiast dwoch.
+ *
+ * Prezent bywa tez wreczany na kartce, bez adresu. Kod bez `email` jest wtedy
+ * NA OKAZICIELA i to jest swiadomy skutek, a nie niedoróbka: imienny kod bez
+ * adresu nie istnieje. Formularz mowi o tym wprost.
+ *
+ * Obie daty waznosci sa zapisane, takze poczatkowa: prezent bywa szykowany
+ * z wyprzedzeniem, a mail podaje odbiorcy "od kiedy do kiedy".
+ *
+ * @returns {Promise<{code: string, validFrom: Date|null, validTo: Date|null}|null>}
+ */
+export async function issueGiftCode(pool, { email, kind = "percent", value, days = 90, validFrom, note, lang, prefix = "AEJP" }) {
+  if (!pool) return null;
+  const adres = String(email || "").trim().toLowerCase() || null;
+  const rodzaj = kind === "amount" ? "amount" : "percent";
+  const kwota = Number(value);
+  if (!Number.isInteger(kwota) || kwota <= 0) return null;
+  if (rodzaj === "percent" && kwota > MAX_PERCENT) return null;
+  const ile = Math.min(Math.max(Number(days) || 90, 1), 730);
+
+  for (let proba = 0; proba < 5; proba++) {
+    const code = randomCode(prefix);
+    const { rows } = await pool.query(
+      `INSERT INTO discount_codes
+         (code, kind, value, applies_to, max_uses, max_uses_per_email,
+          valid_from, valid_to, campaign, issued_to, note, lang)
+       VALUES ($1, $2, $3, 'all', 1, 1,
+               COALESCE($4::TIMESTAMPTZ, NOW()),
+               COALESCE($4::TIMESTAMPTZ, NOW()) + ($5 || ' days')::INTERVAL,
+               'prezent', $6, $7, $8)
+       ON CONFLICT (code) DO NOTHING
+       RETURNING code, valid_from, valid_to`,
+      [code, rodzaj, kwota, validFrom || null, String(ile), adres, note || null, lang || null]
+    );
+    if (rows[0]) return { code: rows[0].code, validFrom: rows[0].valid_from, validTo: rows[0].valid_to };
+  }
+  return null;
+}
+
+/**
  * Kod JEDNORAZOWY wystawiony na adres klienta.
  *
  * Jedna droga dla wszystkich kampanii, ktore rozdaja kody mailem: powitanie

@@ -125,6 +125,83 @@
       </p>
     </form>
 
+    <%# PREZENT MA WLASNY FORMULARZ, a nie kolejne pola w tamtym. To inna
+        czynnosc: tam zakladasz akcje sprzedazowa, tu wreczasz jednej osobie
+        jedna rzecz i piszesz jej, za co. Warunki sa ustalone z gory, wiec
+        zostaja trzy pytania zamiast dziesieciu. -%>
+    <form method="post" action="/discounts/gift" class="rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-5 mb-8">
+      <h2 class="text-white text-sm font-semibold mb-1">Prezent</h2>
+      <p class="text-neutral-500 text-[11px] mb-4 leading-relaxed max-w-3xl">
+        Kod jednorazowy na cały asortyment, domyślnie ważny 90 dni od dziś. Podany adres dostaje wiadomość
+        z kodem, powodem i obiema datami ważności, a kod zostaje wystawiony na ten adres, więc u nikogo
+        innego nie zadziała. Bez adresu kod zapisuje się <strong class="text-neutral-300">na okaziciela</strong>:
+        zadziała u każdego, kto go dostanie, więc nadaje się na kartkę do wręczenia.
+      </p>
+
+      <div class="grid sm:grid-cols-4 gap-3">
+        <label class="block sm:col-span-2">
+          <span class="block text-[11px] text-neutral-500 mb-1">Adres odbiorcy (puste = na okaziciela)</span>
+          <input name="email" type="email" placeholder="anna@example.com"
+            class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+        </label>
+        <label class="block">
+          <span class="block text-[11px] text-neutral-500 mb-1">Zniżka</span>
+          <select name="kind" id="prezent-rodzaj"
+            class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+            <option value="percent">Procent</option>
+            <option value="amount">Kwota w złotych</option>
+          </select>
+        </label>
+        <label class="block">
+          <span class="block text-[11px] text-neutral-500 mb-1">
+            Wartość <span id="prezent-jednostka">(%)</span>
+          </span>
+          <input name="value" type="number" min="1" step="1" max="<%= maxPercent %>" value="10" required
+            class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber-400 font-semibold" />
+        </label>
+      </div>
+
+      <div class="grid sm:grid-cols-4 gap-3 mt-3">
+        <label class="block">
+          <span class="block text-[11px] text-neutral-500 mb-1">Ważny (dni)</span>
+          <input name="days" type="number" min="1" max="730" step="1" value="90"
+            class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+        </label>
+        <label class="block">
+          <span class="block text-[11px] text-neutral-500 mb-1">Język wiadomości</span>
+          <select name="lang" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+            <option value="pl">polski</option>
+            <option value="en">angielski</option>
+            <option value="de">niemiecki</option>
+          </select>
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="block text-[11px] text-neutral-500 mb-1">Za co (trafia do wiadomości)</span>
+          <input name="note" type="text" maxlength="200" placeholder="np. za cierpliwość przy opóźnieniu odlewu"
+            class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+        </label>
+      </div>
+
+      <%# Ten tekst idzie do odbiorcy DOSLOWNIE, w takiej postaci, w jakiej go
+          wpiszesz. Nie tlumaczymy go, bo zdanie o powodzie jest osobiste
+          i maszynowy przeklad zabralby mu cala wartosc. -%>
+      <p class="text-neutral-600 text-[11px] mt-2">
+        Powód trafia do wiadomości słowo w słowo, więc przy wysyłce po angielsku albo po niemiecku napisz go
+        w tym języku. Reszta wiadomości jest tłumaczona.
+      </p>
+
+      <div class="flex items-center gap-2 mt-4">
+        <button name="send" value="true"
+          class="px-4 py-2 rounded-lg bg-emerald-500 text-neutral-950 text-sm font-semibold hover:bg-emerald-400 transition-colors">
+          Wyślij prezent
+        </button>
+        <button name="send" value="false"
+          class="px-4 py-2 rounded-lg border border-white/15 text-neutral-300 text-sm hover:border-white/35 hover:text-white transition-colors">
+          Tylko zapisz
+        </button>
+      </div>
+    </form>
+
     <%
       const pln = (g) => ((g || 0) / 100).toFixed(2).replace('.', ',') + ' zł';
       const day = (d) => (d ? new Date(d).toLocaleDateString('pl-PL') : ' - ');
@@ -429,6 +506,12 @@
       }
 
       document.addEventListener('change', function (e) {
+        var prezent = e.target.closest('#prezent-rodzaj');
+        if (prezent) {
+          dopasuj(prezent.form.querySelector('input[name="value"]'),
+                  document.getElementById('prezent-jednostka'), prezent.value === 'percent');
+          return;
+        }
         var nowy = e.target.closest('#nowy-rodzaj');
         if (nowy) {
           dopasuj(nowy.form.querySelector('input[name="value"]'),
