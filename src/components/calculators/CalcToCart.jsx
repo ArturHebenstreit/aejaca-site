@@ -16,9 +16,9 @@ import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info } from "l
 import { DISTORTION_NOTE } from "../../pricing/quoteSummary.js";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
-import { JobDescription, AttachmentList, BlockedReasons, DeclaredSpec, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
+import { JobDescription, AttachmentList, BlockedReasons, DeclaredSpec, TileGroup, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
-import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
+import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { brakPodloza } from "../../data/laserSubstrate.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import SaveQuote from "./SaveQuote.jsx";
@@ -77,6 +77,9 @@ const UI = {
     engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
     missingEngraving: "Wpisz treść graweru",
     blockedTitle: "Zanim dodasz do koszyka",
+    packaging: "Opakowanie",
+    packagingIncluded: "w cenie",
+    lidBack: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
     holdLabel: "Potwierdź uwagi do modelu",
     needDescription: "Opis zlecenia",
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu opisu powyżej.",
@@ -88,6 +91,8 @@ const UI = {
     needArtworkHint: "Wgraj plik SVG, DXF lub PDF albo opisz zlecenie w polu powyżej.",
     needEngraving: "Treść graweru",
     needEngravingHint: "Grawer jest wybrany, więc wpisz, co ma zostać wygrawerowane.",
+    needPackText: "Grawer na pudełku",
+    needPackTextHint: "Wybrane jest pudełko z grawerem, więc wpisz, co ma się na nim znaleźć.",
     svgBlocked: "Wgrany plik wektorowy wyceniamy ręcznie, bo liczy się realna długość ścieżki. Usuń plik, żeby kupić po polu z listy, albo wyślij do wyceny.",
     manualBlocked: "Tę konfigurację wycenia człowiek: kamienie, sploty łańcuszków i metal powierzony przez klienta zależą od rzeczy, których nie widać w parametrach. Odpowiadamy w 24 godziny.",
   },
@@ -132,6 +137,9 @@ const UI = {
     engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
     missingEngraving: "Enter the engraving text",
     blockedTitle: "Before you add this to the cart",
+    packaging: "Packaging",
+    packagingIncluded: "included",
+    lidBack: "Text on the inside of the lid (optional)",
     holdLabel: "Confirm the notes on the model",
     needDescription: "Job description",
     needDescriptionHint: "Type at least 20 characters in the description above.",
@@ -143,6 +151,8 @@ const UI = {
     needArtworkHint: "Upload an SVG, DXF or PDF file, or describe the job in the field above.",
     needEngraving: "Engraving text",
     needEngravingHint: "You chose an engraving, so tell us what to engrave.",
+    needPackText: "Box engraving",
+    needPackTextHint: "You chose the engraved box, so tell us what goes on it.",
     svgBlocked: "An uploaded vector file is quoted by hand, because the real path length decides the price. Remove the file to buy by the listed area, or request a quote.",
     manualBlocked: "This configuration is quoted by a person: stones, chain weaves and customer-supplied metal depend on things the parameters do not capture. We reply within 24 hours.",
   },
@@ -187,6 +197,9 @@ const UI = {
     engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     missingEngraving: "Gravurtext eingeben",
     blockedTitle: "Bevor Sie in den Warenkorb legen",
+    packaging: "Verpackung",
+    packagingIncluded: "inklusive",
+    lidBack: "Text auf der Deckelinnenseite (optional)",
     holdLabel: "Hinweise zum Modell bestätigen",
     needDescription: "Auftragsbeschreibung",
     needDescriptionHint: "Mindestens 20 Zeichen im Beschreibungsfeld oben.",
@@ -198,6 +211,8 @@ const UI = {
     needArtworkHint: "Laden Sie eine SVG-, DXF- oder PDF-Datei hoch oder beschreiben Sie den Auftrag oben.",
     needEngraving: "Gravurtext",
     needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
+    needPackText: "Gravur auf der Schachtel",
+    needPackTextHint: "Sie haben die gravierte Schachtel gewählt, bitte geben Sie den Text an.",
     svgBlocked: "Eine hochgeladene Vektordatei kalkulieren wir manuell, denn die tatsächliche Pfadlänge entscheidet. Entfernen Sie die Datei, um nach gelisteter Fläche zu kaufen, oder fordern Sie ein Angebot an.",
     manualBlocked: "Diese Konfiguration kalkuliert ein Mensch: Steine, Kettengeflechte und beigestelltes Metall hängen von Dingen ab, die in den Parametern nicht stehen. Wir antworten binnen 24 Stunden.",
   },
@@ -243,6 +258,16 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const requiresDescription = Boolean(svc?.requiresDescription);
   const requiresArtwork = Boolean(svc?.requiresVector);
   const isJewelry = String(calculator || "").startsWith("jewelry");
+
+  // OPAKOWANIE JEST WLASNOSCIA POZYCJI, nie przesylki: kasa liczy je za sztuke
+  // (`(unitGrosze + packagingGrosze) * qty`), wiec dziesiec pierscionkow to
+  // dziesiec pudelek. Do tej pory kalkulator wpisywal na sztywno papierowe za
+  // zero i ta sama usluga zamowiona stad po cichu tracila krok, ktory karta
+  // uslugi oferowala. Stoi w panelu koszyka, a nie jako kolejne pytanie wyzej,
+  // bo to decyzja o wysylce gotowej rzeczy, a nie o tym, co mamy wykonac.
+  const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
+  const [packEngraving, setPackEngraving] = useState("");
+  const [lidBackText, setLidBackText] = useState("");
 
   const [price, setPrice] = useState(null);
   // PODSTAWA KWOTY WIAZACEJ. `binding` przychodzi z serwera, z tej samej
@@ -446,7 +471,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     return () => clearTimeout(timer);
   }, [fetchPrice]);
 
-  useEffect(() => setAdded(false), [paramsKey, uploadToken]);
+  useEffect(() => setAdded(false), [paramsKey, uploadToken, packagingId, packEngraving, lidBackText]);
 
 
   // Panel akcji musi wiedziec, ze zakup jest niemozliwy, inaczej kafelek
@@ -515,19 +540,32 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const substrateGap = brakPodloza({ calculator, params });
   const substrateOk = !substrateGap;
 
+  // Usluga cyfrowa nie jedzie w pudelku, wiec pytanie o opakowanie nie ma
+  // sensu. Ten sam warunek co w sklepie, zeby obie drogi pytaly tak samo.
+  const isDigital = Boolean(svc?.digital);
+  const pack = isDigital ? null : getPackaging(packagingId);
+  const packGrosze = pack?.grosze || 0;
+  const packLimit = pack?.maxLength ?? ENGRAVING_LIMITS.packaging;
+  const packOver = Boolean(pack?.personalizable)
+    && (packEngraving.trim().length > packLimit || lidBackText.trim().length > packLimit);
+  // Pudelko z grawerem bez tresci graweru jest zamowieniem niekompletnym,
+  // wiec blokuje koszyk tak samo jak w sklepie.
+  const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
+
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
   // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
   // Bez podstawy nie ma kwoty wiazacej, wiec nie ma czego wlozyc do koszyka.
   // Ta sama regula odmawia po stronie serwera, wiec przycisk nie moze obiecac
   // czegos, czego kasa nie przyjmie.
-  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && binding && !gatedShape && !hold && !modelError;
+  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && packEngravingOk && binding && !gatedShape && !hold && !modelError;
 
   // Licznik z kalkulatora ma pierwszenstwo przed nakladem reprezentatywnym
   // progu. `price.qty` to srodek przedzialu, na ktorym opiera sie rabat, wiec
   // klient proszacy o trzy sztuki dostawal do koszyka szesc.
   const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
-  const lineGrosze = (price?.unitGrosze || 0) * qty;
+  // Kwota linii tak samo jak w koszyku: opakowanie doliczamy za sztuke.
+  const lineGrosze = ((price?.unitGrosze || 0) + packGrosze) * qty;
 
   // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
   // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
@@ -545,10 +583,12 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       etykieta: qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding,
       suma: money(lineGrosze),
       sumaDruga: moneyDruga(lineGrosze),
-      zaSztuke: qty > 1 ? `${money(price.unitGrosze)} ${u.perPc}` : null,
+      // Za sztuke liczy sie TAK SAMO jak suma, czyli razem z opakowaniem.
+      // Inaczej mnozenie kwoty za sztuke przez naklad nie dawaloby sumy pod nia.
+      zaSztuke: qty > 1 ? `${money(price.unitGrosze + packGrosze)} ${u.perPc}` : null,
       uwaga: u.note,
     });
-  }, [onBinding, blocked, price, qty, lineGrosze, u, showEur, plnPerEur]);
+  }, [onBinding, blocked, price, qty, lineGrosze, packGrosze, u, showEur, plnPerEur]);
 
   // Plik glowny idzie do zamowienia razem z reszta, a nie osobna sciezka.
   // Kolejnosc jest zamierzona: rysunek, na ktorym liczylismy cene, ma byc
@@ -584,8 +624,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       attachmentToken: attachTokens[0] || null,
       attachmentTokens: attachTokens,
       attachmentName: attachNames.join(", ") || null,
-      packagingId: "paper",
-      packagingGrosze: 0,
+      packagingId: isDigital ? null : packagingId,
+      packagingGrosze: packGrosze,
+      packagingText: packEngraving.trim() || null,
+      packagingTextBack: lidBackText.trim() || null,
       withdrawal: "made_to_order",
       qty,
       // Slad pochodzenia: pozycja z kalkulatora ma inny zestaw parametrow
@@ -693,6 +735,49 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             />
           )}
 
+          {/* Opakowanie, tylko dla rzeczy, ktore realnie wysylamy. Ta sama
+              lista i te same kwoty co na karcie uslugi. */}
+          {!isDigital && (
+            <TileGroup
+              label={u.packaging}
+              options={PACKAGING.map((o) => ({
+                id: o.id,
+                label: o.label,
+                sub: o.grosze
+                  ? { pl: `+ ${money(o.grosze)}`, en: `+ ${money(o.grosze)}`, de: `+ ${money(o.grosze)}` }
+                  : { pl: u.packagingIncluded, en: u.packagingIncluded, de: u.packagingIncluded },
+              }))}
+              value={packagingId}
+              onChange={setPackagingId}
+              lang={lang}
+              accent={accent}
+              columns={3}
+            />
+          )}
+
+          {pack?.personalizable && (
+            <>
+              <PersonalizationField
+                label={t(pack.personalizationLabel, lang)}
+                value={packEngraving}
+                onChange={setPackEngraving}
+                maxLength={packLimit}
+                placeholder={u.engravingPlaceholder}
+                hint={u.engravingHint}
+                overLimitNote={u.engravingOver}
+                accent={accent}
+              />
+              <PersonalizationField
+                label={t(pack.secondaryLabel, lang) || u.lidBack}
+                value={lidBackText}
+                onChange={setLidBackText}
+                maxLength={packLimit}
+                overLimitNote={u.engravingOver}
+                accent={accent}
+              />
+            </>
+          )}
+
           {/* JEDNO POLE NA PLIKI. Wczesniej byly dwa, kazde na jeden plik,
               i klient musial zgadnac, ktore przyjmie jego rysunek. */}
           <AttachmentList
@@ -730,6 +815,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
                 ...(requiresDescription ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                 ...(requiresArtwork ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
                 ...(wantsEngraving ? [{ ok: engravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
+                // Pudelko z grawerem bez tresci graweru blokuje koszyk, wiec
+                // musi miec tu swoj wiersz. Bez niego przycisk gasnie i lista
+                // przyczyn twierdzi, ze wszystko jest uzupelnione.
+                ...(pack?.personalizable ? [{ ok: packEngravingOk, label: u.needPackText, hint: u.needPackTextHint }] : []),
                 ...(substrateGap === "substrate_required" ? [{ ok: false, label: u.needSubstrate, hint: u.needSubstrateHint }] : []),
                 ...(substrateGap === "spare_required" ? [{ ok: false, label: u.needSpare, hint: u.needSpareHint }] : []),
                 ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.needMaterialNoteHint }] : []),
