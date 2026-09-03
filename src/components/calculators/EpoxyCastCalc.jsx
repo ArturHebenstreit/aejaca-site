@@ -1,40 +1,52 @@
 // ============================================================
-// EPOXY / RESIN CASTING ESTIMATOR
+// ODLEW ZYWICZNY, KALKULATOR sTuDiO
 // ============================================================
 // Types: UV Resin | Epoxy Clear | Epoxy Colored
 // Molds: silicone (platinum-cure)
 // Depreciation (UV lamp + tools): ~1.50 PLN/h
+//
+// PYTANIA SA WZIETE ZE SKLEPU. Lista pol, ich kolejnosc, etykiety i sposob
+// rysowania stoja w `orderCatalog.js`, a rysuje je `PolaUslugi`, wiec ten
+// ekran nie moze zapytac o co innego niz karta uslugi. Decyzja: ADR-0037.
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
+import { QUANTITY_TIERS, t, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
-import { QuantityStepper } from "../shop/ConfigControls.jsx";
+import PolaUslugi from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import CalcToCart from "./CalcToCart.jsx";
 
-import { EPOXY_CONFIG, RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate,
-  LBL,
-} from "../../pricing/epoxy.js";
+import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate } from "../../pricing/epoxy.js";
 
 export { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate };
 
 const TECH_LABEL = { pl: "Odlewy żywiczne", en: "Resin Casting", de: "Harzguss" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
+/** Opis uslugi wspolny ze sklepem: stad biora sie pytania i stan poczatkowy. */
+const USLUGA = getService("epoxy");
+
 export default function EpoxyCastCalc({ lang = "pl" }) {
-  const l = LBL[lang] || LBL.en;
   // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
   // bo przedzial obok konkretnej kwoty tylko ja podwaza.
   const [bindingGrosze, setBindingGrosze] = useState(null);
 
-  const [resinId, setResinId] = useState("epoxy_clear");
-  const [volumeId, setVolumeId] = useState("S");
-  const [moldId, setMoldId] = useState("existing");
-  const [inclusionId, setInclusionId] = useState("none");
-  const [finishId, setFinishId] = useState("raw");
+  // STAN POCZATKOWY TEZ IDZIE Z KATALOGU. Kalkulator zaczynal od innej zywicy
+  // i innego wykonczenia niz karta uslugi, wiec ten sam klient widzial dwie
+  // rozne kwoty startowe, zaleznie od tego, ktorymi drzwiami wszedl.
+  const [params, setParams] = useState(() => ({ ...USLUGA.defaults }));
   // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
   // licznik nigdy nie pokazaly sprzecznych wartosci.
   const [qty, setQty] = useState(1);
   const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
+  const stan = { ...params, quantityId };
+
+  const setParam = (klucz, wartosc) => {
+    if (klucz === "quantityId") { setQty(qtyForTier(wartosc, QUANTITY_TIERS)); return; }
+    setParams((p) => ({ ...p, [klucz]: wartosc }));
+  };
+
+  const { resinId, volumeId, moldId, inclusionId, finishId } = params;
 
   const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty }, lang),
     [resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty, lang]);
@@ -52,31 +64,19 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
     <div>
       <div className="text-center text-xs text-neutral-400 mb-6">UV Resin · Epoxy 2K · Silicone Molds</div>
 
-      <CalcCard stepNum="①" label={l.resinType}>
-        <HeroCards options={RESINS} value={resinId} onChange={setResinId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={170} />
-      </CalcCard>
-
-      <CalcCard stepNum="②" label={l.volume}>
-        <Chips options={VOLUMES} value={volumeId} onChange={setVolumeId} lang={lang} />
-      </CalcCard>
-
-      <CalcCard stepNum="③" label={l.mold}>
-        <MaterialCards options={MOLD_TYPES} value={moldId} onChange={setMoldId} lang={lang} cols="grid-cols-3 sm:grid-cols-5" />
-      </CalcCard>
-
-      <CalcCard stepNum="④" label={l.inclusions}>
-        <MaterialCards options={INCLUSIONS} value={inclusionId} onChange={setInclusionId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" />
-      </CalcCard>
-
-      <CalcCard stepNum="⑤" label={l.finish}>
-        <HeroCards options={FINISH_OPTIONS} value={finishId} onChange={setFinishId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={150} />
-      </CalcCard>
-
-      <CalcCard stepNum="⑥" label={l.qty}>
-        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
-          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-      </CalcCard>
+      <PolaUslugi
+        service={USLUGA}
+        params={stan}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        tierKey="quantityId"
+        qty={qty}
+        onQty={setQty}
+        qtyMax={qtyLimit(QUANTITY_TIERS)}
+        qtyOpen={qtyOpenValue(QUANTITY_TIERS)}
+        qtyLabel={t(QTY_STEPPER_LBL, lang)}
+      />
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />

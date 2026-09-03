@@ -21,16 +21,26 @@ export function TileGroup({ label, options, value, onChange, lang, accent = "blu
       <div className={`grid ${cols} gap-2`}>
         {options.map((o) => {
           const on = value === o.id;
+          // WARIANT NIEDOSTEPNY MA BYC NIEKLIKALNY, a nie tylko inaczej
+          // pomalowany. Kafelki ignorowaly `disabled`, wiec regula "obiektyw
+          // ogranicza pole znakowania", zapisana w rdzeniu cenowym, dzialala
+          // w kalkulatorze i nie dzialala tu: karta uslugi przyjmowala pole
+          // poza zasiegiem soczewki i liczyla za nie cene. Powod stoi
+          // w `title`, bo samo wyszarzenie nie mowi, czego brakuje.
+          const wylaczony = Boolean(o.disabled);
           return (
             <button
               key={String(o.id)}
               type="button"
-              onClick={() => onChange(o.id)}
+              disabled={wylaczony}
+              title={o.note ? t(o.note, lang) : undefined}
+              onClick={() => !wylaczony && onChange(o.id)}
               className={`relative text-left px-3 py-2.5 rounded-xl border transition-all duration-200 ${
-                on ? `${active} ${activeText}` : "border-white/10 bg-white/[0.02] text-neutral-300 hover:border-white/25"
+                wylaczony ? "border-white/5 bg-white/[0.01] text-neutral-500 cursor-not-allowed line-through"
+                  : on ? `${active} ${activeText}` : "border-white/10 bg-white/[0.02] text-neutral-300 hover:border-white/25"
               }`}
             >
-              {on && (
+              {on && !wylaczony && (
                 <span className={`absolute top-2 right-2 ${accent === "amber" ? "text-amber-300" : "text-blue-300"}`}>
                   <Check className="w-3.5 h-3.5" />
                 </span>

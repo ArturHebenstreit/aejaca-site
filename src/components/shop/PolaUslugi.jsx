@@ -18,7 +18,7 @@ import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { t } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QuantityStepper } from "./ConfigControls.jsx";
-import { CalcCard, Chips, HeroCards } from "../calculators/calcShared.jsx";
+import { CalcCard, Chips, HeroCards, MaterialCards } from "../calculators/calcShared.jsx";
 
 /** Numery krokow w skorze kalkulatora. Dziesiec wystarcza z zapasem. */
 const NUMERY = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
@@ -109,16 +109,36 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
   // rozpoznaje je z fotografii szybciej niz z trzech linijek tekstu. Kafelki
   // ze zdjeciem stoja od dawna w kalkulatorze; teraz stoja tez w sklepie,
   // zamiast dwoch roznych obrazow tej samej decyzji.
+  //
+  // Zdjecie moze nalezec do WARIANTU (`o.img`, tak sa opisane zywice i formy
+  // w rdzeniu cenowym) albo do POLA (`f.obrazy`, gdy rdzen cen nie zna zdjec,
+  // jak przy wariantach odlewu). Pierwsze ma pierwszenstwo.
   if (f.widok === "zdjecia") {
-    const karty = warianty.map((o) => ({ id: o.id, label: o.label, desc: o.sub, img: f.obrazy?.[o.id] }));
+    const karty = warianty.map((o) => ({ ...o, desc: o.desc || o.sub, img: o.img || f.obrazy?.[o.id] }));
     return (
       <HeroCards
         options={karty}
         value={params[f.key]}
         onChange={(v) => setParam(f.key, v)}
         lang={lang}
-        cols="grid-cols-1 sm:grid-cols-3"
-        minH={150}
+        cols={f.kolumny || "grid-cols-1 sm:grid-cols-3"}
+        minH={f.wysokosc || 150}
+      />
+    );
+  }
+
+  // Male kafelki ze zdjeciem kwadratowym: uzywamy ich tam, gdzie wariantow
+  // jest duzo i rozpoznaje sie je po fakturze, a nie po opisie (formy,
+  // wtracenia, materialy lasera).
+  if (f.widok === "kafelki") {
+    const karty = warianty.map((o) => ({ ...o, img: o.img || f.obrazy?.[o.id] }));
+    return (
+      <MaterialCards
+        options={karty}
+        value={params[f.key]}
+        onChange={(v) => setParam(f.key, v)}
+        lang={lang}
+        cols={f.kolumny || "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"}
       />
     );
   }
@@ -127,7 +147,13 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
     return <Chips options={warianty} value={params[f.key]} onChange={(v) => setParam(f.key, v)} lang={lang} />;
   }
 
-  if (POLA_SUWAKOWE.has(f.key) && warianty.length >= 3 && warianty.length <= 7) {
+  // SUWAK NIE UMIE WYLACZYC PRZYSTANKU. Kiedy inne pole odbiera czesc
+  // wariantow (obiektyw ogranicza pole znakowania), suwak i tak przesuwa sie
+  // na kazdy z nich, wiec klient ustawia wartosc, ktorej maszyna nie wykona,
+  // i widzi za nia cene. Przy ograniczonym zestawie schodzimy na kafelki,
+  // ktore potrafia byc nieklikalne i podac powod.
+  const ograniczone = warianty.some((o) => o.disabled);
+  if (!ograniczone && POLA_SUWAKOWE.has(f.key) && warianty.length >= 3 && warianty.length <= 7) {
     return (
       <StepSlider
         label={t(f.label, lang)}
@@ -163,10 +189,15 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
  * @param {Array}    props.wstawki    kartki spoza katalogu, np. pole pliku:
  *        `{ po: "metalId", label, id, render: () => JSX }`. Numeracja krokow
  *        obejmuje je razem z polami, bo dla klienta to jeden ciag pytan.
+ * @param {object}   props.dodatki    narzedzia doklejone DO POLA, po kluczu:
+ *        `{ przed, po, etykieta, ukryjWarianty, id }`. Pole zbierania rysunku
+ *        nie jest osobnym pytaniem, tylko innym sposobem odpowiedzenia na to
+ *        samo: wgrany rysunek zastepuje wybor pola z listy, wiec stoi w tej
+ *        samej kartce i przejmuje jej etykiete.
  */
 export default function PolaUslugi({
   service, params, setParam, lang, wyglad = "sklep", accent = "blue",
-  uploadToken = null, wstawki = [],
+  uploadToken = null, wstawki = [], dodatki = {},
   tierKey = null, qty, onQty, qtyMax, qtyOpen, qtyLabel,
 }) {
   const pola = polaWidoczne(service, params, { uploadToken });
@@ -196,8 +227,10 @@ export default function PolaUslugi({
         }
 
         const { f } = krok;
+        const d = dodatki[f.key] || {};
         const warianty = wariantyPola(f, params);
         const uwaga = f.uwaga ? <p className="text-neutral-400 text-xs leading-relaxed mt-2">{t(f.uwaga, lang)}</p> : null;
+        const etykieta = d.etykieta ? t(d.etykieta, lang) : t(f.label, lang);
         // Licznik sztuk stoi TUZ POD progiem nakladu, bo to jedna decyzja
         // pokazana dwoma kontrolkami. Rozdzielone przez pol formularza
         // wygladaly jak dwa niezalezne pola o tym samym znaczeniu.
@@ -214,13 +247,17 @@ export default function PolaUslugi({
           />
         ) : null;
 
-        const kontrolka = <Kontrolka {...{ f, warianty, params, setParam, lang, accent, wyglad }} />;
+        const kontrolka = d.ukryjWarianty ? null : <Kontrolka {...{ f, warianty, params, setParam, lang, accent, wyglad }} />;
+        const przed = d.przed ? d.przed() : null;
+        const po = d.po ? d.po() : null;
 
         if (wyglad === "kalkulator") {
           return (
-            <CalcCard key={f.key} stepNum={numer} label={t(f.label, lang)}>
+            <CalcCard key={f.key} stepNum={numer} label={etykieta} id={d.id}>
+              {przed}
               {kontrolka}
               {uwaga}
+              {po}
               {licznik}
             </CalcCard>
           );
@@ -228,13 +265,18 @@ export default function PolaUslugi({
 
         // Suwak i lista kafelkow rysuja wlasna etykiete i wlasny odstep;
         // reszta dostaje je tutaj, zeby wszystkie pola wygladaly tak samo.
-        const wlasnaEtykieta = !f.multi && f.widok !== "zdjecia";
+        // Kontrolka rysujaca wlasna etykiete i wlasny odstep dostaje je od
+        // siebie, ale tylko wtedy, gdy nic do niej nie doklejono: przystawka
+        // musi stac wewnatrz tego samego bloku, pod ta sama etykieta.
+        const wlasnaEtykieta = !f.multi && !f.widok && !przed && !po && !d.etykieta && kontrolka;
         return (
           <Fragment key={f.key}>
             {wlasnaEtykieta ? kontrolka : (
-              <div className="mb-6">
-                <Etykieta>{t(f.label, lang)}</Etykieta>
+              <div className="mb-6" id={d.id}>
+                <Etykieta>{etykieta}</Etykieta>
+                {przed}
                 {kontrolka}
+                {po}
               </div>
             )}
             {uwaga && <div className="-mt-4 mb-6">{uwaga}</div>}

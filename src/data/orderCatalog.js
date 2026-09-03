@@ -19,7 +19,7 @@ import {
 import {
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
 } from "../pricing/laserCo2.js";
-import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, AREAS as FIBER_AREAS } from "../pricing/laserFiber.js";
+import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, areaOptionsForLens } from "../pricing/laserFiber.js";
 import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS } from "../pricing/epoxy.js";
 import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
 import {
@@ -260,14 +260,23 @@ export const SERVICES = [
       "Stahl, Aluminium, Messing, Titan, Silber. Dauerhafte Metallmarkierung."
     ),
     fields: [
-      { key: "matId", label: L("Metal", "Metal", "Metall"), options: FIBER_MATERIALS },
-      { key: "lensId", label: L("Obiektyw", "Lens", "Objektiv"), options: LENSES },
-      { key: "markId", label: L("Rodzaj znakowania", "Marking type", "Markierungsart"), options: MARK_TYPES },
-      { key: "areaId", label: L("Pole", "Area", "Fläche"), options: FIBER_AREAS },
+      { key: "matId", label: L("Metal", "Metal", "Metall"), options: FIBER_MATERIALS,
+        widok: "kafelki" },
+      { key: "lensId", label: L("Obiektyw", "Lens", "Objektiv"), options: LENSES,
+        widok: "zdjecia", kolumny: "grid-cols-2", wysokosc: 170 },
+      { key: "markId", label: L("Rodzaj znakowania", "Marking type", "Markierungsart"), options: MARK_TYPES,
+        widok: "zdjecia", kolumny: "grid-cols-2 sm:grid-cols-4" },
+      // Obiektyw ogranicza pole znakowania. Zaleznosc siedzi w rdzeniu cenowym,
+      // wiec sklep i kalkulator wyszarzaja te same warianty.
+      { key: "areaId", label: L("Pole", "Area", "Fläche"), optionsFrom: (v) => areaOptionsForLens(v.lensId) },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "stainless", lensId: "70mm", markId: "surface", areaId: "S", quantityId: "proto", podloze: "our_stock" },
+    // Obiektyw 150 mm jest STANDARDOWY (pole 150x150 mm, tak opisuje go rdzen
+    // cenowy). Katalog startowal na 70 mm, kalkulator na 150 mm, wiec ta sama
+    // usluga miala dwie rozne kwoty startowe, zaleznie od tego, ktoredy klient
+    // wszedl. Jedno zrodlo, wartosc szersza z dwoch.
+    defaults: { matId: "stainless", lensId: "150mm", markId: "surface", areaId: "S", quantityId: "proto", podloze: "our_stock" },
   },
   {
     id: "epoxy",
@@ -280,11 +289,18 @@ export const SERVICES = [
       "UV- und Epoxidharz, Pigmente, Einschlüsse, Finish."
     ),
     fields: [
-      { key: "resinId", label: L("Żywica", "Resin", "Harz"), options: RESINS },
+      // Zywica, forma, wtracenie i wykonczenie to wybory MATERIALOWE: rozpoznaje
+      // sie je po fakturze, nie po nazwie. Zdjecia stoja przy wariantach
+      // w rdzeniu cenowym, wiec obie drogi pokazuja te same.
+      { key: "resinId", label: L("Żywica", "Resin", "Harz"), options: RESINS,
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 170 },
       { key: "volumeId", label: L("Objętość", "Volume", "Volumen"), options: VOLUMES },
-      { key: "moldId", label: L("Forma", "Mold", "Form"), options: MOLD_TYPES },
-      { key: "inclusionId", label: L("Zatopienia", "Inclusions", "Einschlüsse"), options: INCLUSIONS },
-      { key: "finishId", label: L("Wykończenie", "Finish", "Finish"), options: FINISH_OPTIONS },
+      { key: "moldId", label: L("Forma", "Mold", "Form"), options: MOLD_TYPES,
+        widok: "kafelki", kolumny: "grid-cols-3 sm:grid-cols-5" },
+      { key: "inclusionId", label: L("Zatopienia", "Inclusions", "Einschlüsse"), options: INCLUSIONS,
+        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-4" },
+      { key: "finishId", label: L("Wykończenie", "Finish", "Finish"), options: FINISH_OPTIONS,
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3" },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
     ],
     defaults: { resinId: "uv", volumeId: "S", moldId: "existing", inclusionId: "none", finishId: "sanded", quantityId: "proto" },

@@ -103,6 +103,33 @@ export const AREAS = [
 ];
 
 /**
+ * Pola znakowania dostepne przy danym obiektywie.
+ *
+ * OBIEKTYW OGRANICZA POLE i ta zaleznosc nalezy do OFERTY, a nie do ekranu.
+ * Stala dotad tylko w kalkulatorze, wiec karta uslugi w sklepie pozwalala
+ * wybrac pole wieksze niz zasieg soczewki i policzyc za nie cene. Tu stoi raz
+ * i czytaja ja obie drogi do zamowienia. Decyzja: ADR-0037.
+ *
+ * Wariant za duzy zostaje na liscie WYSZARZONY, razem z powodem: zniknieciem
+ * powiedzielibysmy klientowi, ze takie pole nie istnieje, a istnieje, tylko
+ * pod drugim obiektywem.
+ */
+export function areaOptionsForLens(lensId) {
+  const lens = LENSES.find((l) => l.id === lensId);
+  return AREAS.map((a) => ({
+    ...a,
+    disabled: a.area && lens ? a.area > lens.maxAreaCm2 : false,
+    note: a.area && lens && a.area > lens.maxAreaCm2
+      ? {
+        pl: `Przekracza pole ${lens.fieldMm}×${lens.fieldMm}mm`,
+        en: `Exceeds ${lens.fieldMm}×${lens.fieldMm}mm field`,
+        de: `Überschreitet ${lens.fieldMm}×${lens.fieldMm}mm Feld`,
+      }
+      : undefined,
+  }));
+}
+
+/**
  * @param {object} p parametry z kalkulatora
  * @param {string|null} p.podloze kto dostarcza material; brak znaczy "nasz"
  * @param {string} lang

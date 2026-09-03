@@ -82,11 +82,17 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
     <div className={`grid ${cols} gap-2 sm:gap-3`}>
       {options.filter(o => !o.custom).map(o => {
         const active = value === o.id;
+        // Wariant niedostepny zostaje na liscie, ale nie da sie go wybrac:
+        // zniknieciem powiedzielibysmy, ze nie istnieje, a istnieje, tylko
+        // przy innym ustawieniu wyzej.
+        const wylaczony = Boolean(o.disabled);
         const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
         return (
-          <button key={String(o.id)} onClick={() => onChange(o.id)}
+          <button key={String(o.id)} disabled={wylaczony} title={o.note ? t(o.note, lang) : undefined}
+            onClick={() => !wylaczony && onChange(o.id)}
             className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
+              wylaczony ? "border-white/5 opacity-40 cursor-not-allowed"
+                : active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`w-full aspect-square rounded-lg overflow-hidden ${
