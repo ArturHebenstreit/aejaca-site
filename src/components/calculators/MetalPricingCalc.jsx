@@ -233,7 +233,7 @@ export default function MetalPricingCalc() {
                   : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:border-amber-400/50 hover:text-white"
               }`}
             >
-              {metalNames[m]} <span className="text-neutral-500 font-normal">({m})</span>
+              {metalNames[m]} <span className="text-neutral-300 font-normal">({m})</span>
             </button>
           ))}
         </div>
@@ -330,7 +330,7 @@ export default function MetalPricingCalc() {
                 <div className="text-neutral-300 text-xs mb-1">{L.buyback}</div>
                 <div className="text-white font-mono font-bold text-xl">
                   {fmt(totalPln * BUYBACK_MIN, 0)}
-                  <span className="text-neutral-500 font-normal font-sans text-sm"> {L.rangeTo} </span>
+                  <span className="text-neutral-300 font-normal font-sans text-sm"> {L.rangeTo} </span>
                   {fmt(totalPln * BUYBACK_MAX, 0)}
                 </div>
               </div>

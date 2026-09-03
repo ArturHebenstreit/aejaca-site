@@ -345,6 +345,12 @@ body {
 .bg-blue-500.text-white { background-color: #155dfc !important; }
 .bg-blue-500.text-white:hover,
 .hover\:bg-blue-400.text-white:hover { background-color: #1447e6 !important; }
+/* Ta poprawka byla w motywie jasnym cofana przez regule `.text-white` wyzej:
+   przyciemnione tlo trzymalo biel na 5,25:1, ale biel robila sie prawie czarna
+   i wychodzilo 3,77:1 na 23 wezlach. Ta sama pulapka, ktora opisuje komentarz
+   przy `.cta-trustpilot`: napis na nasyconym tle nie nalezy do palety motywu,
+   bo tlo jest to samo w obu motywach. Pomiar 2026-09-03. */
+[data-theme="light"] .bg-blue-500.text-white { color: #ffffff !important; }
 
 [data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
 [data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }

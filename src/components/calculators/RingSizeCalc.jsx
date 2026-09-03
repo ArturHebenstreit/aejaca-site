@@ -262,7 +262,7 @@ function MeasureSlider({ mode, value, onChange, L }) {
           }}
         />
         {/* min/max labels */}
-        <div className="flex justify-between text-xs text-neutral-600 mt-1 font-mono">
+        <div className="flex justify-between text-xs text-neutral-500 mt-1 font-mono">
           <span>{min}{unit}</span>
           <span>{max}{unit}</span>
         </div>
@@ -399,7 +399,7 @@ export default function RingSizeCalc({ lang: langProp }) {
             <li key={i} className="text-neutral-400 text-xs leading-relaxed">{tip}</li>
           ))}
         </ol>
-        <p className="text-neutral-600 text-xs mt-3 leading-relaxed">{L.disclaimer}</p>
+        <p className="text-neutral-500 text-xs mt-3 leading-relaxed">{L.disclaimer}</p>
       </div>
     </div>
   );
