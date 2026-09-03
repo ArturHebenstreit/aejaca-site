@@ -5,12 +5,16 @@
 import { calcNew } from "./jewelry.js";
 import { fmtCost } from "./config.js";
 
-export const PRECIOUS_METAL_CASTING_BUILD = "1.007";
+export const PRECIOUS_METAL_CASTING_BUILD = "1.008";
 
 // KOLBA ODLEWNICZA, jedyne zrodlo prawdy o rozmiarze w calym serwisie.
 // Wszystko ponizej i kazdy komunikat o limicie liczy sie z tych dwoch liczb,
 // zeby zmiana kolby nie wymagala szukania wpisanych z reki milimetrow.
-export const CASTING_FLASK_MM = { diameter: 80, depth: 80 };
+// Glebokosc 90, nie 80: wlasciciel doprecyzowal wymiar kolby 3 wrzesnia 2026,
+// po tym jak model 22 x 59 x 5 mm dostal komunikat o przekroczeniu limitu,
+// chociaz sie miesci. Przy 80 mm limit wysokosci wychodzil 55 mm i model o
+// 59 mm byl odrzucany na 93%.
+export const CASTING_FLASK_MM = { diameter: 80, depth: 90 };
 
 // Model nie zajmuje calej kolby. Trzy zapasy, kazdy z innego powodu:
 // masa formierska musi utrzymac sciane miedzy modelem a blacha kolby, przy
