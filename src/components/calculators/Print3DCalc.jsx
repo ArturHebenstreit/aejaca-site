@@ -491,6 +491,10 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
                 calculator="print3d_msla"
                 serviceId="print_msla"
                 params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint,
+                  // Kolor nie wchodzi do kwoty, ale wchodzi do zlecenia: bez
+                  // niego pracownia drukuje w kolorze domyslnym, a klient
+                  // widzial na ekranie wybrany.
+                  ...(resinColor ? { resinColor } : {}),
                   ...(stlData ? { wymiary: describeDims(skalujDoMm(stlData.bbox), stlScale), znieksztalcony: !isUniform(stlScale) } : {}) }}
                 qty={mslaQty}
                 file={stlFile}
