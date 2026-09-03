@@ -1509,20 +1509,23 @@ app.post("/discounts/:code/delete", requireAuth, async (req, res) => {
   try {
     await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, { method: "DELETE" });
     back(res, "/discounts", { msg: `${req.params.code}: skasowany` });
-  } catch (err) { back(res, "/discounts", { err: err.message }); }
+  } catch (err) {
+    // Odmowa kasowania (kod juz uzyty) wraca do wiersza, zeby powod stal przy
+    // kodzie, ktorego dotyczy, a nie nad lista czterdziestu innych.
+    back(res, "/discounts", { err: err.message, otwarte: req.params.code });
+  }
 });
 
 // Poprawianie kodu, ktory juz gdzies poszedl. Nazwy i licznika uzyc nie
 // ruszamy: pierwsza stoi przy zamowieniach, drugi jest zapisem tego, co sie
 // stalo. Resztę wolno zmienic, bo akcja potrafi sie przeciagnac albo zmienic
 // zasady, a alternatywa jest kasowanie kodu, ktory ktos ma juz w skrzynce.
-app.get("/discounts/:code/edit", requireAuth, async (req, res) => {
-  try {
-    const { codes } = await shopApi("/api/admin/discounts");
-    const kod = (codes || []).find((c) => c.code === req.params.code);
-    if (!kod) return res.status(404).render("error", { message: "Nie znamy takiego kodu" });
-    res.render("discount-edit", { user: req.user, kod, maxPercent: MAX_PERCENT, err: req.query.err || null });
-  } catch (err) { res.status(500).render("error", { message: err.message }); }
+// Edycja przeniosla sie na liste, w rozwijany wiersz, tak samo jak przy
+// zamowieniach (polecenie wlasciciela, 2026-09-03). Stary adres zostaje jako
+// przekierowanie: byl w zakladkach i w historii przegladarki, a 404 w panelu
+// wyglada jak awaria, nie jak przeprowadzka.
+app.get("/discounts/:code/edit", requireAuth, (req, res) => {
+  res.redirect(`/discounts?otwarte=${encodeURIComponent(req.params.code)}`);
 });
 
 app.post("/discounts/:code/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
@@ -1546,21 +1549,24 @@ app.post("/discounts/:code/update", requireAuth, express.urlencoded({ extended: 
         campaign: b.campaign || null,
         issuedTo: b.issuedTo || null,
         note: b.note || null,
+        // Aktywnosc przyjezdza razem z reszta pola, a nie osobnym wlacznikiem
+        // z listy: jedna wartosc ma miec jedna kontrolke. Formularz niesie
+        // ukryte "false" przed polem zaznaczanym, bo niezaznaczone nie wysyla
+        // niczego i serwer nie odroznilby "wylacz" od "nie ruszaj".
+        //
+        // Zaznaczone pole daje wiec DWIE wartosci pod ta sama nazwa, a
+        // `express.urlencoded({ extended: true })` sklada je w tablice.
+        // Porownanie `b.active === "true"` odczytywalo tablice jako "nie",
+        // czyli zaznaczony kod wylaczalby sie przy kazdym zapisie.
+        active: Array.isArray(b.active) ? b.active.includes("true") : b.active === "true",
       },
     });
-    back(res, "/discounts", { msg: `${req.params.code}: zapisany` });
+    // Wracamy do tego samego wiersza, otwartego. Bez tego kod zamykal sie po
+    // zapisie, a przy dluzszej liscie znikal takze z ekranu.
+    back(res, "/discounts", { msg: `${req.params.code}: zapisany`, otwarte: req.params.code });
   } catch (err) {
-    res.redirect(`/discounts/${encodeURIComponent(req.params.code)}/edit?err=${encodeURIComponent(err.message)}`);
+    back(res, "/discounts", { err: err.message, otwarte: req.params.code });
   }
-});
-
-app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
-  try {
-    const { active } = await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, {
-      method: "PATCH", body: { active: req.body.active === "true" },
-    });
-    back(res, "/discounts", { msg: `${req.params.code}: ${active ? "aktywny" : "wylaczony"}` });
-  } catch (err) { back(res, "/discounts", { err: err.message }); }
 });
 
 // --- Przelewy czekajace na potwierdzenie ---

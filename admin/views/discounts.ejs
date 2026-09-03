@@ -149,11 +149,12 @@
               <th class="px-3 py-2 font-medium text-right">W toku</th>
               <th class="px-3 py-2 font-medium text-right">Udzielono</th>
               <th class="px-3 py-2 font-medium">Stan</th>
+              <th class="px-3 py-2 font-medium text-right">Akcje</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
             <% codes.forEach(function (c) { %>
-              <tr class="<%= c.active ? '' : 'opacity-50' %>">
+              <tr class="<%= c.active ? '' : 'opacity-50' %>" data-wiersz="<%= c.code %>">
                 <td class="px-3 py-2">
                   <div class="text-white font-mono text-[13px]"><%= c.code %></div>
                   <div class="text-neutral-600 text-[10px]">
@@ -175,35 +176,200 @@
                 </td>
                 <td class="px-3 py-2 text-right text-neutral-500 text-xs"><%= c.pending || 0 %></td>
                 <td class="px-3 py-2 text-right text-neutral-400 text-xs whitespace-nowrap"><%= pln(c.granted_grosze) %></td>
+                <%# STAN JEST NAPISEM, NIE WLACZNIKIEM. Aktywnosc przestawia sie
+                    w trybie edycji, razem z reszta pola kodu (polecenie wlasciciela,
+                    2026-09-03). Wlacznik na liscie i pole w edycji to dwie kontrolki
+                    jednej wartosci, wiec potrafilyby pokazac co innego. -%>
                 <td class="px-3 py-2">
-                  <div class="flex items-center gap-2">
-                    <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/toggle">
-                      <input type="hidden" name="active" value="<%= c.active ? 'false' : 'true' %>" />
-                      <button class="px-2.5 py-1.5 rounded-lg border text-[11px] transition-colors
-                        <%= c.active
-                          ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:border-emerald-400/60'
-                          : 'border-white/10 text-neutral-500 hover:border-white/30' %>">
-                        <%= c.active ? 'aktywny' : 'wyłączony' %>
-                      </button>
-                    </form>
-                    <a href="/discounts/<%= encodeURIComponent(c.code) %>/edit" title="Popraw kod"
-                       class="px-2 py-1.5 rounded-lg border border-white/10 text-neutral-500 text-[11px]
-                              hover:border-amber-400/50 hover:text-amber-300 transition-colors">
-                      Popraw
-                    </a>
-                    <%# Kasowanie tylko dla kodow bez historii. Uzyty kod stoi za
-                        kwota na czyims zamowieniu, wiec zostaje w bazie. -%>
+                  <span class="px-2 py-1 rounded-lg border text-[11px] whitespace-nowrap
+                    <%= c.active
+                      ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                      : 'border-white/10 text-neutral-500' %>">
+                    <%= c.active ? 'aktywny' : 'wyłączony' %>
+                  </span>
+                </td>
+                <td class="px-3 py-2">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <%# Zapis i wycofanie wiaze z formularzem nizej atrybut `form`,
+                        wiec dzialaja bez skryptu. Pokazuja sie dopiero po otwarciu
+                        wiersza: "zapisz" nad wierszem zamknietym nie ma czego zapisac. -%>
+                    <button form="edycja-<%= c.code %>" data-akcja-edycji="<%= c.code %>"
+                            class="hidden dymek p-1.5 rounded-lg border border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/10 transition-colors"
+                            data-dymek="Zapisz zmiany" title="Zapisz zmiany"
+                            aria-label="Zapisz zmiany w kodzie <%= c.code %>">
+                      <%- IKONY.fistaszek %>
+                    </button>
+                    <button type="reset" form="edycja-<%= c.code %>"
+                            data-akcja-edycji="<%= c.code %>" data-zamknij="<%= c.code %>"
+                            class="hidden dymek p-1.5 rounded-lg border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 transition-colors"
+                            data-dymek="Zostaw bez zmian" title="Zostaw bez zmian"
+                            aria-label="Zamknij edycję kodu <%= c.code %> bez zmian">
+                      <%- IKONY.cofnij %>
+                    </button>
+                    <button type="button" data-otworz="<%= c.code %>"
+                            class="dymek p-1.5 rounded-lg border border-white/10 text-neutral-300 hover:border-white/35 hover:text-white transition-colors"
+                            data-dymek="Otwórz do edycji" title="Otwórz do edycji"
+                            aria-label="Edytuj kod <%= c.code %>">
+                      <%- IKONY.olowek %>
+                    </button>
+                    <%# KRZYZYK PRZY UZYTYM KODZIE ZOSTAJE, TYLKO ZGASZONY. Zniknięty
+                        niczego nie uczy: wlasciciel widzialby dwa wiersze wygladajace
+                        tak samo i jeden bez przycisku, bez slowa o powodzie. -%>
                     <% if (!c.used_count && !c.pending) { %>
-                      <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/delete"
-                            onsubmit="return confirm('Skasować kod <%= c.code %>? Tej operacji nie da się cofnąć.')">
-                        <button data-dymek="Usuń kod. Kody już użyte zostają w historii zamówień" title="Skasuj kod"
-                                class="dymek px-2 py-1.5 rounded-lg border border-white/10 text-neutral-600 text-[11px]
-                                       hover:border-red-400/50 hover:text-red-300 transition-colors">
-                          Kasuj
-                        </button>
-                      </form>
+                      <button type="button" data-usun="<%= c.code %>"
+                              class="dymek p-1.5 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors"
+                              data-dymek="Skasuj kod" title="Skasuj kod"
+                              aria-label="Skasuj kod <%= c.code %>">
+                        <%- IKONY.krzyzyk %>
+                      </button>
+                    <% } else { %>
+                      <span class="dymek p-1.5 rounded-lg border border-white/5 text-neutral-700 cursor-not-allowed inline-flex"
+                            data-dymek="Kod stoi za kwotą na czyimś zamówieniu, więc zostaje w bazie. Wyłącz go w edycji."
+                            title="Kod był używany, więc zostaje w bazie">
+                        <%- IKONY.krzyzyk %>
+                      </span>
                     <% } %>
                   </div>
+                </td>
+              </tr>
+
+              <%# WIERSZ ROZWINIETY. Stoi w drzewie od poczatku, a nie doklada sie
+                  skryptem: przy wylaczonym skrypcie widac cala liste razem z polami,
+                  a formularz dorysowany po fakcie gubi wpisana tresc. -%>
+              <tr class="hidden border-b border-white/10 bg-neutral-950" data-edycja="<%= c.code %>">
+                <td colspan="9" class="px-4 py-5">
+
+                  <%# NAZWY I LICZNIKA NIE DA SIE ZMIENIC, i to jest decyzja, a nie
+                      niedorobka. Nazwa jest juz w rekach klientow i stoi przy
+                      zamowieniach, a licznik uzyc jest zapisem tego, co sie stalo:
+                      poprawiany recznie przestalby byc dowodem. -%>
+                  <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+                    Nazwy kodu i licznika użyć nie da się zmienić: nazwa jest już u klientów i stoi przy
+                    złożonych zamówieniach, a licznik jest zapisem tego, co się wydarzyło.
+                    <% if (c.used_count > 0) { %>
+                      <span class="text-amber-400/90">Tego kodu ktoś już użył, więc zmiana wartości zadziała
+                      dopiero od następnego użycia i nie ruszy zamówień, które już poszły.</span>
+                    <% } %>
+                  </p>
+
+                  <form method="post" id="edycja-<%= c.code %>"
+                        action="/discounts/<%= encodeURIComponent(c.code) %>/update" class="space-y-4">
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Rodzaj</span>
+                        <select name="kind" data-rodzaj="<%= c.code %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                          <option value="percent" <%= c.kind === 'percent' ? 'selected' : '' %>>Procent</option>
+                          <option value="amount" <%= c.kind === 'amount' ? 'selected' : '' %>>Kwota w złotych</option>
+                        </select>
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">
+                          Wartość <span data-jednostka="<%= c.code %>"><%= c.kind === 'percent' ? '(%)' : '(zł)' %></span>
+                        </span>
+                        <%# Kwoty trzymamy w groszach, a wpisuje sie je w zlotych.
+                            `min` MUSI pasowac do `step`: przegladarka przyjmuje tylko
+                            wartosci postaci `min + n * step`, wiec `min="0.01"` przy
+                            `step="1"` odrzucalo okragle 10 bez slowa o powodzie. -%>
+                        <input type="number" name="value" required data-wartosc="<%= c.code %>"
+                          step="<%= c.kind === 'percent' ? '1' : '0.01' %>"
+                          min="<%= c.kind === 'percent' ? '1' : '0.01' %>"
+                          <%- c.kind === 'percent' ? `max="${maxPercent}"` : '' %>
+                          value="<%= c.kind === 'percent' ? c.value : (c.value / 100).toFixed(2) %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber-400 font-semibold" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Obejmuje</span>
+                        <select name="appliesTo"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                          <% ['all','products','services','jewelry','studio'].forEach(function (z) { %>
+                            <option value="<%= z %>" <%= c.applies_to === z ? 'selected' : '' %>><%= SCOPE[z] || z %></option>
+                          <% }); %>
+                        </select>
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Próg zamówienia (zł)</span>
+                        <input type="number" name="minOrder" step="0.01" min="0" placeholder="0"
+                          value="<%= c.min_order_grosze ? (c.min_order_grosze / 100).toFixed(2) : '' %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Limit użyć</span>
+                        <input type="number" name="maxUses" min="<%= Math.max(1, c.used_count) %>" step="1"
+                          value="<%= c.max_uses || '' %>" placeholder="bez limitu"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Limit na adres</span>
+                        <input type="number" name="maxUsesPerEmail" min="1" step="1" value="<%= c.max_uses_per_email || 1 %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Ważny od</span>
+                        <input type="date" name="validFrom" value="<%= dataPola(c.valid_from) %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Ważny do</span>
+                        <input type="date" name="validTo" value="<%= dataPola(c.valid_to) %>"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Akcja</span>
+                        <input type="text" name="campaign" value="<%= c.campaign || '' %>" placeholder="np. blackfriday"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Wydany komu</span>
+                        <input type="text" name="issuedTo" value="<%= c.issued_to || '' %>" placeholder="adres albo nazwisko"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                      </label>
+                      <label class="block">
+                        <span class="block text-[11px] text-neutral-500 mb-1">Notatka</span>
+                        <input type="text" name="note" value="<%= c.note || '' %>" placeholder="Do czego ten kod powstał"
+                          class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-300" />
+                      </label>
+                    </div>
+
+                    <%# AKTYWNOSC STOI TUTAJ, a nie na liscie. Pole ukryte niesie
+                        "false", bo pole zaznaczane niezaznaczone nie wysyla niczego,
+                        a wtedy serwer nie odroznilby "wylacz" od "nie ruszaj". -%>
+                    <input type="hidden" name="active" value="false" />
+                    <label class="flex items-center gap-2 text-xs text-neutral-300">
+                      <input type="checkbox" name="active" value="true" <%= c.active ? 'checked' : '' %>
+                        class="accent-emerald-400 w-4 h-4" />
+                      Kod działa. Wyłączony zostaje w bazie razem z historią, ale nikt go nie użyje.
+                    </label>
+                  </form>
+
+                  <%# Kasowanie ma wlasny formularz, bo nie moze wyjsc razem
+                      z zapisem. Otwiera je krzyzyk, a nie samo rozwiniecie wiersza:
+                      to jedyna akcja bez cofniecia. -%>
+                  <div class="hidden mt-5 pt-4 border-t border-red-400/20" data-kasowanie="<%= c.code %>">
+                    <p class="text-red-300 text-xs mb-3">
+                      Skasować kod <span class="font-mono"><%= c.code %></span>? Tej operacji nie da się cofnąć.
+                      Kod zniknie z bazy razem z rezerwacjami w toku.
+                    </p>
+                    <div class="flex items-center gap-2">
+                      <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/delete">
+                        <button class="px-3 py-1.5 rounded-lg border border-red-400/40 bg-red-400/10 text-red-300 text-xs hover:bg-red-400/20 transition-colors">
+                          Tak, skasuj
+                        </button>
+                      </form>
+                      <button type="button" data-zamknij-kasowanie="<%= c.code %>"
+                              class="px-3 py-1.5 rounded-lg border border-white/10 text-neutral-400 text-xs hover:border-white/30 transition-colors">
+                        Zostaw
+                      </button>
+                    </div>
+                  </div>
+
                 </td>
               </tr>
             <% }); %>
@@ -215,22 +381,105 @@
   </main>
 
   <script>
-    // Jednostka i granice pola wartosci ida za wyborem rodzaju. Bez tego
-    // "Kwota w zlotych" dziedziczyla `step="1"` po procencie i nie przyjmowala
-    // 25,50 zl, a procent nie mial gornej granicy, wiec 500% odbijalo sie
-    // dopiero od serwera, po przeladowaniu strony.
     (function () {
-      var rodzaj = document.getElementById('nowy-rodzaj');
-      var jednostka = document.getElementById('nowa-jednostka');
-      var wartosc = document.querySelector('input[name="value"]');
-      if (!rodzaj || !jednostka || !wartosc) return;
-      rodzaj.addEventListener('change', function () {
-        var procent = rodzaj.value === 'percent';
-        jednostka.textContent = procent ? '(%)' : '(zł)';
+      var MAX_PROCENT = '<%= maxPercent %>';
+
+      // Jednostka i granice pola wartosci ida za wyborem rodzaju. Bez tego
+      // "Kwota w zlotych" dziedziczyla `step="1"` po procencie i nie przyjmowala
+      // 25,50 zl, a procent nie mial gornej granicy, wiec 500% odbijalo sie
+      // dopiero od serwera, po przeladowaniu strony. Ta sama funkcja obsluguje
+      // formularz zakladania i kazdy wiersz edycji: jedna regula, jedno miejsce.
+      var dopasuj = function (wartosc, jednostka, procent) {
+        if (jednostka) jednostka.textContent = procent ? '(%)' : '(zł)';
+        if (!wartosc) return;
         wartosc.step = procent ? '1' : '0.01';
         wartosc.min = procent ? '1' : '0.01';
-        if (procent) wartosc.max = '<%= maxPercent %>';
+        if (procent) wartosc.max = MAX_PROCENT;
         else wartosc.removeAttribute('max');
+      };
+
+      // Rozwijanie wiersza. Wszystko na gotowym drzewie: kazdy formularz stoi
+      // w HTML od poczatku, wiec przy wylaczonym skrypcie widac cala liste
+      // razem z polami, a nie pusta strone.
+      var pokaz = function (kod, czy) {
+        var wiersz = document.querySelector('[data-edycja="' + kod + '"]');
+        if (wiersz) wiersz.classList.toggle('hidden', !czy);
+        // Zapis i wycofanie znacza cos wylacznie przy otwartej edycji.
+        document.querySelectorAll('[data-akcja-edycji="' + kod + '"]').forEach(function (b) {
+          b.classList.toggle('hidden', !czy);
+        });
+        return wiersz;
+      };
+      var kasowanie = function (kod, czy) {
+        var blok = document.querySelector('[data-kasowanie="' + kod + '"]');
+        if (blok) blok.classList.toggle('hidden', !czy);
+      };
+
+      // Po zapisie wracamy do tego samego wiersza, otwartego. Bez tego kod
+      // zamykal sie po kazdej akcji, a przy dluzszej liscie znikal takze
+      // z ekranu. Nazwa przychodzi w adresie, bo serwer wie, czego dotyczyla
+      // akcja, a strona po przeladowaniu juz nie.
+      var doOtwarcia = new URLSearchParams(location.search).get('otwarte');
+      if (doOtwarcia) {
+        pokaz(doOtwarcia, true);
+        var kotwica = document.querySelector('[data-wiersz="' + doOtwarcia + '"]');
+        // Kod skasowany nie ma juz wiersza i to jest w porzadku: nie
+        // przewijamy wtedy donikad.
+        if (kotwica) kotwica.scrollIntoView({ block: 'center' });
+      }
+
+      document.addEventListener('change', function (e) {
+        var nowy = e.target.closest('#nowy-rodzaj');
+        if (nowy) {
+          dopasuj(nowy.form.querySelector('input[name="value"]'),
+                  document.getElementById('nowa-jednostka'), nowy.value === 'percent');
+          return;
+        }
+        var wiersz = e.target.closest('[data-rodzaj]');
+        if (wiersz) {
+          var kod = wiersz.getAttribute('data-rodzaj');
+          dopasuj(document.querySelector('[data-wartosc="' + kod + '"]'),
+                  document.querySelector('[data-jednostka="' + kod + '"]'), wiersz.value === 'percent');
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        var otworz = e.target.closest('[data-otworz]');
+        if (otworz) {
+          var kod = otworz.getAttribute('data-otworz');
+          var wiersz = document.querySelector('[data-edycja="' + kod + '"]');
+          pokaz(kod, wiersz && wiersz.classList.contains('hidden'));
+          return;
+        }
+        var usun = e.target.closest('[data-usun]');
+        if (usun) {
+          // Krzyzyk otwiera wiersz razem z ostrzezeniem, a nie kasuje od razu.
+          // Kasowanie jest jedyna akcja bez cofniecia, a wiersze wygladaja
+          // identycznie, wiec musi kosztowac wiecej niz jedno klikniecie.
+          var refU = usun.getAttribute('data-usun');
+          pokaz(refU, true);
+          kasowanie(refU, true);
+          return;
+        }
+        var zamknijK = e.target.closest('[data-zamknij-kasowanie]');
+        if (zamknijK) { kasowanie(zamknijK.getAttribute('data-zamknij-kasowanie'), false); return; }
+        var zamknij = e.target.closest('[data-zamknij]');
+        if (zamknij) {
+          // `type="reset"` przywraca pola, a my domykamy wiersz. Kolejnosc ma
+          // znaczenie: schowanie przed resetem zostawiloby w polach zmiany,
+          // ktore wroca przy nastepnym otwarciu i beda wygladac na zapisane.
+          var refZ = zamknij.getAttribute('data-zamknij');
+          setTimeout(function () {
+            kasowanie(refZ, false);
+            pokaz(refZ, false);
+            // Reset oddaje polu wartosc, ale nie jego granice: te ustawil
+            // skrypt przy zmianie rodzaju i zostalyby po odrzuconej zmianie.
+            var rodzaj = document.querySelector('[data-rodzaj="' + refZ + '"]');
+            if (rodzaj) dopasuj(document.querySelector('[data-wartosc="' + refZ + '"]'),
+                                document.querySelector('[data-jednostka="' + refZ + '"]'),
+                                rodzaj.value === 'percent');
+          }, 0);
+        }
       });
     })();
   </script>

@@ -246,7 +246,6 @@ const ZESTAWY = {
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
   discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null, maxPercent: 80 },
-  "discount-edit": { user: uzytkownik, kod, err: null, maxPercent: 80 },
   materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
 
   // ZGLOSZENIA. Atrapa niesie jedno swieze i jedno juz przepisane do wyceny,
@@ -405,6 +404,31 @@ for (const plik of pliki) {
   }
 }
 
+// --- Pole zaznaczane z ukrytym poprzednikiem oddaje TABLICE -----------------
+// Pole zaznaczane niezaznaczone nie wysyla niczego, wiec serwer nie odroznilby
+// "wylacz" od "nie ruszaj". Standardowa sztuczka stawia przed nim pole ukryte
+// z ta sama nazwa i wartoscia "false". Skutek uboczny: przy ZAZNACZONYM polu
+// pod jedna nazwa jada dwie wartosci, a `express.urlencoded({ extended: true })`
+// sklada je w tablice. Porownanie `body.pole === "true"` czyta wtedy tablice
+// jako "nie", czyli zaznaczone pole zapisuje sie jako odznaczone, cicho i za
+// kazdym razem.
+for (const plik of pliki) {
+  const tresc = readFileSync(join(VIEWS, plik), "utf8");
+  const ukryte = new Set(
+    [...tresc.matchAll(/<input[^<>]*type="hidden"[^<>]*name="(\w+)"[^<>]*value="false"/g)].map((m) => m[1])
+  );
+  for (const pole of tresc.matchAll(/<input[^<>]*type="checkbox"[^<>]*name="(\w+)"/g)) {
+    const nazwa = pole[1];
+    if (!ukryte.has(nazwa)) continue;
+    // Serwer musi umiec przeczytac obie postacie: napis i tablice.
+    const czyta = new RegExp(`Array\\.isArray\\(\\w+\\.${nazwa}\\)`).test(server);
+    if (!czyta) {
+      zle(`views/${plik}: pole "${nazwa}" ma ukrytego poprzednika, wiec zaznaczone przyjezdza `
+        + `jako tablica, a server.js nigdzie nie sprawdza Array.isArray dla "${nazwa}"`);
+    }
+  }
+}
+
 // --- Gorna granica procentu stoi w panelu i w sklepie -----------------------
 // Panel wdraza sie osobno i nie importuje z `chat-api`, wiec liczbe ma u siebie.
 // Rozjechana w dol pozwalalaby zalozyc kod, ktory serwer odrzuci; rozjechana
@@ -491,7 +515,7 @@ for (const f of pliki) {
 
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
-for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discounts", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
   if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
     zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
   }
