@@ -218,13 +218,14 @@ export const SERVICES = [
       "Holz, Sperrholz, Acryl, Leder, Glas. Arbeitsfläche bis 600 × 288 mm."
     ),
     fields: [
-      { key: "matId", label: L("Materiał", "Material", "Material"), options: ENGRAVE_MATERIALS },
+      { key: "matId", label: L("Materiał", "Material", "Material"), options: ENGRAVE_MATERIALS, widok: "kafelki" },
       { key: "areaId", label: L("Pole grawerowania", "Engraving area", "Gravurfläche"), options: ENGRAVE_AREAS },
-      { key: "detailId", label: L("Szczegółowość", "Detail", "Detailgrad"), options: ENGRAVE_DETAIL },
+      { key: "detailId", label: L("Szczegółowość", "Detail", "Detailgrad"), options: ENGRAVE_DETAIL,
+        widok: "zdjecia", kolumny: "grid-cols-2 sm:grid-cols-4", wysokosc: 140 },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, podloze: "our_stock" },
+    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", podloze: "our_stock" },
   },
   {
     id: "laser_cut",
@@ -245,7 +246,7 @@ export const SERVICES = [
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false, podloze: "our_stock" },
+    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", podloze: "our_stock" },
   },
   {
     id: "laser_fiber",

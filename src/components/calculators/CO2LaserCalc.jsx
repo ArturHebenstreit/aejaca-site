@@ -1,20 +1,31 @@
 // ============================================================
 // CO2 LASER ESTIMATOR - xTool P2 55W  v1.1
 // Work area: 600 × 288 mm (standard), extended with riser
+//
+// PYTANIA SA WZIETE ZE SKLEPU (`orderCatalog.js`, rysuje `PolaUslugi`).
+// Tryb pracy zostaje tutaj, bo to nie jest pole uslugi, tylko wybor MIEDZY
+// dwiema uslugami: grawerowaniem i cieciem.
+//
+// STOL ROBOCZY PRZESTAL BYC PYTANIEM. Stal tu jako krok, w ktorym zawsze
+// dokladnie jedna kafelka byla klikalna, bo wynika w calosci z wielkosci
+// pracy. Liczy go teraz `wymagaRozszerzonego` w rdzeniu cenowym, wiec sklep
+// przestal sprzedawac grawer L za 110,37 zl przy wycenie 150,00 zl.
+// Decyzja wlasciciela 2026-09-03, ADR-0037.
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
-import { uniformScale, isUniform, dimsFor, parseScale, serializeScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
+import { QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, HeroCards, NextStepPanel } from "./calcShared.jsx";
+import { uniformScale, isUniform, parseScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
 import { measureScaled } from "../../utils/svgParser.js";
 import { coverageOf, coverageMeasured } from "../../pricing/engraveCoverage.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
-import { QuantityStepper } from "../shop/ConfigControls.jsx";
+import PolaUslugi from "../shop/PolaUslugi.jsx";
+import { getService } from "../../data/orderCatalog.js";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import {
-  SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
+  SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
 
 const MATERIAL_NOTE_LBL = {
@@ -29,10 +40,9 @@ const MATERIAL_NOTE_PLACEHOLDER = {
 };
 
 import {
-  WORK_AREA_MM, EXTENDED_AREA_MM, PATH_NEEDS_EXTENDED, AREA_NEEDS_EXTENDED,
+  WORK_AREA_MM, EXTENDED_AREA_MM, wymagaRozszerzonego,
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
-  calcEngrave, calcCut,
-  CO2_CONFIG, LBL,
+  calcEngrave, calcCut, LBL,
 } from "../../pricing/laserCo2.js";
 
 export { ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY, calcEngrave, calcCut };
@@ -40,6 +50,16 @@ export { ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PA
 
 const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
+
+/** Zdanie zamiast pytania: stol wynika z wielkosci pracy, wiec go oznajmiamy. */
+const STOL_NOTE = {
+  pl: `Praca nie mieści się na standardowym stole ${WORK_AREA_MM.x}×${WORK_AREA_MM.y} mm, więc idzie przez przelot ${EXTENDED_AREA_MM.x}×${EXTENDED_AREA_MM.y} mm. Narzut i dłuższe przygotowanie są już w kwocie poniżej.`,
+  en: `This job does not fit the standard ${WORK_AREA_MM.x}×${WORK_AREA_MM.y} mm bed, so it runs through the ${EXTENDED_AREA_MM.x}×${EXTENDED_AREA_MM.y} mm passthrough. The surcharge and longer setup are already in the amount below.`,
+  de: `Diese Arbeit passt nicht auf den Standardtisch ${WORK_AREA_MM.x}×${WORK_AREA_MM.y} mm und läuft durch den Durchlass ${EXTENDED_AREA_MM.x}×${EXTENDED_AREA_MM.y} mm. Aufpreis und längere Rüstzeit sind im Betrag unten enthalten.`,
+};
+
+/** Opisy obu uslug wspolne ze sklepem: stad biora sie pytania i stan startowy. */
+const USLUGI = { engrave: getService("laser_engrave"), cut: getService("laser_cut") };
 
 export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", handoff = null, onHandoffUsed = null }) {
   const l = LBL[lang] || LBL.en;
@@ -49,23 +69,25 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
   const [bindingGrosze, setBindingGrosze] = useState(null);
 
   const [mode, setMode] = useState(initialMode);
-  const [eMatId, setEMatId] = useState("wood");
-  const [eAreaId, setEAreaId] = useState("S");
-  const [eDetailId, setEDetailId] = useState("standard");
+  // STAN POCZATKOWY OBU USLUG IDZIE Z KATALOGU, tego samego, ktory czyta karta
+  // uslugi. Grawer i ciecie maja osobne zestawy, zeby przelaczenie trybu nie
+  // kasowalo tego, co klient juz ustawil po drugiej stronie.
+  const [eParams, setEParams] = useState(() => ({ ...USLUGI.engrave.defaults }));
+  const [cParams, setCParams] = useState(() => ({ ...USLUGI.cut.defaults }));
   // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
   // licznik nigdy nie pokazaly sprzecznych wartosci. Grawer i ciecie maja
   // wlasny naklad, wiec kazdy dostaje osobna pare liczba/prog.
   const [engraveQty, setEngraveQty] = useState(1);
   const eQtyId = tierForQty(engraveQty, QUANTITY_TIERS).id;
-  const [cMatId, setCMatId] = useState("ply3");
-  const [cPathId, setCPathId] = useState("S");
-  const [cComplexId, setCComplexId] = useState("moderate");
   const [cutQty, setCutQty] = useState(1);
   const cQtyId = tierForQty(cutQty, QUANTITY_TIERS).id;
-  const [extended, setExtended] = useState(false);
+  const { matId: eMatId, areaId: eAreaId, detailId: eDetailId } = eParams;
+  const { matId: cMatId, pathId: cPathId, complexId: cComplexId } = cParams;
   // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
   // Od 2026-08-20 WPLYWA na wycene: przy materiale z naszego magazynu
   // doliczamy plyte ze stawki w tabeli, przy materiale klienta nie.
+  // Jest wspolne dla obu trybow, bo dotyczy tej samej pracowni i tej samej
+  // sztuki materialu, a nie tego, czy tniemy, czy grawerujemy.
   const [podloze, setPodloze] = useState("our_stock");
   // Stawki materialow z magazynu: te same, z ktorych liczy serwer.
   const materialStock = useMaterialStock();
@@ -74,11 +96,14 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
   // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
   // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
-  function handlePodlozeChange(id) {
-    setPodloze(id);
-    setSpare("");
-    setMaterialNote("");
-  }
+  const setParam = (klucz, wartosc) => {
+    if (klucz === "quantityId") {
+      (mode === "engrave" ? setEngraveQty : setCutQty)(qtyForTier(wartosc, QUANTITY_TIERS));
+      return;
+    }
+    if (klucz === "podloze") { setPodloze(wartosc); setSpare(""); setMaterialNote(""); return; }
+    (mode === "engrave" ? setEParams : setCParams)((p) => ({ ...p, [klucz]: wartosc }));
+  };
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -117,18 +142,6 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     return () => { zywy = false; };
   }, [svgData?.svgText, svgData?.coverage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const svgNeedsExtended = scaledSvgData
-    ? (scaledSvgData.bboxMm.x > WORK_AREA_MM.x + 0.5 || scaledSvgData.bboxMm.y > WORK_AREA_MM.y + 0.5)
-    : false;
-
-  useEffect(() => {
-    if (scaledSvgData) {
-      setExtended(svgNeedsExtended);
-      return;
-    }
-    const needsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
-    if (needsExtended !== undefined) setExtended(needsExtended);
-  }, [cPathId, eAreaId, scaledSvgData, svgNeedsExtended, mode]);
 
   // PRZEJECIE RYSUNKU Z SZYBKIEJ WYCENY. Rysunek jest juz sparsowany razem
   // ze skala z suwaka wielkosci, wiec nie kazemy klientowi wgrywac go drugi
@@ -168,14 +181,18 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     // sie zmierzyc rozciagnietego rysunku. Milczace zejscie na przedzialy
     // z listy podmienialoby podstawe wyceny bez slowa.
     if (svgData && !scaledSvgData) return { type: "custom" };
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, qty: engraveQty, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
-    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, qty: cutQty, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
-  }, [svgData, mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang, podloze, materialStock]);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, qty: engraveQty, svgData: scaledSvgData, podloze }, lang, materialStock);
+    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, qty: cutQty, svgData: scaledSvgData, podloze }, lang, materialStock);
+  }, [svgData, mode, eMatId, eAreaId, eDetailId, eQtyId, engraveQty, cMatId, cPathId, cComplexId, cQtyId, cutQty, scaledSvgData, lang, podloze, materialStock]);
 
-  const presetNeedsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
-  const needsExtended = scaledSvgData ? svgNeedsExtended : presetNeedsExtended;
-  const stdDisabled = needsExtended === true;
-  const extDisabled = scaledSvgData ? !svgNeedsExtended : needsExtended === false;
+  // Stol liczy rdzen cenowy, tu tylko pytamy go o to samo, zeby napisac
+  // klientowi, co sie dzieje. Zadna z tych dwoch drog nie moze odpowiedziec
+  // inaczej niz druga, bo obie wolaja te sama funkcje.
+  const extended = wymagaRozszerzonego(
+    mode === "engrave"
+      ? { areaId: eAreaId, svgData: scaledSvgData }
+      : { pathId: cPathId, svgData: scaledSvgData },
+  );
 
   const svgSummary = svgData
     ? (mode === "engrave"
@@ -187,8 +204,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
   const substrateSummary = t(SUBSTRATES.find(s => s.id === podloze)?.label, lang);
   const paramsSummary = mode === "engrave"
-    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang), substrateSummary].join(" | ")
-    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang), substrateSummary].join(" | ");
+    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), ...(extended ? [l.extArea] : []), t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang), substrateSummary].join(" | ")
+    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), ...(extended ? [l.extArea] : []), t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang), substrateSummary].join(" | ");
 
   return (
     <div>
@@ -201,75 +218,64 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
         ]} />
       </CalcCard>
 
-      {mode === "engrave" ? (
-        <>
-          <CalcCard stepNum="②" label={l.material}><MaterialCards options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area} id="file-upload">
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
-            {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
-          </CalcCard>
-          <CalcCard stepNum="④" label={l.detail}>
-            <HeroCards options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={140} />
-          </CalcCard>
-        </>
-      ) : (
-        <>
-          <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen} id="file-upload">
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={true} lang={lang} />
-            {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
-          </CalcCard>
-          <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
-        </>
-      )}
-
-      <CalcCard stepNum="⑤" label={l.workArea}>
-        <HeroCards value={extended ? "ext" : "std"} onChange={(id) => setExtended(id === "ext")} lang={lang} options={[
-          { id: "std", label: l.stdArea, desc: l.stdAreaDesc, img: "/img/calc/co2_workarea/standard.webp", disabled: stdDisabled },
-          { id: "ext", label: l.extArea, desc: l.extAreaDesc, img: "/img/calc/co2_workarea/extended.webp", disabled: extDisabled },
-        ]} />
-      </CalcCard>
-
-      <CalcCard stepNum="⑥" label={l.qty}>
-        {mode === "engrave" ? (
-          <>
-            <Chips options={QUANTITY_TIERS} value={eQtyId} onChange={(id) => setEngraveQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-            <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={engraveQty} onChange={setEngraveQty}
-              min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-          </>
-        ) : (
-          <>
-            <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={(id) => setCutQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
-            <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={cutQty} onChange={setCutQty}
-              min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
-          </>
-        )}
-      </CalcCard>
-
-      <CalcCard stepNum="⑦" label={t(SUBSTRATE_LABEL, lang)}>
-        <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
-        {podloze !== "our_stock" ? (
-          <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
-            <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
-          </div>
-        ) : (
-          <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
-            <textarea
-              value={materialNote}
-              onChange={(e) => setMaterialNote(e.target.value)}
-              placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
-              rows={2}
-              minLength={MIN_MATERIAL_NOTE}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
-            />
-          </div>
-        )}
-      </CalcCard>
+      <PolaUslugi
+        service={USLUGI[mode]}
+        params={mode === "engrave"
+          ? { ...eParams, quantityId: eQtyId, podloze }
+          : { ...cParams, quantityId: cQtyId, podloze }}
+        setParam={setParam}
+        lang={lang}
+        wyglad="kalkulator"
+        pierwszyNumer={2}
+        tierKey="quantityId"
+        qty={mode === "engrave" ? engraveQty : cutQty}
+        onQty={mode === "engrave" ? setEngraveQty : setCutQty}
+        qtyMax={qtyLimit(QUANTITY_TIERS)}
+        qtyOpen={qtyOpenValue(QUANTITY_TIERS)}
+        qtyLabel={t(QTY_STEPPER_LBL, lang)}
+        dodatki={{
+          // Rysunek nie jest osobnym pytaniem, tylko drugim sposobem
+          // odpowiedzenia na to samo: wgrany zastepuje wybor progu z listy
+          // i przejmuje etykiete kartki.
+          [mode === "engrave" ? "areaId" : "pathId"]: {
+            id: "file-upload",
+            etykieta: svgData ? sl.fromSvg : null,
+            ukryjWarianty: Boolean(svgData),
+            przed: () => (
+              <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={mode === "cut"} lang={lang} />
+            ),
+          },
+          // Sztuka na proby albo nazwa materialu: obie zaleza od podloza,
+          // wiec stoja w tej samej kartce, pod tym samym pytaniem.
+          podloze: {
+            po: () => (podloze !== "our_stock" ? (
+              <div className="mt-3">
+                <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+                <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+              </div>
+            ) : (
+              <div className="mt-3">
+                <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+                <textarea
+                  value={materialNote}
+                  onChange={(e) => setMaterialNote(e.target.value)}
+                  placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+                  rows={2}
+                  minLength={MIN_MATERIAL_NOTE}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
+                />
+              </div>
+            )),
+          },
+        }}
+      />
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        {/* Stol rozszerzony jest SKUTKIEM wielkosci pracy, a nie wyborem, wiec
+            stoi tu jako zdanie o kwocie, a nie wyzej jako pytanie z jedna
+            klikalna odpowiedzia. */}
+        {extended && <p className="text-neutral-400 text-xs leading-relaxed mb-4">{t(STOL_NOTE, lang)}</p>}
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         {/* Materiał NIE jest w tej kwocie i klient musi to wiedzieć przed
             zakupem, a nie z regulaminu po fakcie. */}

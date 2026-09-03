@@ -197,7 +197,7 @@ function Kontrolka({ f, warianty, params, setParam, lang, accent, wyglad }) {
  */
 export default function PolaUslugi({
   service, params, setParam, lang, wyglad = "sklep", accent = "blue",
-  uploadToken = null, wstawki = [], dodatki = {},
+  uploadToken = null, wstawki = [], dodatki = {}, pierwszyNumer = 1,
   tierKey = null, qty, onQty, qtyMax, qtyOpen, qtyLabel,
 }) {
   const pola = polaWidoczne(service, params, { uploadToken });
@@ -215,7 +215,10 @@ export default function PolaUslugi({
   return (
     <>
       {ciag.map((krok, i) => {
-        const numer = wyglad === "kalkulator" ? NUMERY[i] : null;
+        // Numeracja moze zaczac sie dalej niz od jedynki: kalkulator CO2 ma
+        // przed lista pol wlasna kartke z wyborem miedzy grawerem a cieciem,
+        // czyli miedzy dwiema uslugami, a nie miedzy wariantami jednej.
+        const numer = wyglad === "kalkulator" ? NUMERY[i + pierwszyNumer - 1] : null;
 
         if (krok.typ === "wstawka") {
           const { w } = krok;
