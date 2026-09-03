@@ -18,7 +18,7 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
 import { JobDescription, AttachmentList, BlockedReasons, DeclaredSpec, TileGroup, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
-import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
+import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
 import { brakPodloza } from "../../data/laserSubstrate.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import SaveQuote from "./SaveQuote.jsx";
@@ -584,7 +584,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const gatedShape = calculator === "jewelry_new"
     && Boolean(params?.complexityId && params.complexityId !== "simple");
   const wantsEngraving = Boolean(params?.engravingId && params.engravingId !== "none");
-  const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
+  // Limit zalezy od wariantu: "Grafika lub dluzszy tekst" kosztuje dwa razy
+  // tyle co inicjaly, wiec musi przyjac dluzszy tekst. Patrz `engravingLimitFor`.
+  const limitGraweru = engravingLimitFor(params?.engravingId);
+  const engravingOver = wantsEngraving && engraving.trim().length > limitGraweru;
   const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
 
   // Zabezpieczenie wspolne dla wszystkich kalkulatorow: gdyby ktorys
@@ -741,7 +744,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               label={u.engravingLabel}
               value={engraving}
               onChange={setEngraving}
-              maxLength={ENGRAVING_LIMITS.jewelry}
+              maxLength={limitGraweru}
               placeholder={u.engravingPlaceholder}
               hint={u.engravingHint}
               overLimitNote={u.engravingOver}

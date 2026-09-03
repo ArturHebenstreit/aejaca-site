@@ -16,6 +16,7 @@ import {
   QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
   SHAPE_COMPLEXITY, isChainType,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
+  ENGRAVING_FREE_ABOVE_PLN, normalizeEngravingId,
 } from "../pricing/jewelryConfig.js";
 import {
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
@@ -43,6 +44,40 @@ const SEGMENTY_ZYWIC = Object.entries(RESIN_SEGMENTS).map(([id, seg]) => ({
 }));
 
 /** Zdjecia filamentow. Naleza do pola, wiec ogladaja je obie drogi. */
+/**
+ * PODPIS POD KAFELKIEM GRAWERU PODAJE OBIE KWOTY, bo obie sa prawdziwe.
+ * Doplata zalezy od ceny jednej sztuki, ktorej kafelek nie zna: cena przychodzi
+ * z `/api/price` juz po wybraniu wszystkiego. Sama cena bazowa bylaby obietnica
+ * falszywa dla kazdego wyrobu powyzej progu, a sam gratis dla kazdego ponizej.
+ * Zlotowki po polsku, euro poza Polska, tak jak reszta kwot w serwisie.
+ */
+function podpisGraweru(o, lang) {
+  if (!o.pricePLN) return null;
+  const kwota = (pln) => (lang === "pl" ? `${pln} zł` : `${Math.round(pln / CONFIG.EUR_PLN_RATE)} EUR`);
+  const prog = kwota(ENGRAVING_FREE_ABOVE_PLN);
+  const powyzej = Math.round(o.pricePLN * (o.aboveRate ?? 0));
+  const drugi = powyzej > 0
+    ? { pl: `${kwota(powyzej)} powyżej ${prog}`, en: `${kwota(powyzej)} above ${prog}`, de: `${kwota(powyzej)} über ${prog}` }
+    : { pl: `gratis powyżej ${prog}`, en: `free above ${prog}`, de: `gratis über ${prog}` };
+  return `+${kwota(o.pricePLN)} · ${drugi[lang] ?? drugi.en}`;
+}
+
+/**
+ * Regula progu, jednym zdaniem, pod polem graweru.
+ *
+ * PROG PODAJE SIE W WALUCIE JEZYKA, tym samym przeliczeniem co podpis pod
+ * kafelkiem. Napisany na sztywno jako "400 PLN" dawal Niemcowi dwie liczby na
+ * jeden prog na jednym ekranie: kafelek mowil "gratis über 93 EUR", a zdanie
+ * pod nim "oberhalb von 400 PLN". Regula w silniku liczy sie w zlotowkach,
+ * bo w nich powstaja wszystkie ceny; euro jest przeliczeniem do czytania.
+ */
+const PROG_GRAWERU_EUR = Math.round(ENGRAVING_FREE_ABOVE_PLN / CONFIG.EUR_PLN_RATE);
+const UWAGA_PROGU_GRAWERU = L(
+  `Dopłata liczy się od sztuki i zależy od ceny sztuki bez graweru: powyżej ${ENGRAVING_FREE_ABOVE_PLN} zł inicjały wchodzą w cenę, a grafika i dłuższy tekst kosztują połowę.`,
+  `The surcharge is per piece and depends on the price of one piece without the engraving: above ${PROG_GRAWERU_EUR} EUR the initials are included, and artwork or a longer text costs half.`,
+  `Der Aufpreis gilt pro Stück und richtet sich nach dem Stückpreis ohne Gravur: über ${PROG_GRAWERU_EUR} EUR sind Initialen inklusive, Grafik oder längerer Text kostet die Hälfte.`
+);
+
 const ZDJECIA_FILAMENTOW = {
   "PLA": "/img/calc/3d_filaments/pla.webp", "PLA Silk": "/img/calc/3d_filaments/pla_silk.webp",
   "PLA Matte": "/img/calc/3d_filaments/pla_matte.webp", "PLA Wood": "/img/calc/3d_filaments/pla_wood.webp",
@@ -243,13 +278,11 @@ export const SERVICES = [
       // jubilerskim, w walucie jezyka.
       { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"),
         options: CASTING_ENGRAVINGS, ukryjGdy: (v) => !castingEngravingAvailable(v.finishId),
-        podpis: (o, lang) => (o.cost
-          ? (lang === "pl" ? `+${o.cost} zł` : `+${Math.round(o.cost / CONFIG.EUR_PLN_RATE)} EUR`)
-          : null),
+        podpis: podpisGraweru, zamiennik: normalizeEngravingId,
         uwaga: L(
-          "Grawer wykonujemy laserem na wypolerowanej powierzchni, po odlaniu i wykończeniu. Treść podajesz przy dodawaniu do koszyka. Jeśli zamawiasz też powłokę galwaniczną, grawer robimy przed nią, więc zostaje widoczny pod warstwą.",
-          "We laser-engrave the polished surface after casting and finishing. You give us the text when adding to the cart. If you also order plating, the engraving goes on first, so it stays visible under the layer.",
-          "Wir gravieren mit dem Laser auf der polierten Oberfläche, nach Guss und Finish. Den Text geben Sie beim Hinzufügen zum Warenkorb an. Bei zusätzlicher Beschichtung gravieren wir zuerst, damit die Gravur unter der Schicht sichtbar bleibt."
+          "Grawer wykonujemy laserem na wypolerowanej powierzchni, po odlaniu i wykończeniu. Treść podajesz przy dodawaniu do koszyka. Jeśli zamawiasz też powłokę galwaniczną, grawer robimy przed nią, więc zostaje widoczny pod warstwą. " + UWAGA_PROGU_GRAWERU.pl,
+          "We laser-engrave the polished surface after casting and finishing. You give us the text when adding to the cart. If you also order plating, the engraving goes on first, so it stays visible under the layer. " + UWAGA_PROGU_GRAWERU.en,
+          "Wir gravieren mit dem Laser auf der polierten Oberfläche, nach Guss und Finish. Den Text geben Sie beim Hinzufügen zum Warenkorb an. Bei zusätzlicher Beschichtung gravieren wir zuerst, damit die Gravur unter der Schicht sichtbar bleibt. " + UWAGA_PROGU_GRAWERU.de
         ) },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
@@ -288,9 +321,7 @@ export const SERVICES = [
       // Doplata za grawer stoi przy wariancie, bo to ona rozstrzyga wybor.
       // W walucie jezyka: polski czyta zlotowki, reszta euro.
       { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS,
-        podpis: (o, lang) => (o.cost
-          ? (lang === "pl" ? `+${o.cost} zł` : `+${Math.round(o.cost / CONFIG.EUR_PLN_RATE)} EUR`)
-          : null) },
+        podpis: podpisGraweru, zamiennik: normalizeEngravingId, uwaga: UWAGA_PROGU_GRAWERU },
       { key: "complexityId", label: L("Złożoność kształtu", "Shape complexity", "Formkomplexität"), options: SHAPE_COMPLEXITY },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],

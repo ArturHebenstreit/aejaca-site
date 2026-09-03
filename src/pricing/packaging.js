@@ -72,9 +72,24 @@ export const PACKAGING = [
 export const ENGRAVING_LIMITS = {
   /** Grawer na wyrobie: inicjaly, data, krotka dedykacja */
   jewelry: 30,
+  /**
+   * Dluzszy tekst na wyrobie, czyli wariant `pattern` z `ENGRAVING_OPTIONS`.
+   *
+   * Od 2026-09-03 ten wariant nazywa sie "Grafika lub dluzszy tekst" i kosztuje
+   * dwa razy tyle co inicjaly. Przy jednym limicie 30 znakow bylby cennikiem
+   * bez pokrycia: klient placilby wiecej za dluzszy tekst, ktorego pole i tak
+   * by nie przyjelo. Powyzej tej granicy kompozycje ukladamy recznie i wycena
+   * idzie zapytaniem, bo dlugosc napisu zalezy juz od ksztaltu wyrobu.
+   */
+  jewelryLong: 120,
   /** Wieko pudelka, jest na nim wiecej miejsca */
   packaging: 60,
 };
+
+/** Ile znakow przyjmuje pole graweru przy danym wariancie. */
+export function engravingLimitFor(engravingId) {
+  return engravingId === "pattern" ? ENGRAVING_LIMITS.jewelryLong : ENGRAVING_LIMITS.jewelry;
+}
 
 /** Opakowanie ma sens wylacznie dla rzeczy fizycznych */
 export const DEFAULT_PACKAGING = "paper";

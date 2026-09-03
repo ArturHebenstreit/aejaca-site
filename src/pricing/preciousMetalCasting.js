@@ -1,5 +1,5 @@
 import { calcNew } from "./jewelry.js";
-import { PLATING, ENGRAVING_OPTIONS } from "./jewelryConfig.js";
+import { PLATING, ENGRAVING_OPTIONS, engravingPricePLN, normalizeEngravingId } from "./jewelryConfig.js";
 import { fmtCost } from "./config.js";
 
 export const PRECIOUS_METAL_CASTING_BUILD = "1.009";
@@ -103,6 +103,10 @@ export const CASTING_PLATINGS = PLATING.filter((p) => !p.custom);
 // nie kosztowal w dwoch miejscach dwoch roznych kwot.
 // Polecenie wlasciciela, 2026-09-03.
 export const CASTING_ENGRAVINGS = ENGRAVING_OPTIONS;
+// Razem z lista idzie zamiennik starych identyfikatorow, zeby ekran odlewu
+// nie musial siegac po niego do drugiego modulu i zeby nie dalo sie wziac
+// jednego bez drugiego.
+export { normalizeEngravingId };
 export function castingEngravingAvailable(finishId) {
   return finishId === CASTING_PLATING_REQUIRES_FINISH;
 }
@@ -208,8 +212,13 @@ export function calculate(params, lang = "pl", rates) {
     // po obu stronach serwisu. Poza wykonczeniem jubilerskim powloki nie ma.
     platingId: castingPlatingAvailable(finishId) && CASTING_PLATINGS.some((v) => v.id === platingId) ? platingId : "none",
     stoneRows: [], qtyId, qty: sztuk,
-    // Grawer tym samym torem co powloka i z tej samej tabeli cen.
-    engravingId: castingEngravingAvailable(finishId) && CASTING_ENGRAVINGS.some((v) => v.id === engravingId) ? engravingId : "none",
+    // GRAWERU NIE LICZY TU `calcNew`, chociaz zna te sama tabele cen. Doplata
+    // zalezy od tego, czy cena sztuki przekracza prog, a cena sztuki przy
+    // odlewie powstaje dopiero nizej: `calcNew` nie wie nic o przygotowaniu
+    // wzorca ani o wykonczeniu, ktore razem daja od 120 do 280 zlotych.
+    // Liczona tutaj byla mierzona wzgledem kwoty o te doplaty za niskiej,
+    // wiec odlew za 480 zlotych placilby za grawer, ktory mu sie nalezy.
+    engravingId: "none",
     clientSuppliesMetal: false, overrideWeightG: requiredMassG,
   }, lang, rates, undefined, {
     // Wewnętrzna opcja, nie parametr zamówienia: klient nie może nią sterować.
@@ -223,6 +232,12 @@ export function calculate(params, lang = "pl", rates) {
   const patternPreparationGrosze = 12000;
   const extraGrosze = patternPreparationGrosze + finish.extraGrosze;
   const unitGrosze = base.unitGrosze + extraGrosze;
+  // Grawer dopiero teraz, od pelnej ceny sztuki. `none` poza wykonczeniem
+  // jubilerskim, bo grawerujemy po wypolerowaniu (patrz `castingEngravingAvailable`).
+  const grawerId = castingEngravingAvailable(finishId)
+    && CASTING_ENGRAVINGS.some((v) => v.id === normalizeEngravingId(engravingId))
+    ? normalizeEngravingId(engravingId) : "none";
+  const grawerPLN = engravingPricePLN(grawerId, unitGrosze / 100);
   // Widelki musza opisywac TE SAMA rzecz co kwota wiazaca. `calcNew` liczy
   // zakres z ceny sprzed doplat, a przygotowanie wzorca i wykonczenie doklejamy
   // dopiero tutaj, wiec bez tego przesuniecia kalkulator pokazywalby zakres
@@ -233,8 +248,8 @@ export function calculate(params, lang = "pl", rates) {
   const qty = base.qty || 1;
   const eurPln = base.eurPln || 1;
   const perPcPLN = {
-    min: Math.round(base.perPcPLN.min + extraPLN),
-    max: Math.round(base.perPcPLN.max + extraPLN),
+    min: Math.round(base.perPcPLN.min + extraPLN) + grawerPLN,
+    max: Math.round(base.perPcPLN.max + extraPLN) + grawerPLN,
   };
   const totalPLN = { min: perPcPLN.min * qty, max: perPcPLN.max * qty };
   const ln = lang === "de"
@@ -244,8 +259,9 @@ export function calculate(params, lang = "pl", rates) {
       : [`Masa gotowego odlewu: ${finalMassG.toFixed(2)} g`, `Rezerwa procesowa 12%: ${(requiredMassG - finalMassG).toFixed(2)} g`, "Kontrola modelu i wydruk wzorca", "Wykończenie"];
   return {
     ...base,
-    unitGrosze,
-    lineGrosze: unitGrosze * qty,
+    engravingPLN: grawerPLN,
+    unitGrosze: unitGrosze + grawerPLN * 100,
+    lineGrosze: (unitGrosze + grawerPLN * 100) * qty,
     perPcPLN,
     totalPLN,
     perPcEUR: { min: Math.round(perPcPLN.min / eurPln), max: Math.round(perPcPLN.max / eurPln) },
@@ -263,6 +279,16 @@ export function calculate(params, lang = "pl", rates) {
       // kwota w zlotowkach. Reguly walutowe pilnuje `PROJECT_RULES.md`.
       { label: ln[2], value: fmtCost(patternPreparationGrosze / 100, lang) },
       { label: ln[3], value: fmtCost(finish.extraGrosze / 100, lang) },
+      // Wybrany grawer pokazuje sie takze wtedy, gdy nic nie kosztuje: "w cenie"
+      // mowi, ze zamowienie przekroczylo prog, a pusty wiersz wygladalby, jakby
+      // grawer wypadl z zamowienia.
+      ...(grawerId !== "none" ? [{
+        label: { pl: "Grawerowanie laserowe", en: "Laser engraving", de: "Lasergravur" }[lang]
+          ?? "Laser engraving",
+        value: grawerPLN > 0
+          ? fmtCost(grawerPLN, lang)
+          : ({ pl: "w cenie", en: "included", de: "inklusive" }[lang] ?? "included"),
+      }] : []),
     ],
   };
 }
