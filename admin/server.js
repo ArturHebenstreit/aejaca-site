@@ -1345,7 +1345,12 @@ app.get("/email-threads/:id", requireAuth, async (req, res) => {
         LEFT JOIN leads l ON l.id = et.lead_id
         WHERE et.id = $1
       `, [req.params.id]),
-      pool.query("SELECT * FROM email_messages WHERE thread_id = $1 ORDER BY received_at ASC", [req.params.id]),
+      // OD NAJNOWSZEJ. Przegladajacy watek szuka tego, co przyszlo teraz, a nie
+      // tego, od czego rozmowa sie zaczela: przy dlugiej korespondencji ostatnia
+      // wiadomosc lezala na samym dole i trzeba bylo przewinac cala historie.
+      // Widok rysuje miedzy wiadomosciami strzalke w GORE, zeby kierunek czasu
+      // zgadzal sie z kolejnoscia. Polecenie wlasciciela, 2026-09-03.
+      pool.query("SELECT * FROM email_messages WHERE thread_id = $1 ORDER BY received_at DESC", [req.params.id]),
     ]);
     if (!thread.rows[0]) return res.status(404).render("error", { message: "Thread not found" });
     res.render("email-thread", {

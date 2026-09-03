@@ -97,10 +97,12 @@
             </div>
 
           </div>
+          <%# Watek idzie od najnowszej wiadomosci, wiec strzalka wskazuje w gore:
+              nizej lezy to, co bylo wczesniej. %>
           <% if (i < messages.length - 1) { %>
             <div class="flex items-center gap-3">
               <div class="flex-1 border-t border-white/5"></div>
-              <span class="text-xs text-neutral-700">&darr;</span>
+              <span class="text-xs text-neutral-700">&uarr;</span>
               <div class="flex-1 border-t border-white/5"></div>
             </div>
           <% } %>

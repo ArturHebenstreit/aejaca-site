@@ -127,14 +127,18 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
                 : active ? `${a.obwodka} ${a.tlo} ring-2 ${a.obraczka} ${a.poswiataMala}`
                 : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
-            <div className={`w-full aspect-square rounded-lg overflow-hidden ${
+            <div className={`relative w-full aspect-square rounded-lg overflow-hidden ${
               o.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
             }`}>
               {o.img ? (
-                <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={label} loading="lazy"
-                  className={`w-full h-full object-cover transition-all duration-300 ${
-                    active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
-                  }`} />
+                <>
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={label} loading="lazy"
+                    className={`w-full h-full object-cover transition-all duration-300 ${
+                      active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
+                    }`} />
+                  {/* Patrz komentarz przy `tile-lift` w HeroCards. */}
+                  {active && <div className="absolute inset-0 tile-lift" aria-hidden="true" />}
+                </>
               ) : (
                 <span className="text-2xl opacity-60">⬡</span>
               )}
@@ -195,6 +199,13 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                     active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                {/* KAFELEK WYBRANY DOSTAJE SWIATLA, a nie mnoznika jasnosci.
+                    Zdjecia produktowe sa prawie czarne, a `brightness()` mnozy,
+                    wiec czern razy trzy to dalej czern: pomiar pokazal, ze
+                    podniesienie z 1,38 do 3,00 rusza srednia o piec poziomow
+                    na 255. `tile-lift` DODAJE swiatlo (`plus-lighter`), wiec
+                    dziala tam, gdzie mnozenie nie ma czego mnozyc. */}
+                {active && <div className="absolute inset-0 tile-lift" aria-hidden="true" />}
                 {active && <div className={`absolute inset-0 ${a.nalozenie} mix-blend-overlay`} />}
               </div>
             )}

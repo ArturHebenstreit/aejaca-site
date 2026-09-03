@@ -32,7 +32,7 @@ import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
-  CASTING_PLATINGS, castingPlatingAvailable,
+  CASTING_PLATINGS, castingPlatingAvailable, CASTING_ENGRAVINGS, castingEngravingAvailable,
   CASTING_ENVELOPE_MM, maxCastingScaleForBBox, calculate,
 } from "../../pricing/preciousMetalCasting.js";
 
@@ -98,7 +98,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
   // w katalogu, a nie powtorzona w obu konfiguratorach.
   const poprawki = poprawkiWyboru(USLUGA, params);
   if (poprawki) setParams((p) => ({ ...p, ...poprawki }));
-  const { variantId, materialSourceId, metalId, finishId, platingId } = { ...params, ...poprawki };
+  const { variantId, materialSourceId, metalId, finishId, platingId, engravingId } = { ...params, ...poprawki };
 
   const [qty, setQty] = useState(1);
   const qtyId = tierForQty(qty, QTY_TIERS).id;
@@ -168,8 +168,8 @@ export default function MetalCastCalc({ lang = "pl" }) {
   }, [mesh, scale]);
 
   const result = useMemo(
-    () => calculate({ variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, stlData: scaledStlData }, lang, rates),
-    [variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, scaledStlData, lang, rates],
+    () => calculate({ variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId, qty, stlData: scaledStlData }, lang, rates),
+    [variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId, qty, scaledStlData, lang, rates],
   );
 
   const paramsSummary = [
@@ -181,6 +181,9 @@ export default function MetalCastCalc({ lang = "pl" }) {
     // ceny: wpisana przy szlifowaniu bylaby obietnica, ktorej wycena nie niesie.
     ...(castingPlatingAvailable(finishId) && platingId !== "none"
       ? [t(CASTING_PLATINGS.find((v) => v.id === platingId)?.label, lang)] : []),
+    // Grawer w podsumowaniu tylko wtedy, gdy naprawde wchodzi do ceny.
+    ...(castingEngravingAvailable(finishId) && engravingId && engravingId !== "none"
+      ? [t(CASTING_ENGRAVINGS.find((v) => v.id === engravingId)?.label, lang)] : []),
     ...(file ? [file.name] : []),
   ].join(" | ");
 
@@ -275,7 +278,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
               onBinding={setBindingGrosze}
               calculator="jewelry_casting"
               serviceId="precious_metal_casting"
-              params={{ variantId, materialSourceId, metalId, finishId, platingId, qtyId }}
+              params={{ variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId }}
               qty={qty}
               file={file}
               triangles={mesh?.triangles || null}

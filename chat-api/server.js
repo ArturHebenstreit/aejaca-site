@@ -21,6 +21,7 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
+import { terminZamowienia } from "./pricing/terminy.js";
 import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
 import { brakPodloza } from "./pricing/laserSubstrate.js";
 import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
@@ -3806,11 +3807,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze, inbound_delivery, session_id)
+         discount_code, discount_grosze, inbound_delivery, session_id, lead_days)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27, $28, $29)
+         $26, $27, $28, $29, $30)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -3829,7 +3830,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        // Wizyta, z ktorej wzielo sie zamowienie. Sluzy WYLACZNIE statystyce:
        // pokazuje, z jakiego zrodla ruchu i z ktorej strony wejscia przyszedl
        // przychod. Identyfikator jest losowy i nie laczy dwoch wizyt.
-       String(req.body?.sessionId || "").slice(0, 50) || null]
+       String(req.body?.sessionId || "").slice(0, 50) || null,
+       // TERMIN REALIZACJI ZAPISUJEMY JUZ TERAZ. Do tej pory zamowienie ze
+       // sklepu szlo do bazy bez `lead_days`, wiec kolejka pracowni nie
+       // wiedziala, na kiedy to ma byc, przypomnienia nie mialy od czego
+       // liczyc, a klient widzial termin tylko w koszyku i nigdzie potem.
+       // Liczy ten sam rdzen, ktory pokazal go w koszyku, wiec baza nie moze
+       // trzymac innej liczby, niz zobaczyl klient. Zapisujemy GORNA granice:
+       // to ona jest obietnica, a nie dolna.
+       terminZamowienia(priced)?.max ?? null]
     );
     const orderId = rows[0].id;
 

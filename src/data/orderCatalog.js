@@ -26,6 +26,7 @@ import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadD
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
   castingFinishesFor, CASTING_PLATINGS, castingPlatingAvailable,
+  CASTING_ENGRAVINGS, castingEngravingAvailable,
 } from "../pricing/preciousMetalCasting.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
@@ -236,9 +237,23 @@ export const SERVICES = [
           "Plating goes on a polished surface. Rhodium gives a white finish on silver and gold; yellow or rose plating changes the surface colour. A galvanic layer wears with time and is renewed as a service.",
           "Die Beschichtung kommt auf eine polierte Oberfläche. Rhodium ergibt Weiß auf Silber und Gold, Gelb- oder Roségold ändert die Oberflächenfarbe. Eine galvanische Schicht nutzt sich mit der Zeit ab und wird im Service erneuert."
         ) },
+      // GRAWER DOMAWIA SIE DO ODLEWU, tak samo jak powloka: grawerujemy po
+      // wypolerowaniu, wiec przy niższych poziomach wykonczenia pytanie nie ma
+      // sensu. Doplata z tej samej tabeli, ktora widzi klient w kalkulatorze
+      // jubilerskim, w walucie jezyka.
+      { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"),
+        options: CASTING_ENGRAVINGS, ukryjGdy: (v) => !castingEngravingAvailable(v.finishId),
+        podpis: (o, lang) => (o.cost
+          ? (lang === "pl" ? `+${o.cost} zł` : `+${Math.round(o.cost / CONFIG.EUR_PLN_RATE)} EUR`)
+          : null),
+        uwaga: L(
+          "Grawer wykonujemy laserem na wypolerowanej powierzchni, po odlaniu i wykończeniu. Treść podajesz przy dodawaniu do koszyka. Jeśli zamawiasz też powłokę galwaniczną, grawer robimy przed nią, więc zostaje widoczny pod warstwą.",
+          "We laser-engrave the polished surface after casting and finishing. You give us the text when adding to the cart. If you also order plating, the engraving goes on first, so it stays visible under the layer.",
+          "Wir gravieren mit dem Laser auf der polierten Oberfläche, nach Guss und Finish. Den Text geben Sie beim Hinzufügen zum Warenkorb an. Bei zusätzlicher Beschichtung gravieren wir zuerst, damit die Gravur unter der Schicht sichtbar bleibt."
+        ) },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
-    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", platingId: "none", qtyId: "1" },
+    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", platingId: "none", engravingId: "none", qtyId: "1" },
   },
   {
     id: "jewelry_plain",
