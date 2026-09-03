@@ -8,6 +8,9 @@ import {
   describeMissingCastingParams,
   CASTING_FINISHES,
   CASTING_FLASK_MM,
+  castingFinishesFor,
+  CASTING_PLATINGS,
+  castingPlatingAvailable,
   CASTING_ENVELOPE_MM,
   CASTING_ENVELOPE_LABEL,
   PRECIOUS_METAL_CASTING_BUILD,
@@ -17,7 +20,7 @@ import { SUPPORTED_EXTENSIONS } from "../src/pricing/mesh.js";
 import { QTY_TIERS } from "../src/pricing/jewelryConfig.js";
 import { QUANTITY_TIERS } from "../src/pricing/config.js";
 
-assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.008");
+assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.009");
 
 // KOLBA JEST JEDYNYM ZRODLEM ROZMIARU. Limit modelu ma sie z niej liczyc, a nie
 // stac obok niej wpisany z reki: przy poprzedniej wersji te dwie liczby zyly
@@ -138,23 +141,62 @@ assert.ok(
   priced.perPcPLN.min <= priced.unitGrosze / 100 && priced.unitGrosze / 100 <= priced.perPcPLN.max,
   `kwota wiazaca ${priced.unitGrosze / 100} poza widelkami ${priced.perPcPLN.min}-${priced.perPcPLN.max}`,
 );
-const surowy = calculate({
-  ...base, finishId: "raw",
+// `raw` przy kruszcu AEJaCA juz nie istnieje (metal z kanalow wraca do
+// przetopu), wiec najtanszym poziomem tej sciezki jest odciecie kanalow.
+const najtanszy = calculate({
+  ...base, finishId: "sprue_cut",
   variantId: "model_3d", materialSourceId: "aejaca",
   stlData: { volumeCm3: 0.4, bbox: { x: 2.0, y: 2.0, z: 0.8 } },
 }, "pl");
 assert.ok(
-  priced.perPcPLN.min > surowy.perPcPLN.min,
+  priced.perPcPLN.min > najtanszy.perPcPLN.min,
   "drozsze wykonczenie musi podniesc takze dolna granice widelek, a nie tylko kwote wiazaca",
 );
 assert.equal(priced.totalPLN.min, priced.perPcPLN.min * priced.qty);
 
 const startingPrice = calculate({
-  metalId: "silver", finishId: "raw", qtyId: "1",
+  metalId: "silver", finishId: "sprue_cut", qtyId: "1",
   variantId: "model_3d", materialSourceId: "aejaca",
   stlData: { volumeCm3: 0.2, bbox: { x: 2.0, y: 1.5, z: 0.6 } },
 }, "pl");
-assert.ok(startingPrice.unitGrosze >= 20000 && startingPrice.unitGrosze <= 22000);
+// Cena wejsciowa urosla o 30 zl 3 wrzesnia 2026: przy kruszcu AEJaCA znika
+// poziom bez doplaty (surowy z kanalami), wiec najtansza droga zaczyna sie od
+// odciecia kanalow. `priceFromGrosze` na karcie uslugi idzie za tym.
+assert.ok(startingPrice.unitGrosze >= 23000 && startingPrice.unitGrosze <= 26000,
+  `cena wejsciowa ${startingPrice.unitGrosze} poza oczekiwanym zakresem`);
+
+// POZIOMY ZALEZNE OD ZRODLA KRUSZCU
+assert.ok(!castingFinishesFor("aejaca").some((f) => f.id === "raw"),
+  "przy kruszcu AEJaCA nie wydajemy odlewu z kanalami wlewowymi");
+assert.ok(castingFinishesFor("client").some((f) => f.id === "raw"),
+  "przy kruszcu powierzonym kanaly sa z metalu klienta, wiec zostaja do wyboru");
+assert.equal(
+  calculate({ ...base, finishId: "raw", variantId: "model_3d", materialSourceId: "aejaca" }, "pl").type,
+  "custom",
+  "kosz sprzed zmiany z niedostepnym poziomem ma isc do czlowieka, a nie liczyc sie po staremu",
+);
+
+// POWLOKA GALWANICZNA: te same pozycje i ceny co w kalkulatorze jubilerskim.
+assert.deepEqual(CASTING_PLATINGS.map((v) => v.id), ["none", "rhodium", "gold_pl", "rose_pl"]);
+assert.ok(CASTING_PLATINGS.every((v) => typeof v.cost === "number"),
+  "kazda oferowana powloka musi miec cene, inaczej kwota wiazaca nie jest wiazaca");
+assert.ok(castingPlatingAvailable("polished") && !castingPlatingAvailable("ground"),
+  "powloka klada sie tylko na wypolerowana powierzchnie");
+{
+  // `base` nie niesie modelu, a bez zmierzonej objetosci silnik oddaje `null`,
+  // wiec kazdy przypadek cenowy musi dolozyc `stlData`.
+  const zModelem = {
+    ...base, variantId: "model_3d", materialSourceId: "aejaca",
+    stlData: { volumeCm3: 0.4, bbox: { x: 2.0, y: 2.0, z: 0.8 } },
+  };
+  const bezPowloki = calculate({ ...zModelem, finishId: "polished", platingId: "none" }, "pl");
+  const zRodem = calculate({ ...zModelem, finishId: "polished", platingId: "rhodium" }, "pl");
+  const szlifZRodem = calculate({ ...zModelem, finishId: "ground", platingId: "rhodium" }, "pl");
+  const szlif = calculate({ ...zModelem, finishId: "ground", platingId: "none" }, "pl");
+  assert.ok(zRodem.unitGrosze > bezPowloki.unitGrosze, "rodowanie musi podniesc kwote");
+  assert.equal(szlifZRodem.unitGrosze, szlif.unitGrosze,
+    "powloka wybrana poza wykonczeniem jubilerskim nie moze wejsc do ceny");
+}
 
 assert.throws(
   () => priceItem({

@@ -52,6 +52,7 @@ const UI = {
     shippingFrom: "Dostawa: odbiór osobisty 0 zł, Paczkomat InPost {locker}, kurier {courier}.",
     freeLeft: "Brakuje {amount} do darmowej dostawy w Polsce.",
     freeReached: "Masz darmową dostawę w Polsce.",
+    freeReachedWhy: "Kurier kosztuje zwykle {courier}, Paczkomat {locker}. Zamówienie przekracza {prog}, więc dostawę w Polsce dokładamy od siebie.",
     checkout: "Przejdź do zamówienia",
     soon: "Finalizację zamówienia uruchamiamy w następnym kroku",
     remove: "Usuń",
@@ -85,6 +86,7 @@ const UI = {
     shippingFrom: "Delivery: pickup free, InPost locker {locker}, courier {courier}.",
     freeLeft: "{amount} more for free delivery within Poland.",
     freeReached: "Free delivery within Poland unlocked.",
+    freeReachedWhy: "A courier normally costs {courier} and an InPost locker {locker}. Your order is over {prog}, so delivery within Poland is on us.",
     checkout: "Proceed to order",
     soon: "Order completion arrives in the next step",
     remove: "Remove",
@@ -118,6 +120,7 @@ const UI = {
     shippingFrom: "Versand: Abholung kostenlos, InPost-Paketstation {locker}, Kurier {courier}.",
     freeLeft: "Noch {amount} bis zum kostenlosen Versand innerhalb Polens.",
     freeReached: "Kostenloser Versand innerhalb Polens erreicht.",
+    freeReachedWhy: "Ein Kurier kostet normalerweise {courier}, eine InPost-Station {locker}. Ihre Bestellung liegt über {prog}, den Versand innerhalb Polens übernehmen wir.",
     checkout: "Zur Bestellung",
     soon: "Der Bestellabschluss folgt im nächsten Schritt",
     remove: "Entfernen",
@@ -338,9 +341,17 @@ export default function Cart() {
                     przyczyna porzucenia koszyka. Prog darmowej dostawy istnial
                     od dawna, ale koszyk o nim milczal, czyli akurat tam, gdzie
                     zdanie "brakuje Ci X" cokolwiek zmienia. */}
-                <p className="text-neutral-500 text-xs mb-2">
-                  {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
-                </p>
+                {/* Cennik dostawy i informacja o darmowej dostawie stały OBOK
+                    SIEBIE i przeczyly sobie: "kurier 19,49 zl" tuz nad "masz
+                    darmowa dostawe". Zgloszenie wlasciciela 2026-09-03.
+                    Po przekroczeniu progu pokazujemy jedno zdanie, ktore podaje
+                    zwykly koszt i od razu mowi, czemu go nie ma: klient widzi,
+                    ile dostal, zamiast sam godzic dwie sprzeczne linijki. */}
+                {freeLeftGrosze > 0 && (
+                  <p className="text-neutral-500 text-xs mb-2">
+                    {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
+                  </p>
+                )}
                 {freeLeftGrosze > 0 ? (
                   <div className="mb-4">
                     <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-1.5">
@@ -354,7 +365,15 @@ export default function Cart() {
                     </p>
                   </div>
                 ) : (
-                  <p className="text-emerald-400 text-xs font-medium mb-4">{u.freeReached}</p>
+                  <div className="mb-4">
+                    <p className="text-emerald-400 text-xs font-medium">{u.freeReached}</p>
+                    <p className="text-neutral-400 text-xs mt-1">
+                      {u.freeReachedWhy
+                        .replace("{courier}", money(COURIER_GROSZE))
+                        .replace("{locker}", money(LOCKER_GROSZE))
+                        .replace("{prog}", money(FREE_SHIPPING_FROM_GROSZE))}
+                    </p>
+                  </div>
                 )}
                 {blocked ? (
                   <>

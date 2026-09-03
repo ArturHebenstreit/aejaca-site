@@ -704,7 +704,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
     setAdded(true);
   }
 
-  const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && uploadToken));
+  // `ukryjGdy` chowa pole zalezne od innego wyboru, np. powloke galwaniczna,
+  // ktora ma sens dopiero przy wykonczeniu jubilerskim. Pole schowane nie
+  // znika z parametrow, tylko przestaje byc pytaniem.
+  const visibleFields = service.fields.filter(
+    (f) => !(f.hiddenWithFile && uploadToken) && !(f.ukryjGdy && f.ukryjGdy(params))
+  );
   // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
   // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
   // wielkosci, ktora wycena odrzuci.

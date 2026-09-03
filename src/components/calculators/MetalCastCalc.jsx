@@ -28,6 +28,7 @@ import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
+  castingFinishesFor, CASTING_PLATINGS, castingPlatingAvailable,
   CASTING_ENVELOPE_MM, maxCastingScaleForBBox, calculate,
 } from "../../pricing/preciousMetalCasting.js";
 
@@ -47,6 +48,8 @@ const L = {
     modelHint: "Przeciągnij plik STL, OBJ, 3MF lub STEP albo kliknij, żeby wybrać",
     scale: "Wielkość odlewu",
     finish: "Zakres wykończenia",
+    plating: "Powłoka galwaniczna",
+    platingNote: "Powłokę kładziemy na wypolerowaną powierzchnię. Rod daje biel na srebrze i złocie, złocenie żółte albo różowe zmienia barwę wierzchu. Warstwa galwaniczna z czasem się ściera i odnawia się ją serwisowo.",
     qty: "Liczba sztuk",
     qtyStepper: "Liczba sztuk",
     parsing: "Analizuję model",
@@ -64,6 +67,8 @@ const L = {
     modelHint: "Drag an STL, OBJ, 3MF or STEP file here, or click to choose one",
     scale: "Casting size",
     finish: "Finishing",
+    plating: "Galvanic plating",
+    platingNote: "Plating goes on a polished surface. Rhodium gives a white finish on silver and gold; yellow or rose plating changes the surface colour. A galvanic layer wears with time and is renewed as a service.",
     qty: "Quantity",
     qtyStepper: "Quantity",
     parsing: "Analysing the model",
@@ -81,6 +86,8 @@ const L = {
     modelHint: "STL-, OBJ-, 3MF- oder STEP-Datei hierher ziehen oder klicken",
     scale: "Gussgröße",
     finish: "Finish",
+    plating: "Galvanische Beschichtung",
+    platingNote: "Die Beschichtung kommt auf eine polierte Oberfläche. Rhodium ergibt Weiß auf Silber und Gold, Gelb- oder Roségold ändert die Oberflächenfarbe. Eine galvanische Schicht nutzt sich mit der Zeit ab und wird im Service erneuert.",
     qty: "Stückzahl",
     qtyStepper: "Stückzahl",
     parsing: "Modell wird analysiert",
@@ -116,6 +123,13 @@ export default function MetalCastCalc({ lang = "pl" }) {
   const [materialSourceId, setMaterialSourceId] = useState("aejaca");
   const [metalId, setMetalId] = useState("silver");
   const [finishId, setFinishId] = useState("clean");
+  const [platingId, setPlatingId] = useState("none");
+  const poziomyWykonczenia = castingFinishesFor(materialSourceId);
+  // Wybor spoza listy przystawiamy w RENDERZE, a nie efektem: efekt dorysowuje
+  // ekran drugi raz i przez moment pokazuje stan, ktorego nie oferujemy.
+  const finishBezpieczny = poziomyWykonczenia.some((f) => f.id === finishId)
+    ? finishId : poziomyWykonczenia[0].id;
+  if (finishBezpieczny !== finishId) setFinishId(finishBezpieczny);
   const [qty, setQty] = useState(1);
   const qtyId = tierForQty(qty, QTY_TIERS).id;
 
@@ -173,8 +187,8 @@ export default function MetalCastCalc({ lang = "pl" }) {
   }, [mesh, scale]);
 
   const result = useMemo(
-    () => calculate({ variantId, materialSourceId, metalId, finishId, qtyId, qty, stlData: scaledStlData }, lang, rates),
-    [variantId, materialSourceId, metalId, finishId, qtyId, qty, scaledStlData, lang, rates],
+    () => calculate({ variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, stlData: scaledStlData }, lang, rates),
+    [variantId, materialSourceId, metalId, finishId, platingId, qtyId, qty, scaledStlData, lang, rates],
   );
 
   const paramsSummary = [
@@ -182,6 +196,10 @@ export default function MetalCastCalc({ lang = "pl" }) {
     t(CASTING_MATERIAL_SOURCES.find((v) => v.id === materialSourceId)?.label, lang),
     t(CASTING_METALS.find((v) => v.id === metalId)?.label, lang),
     t(CASTING_FINISHES.find((v) => v.id === finishId)?.label, lang),
+    // Powloke pokazujemy w podsumowaniu tylko wtedy, gdy naprawde wchodzi do
+    // ceny: wpisana przy szlifowaniu bylaby obietnica, ktorej wycena nie niesie.
+    ...(castingPlatingAvailable(finishId) && platingId !== "none"
+      ? [t(CASTING_PLATINGS.find((v) => v.id === platingId)?.label, lang)] : []),
     ...(file ? [file.name] : []),
   ].join(" | ");
 
@@ -250,10 +268,22 @@ export default function MetalCastCalc({ lang = "pl" }) {
       )}
 
       <CalcCard stepNum="⑤" label={l.finish}>
-        <Chips options={CASTING_FINISHES} value={finishId} onChange={setFinishId} lang={lang} />
+        {/* Przy kruszcu AEJaCA nie ma poziomu z kanalami wlewowymi: ten metal
+            wraca do przetopu. Przelaczenie zrodla po wyborze takiego poziomu
+            przystawia wybor do najblizszego dostepnego, zeby konfiguracja nie
+            zostala w stanie, ktorego wycena nie policzy. */}
+        <Chips options={poziomyWykonczenia} value={finishId}
+          onChange={setFinishId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="⑥" label={l.qty}>
+      {castingPlatingAvailable(finishId) && (
+        <CalcCard stepNum="⑥" label={l.plating}>
+          <Chips options={CASTING_PLATINGS} value={platingId} onChange={setPlatingId} lang={lang} />
+          <p className="text-neutral-400 text-xs leading-relaxed mt-2">{l.platingNote}</p>
+        </CalcCard>
+      )}
+
+      <CalcCard stepNum="⑦" label={l.qty}>
         <Chips options={QTY_TIERS} value={qtyId} onChange={(id) => setQty(qtyForTier(id, QTY_TIERS))} lang={lang} />
         <QuantityStepper label={l.qtyStepper} value={qty} onChange={setQty}
           min={1} max={qtyLimit(QTY_TIERS)} openValue={qtyOpenValue(QTY_TIERS)} lang={lang} accent="blue" />
@@ -278,7 +308,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
               onBinding={setBindingGrosze}
               calculator="jewelry_casting"
               serviceId="precious_metal_casting"
-              params={{ variantId, materialSourceId, metalId, finishId, qtyId }}
+              params={{ variantId, materialSourceId, metalId, finishId, platingId, qtyId }}
               qty={qty}
               file={file}
               triangles={mesh?.triangles || null}

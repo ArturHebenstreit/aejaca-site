@@ -24,6 +24,7 @@ import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS } from "../pric
 import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
+  castingFinishesFor, CASTING_PLATINGS, castingPlatingAvailable,
 } from "../pricing/preciousMetalCasting.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
@@ -153,10 +154,17 @@ export const SERVICES = [
       { key: "variantId", label: L("Co nam przekazujesz", "What you provide", "Was Sie liefern"), options: CASTING_VARIANTS },
       { key: "materialSourceId", label: L("Źródło kruszcu", "Metal source", "Metallquelle"), options: CASTING_MATERIAL_SOURCES },
       { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: CASTING_METALS },
-      { key: "finishId", label: L("Zakres wykończenia", "Finishing", "Finish"), options: CASTING_FINISHES },
+      // Lista poziomow zalezy od zrodla kruszcu: przy metalu AEJaCA nie wydajemy
+      // odlewu z kanalami, bo ten metal wraca do przetopu (patrz komentarz przy
+      // `castingFinishesFor`).
+      { key: "finishId", label: L("Zakres wykończenia", "Finishing", "Finish"), optionsFrom: (v) => castingFinishesFor(v.materialSourceId) },
+      // Powloka pojawia sie dopiero przy wykonczeniu jubilerskim, bo galwanika
+      // odwzorowuje powierzchnie pod soba.
+      { key: "platingId", label: L("Powłoka galwaniczna", "Galvanic plating", "Galvanische Beschichtung"),
+        options: CASTING_PLATINGS, ukryjGdy: (v) => !castingPlatingAvailable(v.finishId) },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
-    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", qtyId: "1" },
+    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", platingId: "none", qtyId: "1" },
   },
   {
     id: "jewelry_plain",

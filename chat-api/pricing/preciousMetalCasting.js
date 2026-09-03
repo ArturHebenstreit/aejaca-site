@@ -3,9 +3,10 @@
 // Regeneracja: npm run sync:pricing
 
 import { calcNew } from "./jewelry.js";
+import { PLATING } from "./jewelryConfig.js";
 import { fmtCost } from "./config.js";
 
-export const PRECIOUS_METAL_CASTING_BUILD = "1.008";
+export const PRECIOUS_METAL_CASTING_BUILD = "1.009";
 
 // KOLBA ODLEWNICZA, jedyne zrodlo prawdy o rozmiarze w calym serwisie.
 // Wszystko ponizej i kazdy komunikat o limicie liczy sie z tych dwoch liczb,
@@ -74,9 +75,37 @@ export const CASTING_FINISHES = [
   { id: "ground", label: L("Wyszlifowany", "Ground", "Geschliffen"),
     sub: L("Cała powierzchnia przeszlifowana, bez połysku", "The whole surface ground, no shine", "Gesamte Oberfläche geschliffen, ohne Glanz"), extraGrosze: 11000 },
   { id: "polished", label: L("Wykończenie jubilerskie", "Jewellery finish", "Juwelierfinish"),
-    sub: L("Szlifowanie i polerowanie", "Grinding and polishing", "Schleifen und Polieren"), extraGrosze: 16000 },
+    sub: L("Szlifowanie, polerowanie i kontrola przed wydaniem", "Grinding, polishing and a check before release", "Schleifen, Polieren und Kontrolle vor der Ausgabe"), extraGrosze: 16000 },
 ];
 
+
+// POZIOMY WYKONCZENIA ZALEZA OD TEGO, CZYJ JEST KRUSZEC.
+// Przy kruszcu AEJaCA nie wydajemy odlewu z kanalami wlewowymi: metal w
+// kanalach jest nasz i wraca do przetopu. Przy kruszcu powierzonym kanaly sa
+// z metalu klienta, wiec oddanie ich razem z odlewem jest oczywiste.
+// Polecenie wlasciciela, 3 wrzesnia 2026.
+export function castingFinishesFor(materialSourceId) {
+  return materialSourceId === "aejaca"
+    ? CASTING_FINISHES.filter((f) => f.id !== "raw")
+    : CASTING_FINISHES;
+}
+
+// POWLOKA GALWANICZNA. Ta sama lista i te same ceny co w kalkulatorze
+// jubilerskim: wlasciciel postawil warunek, ze wycena odlewu ma byc spojna
+// z tym, co pokazuja kalkulatory Bizuterii. Dlatego bierzemy `PLATING` wprost,
+// zamiast przepisywac kwoty, ktore rozjechalyby sie przy pierwszej zmianie.
+// Proby zlota nie ma tu dlatego, ze nie ma jej w kalkulatorze: dodanie jej
+// najpierw tam sprawi, ze odlew pojdzie za nia sam.
+// "Inne pokrycie" (`custom_pl`) nie wchodzi, bo nie ma ceny, a ta sciezka ma
+// dawac kwote wiazaca; nietypowe pokrycie idzie zapytaniem.
+export const CASTING_PLATINGS = PLATING.filter((p) => !p.custom);
+
+// Powloka klada sie DOPIERO na wypolerowana powierzchnie. Galwanika odwzorowuje
+// to, co pod nia lezy, wiec na szorstkim odlewie dalaby matowy, nierowny efekt.
+export const CASTING_PLATING_REQUIRES_FINISH = "polished";
+export function castingPlatingAvailable(finishId) {
+  return finishId === CASTING_PLATING_REQUIRES_FINISH;
+}
 
 export const CASTING_RESERVE_RATE = 0.12;
 
@@ -147,13 +176,16 @@ export function calculate(params, lang = "pl", rates) {
   // `qty` to RZECZYWISTA liczba sztuk. Bez niej silnik liczy po nakladzie
   // reprezentatywnym progu, wiec klient zamawiajacy dwie sztuki dostawalby
   // cene policzona dla trzech. Patrz `Brand_Reference`, sekcja 6.0g.
-  const { variantId, materialSourceId, metalId, finishId, qtyId = "1", qty: sztuk, stlData } = params || {};
+  const { variantId, materialSourceId, metalId, finishId, platingId = "none", qtyId = "1", qty: sztuk, stlData } = params || {};
   if (!CASTING_VARIANTS.some((v) => v.id === variantId)
     || !CASTING_MATERIAL_SOURCES.some((v) => v.id === materialSourceId)
     || !CASTING_METALS.some((v) => v.id === metalId)
     || !CASTING_FINISHES.some((v) => v.id === finishId)) return null;
 
   if (variantId !== "model_3d" || materialSourceId !== "aejaca") return { type: "custom" };
+  // Kosz sprzed zmiany moze niesc poziom, ktorego przy kruszcu AEJaCA juz nie
+  // oferujemy. Nie liczymy go po cichu po staremu, tylko kierujemy do czlowieka.
+  if (!castingFinishesFor(materialSourceId).some((f) => f.id === finishId)) return { type: "custom" };
   if (!stlData?.volumeCm3 || !stlData?.bbox) return null;
   if (!fitsCastingFlask(stlData.bbox)) return { type: "custom" };
 
@@ -163,7 +195,11 @@ export function calculate(params, lang = "pl", rates) {
   const requiredMassG = finalMassG * (1 + CASTING_RESERVE_RATE);
   const base = calcNew({
     lineId: "woman", typeId: "ring", metalId, weightId: "standard", methodId: "cast",
-    platingId: "none", stoneRows: [], qtyId, qty: sztuk, engravingId: "none",
+    // Powloka liczy sie tym samym torem co w kalkulatorze jubilerskim (marza
+    // warsztatowa siedzi na robociznie razem z nia), wiec kwota jest ta sama
+    // po obu stronach serwisu. Poza wykonczeniem jubilerskim powloki nie ma.
+    platingId: castingPlatingAvailable(finishId) && CASTING_PLATINGS.some((v) => v.id === platingId) ? platingId : "none",
+    stoneRows: [], qtyId, qty: sztuk, engravingId: "none",
     clientSuppliesMetal: false, overrideWeightG: requiredMassG,
   }, lang, rates, undefined, {
     // Wewnętrzna opcja, nie parametr zamówienia: klient nie może nią sterować.
