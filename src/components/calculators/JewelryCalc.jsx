@@ -612,7 +612,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
-                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                         onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
                           <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
@@ -620,6 +620,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         ) : (
                           <span className="text-2xl opacity-40">⛓</span>
                         )}
+                        <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                       </div>
                       <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(w.label, lang)}
@@ -662,13 +663,14 @@ export default function JewelryCalc({ lang = "pl" }) {
                         active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
-                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
+                      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-black">
                         {c.img ? (
                           <Obraz sizes="(min-width: 640px) 180px, 40vw" src={c.img} alt={t(c.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
                         )}
+                        <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                       </div>
                       <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(c.label, lang)}

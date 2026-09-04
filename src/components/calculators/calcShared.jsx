@@ -137,7 +137,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
                       active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   {/* Patrz komentarz przy `tile-lift` w HeroCards. */}
-                  {active && <div className="absolute inset-0 tile-lift" aria-hidden="true" />}
+                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                 </>
               ) : (
                 <span className="text-2xl opacity-60">⬡</span>
@@ -205,7 +205,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                     podniesienie z 1,38 do 3,00 rusza srednia o piec poziomow
                     na 255. `tile-lift` DODAJE swiatlo (`plus-lighter`), wiec
                     dziala tam, gdzie mnozenie nie ma czego mnozyc. */}
-                {active && <div className="absolute inset-0 tile-lift" aria-hidden="true" />}
+                <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                 {active && <div className={`absolute inset-0 ${a.nalozenie} mix-blend-overlay`} />}
               </div>
             )}

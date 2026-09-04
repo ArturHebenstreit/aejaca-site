@@ -215,6 +215,7 @@ export default function StudioCalculator() {
                         <Obraz sizes="(min-width: 640px) 180px, 40vw" src={img} alt={l[labelKey]} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                        <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                         {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
                       </div>
                     )}

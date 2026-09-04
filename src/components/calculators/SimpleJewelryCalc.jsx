@@ -457,6 +457,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                     }`} />
                   {/* Bottom gradient for text legibility */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                   {/* Active state tint */}
                   {active && <div className="absolute inset-0 bg-violet-400/10 mix-blend-overlay" />}
                 </div>

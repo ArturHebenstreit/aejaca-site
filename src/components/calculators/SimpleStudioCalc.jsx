@@ -483,6 +483,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                       active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                   {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
                 </div>
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
