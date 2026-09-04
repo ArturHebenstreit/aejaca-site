@@ -1,3 +1,27 @@
+#!/usr/bin/env node
+// ============================================================
+// PRERENDER: KAZDA TRASA, TRZY JEZYKI, HTML GOTOWY BEZ PRZEGLADARKI KLIENTA
+// ============================================================
+// Renderuje kazda strone serwisu do statycznego HTML, po polsku pod golym
+// adresem, po angielsku pod `/en/`, po niemiecku pod `/de/`. Lista tras
+// pochodzi z jednego zrodla (`src/routes.js`), tego samego, ktore rysuje
+// serwis w przegladarce: wczesniej stala tu trzecia, recznie pisana kopia,
+// pilnowana osobnym skryptem porownujacym, a teraz brak strony w prerenderze
+// jest po prostu brakiem trasy w calym serwisie.
+//
+// Ponizej stoi tez blokada, ktora zdarzyla sie naprawde dwa razy jednego
+// dnia: uruchomienie tego skryptu bez wczesniejszego `vite build` czyta jako
+// szablon gotowa strone glowna sprzed chwili, zamiast surowego wyjscia builda,
+// i wkleja jej naglowek oraz preloady do kazdej innej strony po cichu.
+//
+// Poza tym plik niesie komplet awarii zwiazanych z prerenderem, opisanych
+// przy odpowiednich fragmentach kodu nizej: hydratacja stu stron naraz,
+// wlasny hosting fontow, obrazy dobierane pod rozmiar miejsca, na ktorym
+// staja, adresy jezykowe w danych strukturalnych i opisy wyszukiwania osobne
+// dla kazdej strony uslugi.
+//
+// Uruchamiany w `npm run build`, jako ostatni krok po `vite build`.
+
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

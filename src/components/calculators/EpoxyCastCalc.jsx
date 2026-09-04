@@ -21,7 +21,7 @@ import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate } fr
 export { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate };
 
 const TECH_LABEL = { pl: "Odlewy żywiczne", en: "Resin Casting", de: "Harzguss" };
-const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stückzahl" };
 
 /** Opis uslugi wspolny ze sklepem: stad biora sie pytania i stan poczatkowy. */
 const USLUGA = getService("epoxy");

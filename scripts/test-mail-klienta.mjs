@@ -431,6 +431,19 @@ console.log("\n4k. Kazdy mail z kodem podaje termin i zapowiada przypomnienie\n"
   ok(/10%/.test(przyp.subject) && /5 dni/.test(przyp.subject), "temat podaje stawke i termin");
   ok(!/AEJ10-4H7PQW/.test(przyp.subject), "temat nie niesie samego kodu");
   ok(/AEJ10-4H7PQW/.test(przyp.text), "kod stoi w tresci wiadomosci");
+
+  // Kod na okaziciela widoczny na liscie skrzynki moglby uzyc kazdy, kto go
+  // tam przeczyta, nie tylko odbiorca. Ta sama zasada co przy przypomnieniu
+  // o kodzie i przy prezencie, sprawdzona teraz i na ostatnim mailu w sprawie
+  // rabatu po tygodniu.
+  const rab = buildRabat7({ lang: "pl", to: ODBIORCA, kod: "AEJ5-9K2TXM", procent: "5%", waznyDo: "14.09.2026" });
+  ok(/5%/.test(rab.subject), "rabat7: temat podaje stawke");
+  ok(!/AEJ5-9K2TXM/.test(rab.subject), "rabat7: temat nie niesie samego kodu");
+  ok(/AEJ5-9K2TXM/.test(rab.text), "rabat7: kod stoi w tresci wiadomosci");
+  for (const [lang, wzorzec] of [["en", /5% discount/], ["de", /5% Rabatt/]]) {
+    const m = buildRabat7({ lang, to: ODBIORCA, kod: "AEJ5-9K2TXM", procent: "5%", waznyDo: "14.09.2026" });
+    ok(wzorzec.test(m.subject) && !/AEJ5-9K2TXM/.test(m.subject), `rabat7 ${lang}: temat bez kodu`);
+  }
 }
 
 console.log("\n4l. Prezent: obie daty, powod doslownie i zdanie o newsletterze\n");

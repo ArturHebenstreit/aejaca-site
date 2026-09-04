@@ -85,7 +85,7 @@ export default function TrustpilotWidget() {
 
         {/* Header */}
         <div ref={headerRef} className="reveal mb-8">
-          <div className="inline-flex items-center gap-1.5 text-[#00b67a] text-xs uppercase tracking-[0.2em] font-semibold mb-3">
+          <div className="tp-napis inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] font-semibold mb-3">
             <TpStar size={14} />
             {L.tag}
           </div>
@@ -115,7 +115,7 @@ export default function TrustpilotWidget() {
             </div>
           ) : (
             <div className="w-full max-w-xl h-[140px] rounded-xl border border-[#00b67a]/20 bg-[#00b67a]/5 flex items-center justify-center">
-              <p className="text-[#00b67a]/60 text-xs font-mono">{L.setupNote}</p>
+              <p className="tp-napis text-xs font-mono opacity-70">{L.setupNote}</p>
             </div>
           )}
 
@@ -124,7 +124,7 @@ export default function TrustpilotWidget() {
             href={PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#00b67a] text-white font-semibold text-sm hover:bg-[#00a36c] hover:shadow-lg hover:shadow-[#00b67a]/25 transition-all duration-300"
+            className="cta-trustpilot inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-[#00b67a]/25 transition-all duration-300"
           >
             <TpStar size={15} />
             {L.ctaBtn}

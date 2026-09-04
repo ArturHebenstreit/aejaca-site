@@ -1,6 +1,23 @@
-// Ten sam szescian 20x10x5 mm zapisany jako STL, OBJ i 3MF musi dac
-// identyczna objetosc, pole i gabaryty. Inaczej klient placi rozne kwoty
-// za ten sam model w zaleznosci od tego, co wyeksportowal.
+#!/usr/bin/env node
+// ============================================================
+// FORMATY SIATKI: TEN SAM SZESCIAN, TA SAMA OBJETOSC, NIEZALEZNIE OD PLIKU
+// ============================================================
+// Ten sam szescian 20x10x5 mm zapisany jako STL, OBJ, STEP i 3MF musi dac
+// identyczna objetosc, pole i gabaryty. Inaczej klient placi rozne kwoty za
+// ten sam model w zaleznosci od tego, co wyeksportowal.
+//
+// Trzy przypadki 3MF powstaly po realnej awarii z 745d46a ("Read the 3MF
+// files customers actually have"): plik zapisany jako PROJEKT slicera
+// (Bambu Studio, PrusaSlicer) trzyma sam sklad sceny w `3D/3dmodel.model`,
+// a geometrie w osobnym pliku dolaczanym atrybutem `p:path`. Parser czytal
+// tylko pierwszy plik w archiwum i nie szedl za odwolaniem, wiec taki model,
+// czyli wlasnie ten, ktory wiekszosc klientow ma na dysku, konczyl sie bez
+// jednego trojkata i cena po prostu nie pojawiala sie na ekranie, bez zadnego
+// bledu. Ten sam parser nie czytal tez 3MF zapisanego z apostrofami zamiast
+// cudzyslowow, mimo ze XML dopuszcza oba zapisy.
+//
+// Uruchamiany w `npm run build`.
+
 import { parseMeshAsync } from "../src/pricing/mesh.js";
 import { zipSync, strToU8 } from "fflate";
 import { execFileSync } from "node:child_process";

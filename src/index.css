@@ -286,15 +286,35 @@ body {
    Klasa `text-white` jest w trybie jasnym nadpisana na kolor tekstu strony,
    wiec napis robil sie czarny na zielonym. Kolory marki nie podlegaja motywowi
    serwisu, bo to cudzy znak, a nie nasz element interfejsu. */
+/* ZIELEN TRUSTPILOTA MA DWIE ROLE I TYLKO JEDNA Z NICH JEST TLEM POD NAPISEM.
+   Markowe #00b67a pod biala etykieta daje 2,63:1, czyli mniej niz polowe tego,
+   czego wymaga WCAG 1.4.3 (4,5:1), i pomiar 2026-09-03 zliczyl to na dwunastu
+   wezlach. Jasniejszej bieli nie ma, wiec schodzi tlo: #00855a to ta sama
+   zielen o mniejszej jasnosci, 4,66:1, i dalej rozpoznawalna jako Trustpilot.
+   Znak sam w sobie (gwiazdki, ozdobnik nad naglowkiem) zostaje w kolorze
+   markowym, bo tam nic nie stoi napisane na wierzchu. Napis zielenia na
+   kremowej kartce to trzecia sprawa: #00b67a daje na niej 2,49:1, wiec motyw
+   jasny ma wlasny, ciemniejszy stopien. */
+:root {
+  --tp-marka:    #00b67a;   /* gwiazdki i ozdobniki: grafika, nie tlo pod tekstem */
+  --tp-przycisk: #00855a;   /* tlo pod bialym napisem, 4,66:1 */
+  --tp-przycisk-najazd: #00714c;
+  --tp-napis:    #00b67a;   /* zielen jako TEKST, na ciemnym tle */
+}
+[data-theme="light"] {
+  --tp-napis: #00674a;      /* 6,47:1 na kremie, gdzie markowa zielen ma 2,49:1 */
+}
 .cta-trustpilot,
 [data-theme="light"] .cta-trustpilot {
-  background-color: #00b67a;
+  background-color: var(--tp-przycisk);
   color: #fff;
 }
 .cta-trustpilot:hover,
 [data-theme="light"] .cta-trustpilot:hover {
-  background-color: #00a06b;
+  background-color: var(--tp-przycisk-najazd);
 }
+/* Zielen jako kolor napisu, a nie jako tlo. */
+.tp-napis { color: var(--tp-napis); }
 
 /* ─── Focus visible styles (accessibility) ─── */
 :focus-visible {

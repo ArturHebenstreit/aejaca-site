@@ -81,12 +81,32 @@ export default function StudioCalculator() {
 
   const deepLinked = urlTab && VALID_TABS.has(urlTab);
   const alias = deepLinked ? ALIASY_TECH[urlTab] : null;
-  const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
-  const [activeTech, setActiveTech] = useState(deepLinked ? (alias?.tech || urlTab) : "3dprint");
+  // ADRES Z PARAMETREM NIE MOZE ZMIENIC PIERWSZEGO RYSOWANIA. Strona jest
+  // prerenderowana bez zapytania: serwer nie widzi `?tab=`, `?service=` ani
+  // `?mode=`, wiec rysuje stan domyslny. Ustawienie innego stanu w `useState`
+  // znaczylo, ze klient rysuje co innego niz przyszlo w HTML-u, React uznaje
+  // to za rozjazd i wyrzuca CALE poddrzewo, zeby narysowac je od nowa.
+  // Pomiar 2026-09-04: 42 bledy hydracji na `/studio/?tab=3dprint` i 38 na
+  // `/jewelry/?service=new`, przy zielonym buildzie i zielonym prerenderze.
+  // Dlatego link glboki przyjmujemy DOPIERO PO ZAMONTOWANIU, w efekcie:
+  // pierwsze rysowanie zgadza sie z serwerem, drugie ustawia to, o co prosil
+  // adres. Kosztem jest jedna klatka stanu domyslnego.
+  const [mode, setMode] = useState("simple");
+  const [activeTech, setActiveTech] = useState("3dprint");
   // Odnosnik na druk zywiczny ma otworzyc kalkulator druku OD RAZU na MSLA.
   // Bez tego klient ladowalby na FDM i musial przestawiac sam, czyli dokladnie
   // w miejscu, z ktorego wlasnie przyszedl.
-  const [printTech, setPrintTech] = useState(alias?.printTech || "fdm");
+  const [printTech, setPrintTech] = useState("fdm");
+  // Raz, a nie po kazdym renderze: bez tego przelaczenie kafelka reczne
+  // wracaloby na kafelek z adresu przy najblizszej zmianie stanu.
+  const [linkPrzyjety, setLinkPrzyjety] = useState(false);
+  useEffect(() => {
+    if (!deepLinked || linkPrzyjety) return;
+    setMode("advanced");
+    setActiveTech(alias?.tech || urlTab);
+    if (alias?.printTech) setPrintTech(alias.printTech);
+    setLinkPrzyjety(true);
+  }, [deepLinked, linkPrzyjety, urlTab, alias]);
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
 

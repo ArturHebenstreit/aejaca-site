@@ -54,7 +54,12 @@ const T = {
     fu48Cisza: "Jeżeli sprawa jest nieaktualna, po prostu nie odpisuj. To był ostatni raz, kiedy przypominamy o tej wycenie, nie licząc jednej wiadomości o rabacie.",
 
     // 3. Rabat po siedmiu dniach
-    rabatSubject: (kod) => `Rabat ${kod} na Twoje zlecenie w AEJaCA`,
+    //
+    // Temat nie niesie kodu. Kod na okaziciela widoczny na liscie skrzynki,
+    // w podgladzie na blokadzie ekranu albo w kazdym systemie posrednim po
+    // drodze moglby uzyc kazdy, kto go tam przeczyta, nie tylko odbiorca.
+    // Procent tajemnica nie jest, wiec zostaje w temacie i mowi, o co chodzi.
+    rabatSubject: (procent) => `Rabat ${procent} na Twoje zlecenie w AEJaCA`,
     rabatIntro: "wracamy do Ciebie ostatni raz w sprawie wyceny sprzed tygodnia. Dokładamy do niej rabat, bo wolimy zrobić coś dla Ciebie taniej, niż nie zrobić wcale.",
     rabatKod: "Twój kod",
     rabatIle: (proc) => `${proc} na całe zlecenie`,
@@ -120,7 +125,7 @@ const T = {
     fu48CoMozna: "People usually ask three things: whether a different material would be cheaper, whether we can meet your deadline, and whether we accept your own design. The answer to each is yes, and we confirm the date together with the binding price.",
     fu48Cisza: "If the matter is no longer current, simply do not reply. This is the last reminder about this estimate, apart from one message about a discount.",
 
-    rabatSubject: (kod) => `Discount ${kod} for your AEJaCA project`,
+    rabatSubject: (procent) => `${procent} discount for your AEJaCA project`,
     rabatIntro: "this is our last word about the estimate from a week ago. We are adding a discount to it, because we would rather make something for you for less than not make it at all.",
     rabatKod: "Your code",
     rabatIle: (proc) => `${proc} off the whole order`,
@@ -182,7 +187,7 @@ const T = {
     fu48CoMozna: "Meist werden drei Dinge gefragt: ob ein anderes Material günstiger wäre, ob wir Ihren Termin einhalten können und ob wir einen eigenen Entwurf annehmen. Die Antwort ist jeweils ja, den Termin bestätigen wir zusammen mit dem verbindlichen Preis.",
     fu48Cisza: "Ist die Sache nicht mehr aktuell, antworten Sie einfach nicht. Das war die letzte Erinnerung an diese Kalkulation, abgesehen von einer Nachricht zu einem Rabatt.",
 
-    rabatSubject: (kod) => `Rabatt ${kod} für Ihr AEJaCA-Projekt`,
+    rabatSubject: (procent) => `${procent} Rabatt für Ihr AEJaCA-Projekt`,
     rabatIntro: "wir melden uns ein letztes Mal zur Kalkulation von vor einer Woche. Wir legen einen Rabatt dazu, denn wir fertigen lieber günstiger für Sie als gar nicht.",
     rabatKod: "Ihr Code",
     rabatIle: (proc) => `${proc} auf den gesamten Auftrag`,
@@ -361,7 +366,7 @@ export function buildFollowUp48({ lang = "pl", to }) {
 export function buildRabat7({ lang = "pl", to, kod, procent = "5%", waznyDo }) {
   const l = T[jezyk(lang)];
   return zloz({
-    lang: jezyk(lang), to, subject: l.rabatSubject(kod), naglowek: l.rabatSubject(kod), marketing: true,
+    lang: jezyk(lang), to, subject: l.rabatSubject(procent), naglowek: l.rabatSubject(procent), marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.rabatIntro)}</p>
       ${ramkaKodu(l.rabatKod, kod, l.rabatIle(procent))}

@@ -41,7 +41,7 @@ export { MATERIALS, LENSES, MARK_TYPES, AREAS, calculate };
 
 
 const TECH_LABEL = { pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" };
-const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stückzahl" };
 
 /** Opis uslugi wspolny ze sklepem: stad biora sie pytania i stan poczatkowy. */
 const USLUGA = getService("laser_fiber");

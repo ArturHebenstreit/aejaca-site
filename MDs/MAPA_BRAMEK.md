@@ -16,7 +16,7 @@ albo przepuszcza, albo zatrzymuje wdrozenie.
 | # | Skrypt | Czego pilnuje | Dlaczego powstal |
 |---|---|---|---|
 | 1 | `scripts/sync-pricing.mjs` | SYNC PRICING CORE -> chat-api/pricing/ | Railway buduje chat-api z katalogu chat-api jako root, wiec backend nie widzi src/. Zamiast duplikowac formuly, kopiujemy tu rdzen z src/pricing i src/data/resins.js, a `--check` pilnuje, zeby kopie nie odjechaly od oryginalu. |
-| 2 | `scripts/test-precious-metal-casting.mjs` | **brak naglowka** | KOLBA JEST JEDYNYM ZRODLEM ROZMIARU. Limit modelu ma sie z niej liczyc, a nie stac obok niej wpisany z reki: przy poprzedniej wersji te dwie liczby zyly osobno i rozjechaly sie po pierwszej zmianie sprzetu. |
+| 2 | `scripts/test-precious-metal-casting.mjs` | ODLEW Z METALI SZLACHETNYCH: ROZMIAR, CENA I JEZYK ZGADZAJA SIE Z KOLBA | Limit modelu ma sie liczyc wylacznie z wymiarow kolby odlewniczej, a nie stac obok niej jako druga liczba wpisana z reki: poprzednia wersja trzymala je osobno i rozjechaly sie po pierwszej zmianie sprzetu. |
 | 3 | `scripts/test-binding-basis.mjs` | KWOTA WIAZACA WYMAGA PODSTAWY, KTORA DA SIE ZMIERZYC | Awaria, ktora ten test zamyka, byla cicha i kosztowna po naszej stronie. |
 | 4 | `scripts/test-offer-payment.mjs` | ZAPLATA ZA OFERTE: PIENIADZE, KOD RABATOWY I TRANSAKCJA | Ta sciezka jest jedynym miejscem w serwisie, w ktorym klient placi za kwote ustalona przez czlowieka, a nie policzona przez silnik. |
 | 5 | `scripts/check-undefined-calls.mjs` | KONTROLA WYWOLAN NIEZADEKLAROWANYCH FUNKCJI | Powod powstania: brakujacy import w chat-api/server.js przeszedl przez `node --check`, bo skladnia byla poprawna, i ujawnil sie dopiero jako ReferenceError przy zamowieniu klienta, na produkcji. |
@@ -44,12 +44,12 @@ albo przepuszcza, albo zatrzymuje wdrozenie.
 | 27 | `admin/check-styles.mjs` | KONTROLA ARKUSZA PANELU | Panel przestal ciagnac Tailwind z cudzego serwera i buduje arkusz u siebie (`npm run build:css`). |
 | 28 | `admin/check-views.mjs` | KONTROLA SZABLONOW PANELU | Szablon panelu nie przechodzi przez zaden build: EJS kompiluje sie dopiero przy zadaniu. |
 | 29 | `scripts/check-shop-images.mjs` | KONTROLA ZDJEC PRODUKTOW | Zdjecia produktow leza w repozytorium, a baza trzyma do nich sciezki. |
-| 30 | `scripts/test-payment-groups.mjs` | **brak naglowka** | Podzial kanalow platnosci. Pilnowana regula jest jedna: BLIK stoi na wierzchu, a banki schodza pod zwijany wiersz. |
-| 31 | `scripts/test-customer-fields.mjs` | **brak naglowka** | Kontrola danych klienta. Ta sama funkcja pilnuje formularza i zamowienia na serwerze, wiec bledny przypadek tutaj to bledna paczka w realu. |
-| 32 | `scripts/test-price-history.mjs` | **brak naglowka** | Najnizsza cena z 30 dni. Liczba pokazywana klientowi jako fakt, wiec test pilnuje przede wszystkim tego, KIEDY jej NIE pokazywac: informacja o obnizce przy cenie, ktora nie zostala obnizona, wprowadza w blad. |
-| 33 | `scripts/test-backup-n8n.mjs` | **brak naglowka** | Kopia przeplywow n8n. Dwie rzeczy moga tu zawiesc po cichu i obie sa grozne: wpisanie sekretu do repozytorium oraz kopia, ktora przy kazdym uruchomieniu wyglada jak zmiana, przez co nikt jej nie oglada. |
-| 34 | `scripts/test-mesh-formats.mjs` | **brak naglowka** | Ten sam szescian 20x10x5 mm zapisany jako STL, OBJ i 3MF musi dac identyczna objetosc, pole i gabaryty. |
-| 35 | `scripts/test-printability.mjs` | **brak naglowka** | Analiza drukowalnosci: topologia, gabaryty, grubosc scianek, nawisy. |
+| 30 | `scripts/test-payment-groups.mjs` | PODZIAL KANALOW PLATNOSCI: BLIK NA WIERZCHU, BANKI POD ZWIJANYM WIERSZEM | Pilnowana regula jest jedna: BLIK, Google Pay i karta stoja zawsze na wierzchu niezaleznie od kolejnosci, w jakiej przyjda z bramki platnosci, a banki spoldzielcze i pozostale schodza pod zwijany wiersz z wyszukiwarka dzialajaca bez polskich znakow. |
+| 31 | `scripts/test-customer-fields.mjs` | KONTROLA DANYCH KLIENTA: E-MAIL, IMIE I NAZWISKO, TELEFON | Ta sama funkcja pilnuje formularza w przegladarce i zamowienia na serwerze, wiec bledny przypadek tutaj to bledna paczka w realu: adres, pod ktory nikt nie odbierze, albo numer, na ktory nie da sie zadzwonic. |
+| 32 | `scripts/test-price-history.mjs` | NAJNIZSZA CENA Z 30 DNI: KIEDY POKAZUJEMY OBNIZKE, A KIEDY MILCZYMY | Liczba pokazywana klientowi jako fakt (wymog dyrektywy Omnibus o informowaniu o najnizszej cenie z ostatnich 30 dni), wiec test pilnuje przede wszystkim tego, KIEDY jej NIE pokazywac: informacja o obnizce przy cenie, ktora nie zostala obnizona wzgledem tego okna, wprowadzalaby klienta w blad i bylaby niezgodna z prawem. |
+| 33 | `scripts/test-backup-n8n.mjs` | KOPIA PRZEPLYWOW N8N: BEZ SEKRETOW W REPOZYTORIUM, BEZ SZUMU W DIFFIE | Dwie rzeczy moga tu zawiesc po cichu i obie sa grozne: wpisanie sekretu (klucza API, hasla do bazy) do repozytorium przez kopie przeplywu, oraz kopia, ktora przy kazdym uruchomieniu wyglada jak zmiana mimo braku zmiany tresci, przez co nikt jej juz nie oglada w diffie. |
+| 34 | `scripts/test-mesh-formats.mjs` | FORMATY SIATKI: TEN SAM SZESCIAN, TA SAMA OBJETOSC, NIEZALEZNIE OD PLIKU | Ten sam szescian 20x10x5 mm zapisany jako STL, OBJ, STEP i 3MF musi dac identyczna objetosc, pole i gabaryty. |
+| 35 | `scripts/test-printability.mjs` | DRUKOWALNOSC: BLOKADA TAM, GDZIE DRUK NAPRAWDE ZAWIEDZIE, NIE WSZEDZIE | Analiza topologii, gabarytow, grubosci scianek i nawisow. |
 | 36 | `scripts/test-print-consent.mjs` | KOLEJNOSC: NAJPIERW NAPRAWA, POTEM POKWITOWANIE | Bramka zaczynala od alarmu i zadania podpisu. |
 | 37 | `scripts/test-saved-quote.mjs` | ZAPISANA WYCENA: CO SIE PRZELICZA, A CO ZOSTAJE | Obietnica zlozona klientowi brzmi: robocizna jest wiazaca przez caly okres waznosci, a kruszec liczy sie z dnia zamowienia. |
 | 38 | `scripts/test-order-seam.mjs` | SZEW MIEDZY KOSZYKIEM A ZAMOWIENIEM | 2026-08-16 przyszlo oplacone BLIKiem zlecenie na znakowanie laserem, w ktorym byl sam plik i ani jednego zdania o tym, co z nim zrobic. |
@@ -103,24 +103,8 @@ albo przepuszcza, albo zatrzymuje wdrozenie.
 | 86 | `scripts/build-sitemap.mjs` | MAPA WITRYNY DLA TRZECH JEZYKOW | Od 27 sierpnia 2026 kazda strona stoi pod trzema adresami: polskim golym, angielskim pod `/en/` i niemieckim pod `/de/`. Mapa witryny musi wymienic wszystkie trzy i przy kazdym powiedziec, gdzie sa pozostale dwa, inaczej wyszukiwarka potraktuje je jak trzy osobne strony o tej samej tresci. |
 | 87 | `scripts/mapa-bramek.mjs` | SPIS BRAMEK BUILDU, PISANY PRZEZ BRAMKI | `npm run build` uruchamia kilkadziesiat sprawdzianow, zanim cokolwiek zbuduje. |
 | 88 | `scripts/copy-occt-wasm.mjs` | JADRO CAD DLA PRZEGLADARKI | occt-import-js sklada sie z modulu JS i pliku .wasm, ktory ten modul sciaga w czasie dzialania. |
-| 89 | `scripts/prerender.mjs` | **brak naglowka** | SZABLONEM JEST WYNIK `vite build`, A NIE POPRZEDNI WYNIK TEGO SKRYPTU. `dist/index.html` sluzy tu za szablon i jest zarazem pierwszym plikiem, ktory ten skrypt nadpisuje. |
+| 89 | `scripts/prerender.mjs` | PRERENDER: KAZDA TRASA, TRZY JEZYKI, HTML GOTOWY BEZ PRZEGLADARKI KLIENTA | Renderuje kazda strone serwisu do statycznego HTML, po polsku pod golym adresem, po angielsku pod `/en/`, po niemiecku pod `/de/`. Lista tras pochodzi z jednego zrodla (`src/routes.js`), tego samego, ktore rysuje serwis w przegladarce: wczesniej stala tu trzecia, recznie pisana kopia, pilnowana osobnym skryptem porownujacym, a teraz brak strony w prerenderze jest po prostu brakiem trasy w calym serwisie. |
 
-## Bramki bez naglowka (8)
-
-Konwencja projektu mowi, ze kazda bramka niesie u gory ramke z tytulem i akapit
-o tym, co poszlo zle. Ponizsze go nie maja, wiec ich powodu nie da sie
-odczytac inaczej niz czytajac caly kod. Kto bedzie przy nich pracowal, niech
-dopisze naglowek: regula, ktorej powodu nikt nie pamieta, zostaje przy pierwszej
-okazji wylaczona jako uciazliwa.
-
-- `scripts/test-precious-metal-casting.mjs`
-- `scripts/test-payment-groups.mjs`
-- `scripts/test-customer-fields.mjs`
-- `scripts/test-price-history.mjs`
-- `scripts/test-backup-n8n.mjs`
-- `scripts/test-mesh-formats.mjs`
-- `scripts/test-printability.mjs`
-- `scripts/prerender.mjs`
 
 
 ## Bramki spoza tego lancucha

@@ -1,5 +1,18 @@
-// Kontrola danych klienta. Ta sama funkcja pilnuje formularza i zamowienia
-// na serwerze, wiec bledny przypadek tutaj to bledna paczka w realu.
+#!/usr/bin/env node
+// ============================================================
+// KONTROLA DANYCH KLIENTA: E-MAIL, IMIE I NAZWISKO, TELEFON
+// ============================================================
+// Ta sama funkcja pilnuje formularza w przegladarce i zamowienia na
+// serwerze, wiec bledny przypadek tutaj to bledna paczka w realu: adres,
+// pod ktory nikt nie odbierze, albo numer, na ktory nie da sie zadzwonic.
+// Test przechowuje takze przypadki, ktore kiedys mylnie przechodzily
+// walidacje ("wweee" jako adres, numer z literami na koncu), zeby regres nie
+// wrocil po nastepnej zmianie wyrazenia regularnego.
+//
+// Czy istnieje konkretne zgloszenie, ktore to wywolalo, nie zostalo zapisane;
+// z kodu wiadomo tylko, co sprawdzian pilnuje.
+//
+// Uruchamiany w `npm run build`.
 
 import assert from "node:assert/strict";
 import {

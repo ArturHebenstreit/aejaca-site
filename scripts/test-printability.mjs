@@ -1,13 +1,23 @@
-// Analiza drukowalnosci: topologia, gabaryty, grubosc scianek, nawisy.
-//
-// Testujemy na siatkach zbudowanych recznie, o znanym z gory wyniku, bo bledy
-// w geometrii sa ciche. Zle policzona grubosc nie wywala niczego, tylko mowi
-// klientowi "wydrukuje sie", a klient dostaje odpad. Zly znak normalnej daje
-// model, ktory na podgladzie wyglada dobrze i drukuje sie jako pelna kostka.
+#!/usr/bin/env node
+// ============================================================
+// DRUKOWALNOSC: BLOKADA TAM, GDZIE DRUK NAPRAWDE ZAWIEDZIE, NIE WSZEDZIE
+// ============================================================
+// Analiza topologii, gabarytow, grubosci scianek i nawisow. Testujemy na
+// siatkach zbudowanych recznie, o znanym z gory wyniku, bo bledy w geometrii
+// sa ciche. Zle policzona grubosc nie wywala niczego, tylko mowi klientowi
+// "wydrukuje sie", a klient dostaje odpad. Zly znak normalnej daje model,
+// ktory na podgladzie wyglada dobrze i drukuje sie jako pelna kostka.
 //
 // Najwazniejszy przypadek to plyta 0,3 mm: ta sama geometria ma byc BLOKADA
-// przy dyszy 0,4 i tylko ostrzezeniem przy 0,2. Cale narzedzie istnieje po to,
-// zeby ta roznica byla widoczna przed drukiem, a nie po nim.
+// przy dyszy 0,4 i tylko ostrzezeniem przy 0,2. Druga polowa pliku pilnuje
+// odwrotnego bledu, ktory zdarzyl sie naprawde: pierwsza wersja opierala
+// werdykt o grubosci na percentylu p1, ktory reaguje juz wtedy, gdy jeden
+// procent powierzchni jest cienki, wiec kazdy model z napisem, fazka albo
+// faktura dostawal blokade tak samo jak plyta cienka w calosci. Narzedzie,
+// ktore odrzuca poprawne modele, szkodzi bardziej niz jego brak, bo klient
+// przestaje mu wierzyc i klika dalej bez czytania.
+//
+// Uruchamiany w `npm run build`.
 
 import assert from "node:assert/strict";
 import {

@@ -1,6 +1,19 @@
-// Najnizsza cena z 30 dni. Liczba pokazywana klientowi jako fakt, wiec test
-// pilnuje przede wszystkim tego, KIEDY jej NIE pokazywac: informacja o obnizce
-// przy cenie, ktora nie zostala obnizona, wprowadza w blad.
+#!/usr/bin/env node
+// ============================================================
+// NAJNIZSZA CENA Z 30 DNI: KIEDY POKAZUJEMY OBNIZKE, A KIEDY MILCZYMY
+// ============================================================
+// Liczba pokazywana klientowi jako fakt (wymog dyrektywy Omnibus o
+// informowaniu o najnizszej cenie z ostatnich 30 dni), wiec test pilnuje
+// przede wszystkim tego, KIEDY jej NIE pokazywac: informacja o obnizce przy
+// cenie, ktora nie zostala obnizona wzgledem tego okna, wprowadzalaby klienta
+// w blad i bylaby niezgodna z prawem. Osobno pilnowany jest przypadek
+// krotkiej historii sprzedazy (ponizej 30 dni), gdzie liczba zostaje ta sama,
+// ale zdanie przy niej musi to zastrzec.
+//
+// Czy zdarzyl sie konkretny przypadek pokazania obnizki bez pokrycia, nie
+// zostalo zapisane; z kodu wiadomo tylko, co sprawdzian pilnuje.
+//
+// Uruchamiany w `npm run build`.
 
 import assert from "node:assert/strict";
 import { reductionNotice, WINDOW_DAYS } from "../src/shop/priceHistory.js";

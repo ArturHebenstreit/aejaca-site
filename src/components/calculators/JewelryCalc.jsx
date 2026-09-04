@@ -129,7 +129,7 @@ function ChainSilhouette({ lengthMm, gender = "women" }) {
 
 
 const TECH_LABEL = { pl: "Biżuteria AEJaCA", en: "AEJaCA Jewelry", de: "AEJaCA Schmuck" };
-const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stückzahl" };
 
 const RATE_NOTE = {
   pl: "Kursy na podstawie danych rynkowych - szczegóły w stopce strony",
@@ -195,9 +195,18 @@ export default function JewelryCalc({ lang = "pl" }) {
   // bo przedzial obok konkretnej kwoty tylko ja podwaza.
   const [bindingGrosze, setBindingGrosze] = useState(null);
 
-  const [serviceId, setServiceId] = useState(
-    SERVICE_TYPES.some((x) => x.id === urlService) ? urlService : "new"
-  );
+  // ADRES Z PARAMETREM NIE MOZE ZMIENIC PIERWSZEGO RYSOWANIA. Strona jest
+  // prerenderowana bez zapytania: serwer nie widzi `?tab=`, `?service=` ani
+  // `?mode=`, wiec rysuje stan domyslny. Ustawienie innego stanu w `useState`
+  // znaczylo, ze klient rysuje co innego niz przyszlo w HTML-u, React uznaje
+  // to za rozjazd i wyrzuca CALE poddrzewo, zeby narysowac je od nowa.
+  // Pomiar 2026-09-04: 42 bledy hydracji na `/studio/?tab=3dprint` i 38 na
+  // `/jewelry/?service=new`, przy zielonym buildzie i zielonym prerenderze.
+  // Dlatego link glboki przyjmujemy DOPIERO PO ZAMONTOWANIU, w efekcie:
+  // pierwsze rysowanie zgadza sie z serwerem, drugie ustawia to, o co prosil
+  // adres. Kosztem jest jedna klatka stanu domyslnego.
+  const [serviceId, setServiceId] = useState("new");
+  const [linkPrzyjety, setLinkPrzyjety] = useState(false);
   // Liczba sztuk rzadzi, prog wynika z niej (tierForQty). Bizuteria ma
   // wlasna liste progow QTY_TIERS ("1", "2-5", "6-10", "10+"), nie
   // ogolna QUANTITY_TIERS studia, wiec kazde wywolanie dostaje ja wprost.
@@ -209,10 +218,16 @@ export default function JewelryCalc({ lang = "pl" }) {
   // kasowalo tego, co klient ustawil w poprzedniej.
   // JEWELRY_TYPES jest pogrupowane po linii (woman/men/pet), a link ze sklepu
   // podaje sam rodzaj, wiec sprawdzamy go w calej puli.
-  const [paramsNew, setParamsNew] = useState(() => ({
-    ...USLUGI.new.defaults,
-    ...(Object.values(JEWELRY_TYPES).flat().some((x) => x.id === urlType) ? { typeId: urlType } : {}),
-  }));
+  const [paramsNew, setParamsNew] = useState(() => ({ ...USLUGI.new.defaults }));
+  useEffect(() => {
+    if (linkPrzyjety) return;
+    if (!urlService && !urlType) return;
+    if (SERVICE_TYPES.some((x) => x.id === urlService)) setServiceId(urlService);
+    if (Object.values(JEWELRY_TYPES).flat().some((x) => x.id === urlType)) {
+      setParamsNew((p) => ({ ...p, typeId: urlType }));
+    }
+    setLinkPrzyjety(true);
+  }, [linkPrzyjety, urlService, urlType]);
   const [paramsReno, setParamsReno] = useState(() => ({ ...USLUGI.renovation.defaults }));
   const [paramsRepair, setParamsRepair] = useState(() => ({ ...USLUGI.repair.defaults }));
   const zestawy = { new: paramsNew, renovation: paramsReno, repair: paramsRepair };

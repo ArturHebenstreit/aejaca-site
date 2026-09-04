@@ -1,6 +1,18 @@
-// Podzial kanalow platnosci. Pilnowana regula jest jedna: BLIK stoi na wierzchu,
-// a banki schodza pod zwijany wiersz. Lista kanalow pochodzi z bramki i zmienia
-// sie sama, wiec test opisuje regule, nie konkretny zestaw bankow.
+#!/usr/bin/env node
+// ============================================================
+// PODZIAL KANALOW PLATNOSCI: BLIK NA WIERZCHU, BANKI POD ZWIJANYM WIERSZEM
+// ============================================================
+// Pilnowana regula jest jedna: BLIK, Google Pay i karta stoja zawsze na
+// wierzchu niezaleznie od kolejnosci, w jakiej przyjda z bramki platnosci,
+// a banki spoldzielcze i pozostale schodza pod zwijany wiersz z wyszukiwarka
+// dzialajaca bez polskich znakow. Lista kanalow pochodzi z bramki i zmienia
+// sie sama, wiec test opisuje regule porzadkowania, a nie konkretny zestaw
+// bankow, ktory moglby sie zmienic w kazdej chwili.
+//
+// Czy jest ktos, kto tego wprost naruszyl, nie zostalo zapisane; sprawdzian
+// pilnuje reguly z definicji.
+//
+// Uruchamiany w `npm run build`.
 
 import assert from "node:assert/strict";
 import { splitMethods, filterBanks, promotionRank } from "../src/components/shop/paymentGroups.js";
