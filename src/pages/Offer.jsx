@@ -1194,8 +1194,8 @@ export default function Offer() {
                              onChange={(e) => setConsents((c) => ({ ...c, terms: e.target.checked }))}
                              className="mt-0.5 accent-amber-400" />
                       <span className="text-neutral-400 text-xs leading-relaxed">
-                        {u.terms} (<Link to="/terms/" className="text-amber-400 hover:text-amber-300">/terms</Link>,{" "}
-                        <Link to="/privacy/" className="text-amber-400 hover:text-amber-300">/privacy</Link>)
+                        {u.terms} (<Link to="/terms/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">/terms</Link>,{" "}
+                        <Link to="/privacy/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">/privacy</Link>)
                       </span>
                     </label>
                     <label className="flex items-start gap-3 cursor-pointer">
@@ -1236,13 +1236,13 @@ export default function Offer() {
                         rozmysli. */}
                     <p className="text-xs text-neutral-500 leading-relaxed">
                       {u.beforeYouPay}:{" "}
-                      <Link to="/payments/" className="text-amber-400 hover:text-amber-300">{u.linkProcess}</Link>
+                      <Link to="/payments/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{u.linkProcess}</Link>
                       <span className="text-neutral-700"> &middot; </span>
-                      <Link to="/order-process/" className="text-amber-400 hover:text-amber-300">{u.linkOrderProcess}</Link>
+                      <Link to="/order-process/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{u.linkOrderProcess}</Link>
                       <span className="text-neutral-700"> &middot; </span>
-                      <Link to="/warranty/" className="text-amber-400 hover:text-amber-300">{u.linkWarranty}</Link>
+                      <Link to="/warranty/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{u.linkWarranty}</Link>
                       <span className="text-neutral-700"> &middot; </span>
-                      <Link to="/terms/" className="text-amber-400 hover:text-amber-300">{u.linkTerms}</Link>
+                      <Link to="/terms/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{u.linkTerms}</Link>
                     </p>
                   </section>
                 </>

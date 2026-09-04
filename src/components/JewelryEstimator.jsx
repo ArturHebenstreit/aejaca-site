@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -51,7 +51,23 @@ export default function JewelryEstimator() {
   // zaawansowany od razu, zamiast kazac mu przelaczac go recznie.
   const [searchParams] = useSearchParams();
   const deepLinked = ["service", "type", "mode"].some((k) => searchParams.get(k));
-  const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
+  // ADRES Z PARAMETREM NIE MOZE ZMIENIC PIERWSZEGO RYSOWANIA. Strona jest
+  // prerenderowana bez zapytania: serwer nie widzi `?tab=`, `?service=` ani
+  // `?mode=`, wiec rysuje stan domyslny. Ustawienie innego stanu w `useState`
+  // znaczylo, ze klient rysuje co innego niz przyszlo w HTML-u, React uznaje
+  // to za rozjazd i wyrzuca CALE poddrzewo, zeby narysowac je od nowa.
+  // Pomiar 2026-09-04: 42 bledy hydracji na `/studio/?tab=3dprint` i 38 na
+  // `/jewelry/?service=new`, przy zielonym buildzie i zielonym prerenderze.
+  // Dlatego link glboki przyjmujemy DOPIERO PO ZAMONTOWANIU, w efekcie:
+  // pierwsze rysowanie zgadza sie z serwerem, drugie ustawia to, o co prosil
+  // adres. Kosztem jest jedna klatka stanu domyslnego.
+  const [mode, setMode] = useState("simple");
+  const [linkPrzyjety, setLinkPrzyjety] = useState(false);
+  useEffect(() => {
+    if (!deepLinked || linkPrzyjety) return;
+    setMode("advanced");
+    setLinkPrzyjety(true);
+  }, [deepLinked, linkPrzyjety]);
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
 

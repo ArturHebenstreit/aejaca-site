@@ -28,7 +28,7 @@ const LABELS = {
 };
 
 export default function BlogIndex() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
   const [searchParams] = useSearchParams();
   const categoryParam = ["jewelry", "studio"].includes(searchParams.get("category"))
@@ -85,6 +85,11 @@ export default function BlogIndex() {
               </div>
             )}
 
+            {/* NAGLOWEK LISTY JEST NIEWIDOCZNY, ALE ISTNIEJE. Po `h1` strony
+                szly od razu `h3` kart, wiec spis tresci czytnika ekranu mial
+                dziure na drugim poziomie. axe: heading-order, /blog/, pomiar
+                2026-09-04. Napis idzie ze slownika, bo dociera do czlowieka. */}
+            <h2 className="sr-only">{t.a11y.listaWpisow}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post, i) => (
                 <div key={post.slug} ref={getCardRef(i)} className="reveal-scale">

@@ -1,3 +1,23 @@
+#!/usr/bin/env node
+// ============================================================
+// ODLEW Z METALI SZLACHETNYCH: ROZMIAR, CENA I JEZYK ZGADZAJA SIE Z KOLBA
+// ============================================================
+// Limit modelu ma sie liczyc wylacznie z wymiarow kolby odlewniczej, a nie
+// stac obok niej jako druga liczba wpisana z reki: poprzednia wersja trzymala
+// je osobno i rozjechaly sie po pierwszej zmianie sprzetu. Test pilnuje
+// takze, ze skala maksymalna liczy sie z NAJCIASNIEJSZEJ osi po obrocie: do
+// 3 wrzesnia 2026 zakladala z gory, ze wiaze glebokosc, co bylo prawda tylko
+// przy plytszej kolbie i po poglebieniu dawalo zawyzony limit.
+//
+// Druga rodzina przypadkow to jezyk rozpiski cenowej: przygotowanie wzorca
+// i wykonczenie mialy walute "PLN" wpisana na sztywno, wiec klient czytajacy
+// po angielsku widzial euro w kruszcu i zlotowki dwa wiersze nizej, bez
+// zadnego bledu w konsoli. Dolozono tez proge ilosciowe: kalkulator odlewu
+// i kalkulator studyjny maja rozne listy progow, a pomylenie ich daje `null`
+// zamiast ceny, po cichu.
+//
+// Uruchamiany w `npm run build`.
+
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {

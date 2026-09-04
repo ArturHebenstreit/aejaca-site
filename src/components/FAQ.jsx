@@ -70,7 +70,6 @@ export default function FAQ({ data, accent = "amber", id }) {
                 </button>
                 <div
                   id={`faq-panel-${i}`}
-                  role="region"
                   aria-labelledby={`faq-q-${i}`}
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"

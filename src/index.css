@@ -286,15 +286,35 @@ body {
    Klasa `text-white` jest w trybie jasnym nadpisana na kolor tekstu strony,
    wiec napis robil sie czarny na zielonym. Kolory marki nie podlegaja motywowi
    serwisu, bo to cudzy znak, a nie nasz element interfejsu. */
+/* ZIELEN TRUSTPILOTA MA DWIE ROLE I TYLKO JEDNA Z NICH JEST TLEM POD NAPISEM.
+   Markowe #00b67a pod biala etykieta daje 2,63:1, czyli mniej niz polowe tego,
+   czego wymaga WCAG 1.4.3 (4,5:1), i pomiar 2026-09-03 zliczyl to na dwunastu
+   wezlach. Jasniejszej bieli nie ma, wiec schodzi tlo: #00855a to ta sama
+   zielen o mniejszej jasnosci, 4,66:1, i dalej rozpoznawalna jako Trustpilot.
+   Znak sam w sobie (gwiazdki, ozdobnik nad naglowkiem) zostaje w kolorze
+   markowym, bo tam nic nie stoi napisane na wierzchu. Napis zielenia na
+   kremowej kartce to trzecia sprawa: #00b67a daje na niej 2,49:1, wiec motyw
+   jasny ma wlasny, ciemniejszy stopien. */
+:root {
+  --tp-marka:    #00b67a;   /* gwiazdki i ozdobniki: grafika, nie tlo pod tekstem */
+  --tp-przycisk: #00855a;   /* tlo pod bialym napisem, 4,66:1 */
+  --tp-przycisk-najazd: #00714c;
+  --tp-napis:    #00b67a;   /* zielen jako TEKST, na ciemnym tle */
+}
+[data-theme="light"] {
+  --tp-napis: #00674a;      /* 6,47:1 na kremie, gdzie markowa zielen ma 2,49:1 */
+}
 .cta-trustpilot,
 [data-theme="light"] .cta-trustpilot {
-  background-color: #00b67a;
+  background-color: var(--tp-przycisk);
   color: #fff;
 }
 .cta-trustpilot:hover,
 [data-theme="light"] .cta-trustpilot:hover {
-  background-color: #00a06b;
+  background-color: var(--tp-przycisk-najazd);
 }
+/* Zielen jako kolor napisu, a nie jako tlo. */
+.tp-napis { color: var(--tp-napis); }
 
 /* ─── Focus visible styles (accessibility) ─── */
 :focus-visible {
@@ -718,36 +738,129 @@ a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) {
 [data-theme="light"] button:has(.from-black\/95):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.60) saturate(1.12) !important; }
 [data-theme="light"] a:has(.from-black\/90.via-black\/60):hover img:not(.tile-dim) { filter: contrast(0.88) brightness(1.56) saturate(1.12) !important; }
 
-/* ── Kafelek wybrany: DODAJEMY SWIATLO, nie mnozymy jasnosci ───────────
+/* ── STANY KAFELKA: JEDNO MIEJSCE NA CALY SERWIS ───────────────────────
+   Zgloszenie wlasciciela wracalo szesc razy: "wybrany kafelek i ten pod
+   myszka sa ciemne". Poprzednie poprawki celowaly w pojedyncze rodziny
+   kafelkow, a rodzin jest kilkanascie: `Chips`, `MaterialCards`, `HeroCards`,
+   `TileGroup`, `Seg`, licznik sztuk, wybor wielokrotny, karty opisowe,
+   konfigurator obraczki, ustawienia wydruku. Kazda malowala stan wlasnym
+   zestawem klas, wiec poprawka jednej zostawiala pozostale bez zmian.
+
+   Dlatego stan kafelka opisujemy TUTAJ, po ksztalcie klas, a nie w kazdym
+   komponencie z osobna. Zaznaczenie poznajemy po parze "pelna obwodka
+   akcentu + tlo akcentu" na przycisku; ramka informacyjna ma obwodke ulamkowa
+   (`border-amber-400/30`) i jest `div`-em, wiec pod ta regule nie wpada.
+
+   POMIAR, KTORY TO WYWOLAL (2026-09-04, prawdziwe piksele, nie deklaracje):
+   - motyw CIEMNY: kafelek wybrany 0,0146 jasnosci wzglednej, czyli mniej niz
+     dwa razy tyle co tlo strony; najazd myszka zmienial tlo o 0,0000, bo
+     zmieniala sie wylacznie obwodka.
+   - motyw JASNY: kafelek wybrany 0,777 przy wygaszonych 0,938, czyli
+     zaznaczenie bylo CIEMNIEJSZE od reszty siatki, a najazd schodzil jeszcze
+     nizej (roznice ujemne, do -0,0067).
+
+   Roznica idzie teraz dwoma kanalami naraz: bielą (podnosi kafelek z czerni)
+   i kolorem akcentu (mowi, ktory to dzial). W motywie jasnym bieli dolozyc
+   sie nie da, bo kafelek juz jest prawie bialy, wiec zaznaczenie niesie jasny
+   odcien akcentu zamiast ciemnego zalania: pastel o tej samej jasnosci co
+   sasiedzi, a nie brazowa plama. */
+
+/* Kafelek wygaszony: najazd DODAJE swiatla, zamiast ruszac sama obwodke. */
+button[class*="bg-white\/\["]:not(:disabled):hover {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+}
+[data-theme="light"] button[class*="bg-white\/\["]:not(:disabled):hover {
+  background-color: #ffffff !important;
+}
+
+/* Kafelek WYBRANY, motyw ciemny: warstwa bieli pod warstwa akcentu.
+   Sam akcent nie wystarcza, bo blekit ma niska jasnosc wlasna: 26 procent
+   `blue-400` na czerni daje 0,033, czyli tyle co zwykly najazd. Biel pod
+   spodem podnosi punkt wyjscia, a kolor zostaje czytelny. */
+button.border-amber-400[class*="bg-amber-400\/"],
+button.border-amber-400\/50[class*="bg-amber-400\/"],
+button.border-amber-400\/55[class*="bg-amber-400\/"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  background-image: linear-gradient(rgba(251, 191, 36, 0.26), rgba(251, 191, 36, 0.26)) !important;
+}
+button.border-blue-400[class*="bg-blue-400\/"],
+button.border-blue-400\/50[class*="bg-blue-400\/"],
+button.border-blue-400\/55[class*="bg-blue-400\/"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  background-image: linear-gradient(rgba(96, 165, 250, 0.26), rgba(96, 165, 250, 0.26)) !important;
+}
+/* Najazd na wybrany ma dac odpowiedz, a nie udawac, ze przycisk jest martwy. */
+button.border-amber-400[class*="bg-amber-400\/"]:hover,
+button.border-amber-400\/50[class*="bg-amber-400\/"]:hover,
+button.border-amber-400\/55[class*="bg-amber-400\/"]:hover,
+button.border-blue-400[class*="bg-blue-400\/"]:hover,
+button.border-blue-400\/50[class*="bg-blue-400\/"]:hover,
+button.border-blue-400\/55[class*="bg-blue-400\/"]:hover {
+  background-color: rgba(255, 255, 255, 0.19) !important;
+}
+
+/* Kafelek WYBRANY, motyw jasny: pastel akcentu na bieli.
+   Poprzednia regula lala tu `rgba(180,83,9,0.08)`, czyli rozwodniony braz,
+   i to ona odpowiadala za pomiar 0,777 przy sasiadach 0,938. Jasny odcien
+   trzyma sie tej samej jasnosci co reszta siatki, a zaznaczenie niesie
+   obwodka `#b45309`, pierscien i kolor napisu. */
+[data-theme="light"] button.border-amber-400[class*="bg-amber-400\/"],
+[data-theme="light"] button.border-amber-400\/50[class*="bg-amber-400\/"],
+[data-theme="light"] button.border-amber-400\/55[class*="bg-amber-400\/"] {
+  background-color: #ffffff !important;
+  background-image: linear-gradient(rgba(254, 243, 199, 0.90), rgba(254, 243, 199, 0.90)) !important;
+}
+[data-theme="light"] button.border-blue-400[class*="bg-blue-400\/"],
+[data-theme="light"] button.border-blue-400\/50[class*="bg-blue-400\/"],
+[data-theme="light"] button.border-blue-400\/55[class*="bg-blue-400\/"] {
+  background-color: #ffffff !important;
+  background-image: linear-gradient(rgba(219, 234, 254, 0.80), rgba(219, 234, 254, 0.80)) !important;
+}
+/* NAJAZD W MOTYWIE JASNYM ROZRZEDZA ODCIEN, a nie zageszcza go. Pierwsza
+   wersja tej poprawki siegala po ciemniejszy stopien palety (`amber-300`,
+   `blue-300`) i pomiar zlapal to od razu: kafelek wybrany schodzil pod myszka
+   z 0,754 na 0,663, czyli robil dokladnie to, na co skarga. Mniej krycia
+   znaczy wiecej bieli spod spodu, wiec najazd JASNIEJE. */
+[data-theme="light"] button.border-amber-400[class*="bg-amber-400\/"]:hover,
+[data-theme="light"] button.border-amber-400\/50[class*="bg-amber-400\/"]:hover,
+[data-theme="light"] button.border-amber-400\/55[class*="bg-amber-400\/"]:hover {
+  background-image: linear-gradient(rgba(254, 243, 199, 0.62), rgba(254, 243, 199, 0.62)) !important;
+}
+[data-theme="light"] button.border-blue-400[class*="bg-blue-400\/"]:hover,
+[data-theme="light"] button.border-blue-400\/50[class*="bg-blue-400\/"]:hover,
+[data-theme="light"] button.border-blue-400\/55[class*="bg-blue-400\/"]:hover {
+  background-image: linear-gradient(rgba(219, 234, 254, 0.55), rgba(219, 234, 254, 0.55)) !important;
+}
+
+/* ── Kafelek ze zdjeciem: DODAJEMY SWIATLO, nie mnozymy jasnosci ───────
    Zdjecia produktowe w kafelkach sa prawie czarne. `brightness()` jest
    mnoznikiem, wiec na czerni nie ma czego mnozyc: pomiar prawdziwych pikseli
    pokazal, ze podniesienie z 1,38 do 3,00 rusza srednia jasnosc kafelka
-   o piec poziomow na 255. Gorzej: kafelek WYBRANY byl przez to CIEMNIEJSZY
-   niz wygaszone (23 wobec 32 w motywie ciemnym, 99 wobec 115 w jasnym), bo
-   wygaszanie idzie przez odbarwienie, a szarosc ma wyzsza srednia niz
-   nasycona czern. Zaznaczenie dzialalo wiec na odwrot, niz mialo.
+   o piec poziomow na 255. `plus-lighter` DODAJE skladowe zamiast je mnozyc,
+   wiec podnosi czern.
 
-   `plus-lighter` DODAJE skladowe zamiast je mnozyc, wiec podnosi czern.
-   Szesc procent bieli podnosi kafelek z 23 na 49, czyli ponad dwukrotnie.
-   Warstwa jest osobnym elementem w kafelku (`tile-lift`), a nie filtrem na
-   zdjeciu, bo ma dzialac takze tam, gdzie zdjecia nie ma. */
+   WARSTWA STOI ZAWSZE, a nie tylko pod kafelkiem wybranym, i to jest sedno
+   poprawki z 2026-09-04. Poprzednio komponent renderowal ja wylacznie przy
+   `active`, wiec regula najazdu nie miala na czym zadzialac: kafelek
+   niewybrany pod myszka zmienial obwodke i nic wiecej, co pomiar pokazal jako
+   roznice 0,0000. Teraz warstwa jest przezroczysta w spoczynku, dostaje
+   swiatlo pod myszka i wiecej swiatla po wyborze. */
 .tile-lift {
-  background: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0);
   mix-blend-mode: plus-lighter;
   pointer-events: none;
+  transition: background 200ms ease;
 }
-/* MOTYW JASNY POTRZEBUJE WIECEJ, NIE MNIEJ, i to jest wynik pomiaru, a nie
-   przeczucia. Wygaszone kafelki dostaja tu mocniejsze rozjasnienie
-   (`--tile-jasnosc: 1.50`), wiec startuja z 115 na 255. Szesc procent bieli
-   dawalo wybranemu 107, czyli dalej mniej niz sasiadom. Osiemnascie procent
-   daje 123 i przewaga jest widoczna. */
-[data-theme="light"] .tile-lift { background: rgba(255, 255, 255, 0.18); }
+button:hover .tile-lift { background: rgba(255, 255, 255, 0.13); }
+.tile-lift-on { background: rgba(255, 255, 255, 0.20); }
+button:hover .tile-lift-on { background: rgba(255, 255, 255, 0.28); }
 
-/* Najazd myszka na kafelek NIEWYBRANY tez ma dodac swiatla, zeby przegladanie
-   oferty nie odbywalo sie po ciemnych miniaturach. Zostaje ponizej wybranego,
-   bo najazd to zapowiedz wyboru, a nie wybor. */
-button:has(.from-black\/95):hover .tile-lift { background: rgba(255, 255, 255, 0.15); }
-[data-theme="light"] button:has(.from-black\/95):hover .tile-lift { background: rgba(255, 255, 255, 0.24); }
+/* MOTYW JASNY POTRZEBUJE WIECEJ, NIE MNIEJ, i to jest wynik pomiaru, a nie
+   przeczucia. Wygaszone kafelki dostaja tu mocniejsze rozjasnienie zdjecia
+   (`--tile-jasnosc: 1.50`), wiec startuja wysoko i wybrany musi je przebic. */
+[data-theme="light"] button:hover .tile-lift { background: rgba(255, 255, 255, 0.18); }
+[data-theme="light"] .tile-lift-on { background: rgba(255, 255, 255, 0.28); }
+[data-theme="light"] button:hover .tile-lift-on { background: rgba(255, 255, 255, 0.36); }
 
 /* ── Napis na zdjeciu: ciemna obwodka, a nie sam cien ──────────────────
    Kafelki kalkulatorow maja pod tekstem fotografie, a fotografia bywa jasna

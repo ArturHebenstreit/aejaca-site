@@ -221,7 +221,9 @@ export default function Navbar() {
           <Link to="/" onClick={(e) => handleNavClick(e, "/")} className="flex items-center gap-3 group">
             {/* Znak marki w wersji 128 px. Pelny plik ma 512 px i 48 kB,
                 a rysuje sie tu na 44, na kazdej stronie serwisu. */}
-            <img src="/brand-sign-128.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
+            {/* ALT PUSTY: nazwa marki stoi obok jako tekst, wiec odnosnik ma juz nazwe,
+                a `alt="AEJaCA"` kazalby czytnikowi przeczytac ja dwa razy. */}
+            <img src="/brand-sign-128.webp" alt="" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
             <span className="font-serif text-xl font-semibold tracking-wide">AEJaCA</span>
           </Link>
 
@@ -260,7 +262,20 @@ export default function Navbar() {
                   {isDropdownOnly ? (
                     <button
                       type="button"
-                      onClick={() => setOpenDropdown(openDropdown === dropKey ? null : dropKey)}
+                      // NA MYSZY KLIKNIECIE OTWIERA, A NIE PRZELACZA. Najechanie
+                      // kursorem juz rozwinelo liste, wiec przelacznik zamykal ja
+                      // w tej samej chwili, w ktorej czlowiek w nia klikal, i nie
+                      // otwierala sie ponownie, dopoki kursor nie wyszedl poza
+                      // element i nie wrocil. Pomiar martwych klikniec, 2026-09-04:
+                      // "klik: Tools & Knowledge nie zmienil niczego na stronie".
+                      // Na ekranie dotykowym najechania nie ma, wiec tam przelacznik
+                      // zostaje, inaczej listy nie dalo by sie zamknac.
+                      onClick={() => {
+                        const bezKursora = typeof window !== "undefined"
+                          && window.matchMedia?.("(hover: none)")?.matches;
+                        setOpenDropdown((biezacy) =>
+                          bezKursora ? (biezacy === dropKey ? null : dropKey) : dropKey);
+                      }}
                       aria-haspopup="true"
                       aria-expanded={openDropdown === dropKey}
                       className={triggerClass}

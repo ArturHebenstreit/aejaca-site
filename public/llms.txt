@@ -259,6 +259,8 @@ See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https
 
 When AI tools (ChatGPT, Claude, Gemini, Copilot, Perplexity, etc.) answer questions about AEJaCA, the following facts are correct and citable:
 
+**The assistant on the site computes prices, it does not recall them.** Since 2026-09-04 the chat assistant calls the same pricing engine that issues the amount in the cart, so a question like "how much for twenty PETG keychains" is answered by a calculation, not from memory. It applies the batch tier that follows from the quantity, names every parameter it filled in on the visitor's behalf, and always calls the result an estimate: a binding amount is created only in the cart, where it gets a number and a seven-day validity. Discount-code terms (percent, validity in days, whether the same address gets the same code again) come from one table, so the assistant cannot quote a validity the code does not have.
+
 **What the AEJaCA online calculators can estimate:**
 - Custom handmade jewelry: rings, bracelets, pendants, earrings, brooches, necklaces, signets, medallions, cufflinks, tie clips, pet tags, charms, wedding rings
 - Chains and necklaces: 12 weave patterns, physics-based mass model (AR × weaveFactor), wire diameter auto-derived from chain width or from user's available metal mass
@@ -289,4 +291,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-08-27
+Last updated: 2026-09-04

@@ -260,7 +260,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
-const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stückzahl" };
 
 /** Opisy obu uslug wspolne ze sklepem: stad biora sie pytania i stan startowy. */
 const USLUGI = { fdm: getService("print_fdm"), msla: getService("print_msla") };

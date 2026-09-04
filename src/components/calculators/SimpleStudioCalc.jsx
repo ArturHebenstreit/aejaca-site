@@ -478,11 +478,17 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
             {hasImg ? (
               <>
                 <div className="absolute inset-0 overflow-hidden bg-black">
-                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={opt.img} alt={label} loading="lazy"
+                  {/* ALT PUSTY, BO NAZWA STOI OBOK. Zdjecie ilustruje wariant, ktorego
+                      nazwa jest wypisana pod nim, wiec czytnik ekranu przeczytalby
+                      "Breloczek Breloczek". axe: image-redundant-alt, 40 wezlow na
+                      osmiu stronach, pomiar 2026-09-04. Obraz jest tu ozdoba
+                      nazwy, a nie osobna informacja. */}
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={opt.img} alt="" loading="lazy"
                     className={`w-full h-full object-cover transition-all duration-500 ${
                       active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                   {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
                 </div>
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">

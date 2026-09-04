@@ -203,3 +203,48 @@ W jednej sesji, trzy razy, moje narzedzie pomiarowe klamalo, a nie kod:
    srodowisku nie ma backendu. **Zeby obejrzec cokolwiek za `price`, postaw
    atrape wyceny i serwer deweloperski**: `dist` sam z siebie nigdy tego nie
    pokaze, i przez chwile bralem to za brak swojej zmiany.
+
+### Szosta skarga na to samo znaczy, ze poprawiam jedna kopie z pieciu
+
+„Kafelek wybrany i ten pod myszka sa ciemne" wrocilo od wlasciciela szesc razy.
+Za kazdym razem poprawka byla prawdziwa. Za kazdym razem trafiala w JEDNA
+rodzine kafelkow, a rodzin jest kilkanascie, bo znacznik kafelka powstawal
+przez kopiowanie: piec plikow wygasza zdjecia, warstwe swiatla mial jeden.
+
+**Skarga, ktora wraca po poprawce, nie jest skarga na te poprawke. Jest skarga
+na to, ze poprawka objela mniej miejsc, niz mysialem.** Zanim dotknesz kodu,
+policz KOPIE: `grep -rl` po klasie, ktora odpowiada za objaw. Jesli wynik ma
+wiecej niz jeden plik, poprawka w komponencie jest z gory za waska i regula
+nalezy do arkusza stylow albo do bramki.
+
+Dwie rzeczy, ktore ten pomiar pokazal, a czytanie kodu nie:
+
+1. Warstwa `tile-lift` byla renderowana warunkowo, `{active && ...}`. Regula
+   `button:hover .tile-lift` wygladala poprawnie i nie mogla zadzialac nigdy,
+   bo pod niewybranym kafelkiem tego elementu w ogole nie bylo. **Regula CSS
+   celujaca w element renderowany warunkowo jest martwa i wyglada na zywa.**
+2. W motywie jasnym zaznaczenie bylo CIEMNIEJSZE od reszty siatki (0,777 wobec
+   0,938). Paleta ma dwa konce i `amber-700` rozni sie w kodzie od `amber-100`
+   jedna cyfra. **Odcien sprawdza sie liczac jasnosc, nie czytajac nazwe.**
+
+Pomiar: `npm run ux:kafelki`. Bramka, zeby nie wrocilo po raz siodmy:
+`scripts/check-kafelki-jasnosc.mjs`. Decyzja: ADR-0039.
+
+### Mapa serwisu starzeje sie szybciej niz serwis
+
+`audyt-ux/sitemap.json` trzyma adresy bezwzgledne razem z portem, a port
+statycznego serwera zmienia sie miedzy sesjami. Uruchomiony na starej mapie
+`bledy.mjs` oddal 186 znalezisk: 180 razy "odnosnik nie odpowiada" i szesc razy
+"strona sie nie wczytala", przy ZERO wykonanych klikniec, bo nie bylo w co
+klikac. Wygladalo to jak awaria serwisu i bylo awaria pomiaru.
+
+**Pomiar, ktory nie umie odroznic martwego serwera od zepsutej strony, jest
+gorszy od braku pomiaru**, bo oddaje liczby, ktore wyglądają na prawdziwe.
+`bledy.mjs` pyta teraz HEAD-em o pierwszy adres z mapy i przerywa z wyjasnieniem,
+zamiast liczyc martwy port jako wady. `--host=127.0.0.1:4210` przestawia mape na
+zywy adres bez crawlowania jej od nowa.
+
+Ta sama mapa na zywym adresie znalazla jedna prawdziwa rzecz: w pasku nawigacji
+najechanie kursorem rozwijalo liste, a klikniecie w te sama etykiete zamykalo ja
+w tej samej chwili i nie otwieralo ponownie, dopoki kursor nie wyszedl poza
+element. Bez klikania tego nie widac: HTML jest poprawny w kazdej chwili.

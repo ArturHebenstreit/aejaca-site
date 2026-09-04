@@ -471,9 +471,52 @@ async function main() {
   }
 
   const bezKlikania = args["bez-klikania"] === true;
+
+  // MAPA STARZEJE SIE SZYBCIEJ NIZ SERWIS. Zapisuje bezwzgledne adresy razem
+  // z portem, a port statycznego serwera zmienia sie miedzy sesjami. Mapa
+  // wskazujaca na martwy port dawala 186 znalezisk: 180 "odnosnik nie
+  // odpowiada" i 6 "strona sie nie wczytala", przy zerowej liczbie klikniec,
+  // bo nie bylo w co klikac. Wygladalo to jak awaria serwisu, a bylo awaria
+  // pomiaru. `--host=` przestawia mapę na zywy adres bez crawlowania jej od
+  // nowa, a sprawdzenie ponizej nie pozwala policzyc martwego portu jako wad.
+  if (args.host) {
+    const nowy = String(args.host).replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const podmien = (u) => { const x = new URL(u); x.host = nowy; return x.toString(); };
+    for (const st of strony) {
+      st.url = podmien(st.url);
+      for (const l of st.links || []) {
+        for (const pole of ["href", "resolved", "url"]) {
+          if (l[pole]) { try { l[pole] = podmien(l[pole]); } catch {} }
+        }
+      }
+    }
+  }
   const host = new URL(strony[0].url).host;
 
   const findings = [];
+
+  // Pierwsze pytanie brzmi: czy pod tym adresem cokolwiek jest. Bez niego
+  // kazdy sprawdzian ponizej odpowiada "zepsute", a zepsuty jest pomiar.
+  {
+    const przegladarka = await uruchomPrzegladarke();
+    const proba = await przegladarka.newContext();
+    let zywy = false;
+    try {
+      const odp = await proba.request.fetch(strony[0].url, { method: "HEAD", timeout: 8000 });
+      zywy = odp.status() < 500;
+    } catch { zywy = false; }
+    await proba.close();
+    await przegladarka.close();
+    if (!zywy) {
+      console.error(`\nPod adresem ${strony[0].url} nic nie odpowiada.`);
+      console.error("Mapa trzyma adresy razem z portem, a port statycznego serwera zmienia sie");
+      console.error("miedzy sesjami. Postaw serwer na porcie z mapy, przelicz mape od nowa");
+      console.error("(node mapa.mjs) albo przestaw ja na zywy adres: --host=127.0.0.1:4210");
+      console.error("Pomiar przerwany, zeby martwy port nie wyszedl jako 186 wad serwisu.\n");
+      process.exit(2);
+    }
+  }
+
   const przegladarka = await uruchomPrzegladarke();
   // Kontekst na jezyk strony, tworzony przy pierwszym uzyciu: jezyk
   // przegladarki idzie za adresem (patrz LOCALE w wspolne.mjs).

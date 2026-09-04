@@ -1,8 +1,19 @@
-// Kopia przeplywow n8n. Dwie rzeczy moga tu zawiesc po cichu i obie sa grozne:
-// wpisanie sekretu do repozytorium oraz kopia, ktora przy kazdym uruchomieniu
-// wyglada jak zmiana, przez co nikt jej nie oglada. Test pilnuje obu.
+#!/usr/bin/env node
+// ============================================================
+// KOPIA PRZEPLYWOW N8N: BEZ SEKRETOW W REPOZYTORIUM, BEZ SZUMU W DIFFIE
+// ============================================================
+// Dwie rzeczy moga tu zawiesc po cichu i obie sa grozne: wpisanie sekretu
+// (klucza API, hasla do bazy) do repozytorium przez kopie przeplywu, oraz
+// kopia, ktora przy kazdym uruchomieniu wyglada jak zmiana mimo braku zmiany
+// tresci, przez co nikt jej juz nie oglada w diffie. Test pilnuje obu: sekret
+// pod nazwa pola, ktora go zdradza (np. "authorization"), zostaje zamieniony
+// automatycznie; sekret w polu bez takiej nazwy zatrzymuje cala kopie zamiast
+// zgadywac. Pilnowana jest tez usuwana pozycja: przeplyw skasowany w n8n ma
+// zniknac z kopii, inaczej kopia opisuje system, ktorego juz nie ma.
 //
 // Skrypt uruchamiamy jako podproces, bo wykonuje sie od razu po zaimportowaniu.
+//
+// Uruchamiany w `npm run build`.
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
