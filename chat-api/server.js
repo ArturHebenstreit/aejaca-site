@@ -31,6 +31,7 @@ import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from 
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry, PRZEWOZNICY } from "./pricing/shipping.js";
 import { LEAD_MAILE } from "./leadMail.js";
 import { fmtCost } from "./pricing/config.js";
+import { podpisPasuje, wypisany, zapiszWypis, wypisDziala, STRONA_WYPISU } from "./wypis.js";
 // Pod wlasna nazwa: w tym pliku `dni` jest juz lokalnym pomocnikiem liczacym
 // dni OD daty, i to w innym zakresie. Wolanie go tutaj przechodzilo kontrole
 // nieznanych funkcji, bo nazwa gdzies istnieje, a wywalilo by sie dopiero
@@ -3297,6 +3298,9 @@ async function przypomnijOKodach() {
     );
     for (const k of rows) {
       if (await pisalismyDzisiaj(k.issued_to)) continue;
+      // Przypomnienie o kodzie tez jest marketingiem. Kto poprosil, zeby do
+      // niego nie pisac, nie dostaje go nawet wtedy, gdy kod mu przepada.
+      if (await wypisany(pool, k.issued_to)) continue;
       // Jezyk bierzemy z kodu, a nie z zalozenia. Kod sprzed migracji go nie
       // ma, wiec zostaje polski: to jedyne miejsce, w ktorym zgadujemy.
       const jezyk = jezykZadania(k.lang);
@@ -4248,6 +4252,60 @@ app.post("/api/discounts/check", express.json({ limit: "16kb" }),
  * Powtarzalne: drugi zapis tym samym adresem oddaje ten sam kod, zamiast
  * rozdawac kolejne. Inaczej wystarczyloby zapisac sie piec razy.
  */
+/**
+ * Wypis z maili marketingowych. Ten sam adres obsluguje POST i GET.
+ *
+ * POST to jedno klikniecie z klienta pocztowego (RFC 8058): Gmail i Outlook
+ * wysylaja je same, bez otwierania przegladarki, i oczekuja odpowiedzi 200
+ * bez zadnego dalszego pytania. Kazde potwierdzenie w tym miejscu lamie
+ * standard i klient pocztowy przestaje pokazywac przycisk.
+ *
+ * GET to czlowiek klikajacy odnosnik w tresci. Dostaje strone po ludzku,
+ * w jezyku wiadomosci, ktora ten odnosnik przyniosla.
+ *
+ * ODPOWIADAMY TAK SAMO na adres znany i nieznany. Rozne odpowiedzi zamienilyby
+ * te trase w sprawdzarke, czy dany adres jest w naszej bazie.
+ */
+async function obsluzWypis(req, res, { strona }) {
+  const zrodlo = req.method === "POST" ? { ...req.query, ...(req.body || {}) } : req.query;
+  const email = String(zrodlo.e || "").trim().toLowerCase();
+  const podpis = String(zrodlo.s || "");
+  const lang = ["pl", "en", "de"].includes(zrodlo.lang) ? zrodlo.lang : "pl";
+  const t = STRONA_WYPISU[lang];
+
+  // Brak sekretu znaczy, ze zaden nasz odnosnik nie mogl powstac, wiec kazdy
+  // przychodzacy tu jest podrobiony. Zamykamy, zamiast wypisywac kogokolwiek.
+  const wolno = wypisDziala() && email && podpisPasuje(email, podpis);
+  if (wolno && pool) {
+    try { await zapiszWypis(pool, email, lang); }
+    catch (e) { console.error("[wypis] nie zapisalem:", e.message); }
+  }
+  if (!wolno) console.warn(`[wypis] odrzucony podpis dla ${email ? "adresu" : "pustego adresu"}`);
+
+  if (!strona) return res.status(wolno ? 200 : 400).json({ ok: wolno });
+  res.status(wolno ? 200 : 400).type("html").send(
+    `<!doctype html><html lang="${lang}"><head><meta charset="utf-8">`
+    + `<meta name="viewport" content="width=device-width,initial-scale=1">`
+    + `<title>${wolno ? t.tytul : "AEJaCA"}</title></head>`
+    + `<body style="margin:0;padding:40px 20px;background:#faf7f2;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">`
+    + `<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:32px">`
+    + `<div style="font-size:13px;letter-spacing:3px;color:#b58a3c;font-weight:700;margin-bottom:20px">AEJACA</div>`
+    + (wolno
+      ? `<h1 style="margin:0 0 12px;font-size:22px">${t.tytul}</h1>`
+        + `<p style="margin:0;line-height:1.6;color:#444">${t.tresc}</p>`
+      : `<p style="margin:0;line-height:1.6;color:#444">${{
+          pl: "Ten odnośnik jest nieprawidłowy albo wygasł. Napisz do nas, a wypiszemy Cię ręcznie.",
+          en: "This link is not valid. Write to us and we will unsubscribe you by hand.",
+          de: "Dieser Link ist ungültig. Schreiben Sie uns, wir melden Sie manuell ab.",
+        }[lang]}</p>`)
+    + `<p style="margin:20px 0 0;font-size:13px"><a href="mailto:contact@aejaca.com" style="color:#b58a3c">contact@aejaca.com</a></p>`
+    + `</div></body></html>`
+  );
+}
+
+app.get("/api/newsletter/unsubscribe", (req, res) => obsluzWypis(req, res, { strona: true }));
+app.post("/api/newsletter/unsubscribe", express.urlencoded({ extended: false }), (req, res) => obsluzWypis(req, res, { strona: false }));
+
 app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireSecret(req, res, "x-newsletter-token", "NEWSLETTER_CODE_TOKEN")) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -4346,6 +4404,14 @@ app.post("/api/mail/lead", express.json({ limit: "32kb" }), async (req, res) => 
     }
 
     const wiadomosc = build(dane);
+    // WYPISANY ADRES NIE DOSTAJE MARKETINGU. Sprawdzamy po zlozeniu wiadomosci,
+    // bo to ONA wie, czy jest marketingiem: niesie wtedy naglowek wypisu.
+    // Lista rodzajow spisana tu z reki rozjechalaby sie z ta, ktora te naglowki
+    // przyznaje, a objawem bylby mail wyslany komus, kto prosil, zeby nie pisac.
+    if (wiadomosc.naglowki?.["List-Unsubscribe"] && pool && await wypisany(pool, to)) {
+      console.log(`[lead-mail] ${rodzaj} pominiety: ${to} sie wypisal`);
+      return res.json({ ok: true, rodzaj, to, pominiety: "wypisany" });
+    }
     const poszlo = await sendLeadMail([wiadomosc]);
     if (!poszlo) return res.status(502).json({ error: "Poczta nie zadzialala", code: "mail_failed" });
     await zapiszSladMaila(to, rodzaj);
@@ -4430,6 +4496,14 @@ app.post("/api/admin/discounts/gift", express.json({ limit: "8kb" }), async (req
     // (`fmtCost`): polski czyta zlotowki, reszta euro. Kwota kodu jest zapisana
     // w groszach, wiec dzielimy przez sto raz, tutaj, a nie w szablonie.
     const wartosc = kind === "percent" ? `${value}%` : fmtCost(value / 100, lang);
+    if (await wypisany(pool, to)) {
+      // Prezent tez jest marketingiem: idzie do kogos, kto o niego nie prosil.
+      // Kod zostaje wystawiony, bo wlasciciel moze go wreczyc inna droga.
+      return res.status(409).json({
+        error: "Ten adres prosil, zeby nie wysylac mu wiadomosci. Kod powstal, wrecz go inna droga.",
+        code: "wypisany", codeIssued: kod.code,
+      });
+    }
     const wiadomosc = LEAD_MAILE.prezent({
       lang, to, kod: kod.code, wartosc,
       waznyOd: dzien(kod.validFrom), waznyDo: dzien(kod.validTo),
@@ -6909,6 +6983,17 @@ if (pool) {
       console.error("[gmail] watch renewal error:", err.message);
     }
   });
+}
+
+// BRAK SEKRETU WYPISU JEST WIDOCZNY PRZY STARCIE, a nie dopiero w skardze
+// klienta. Bez niego marketing wychodzi bez naglowka `List-Unsubscribe`
+// i bez odnosnika, a tresc newslettera dalej obiecuje wypis jednym klikniciem:
+// czyli dokladnie stan sprzed 2026-09-04, tylko ze teraz mamy mechanizm i tylko
+// nie podano mu klucza. Nie wylaczamy z tego powodu poczty, bo maile
+// transakcyjne musza chodzic, ale nikt nie ma prawa tego przeoczyc.
+if (!wypisDziala()) {
+  console.error("[start] BRAK MAIL_UNSUBSCRIBE_SECRET (min. 16 znakow): maile marketingowe pojda "
+    + "bez wypisu, wbrew temu, co obiecuja w tresci. Ustaw zmienna srodowiskowa.");
 }
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

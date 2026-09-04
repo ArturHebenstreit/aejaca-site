@@ -16,6 +16,7 @@
 
 import { SELLER } from "./pricing/sellerInfo.js";
 import { esc, koperta, odnosnikiText, stopkaText, SITE } from "./mailSzata.js";
+import { adresWypisu, naglowkiWypisu, TEKST_WYPISU } from "./wypis.js";
 
 const FROM = `AEJaCA <${SELLER.email}>`;
 
@@ -265,20 +266,31 @@ const ramkaKodu = (etykieta, wartosc, dopisek) => `
  * @param {string} dane.html     srodek wiadomosci
  * @param {string[]} dane.linie  ta sama tresc dla wersji tekstowej
  */
-function zloz({ lang, to, subject, naglowek, html, linie, inReplyTo, threadId }) {
+/**
+ * @param {boolean} [dane.marketing] wiadomosc, ktorej klient nie zamowil
+ *
+ * WIADOMOSC MARKETINGOWA NIESIE WYPIS, transakcyjna nie. Klient nie moze
+ * "wypisac sie" z potwierdzenia wlasnego zamowienia ani z prosby o doplate:
+ * to sa wiadomosci nalezace do umowy, ktora sam zawarl. Przycisk sugerujacy,
+ * ze moze, konczylby sie tym, ze przestajemy pisac o rzeczy, za ktora zaplacil.
+ */
+function zloz({ lang, to, subject, naglowek, html, linie, inReplyTo, threadId, marketing = false }) {
   const l = T[lang];
   const odn = odnosniki(l, lang);
+  const url = marketing ? adresWypisu(to, lang) : null;
+  const wypis = url ? { url, tekst: TEKST_WYPISU[lang] || TEKST_WYPISU.pl } : null;
   const srodek = `
     ${naglowek ? `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:700">${esc(naglowek)}</h1>` : ""}
     <p style="margin:0 0 6px">${esc(l.hi)}</p>
     ${html}
   `;
-  const text = [l.hi, "", ...linie, "", odnosnikiText(lang, odn), "", stopkaText(lang)].join("\n");
+  const text = [l.hi, "", ...linie, "", odnosnikiText(lang, odn), "", stopkaText(lang, wypis)].join("\n");
   return {
     to, from: FROM, replyTo: SELLER.email, subject,
-    text, html: koperta({ lang, odnosniki: odn, srodek }),
+    text, html: koperta({ lang, odnosniki: odn, srodek, wypis }),
     ...(inReplyTo ? { inReplyTo } : {}),
     ...(threadId ? { threadId } : {}),
+    ...(marketing ? { naglowki: naglowkiWypisu(to, lang) || undefined } : {}),
   };
 }
 
@@ -328,7 +340,7 @@ export function buildKalkulatorEstimate({ lang = "pl", to, kalkulator, parametry
 export function buildFollowUp48({ lang = "pl", to }) {
   const l = T[jezyk(lang)];
   return zloz({
-    lang: jezyk(lang), to, subject: l.fu48Subject, naglowek: l.fu48Subject,
+    lang: jezyk(lang), to, subject: l.fu48Subject, naglowek: l.fu48Subject, marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.fu48Intro)}</p>
       <p style="margin:0 0 16px;line-height:1.6;font-size:14px;color:#444">${esc(l.fu48CoMozna)}</p>
@@ -349,7 +361,7 @@ export function buildFollowUp48({ lang = "pl", to }) {
 export function buildRabat7({ lang = "pl", to, kod, procent = "5%", waznyDo }) {
   const l = T[jezyk(lang)];
   return zloz({
-    lang: jezyk(lang), to, subject: l.rabatSubject(kod), naglowek: l.rabatSubject(kod),
+    lang: jezyk(lang), to, subject: l.rabatSubject(kod), naglowek: l.rabatSubject(kod), marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.rabatIntro)}</p>
       ${ramkaKodu(l.rabatKod, kod, l.rabatIle(procent))}
@@ -397,7 +409,7 @@ export function buildNewsletterPowitanie({ lang = "pl", to, kod, procent = "10%"
   // wlasciciela, 2026-08-31). Kod bez daty konca jest obietnica bez terminu,
   // a przypomnienie, ktorego nikt nie zapowiedzial, wyglada jak nagabywanie.
   return zloz({
-    lang: jezyk(lang), to, subject: l.newsSubject(procent), naglowek: l.newsSubject(procent),
+    lang: jezyk(lang), to, subject: l.newsSubject(procent), naglowek: l.newsSubject(procent), marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.newsIntro)}</p>
       ${ramkaKodu(l.newsKod, kod, l.rabatIle(procent))}
@@ -450,7 +462,7 @@ export function buildAutoOdpowiedz({ lang = "pl", to, temat, inReplyTo, threadId
 export function buildPrzypomnienieKodu({ lang = "pl", to, kod, procent, waznyDo, dni }) {
   const l = T[jezyk(lang)];
   return zloz({
-    lang: jezyk(lang), to, subject: l.przypSubject(procent, dni), naglowek: l.przypSubject(procent, dni),
+    lang: jezyk(lang), to, subject: l.przypSubject(procent, dni), naglowek: l.przypSubject(procent, dni), marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.przypIntro(dni))}</p>
       ${ramkaKodu(l.rabatKod, kod, procent ? l.rabatIle(procent) : "")}
@@ -490,7 +502,7 @@ export function buildPrezent({ lang = "pl", to, kod, wartosc, waznyOd, waznyDo, 
     // szerokosc widoczna na telefonie i nie mowi czytajacemu niczego, a kod
     // i tak stoi w tresci, po ktora trzeba siegnac, zeby go uzyc. Ta sama
     // zasada co przy przypomnieniu o kodzie.
-    lang: jezyk(lang), to, subject: l.prezentSubject, naglowek: l.prezentSubject,
+    lang: jezyk(lang), to, subject: l.prezentSubject, naglowek: l.prezentSubject, marketing: true,
     html: `
       <p style="margin:0 0 16px;line-height:1.6">${esc(l.prezentIntro)}</p>
       ${powod ? `

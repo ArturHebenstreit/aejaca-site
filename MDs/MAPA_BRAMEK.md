@@ -5,7 +5,7 @@
 > z naglowka kazdego skryptu, kolejnosc z lancucha `build` w `package.json`.
 > Chcesz zmienic opis bramki, zmien komentarz na jej gorze.
 
-`npm run build` uruchamia **87** sprawdzianow, zanim cokolwiek
+`npm run build` uruchamia **88** sprawdzianow, zanim cokolwiek
 zbuduje. Kazdy powstal po konkretnej awarii i pilnuje, zeby ta sama awaria nie
 wrocila. Build zatrzymuje sie na pierwszym, ktory padnie, wiec kolejnosc ma
 znaczenie: najtansze i najczestsze stoja z przodu.
@@ -69,39 +69,40 @@ albo przepuszcza, albo zatrzymuje wdrozenie.
 | 52 | `scripts/test-prezent.mjs` | KOD PREZENTOWY: wystawianie i wreczanie | Polecenie wlasciciela, 2026-09-03: jeden formularz ma wystawic kod i albo wyslac go mailem, albo zapisac do wreczenia inna droga. |
 | 53 | `scripts/test-opis-pozycji.mjs` | CO KLIENT ZAMOWIL, TAK SAMO W KOSZYKU, W MAILU I NA STRONIE | Zgloszenie wlasciciela z 2026-09-03, po prawdziwym zamowieniu AE20260903: mail do pracowni niosl surowy JSON parametrow, a potwierdzenie dla klientki nie nioslo ich wcale. |
 | 54 | `scripts/test-wiedza-asystenta.mjs` | ASYSTENT MOWI TO, CO ROBI SERWIS | Wiedza asystenta (`chat-api/context.js`) to szescdziesiat kilobajtow tekstu pisanego recznie, w ktorym stoja KWOTY I TERMINY. Kod obok zmienia sie dalej, a tekst nie ma jak sie o tym dowiedziec. |
-| 55 | `scripts/test-print-scale.mjs` | WIELKOSC WYDRUKU A POLE ROBOCZE MASZYNY | Po wgraniu pliku cena liczy sie z JEGO wymiarow, a nie z listy rozmiarow. |
-| 56 | `scripts/test-dim-scale.mjs` | SKALA W OSOBNYCH OSIACH: czy liczby mowia to, co pokazujemy | Skala nierownomierna psuje sie po cichu na cztery sposoby i za kazdym razem kwota oraz podglad wygladaja poprawnie:. |
-| 57 | `scripts/test-engrave-coverage.mjs` | POKRYCIE RYSUNKU W GRAWERZE: czy liczymy droge glowicy, a nie kartke | Do 2026-08-21 grawer liczyl sie z PROSTOKATA OPISANEGO na rysunku. |
-| 58 | `scripts/test-model-handoff.mjs` | PRZEKAZANIE MODELU I SKALA, W KTOREJ GO ANALIZUJEMY | Dwie rzeczy, ktore latwo rozjechac, bo obie zyja po dwoch stronach szwu. |
-| 59 | `scripts/test-simple-quote.mjs` | SZYBKA WYCENA MUSI LICZYC Z WGRANEGO PLIKU | Awaria, ktora ten test zamyka, byla cicha i kosztowna. |
-| 60 | `scripts/test-size-slider.mjs` | TEST LOGIKI SUWAKA WIELKOSCI (bez React) | Sprawdza wylacznie funkcje wyeksportowane z SizeSlider.jsx: categoryForCm, posToCm, cmToPos, RANGE_STEPS. |
-| 61 | `scripts/test-price-breakdown.mjs` | ROZPISKA CENY NIE MOZE NAZYWAC RABATU, ALE MUSI GO ZAWIERAC | Rynek polski ma 15 procent taniej. Wczesniej stalo to w rozpisce osobnym wierszem "Rabat rynek polski (-15%)". Sprzedawalo to zle: klient czyta taki wiersz jako cene wyjsciowa podbita po to, zeby bylo co odejmowac, i zaczyna szukac haczyka. |
-| 62 | `scripts/test-quote-summary.mjs` | PODSUMOWANIE W MAILU MUSI NIESC TO, CO KLIENT WIDZIAL | Do maila szedl jeden string obciety do tysiaca znakow: sama lista wyborow. |
-| 63 | `scripts/test-mesh-units.mjs` | PLIK W METRACH NIE MOZE PRZEJSC ZA MODEL DWUMILIMETROWY | STL i OBJ nie niosa jednostki, wiec czytamy je jak milimetry. |
-| 64 | `scripts/test-live-pricing.mjs` | ZYWE DANE MUSZA DOCIERAC DO KWOTY WIAZACEJ | Kalkulatory jubilerskie biora dane rynkowe DODATKOWYMI ARGUMENTAMI:. |
-| 65 | `scripts/test-production-queue.mjs` | KOLEJKA PRACOWNI: ETAPY, PRZEJSCIA I KOLUMNY POD NIMI | `chat-api/productionQueue.js` zostal wydzielony z serwera po to, zeby regule przejsc dalo sie sprawdzic bez stawiania bazy. |
-| 66 | `scripts/test-wlasny-ruch.mjs` | WLASNY RUCH: WIDAC GO, DA SIE GO WYLACZYC, I NIKT NIE UDAJE, ZE WIE WIECEJ | Wlasciciel oglada swoj serwis czesciej niz ktokolwiek inny, wiec jego wejscia zawyzaja kazdy wykres. |
-| 67 | `scripts/test-zamkniecie-sprawy.mjs` | CZTERY DROGI WYJSCIA ZE SPRAWY, KAZDA Z INNA KWOTA | "Anulowane" bylo jednym slowem na cztery zdarzenia, ktore regulamin rozroznia: odstapienie konsumenta w 14 dni, nasze niedowiezienie, nasza odmowa i rezygnacja z rzeczy robionej na zamowienie. |
-| 68 | `scripts/check-daty.mjs` | DATA Z BAZY NIE JEST NAPISEM | Sterownik bazy oddaje kolumne DATE i TIMESTAMPTZ jako OBIEKT Date. |
-| 69 | `scripts/test-daty-z-bazy.mjs` | DATA Z BAZY DOCHODZI DO KLIENTA JAKO DATA | Sterownik bazy oddaje kolumne DATE jako OBIEKT Date. |
-| 70 | `scripts/test-lead-z-maila.mjs` | MAIL STAJE SIE SPRAWA DOPIERO Z NASZEJ DECYZJI | Do 1 wrzesnia 2026 dzialaly tu dwa mechanizmy naraz i zaden nie robil tego, co trzeba. |
-| 71 | `scripts/test-lista-zgloszen.mjs` | LISTA ZGLOSZEN: LICZNIKI FILTRUJA, WIERSZ SIE ROZWIJA | Kafelki u gory strony byly ozdoba: mowily "Skontaktowano 36" i nic sie po nich nie dzialo. |
-| 72 | `scripts/test-quote-edit.mjs` | EDYCJA OFERTY: POZYCJE, KWOTY I UKLAD WYBORU | Wycena powstaje z zapytania przepisanego ze skrzynki albo z rozmowy, wiec literowka w adresie i zla ilosc sa tu norma. |
-| 73 | `scripts/test-offer-currency.mjs` | WALUTA OFERTY I ZAPLATY | Do tej pory walute rozstrzygal jezyk: pl znaczylo zlotowki, en i de euro. |
-| 74 | `scripts/test-ring-generator.mjs` | GENERATOR PIERSCIONKOW: prog akceptacji etapu pierwszego | Cztery rzeczy, ktore musza sie zgadzac, zanim powstanie jakikolwiek ekran:. |
-| 75 | `scripts/test-ring-pricing.mjs` | KREATOR PIERSCIONKOW: prog akceptacji etapu drugiego | Wycena ma jedna wlasciwosc, ktorej nie da sie sprawdzic okiem: czy liczby, od ktorych zalezy, w ogole do niej docieraja. |
-| 76 | `chat-api/rates.test.mjs` | KURSY KRUSZCOW: kontrola wieku | `currentMetalRates` bierze najnowsza niepusta wartosc, nie patrzac na jej wiek. |
-| 77 | `chat-api/kodyRabatowe.test.mjs` | KOD RABATOWY PAMIETA, W JAKIM JEZYKU GO WYSTAWILISMY | Przypomnienie o kodzie wychodzi czterdziesci dni po zapisie. |
-| 78 | `chat-api/zrodlaRuchu.test.mjs` | SKAD PRZYSZLA WIZYTA: SPRAWDZIAN KLASYFIKACJI | Kanal ruchu jest liczba, na ktorej opiera sie decyzja "gdzie pisac dalej". Zle przypisany kanal nie wyglada na blad: wyglada na to, ze Instagram nie dziala, a wyszukiwarka dowozi, albo odwrotnie. |
-| 79 | `chat-api/numerSprawy.test.mjs` | KAZDA SPRAWA MA NUMER, I TO JEDEN | Zgloszenie z formularza dostawalo numer od poczatku, ale mail przyslany wprost na skrzynke juz nie, a numeru nie bylo widac ani w panelu, ani w potwierdzeniu do klienta. |
-| 80 | `admin/analityka.test.mjs` | ANALITYKA: CZEGO PILNUJEMY W ZAPYTANIACH KOKPITU | Zapytania analityczne maja te wlasciwosc, ze BLAD W NICH JEST NIEWIDOCZNY. Zle policzona konwersja nie wywala strony, tylko pokazuje liczbe, ktora wyglada wiarygodnie, i na jej podstawie zapada decyzja. |
-| 81 | `scripts/test-chat-api.mjs` | TESTY BACKENDU IDA RAZEM Z BUILDEM STRONY | `chat-api` ma wlasny zestaw testow i wlasny `npm test`, ktory trzeba bylo pamietac, zeby uruchomic. |
-| 82 | `scripts/test-chat-api-boot.mjs` | CZY SERWER API W OGOLE WSTAJE | Awaria, ktora ten test zamyka, polozyla `chat-api` na produkcji i nie zauwazyl jej ani build, ani eslint, ani zaden z pozostalych piecdziesieciu skryptow. |
-| 83 | `scripts/derive-service-prices.mjs` | CENY "OD" NA KARTACH USLUG, WYPROWADZONE Z SILNIKA | Etykieta "od X PLN" byla wpisywana recznie i rozjechala sie z cennikiem: jedne uslugi obiecywaly cene, ktorej nie dalo sie kupic, inne odstraszaly progiem dwa razy wyzszym niz prawdziwy. |
-| 84 | `scripts/build-sitemap.mjs` | MAPA WITRYNY DLA TRZECH JEZYKOW | Od 27 sierpnia 2026 kazda strona stoi pod trzema adresami: polskim golym, angielskim pod `/en/` i niemieckim pod `/de/`. Mapa witryny musi wymienic wszystkie trzy i przy kazdym powiedziec, gdzie sa pozostale dwa, inaczej wyszukiwarka potraktuje je jak trzy osobne strony o tej samej tresci. |
-| 85 | `scripts/mapa-bramek.mjs` | SPIS BRAMEK BUILDU, PISANY PRZEZ BRAMKI | `npm run build` uruchamia kilkadziesiat sprawdzianow, zanim cokolwiek zbuduje. |
-| 86 | `scripts/copy-occt-wasm.mjs` | JADRO CAD DLA PRZEGLADARKI | occt-import-js sklada sie z modulu JS i pliku .wasm, ktory ten modul sciaga w czasie dzialania. |
-| 87 | `scripts/prerender.mjs` | **brak naglowka** | SZABLONEM JEST WYNIK `vite build`, A NIE POPRZEDNI WYNIK TEGO SKRYPTU. `dist/index.html` sluzy tu za szablon i jest zarazem pierwszym plikiem, ktory ten skrypt nadpisuje. |
+| 55 | `scripts/test-wypis.mjs` | WYPIS Z MAILI: OBIETNICA Z POKRYCIEM | Nasze maile obiecywaly w trzech jezykach "wypisujesz sie jednym klikniciem w kazdej wiadomosci", a mechanizmu nie bylo zadnego: ani naglowka `List-Unsubscribe`, ani odnosnika w tresci, ani niczego, co ustawialoby kolumne `subscribers.unsubscribed`, ktora czekala pusta od poczatku. |
+| 56 | `scripts/test-print-scale.mjs` | WIELKOSC WYDRUKU A POLE ROBOCZE MASZYNY | Po wgraniu pliku cena liczy sie z JEGO wymiarow, a nie z listy rozmiarow. |
+| 57 | `scripts/test-dim-scale.mjs` | SKALA W OSOBNYCH OSIACH: czy liczby mowia to, co pokazujemy | Skala nierownomierna psuje sie po cichu na cztery sposoby i za kazdym razem kwota oraz podglad wygladaja poprawnie:. |
+| 58 | `scripts/test-engrave-coverage.mjs` | POKRYCIE RYSUNKU W GRAWERZE: czy liczymy droge glowicy, a nie kartke | Do 2026-08-21 grawer liczyl sie z PROSTOKATA OPISANEGO na rysunku. |
+| 59 | `scripts/test-model-handoff.mjs` | PRZEKAZANIE MODELU I SKALA, W KTOREJ GO ANALIZUJEMY | Dwie rzeczy, ktore latwo rozjechac, bo obie zyja po dwoch stronach szwu. |
+| 60 | `scripts/test-simple-quote.mjs` | SZYBKA WYCENA MUSI LICZYC Z WGRANEGO PLIKU | Awaria, ktora ten test zamyka, byla cicha i kosztowna. |
+| 61 | `scripts/test-size-slider.mjs` | TEST LOGIKI SUWAKA WIELKOSCI (bez React) | Sprawdza wylacznie funkcje wyeksportowane z SizeSlider.jsx: categoryForCm, posToCm, cmToPos, RANGE_STEPS. |
+| 62 | `scripts/test-price-breakdown.mjs` | ROZPISKA CENY NIE MOZE NAZYWAC RABATU, ALE MUSI GO ZAWIERAC | Rynek polski ma 15 procent taniej. Wczesniej stalo to w rozpisce osobnym wierszem "Rabat rynek polski (-15%)". Sprzedawalo to zle: klient czyta taki wiersz jako cene wyjsciowa podbita po to, zeby bylo co odejmowac, i zaczyna szukac haczyka. |
+| 63 | `scripts/test-quote-summary.mjs` | PODSUMOWANIE W MAILU MUSI NIESC TO, CO KLIENT WIDZIAL | Do maila szedl jeden string obciety do tysiaca znakow: sama lista wyborow. |
+| 64 | `scripts/test-mesh-units.mjs` | PLIK W METRACH NIE MOZE PRZEJSC ZA MODEL DWUMILIMETROWY | STL i OBJ nie niosa jednostki, wiec czytamy je jak milimetry. |
+| 65 | `scripts/test-live-pricing.mjs` | ZYWE DANE MUSZA DOCIERAC DO KWOTY WIAZACEJ | Kalkulatory jubilerskie biora dane rynkowe DODATKOWYMI ARGUMENTAMI:. |
+| 66 | `scripts/test-production-queue.mjs` | KOLEJKA PRACOWNI: ETAPY, PRZEJSCIA I KOLUMNY POD NIMI | `chat-api/productionQueue.js` zostal wydzielony z serwera po to, zeby regule przejsc dalo sie sprawdzic bez stawiania bazy. |
+| 67 | `scripts/test-wlasny-ruch.mjs` | WLASNY RUCH: WIDAC GO, DA SIE GO WYLACZYC, I NIKT NIE UDAJE, ZE WIE WIECEJ | Wlasciciel oglada swoj serwis czesciej niz ktokolwiek inny, wiec jego wejscia zawyzaja kazdy wykres. |
+| 68 | `scripts/test-zamkniecie-sprawy.mjs` | CZTERY DROGI WYJSCIA ZE SPRAWY, KAZDA Z INNA KWOTA | "Anulowane" bylo jednym slowem na cztery zdarzenia, ktore regulamin rozroznia: odstapienie konsumenta w 14 dni, nasze niedowiezienie, nasza odmowa i rezygnacja z rzeczy robionej na zamowienie. |
+| 69 | `scripts/check-daty.mjs` | DATA Z BAZY NIE JEST NAPISEM | Sterownik bazy oddaje kolumne DATE i TIMESTAMPTZ jako OBIEKT Date. |
+| 70 | `scripts/test-daty-z-bazy.mjs` | DATA Z BAZY DOCHODZI DO KLIENTA JAKO DATA | Sterownik bazy oddaje kolumne DATE jako OBIEKT Date. |
+| 71 | `scripts/test-lead-z-maila.mjs` | MAIL STAJE SIE SPRAWA DOPIERO Z NASZEJ DECYZJI | Do 1 wrzesnia 2026 dzialaly tu dwa mechanizmy naraz i zaden nie robil tego, co trzeba. |
+| 72 | `scripts/test-lista-zgloszen.mjs` | LISTA ZGLOSZEN: LICZNIKI FILTRUJA, WIERSZ SIE ROZWIJA | Kafelki u gory strony byly ozdoba: mowily "Skontaktowano 36" i nic sie po nich nie dzialo. |
+| 73 | `scripts/test-quote-edit.mjs` | EDYCJA OFERTY: POZYCJE, KWOTY I UKLAD WYBORU | Wycena powstaje z zapytania przepisanego ze skrzynki albo z rozmowy, wiec literowka w adresie i zla ilosc sa tu norma. |
+| 74 | `scripts/test-offer-currency.mjs` | WALUTA OFERTY I ZAPLATY | Do tej pory walute rozstrzygal jezyk: pl znaczylo zlotowki, en i de euro. |
+| 75 | `scripts/test-ring-generator.mjs` | GENERATOR PIERSCIONKOW: prog akceptacji etapu pierwszego | Cztery rzeczy, ktore musza sie zgadzac, zanim powstanie jakikolwiek ekran:. |
+| 76 | `scripts/test-ring-pricing.mjs` | KREATOR PIERSCIONKOW: prog akceptacji etapu drugiego | Wycena ma jedna wlasciwosc, ktorej nie da sie sprawdzic okiem: czy liczby, od ktorych zalezy, w ogole do niej docieraja. |
+| 77 | `chat-api/rates.test.mjs` | KURSY KRUSZCOW: kontrola wieku | `currentMetalRates` bierze najnowsza niepusta wartosc, nie patrzac na jej wiek. |
+| 78 | `chat-api/kodyRabatowe.test.mjs` | KOD RABATOWY PAMIETA, W JAKIM JEZYKU GO WYSTAWILISMY | Przypomnienie o kodzie wychodzi czterdziesci dni po zapisie. |
+| 79 | `chat-api/zrodlaRuchu.test.mjs` | SKAD PRZYSZLA WIZYTA: SPRAWDZIAN KLASYFIKACJI | Kanal ruchu jest liczba, na ktorej opiera sie decyzja "gdzie pisac dalej". Zle przypisany kanal nie wyglada na blad: wyglada na to, ze Instagram nie dziala, a wyszukiwarka dowozi, albo odwrotnie. |
+| 80 | `chat-api/numerSprawy.test.mjs` | KAZDA SPRAWA MA NUMER, I TO JEDEN | Zgloszenie z formularza dostawalo numer od poczatku, ale mail przyslany wprost na skrzynke juz nie, a numeru nie bylo widac ani w panelu, ani w potwierdzeniu do klienta. |
+| 81 | `admin/analityka.test.mjs` | ANALITYKA: CZEGO PILNUJEMY W ZAPYTANIACH KOKPITU | Zapytania analityczne maja te wlasciwosc, ze BLAD W NICH JEST NIEWIDOCZNY. Zle policzona konwersja nie wywala strony, tylko pokazuje liczbe, ktora wyglada wiarygodnie, i na jej podstawie zapada decyzja. |
+| 82 | `scripts/test-chat-api.mjs` | TESTY BACKENDU IDA RAZEM Z BUILDEM STRONY | `chat-api` ma wlasny zestaw testow i wlasny `npm test`, ktory trzeba bylo pamietac, zeby uruchomic. |
+| 83 | `scripts/test-chat-api-boot.mjs` | CZY SERWER API W OGOLE WSTAJE | Awaria, ktora ten test zamyka, polozyla `chat-api` na produkcji i nie zauwazyl jej ani build, ani eslint, ani zaden z pozostalych piecdziesieciu skryptow. |
+| 84 | `scripts/derive-service-prices.mjs` | CENY "OD" NA KARTACH USLUG, WYPROWADZONE Z SILNIKA | Etykieta "od X PLN" byla wpisywana recznie i rozjechala sie z cennikiem: jedne uslugi obiecywaly cene, ktorej nie dalo sie kupic, inne odstraszaly progiem dwa razy wyzszym niz prawdziwy. |
+| 85 | `scripts/build-sitemap.mjs` | MAPA WITRYNY DLA TRZECH JEZYKOW | Od 27 sierpnia 2026 kazda strona stoi pod trzema adresami: polskim golym, angielskim pod `/en/` i niemieckim pod `/de/`. Mapa witryny musi wymienic wszystkie trzy i przy kazdym powiedziec, gdzie sa pozostale dwa, inaczej wyszukiwarka potraktuje je jak trzy osobne strony o tej samej tresci. |
+| 86 | `scripts/mapa-bramek.mjs` | SPIS BRAMEK BUILDU, PISANY PRZEZ BRAMKI | `npm run build` uruchamia kilkadziesiat sprawdzianow, zanim cokolwiek zbuduje. |
+| 87 | `scripts/copy-occt-wasm.mjs` | JADRO CAD DLA PRZEGLADARKI | occt-import-js sklada sie z modulu JS i pliku .wasm, ktory ten modul sciaga w czasie dzialania. |
+| 88 | `scripts/prerender.mjs` | **brak naglowka** | SZABLONEM JEST WYNIK `vite build`, A NIE POPRZEDNI WYNIK TEGO SKRYPTU. `dist/index.html` sluzy tu za szablon i jest zarazem pierwszym plikiem, ktory ten skrypt nadpisuje. |
 
 ## Bramki bez naglowka (8)
 

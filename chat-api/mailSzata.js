@@ -80,7 +80,7 @@ const PELNA_NAZWA = "AEJaCA - Artisan Elegance Jewelry and Crafted Art";
 const ADRES_STRONY = "www.AEJaCA.com";
 
 /** Podpis w HTML, ten sam pod kazdym mailem. */
-export function stopkaHtml(lang) {
+export function stopkaHtml(lang, wypis = null) {
   const p = PODPIS[lang] || PODPIS.pl;
   return `
     <table role="presentation" style="width:100%;border-collapse:collapse;border-top:1px solid #eee;margin-top:28px">
@@ -101,11 +101,14 @@ export function stopkaHtml(lang) {
           </div>
         </td>
       </tr>
-    </table>`;
+    </table>
+    ${wypis ? `<p style="margin:14px 0 0;font-size:12px;color:#999;line-height:1.5">
+      <a href="${esc(wypis.url)}" style="color:#999;text-decoration:underline">${esc(wypis.tekst)}</a>
+    </p>` : ""}`;
 }
 
 /** Ten sam podpis w wersji tekstowej. */
-export function stopkaText(lang) {
+export function stopkaText(lang, wypis = null) {
   const p = PODPIS[lang] || PODPIS.pl;
   return [
     p.bye,
@@ -115,6 +118,10 @@ export function stopkaText(lang) {
     SELLER.email,
     ADRES_STRONY,
     `${p.tel} ${SELLER.phone}`,
+    // Wersja tekstowa jest tym, co zostaje przy wylaczonym HTML i w czytniku
+    // ekranu. Bez tego wiersza obietnica "wypisujesz sie jednym klikniciem
+    // w kazdej wiadomosci" bylaby prawdziwa tylko w polowie wiadomosci.
+    ...(wypis ? ["", `${wypis.tekst}: ${wypis.url}`] : []),
   ].join("\n");
 }
 
@@ -166,7 +173,7 @@ export function odnosnikiText(lang, zdania) {
  * @param {{lang: string, srodek: string, odnosniki?: Array}} arg
  *   `srodek` to gotowy HTML tresci maila, bez naglowka i bez stopki.
  */
-export function koperta({ lang, srodek, odnosniki = [] }) {
+export function koperta({ lang, srodek, odnosniki = [], wypis = null }) {
   return `<!doctype html><html lang="${esc(lang)}"><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
     <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:22px">
@@ -180,7 +187,7 @@ export function koperta({ lang, srodek, odnosniki = [] }) {
     </table>
 ${srodek}
 ${odnosnikiHtml(lang, odnosniki)}
-${stopkaHtml(lang)}
+${stopkaHtml(lang, wypis)}
   </div>
 </body></html>`;
 }

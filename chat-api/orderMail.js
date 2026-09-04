@@ -1418,7 +1418,7 @@ export async function sendTransferInstructions(pool, orderId, tr) {
  *   `content` jest napisem w UTF-8. Base64 zawijamy po 76 znakow, bo dluzsze
  *   linie lamie czesc serwerow poczty.
  */
-export function buildRaw({ to, from, subject, text, html, replyTo, attachments = [], inReplyTo }) {
+export function buildRaw({ to, from, subject, text, html, replyTo, attachments = [], inReplyTo, naglowki = null }) {
   const tresc = `bnd_${Math.random().toString(36).slice(2)}`;
   const zewnetrzny = `mix_${Math.random().toString(36).slice(2)}`;
   const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
@@ -1433,6 +1433,12 @@ export function buildRaw({ to, from, subject, text, html, replyTo, attachments =
     inReplyTo ? `In-Reply-To: ${inReplyTo}` : null,
     inReplyTo ? `References: ${inReplyTo}` : null,
     `Subject: ${encodedSubject}`,
+    // NAGLOWKI DODATKOWE, dzis wylacznie para wypisu (`List-Unsubscribe`
+    // i `List-Unsubscribe-Post`) na wiadomosciach marketingowych. Skladamy je
+    // TUTAJ, a nie przy kazdym szablonie z osobna, bo naglowek pominiety
+    // w jednym szablonie nie daje zadnego objawu: wiadomosc wychodzi, wyglada
+    // poprawnie i dopiero reputacja nadawcy spada przez kilka tygodni.
+    ...Object.entries(naglowki || {}).map(([k, v]) => `${k}: ${v}`),
     "MIME-Version: 1.0",
     zZalacznikami
       ? `Content-Type: multipart/mixed; boundary="${zewnetrzny}"`
