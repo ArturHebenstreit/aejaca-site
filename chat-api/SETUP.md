@@ -26,6 +26,17 @@ Streaming AI chat assistant embedded in aejaca.com. Knows AEJaCA's full offer, p
 | `DATABASE_URL` | *(link from PostgreSQL service)* |
 | `NODE_ENV` | `production` |
 | `API_URL` | Public address of THIS service, e.g. `https://api.aejaca.com` |
+| `SITE_URL` | Public address of the SITE, e.g. `https://www.aejaca.com`. Used to build the unsubscribe link |
+| `MAIL_UNSUBSCRIBE_SECRET` | Any random string, at least 16 characters. Signs the unsubscribe link |
+
+`MAIL_UNSUBSCRIBE_SECRET` is required for marketing email. Without it no
+`List-Unsubscribe` header and no unsubscribe link are produced, while the
+newsletter copy keeps promising that one click unsubscribes you. The server
+prints a loud error at startup when it is missing. It is not optional in
+practice: Gmail and Outlook have required one-click unsubscribe from bulk
+senders since 2024, and a sender without it loses reputation, which then costs
+delivery of the transactional mail too. Any random string works; it never
+leaves the server and changing it only invalidates links already sent.
 
 `API_URL` is what the order confirmation email uses to build the download link
 for purchased files. Railway usually supplies `RAILWAY_PUBLIC_DOMAIN`, which is
