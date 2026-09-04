@@ -2587,14 +2587,34 @@ Pozostałe 14 recenzji: ocena 5★ bez tekstu
 ## 15. ASYSTENT AI (CHATBOT)
 
 Wbudowany chatbot na stronie, oparty o:
-- Własny endpoint `chat-api/context.js` (system prompt ~747 linii)
+- Własny endpoint `chat-api/context.js` (system prompt, wiedza o ofercie)
 - Obsługa kalkulacji inline (łańcuszek, msla, fdm, epoxy)
 - Przekierowanie do odpowiednich narzędzi wg zapytania
 - Znajomość pełnej oferty, cen, godzin pracy
 - Trilingual (pl/en/de)
 - Dwa tryby: klientowski (biżuteria/studio) i B2B
 
+**Od 2026-09-04 asystent LICZY, zamiast zgadywać z opisu** (`chat-api/narzedziaAsystenta.js`).
+Trzy narzędzia, których wynik trafia do odpowiedzi:
+
+| Narzędzie | Co robi | Skąd bierze dane |
+|---|---|---|
+| `lista_uslug` | identyfikatory usług i klucze parametrów | `orderCatalog.js` |
+| `policz_cene` | szacunek ceny dla usługi i parametrów | `priceItem`, ten sam kod, który wystawia kwotę w koszyku |
+| `warunki_kodu` | procent, ważność w dniach, powtarzalność | `RODZAJE_KODOW` z `discounts.js` (ADR-0038) |
+
+Trzy zasady, które przy tym obowiązują i których pilnuje
+`scripts/test-narzedzia-asystenta.mjs`:
+
+1. **Asystent nigdy nie wystawia kwoty wiążącej.** Kwota wiążąca powstaje w koszyku,
+   z numerem i terminem 7 dni. Rozmowa daje szacunek plus adres, pod którym klient
+   domyka wycenę sam.
+2. **Liczba sztuk rządzi progiem nakładu.** Bez tego dwadzieścia sztuk liczyło się po
+   cenie progu „prototyp", czyli drożej niż w sklepie za to samo zamówienie.
+3. **Parametry dobrane za klienta są wymienione w odpowiedzi.** Kwota policzona za inną
+   konfigurację, niż klient miał na myśli, wygląda na odpowiedź i nią nie jest.
+
 ---
 
-*Dokument odzwierciedla stan serwisu aejaca.com z 2026-08-03.*
+*Dokument odzwierciedla stan serwisu aejaca.com z 2026-09-04.*
 *Repozytorium: ArturHebenstreit/aejaca-site, gałąź claude/fix-api-error-oge1r*

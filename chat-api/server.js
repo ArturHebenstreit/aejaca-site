@@ -7,6 +7,7 @@ import cron from "node-cron";
 import { staleRates, ageHours, STARTUP_REFETCH_AFTER_H, fetchCronExpressions, monthlyRequests } from "./rates.js";
 import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
+import { NARZEDZIA, wykonajNarzedzie } from "./narzedziaAsystenta.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { oznaczWatek } from "./watkiPoczty.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
@@ -1023,6 +1024,54 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
   res.setHeader("X-Accel-Buffering", "no");
 
   try {
+    // ASYSTENT LICZY, ZAMIAST ZGADYWAC Z OPISU. Ceny stały dotad wylacznie
+    // w tekscie polecenia systemowego, wiec pytanie "ile kosztuje dwadziescia
+    // breloczkow z PETG" bylo pytaniem, na ktore odpowiada tylko rachunek,
+    // a model jezykowy odpowiadal na nie z pamieci i mylil sie.
+    //
+    // Runda narzedziowa jest OSOBNA i nie strumieniuje sie: pytamy raz, bez
+    // strumienia, czy model chce cos policzyc. Dopiero odpowiedz koncowa idzie
+    // do przegladarki po kawalku. Dzieki temu nie trzeba skladac wywolan
+    // narzedzi z fragmentow strumienia, co jest zrodlem cichych bledow, a
+    // klient i tak widzi tekst tak samo plynnie.
+    //
+    // Rund jest najwyzej dwie. Model, ktory po dwoch nadal woli liczyc,
+    // zapetlilby rozmowe na nasz koszt.
+    for (let runda = 0; runda < 2; runda += 1) {
+      const proba = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: chatMessages,
+        tools: NARZEDZIA,
+        max_tokens: 400,
+        temperature: 0,
+      });
+      const wybor = proba.choices?.[0]?.message;
+      const wywolania = wybor?.tool_calls || [];
+      if (!wywolania.length) break;
+      chatMessages.push({ role: "assistant", content: wybor.content || null, tool_calls: wywolania });
+      // Kursy kruszcow i ceny kamieni sciagamy raz na runde i tylko wtedy, gdy
+      // model naprawde chce liczyc: bez nich bizuteria policzylaby sie z kursu
+      // zapasowego, czyli z innej ceny niz ta, ktora widzi klient w sklepie.
+      const kursy = { rates: null, gemstones: null, materialStock: null };
+      if (wywolania.some((w) => w.function?.name === "policz_cene")) {
+        try {
+          kursy.rates = await currentMetalRates();
+          kursy.gemstones = await currentGemstones(kursy.rates?.pln_per_eur);
+          kursy.materialStock = await currentMaterialStock();
+        } catch { /* brak kursow nie moze przerwac rozmowy */ }
+      }
+      for (const w of wywolania.slice(0, 4)) {
+        let argumenty = {};
+        try { argumenty = JSON.parse(w.function?.arguments || "{}"); } catch { argumenty = {}; }
+        const wynik = await wykonajNarzedzie(w.function?.name, argumenty, { lang, kursy });
+        chatMessages.push({
+          role: "tool",
+          tool_call_id: w.id,
+          content: JSON.stringify(wynik).slice(0, 4000),
+        });
+      }
+    }
+
     const stream = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: chatMessages,
