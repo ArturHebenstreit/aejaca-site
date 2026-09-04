@@ -251,36 +251,122 @@ export function randomCode(prefix = "AEJ", length = 6) {
   return `${normalizeCode(prefix)}-${out}`;
 }
 
-/**
- * Kod prezentowy. ZAWSZE nowy, nigdy odzyskany.
- *
- * `issueSingleUseCode` celowo oddaje kod juz wystawiony temu adresowi w tej
- * samej kampanii: klient, ktory poprosil o wycene piec razy, ma dostac jeden
- * rabat, a nie piec. Przy prezencie ta sama regula bylaby bledem. Dwa prezenty
- * dla tej samej osoby to dwa rozne prezenty, czesto o roznej wartosci, wiec
- * drugi dostawalby po cichu wartosc pierwszego, a pracownia widzialaby
- * w panelu jeden kod zamiast dwoch.
- *
- * Prezent bywa tez wreczany na kartce, bez adresu. Kod bez `email` jest wtedy
- * NA OKAZICIELA i to jest swiadomy skutek, a nie niedoróbka: imienny kod bez
- * adresu nie istnieje. Formularz mowi o tym wprost.
- *
- * Obie daty waznosci sa zapisane, takze poczatkowa: prezent bywa szykowany
- * z wyprzedzeniem, a mail podaje odbiorcy "od kiedy do kiedy".
- *
- * @returns {Promise<{code: string, validFrom: Date|null, validTo: Date|null}|null>}
- */
-export async function issueGiftCode(pool, { email, kind = "percent", value, days = 90, validFrom, note, lang, prefix = "AEJP" }) {
-  if (!pool) return null;
-  const adres = String(email || "").trim().toLowerCase() || null;
-  const rodzaj = kind === "amount" ? "amount" : "percent";
-  const kwota = Number(value);
-  if (!Number.isInteger(kwota) || kwota <= 0) return null;
-  if (rodzaj === "percent" && kwota > MAX_PERCENT) return null;
-  const ile = Math.min(Math.max(Number(days) || 90, 1), 730);
 
-  for (let proba = 0; proba < 5; proba++) {
-    const code = randomCode(prefix);
+
+// ============================================================
+// RODZAJE KODOW, W JEDNYM MIEJSCU
+// ============================================================
+// Do 2026-09-03 kazdy rodzaj kodu mial swoje warunki wpisane w TRESC TRASY,
+// ktora go wystawiala: kod powitalny w `/api/discounts/welcome`, rabat do
+// wyceny w `/api/mail/lead`, prezent w `/api/admin/discounts/gift`. Zeby
+// odpowiedziec na pytanie "ile jest wazny kod powitalny", trzeba bylo znalezc
+// trase i przeczytac kod. Zeby dolozyc czwarty rodzaj, trzeba bylo napisac
+// czwarta trase razem z czwarta kopia tych samych walidacji.
+//
+// Rozjazd, ktory z tego wyszedl i ktory ta tabela naprawia: kod powitalny mial
+// przedrostek wpisany na sztywno jako "AEJ10", a procent BRANY Z ZADANIA.
+// Wystarczylo, ze n8n przysle `percent: 15`, i klient dostawal kod o nazwie
+// AEJ10 wart 15 procent, albo, gorzej, kod nazwany AEJ10 wart 5. Nazwa kodu
+// jest pierwsza rzecza, ktora klient czyta, wiec byla obietnica lamana przez
+// wlasna wartosc. Teraz przedrostek WYNIKA z wartosci i nie da sie ich
+// rozjechac.
+//
+// `powtarzalny` to jedyna rzecz, ktora naprawde rozni te rodzaje mechanicznie.
+// Kod powitalny i rabat do wyceny sa POWTARZALNE: ten sam adres pytany drugi
+// raz dostaje ten sam kod, bo inaczej wystarczyloby zapisac sie piec razy albo
+// poprosic o piec wycen. Prezent NIE JEST powtarzalny: dwa prezenty dla tej
+// samej osoby to dwa rozne prezenty, czesto o roznej wartosci, wiec drugi
+// przejmowalby po cichu wartosc pierwszego.
+
+export const RODZAJE_KODOW = {
+  newsletter: {
+    campaign: "newsletter",
+    procent: 10,
+    // 45 dni (decyzja wlasciciela, 2026-08-31). Wczesniej 90: kod wazny kwartal
+    // nie jest zacheta, tylko rzecza zapomniana, a przy kruszcu cena metalu
+    // w dniu zapisu i trzy miesiace pozniej to dwie rozne ceny.
+    dni: 45, dniOd: 7, dniDo: 365,
+    powtarzalny: true,
+    wymagaAdresu: true,
+    notatka: (dzis) => `Kod powitalny, zapis ${dzis}`,
+  },
+  rabat_do_wyceny: {
+    campaign: "quote-followup",
+    procent: 5,
+    dni: 14, dniOd: 7, dniDo: 365,
+    powtarzalny: true,
+    wymagaAdresu: true,
+    notatka: (dzis) => `Rabat do wyceny, ${dzis}`,
+  },
+  prezent: {
+    campaign: "prezent",
+    procent: 10,
+    dni: 90, dniOd: 1, dniDo: 730,
+    // Prezent bywa wreczany na kartce, bez adresu. Kod bez adresu jest wtedy
+    // NA OKAZICIELA i to jest swiadomy skutek, a nie niedorobka: imienny kod
+    // bez adresu nie istnieje. Formularz w panelu mowi o tym wprost.
+    powtarzalny: false,
+    wymagaAdresu: false,
+    kwotowy: true,
+    przedrostek: "AEJP",
+    // Powod prezentu pisze czlowiek i idzie do odbiorcy doslownie.
+    notatka: () => null,
+  },
+};
+
+/** Przedrostek WYNIKA z wartosci kodu, wiec nazwa nie moze sklamac. */
+function przedrostekKodu(rodzaj, znizka, wartosc) {
+  if (rodzaj.przedrostek) return rodzaj.przedrostek;
+  return znizka === "amount" ? "AEJ" : `AEJ${wartosc}`;
+}
+
+/**
+ * Wystawienie kodu jednego z rodzajow opisanych wyzej.
+ *
+ * Jedna droga dla wszystkich: te same walidacje, ten sam ksztalt zapisu, ta
+ * sama obsluga kolizji losowania. Trasa podaje RODZAJ i to, co odbiega od
+ * jego domyslnych warunkow, a nie cala regule od nowa.
+ *
+ * @returns {Promise<{code, validFrom, validTo, reused, percent, kind, value}|null>}
+ */
+export async function wystawKod(pool, { rodzaj, email, kind, value, days, note, lang, validFrom }) {
+  const r = RODZAJE_KODOW[rodzaj];
+  if (!pool || !r) return null;
+
+  const adres = String(email || "").trim().toLowerCase() || null;
+  if (r.wymagaAdresu && !adres) return null;
+
+  const znizka = (r.kwotowy && kind === "amount") ? "amount" : "percent";
+  const wartosc = Number(value ?? r.procent);
+  if (!Number.isInteger(wartosc) || wartosc <= 0) return null;
+  if (znizka === "percent" && wartosc > MAX_PERCENT) return null;
+
+  const dni = Math.min(Math.max(Number(days) || r.dni, r.dniOd), r.dniDo);
+  const dzis = new Date().toISOString().slice(0, 10);
+  const notatka = note ?? r.notatka(dzis);
+
+  // KOD POWTARZALNY ODDAJE TEN, KTORY JUZ JEST. Szukamy tylko kodu zywego
+  // i nietknietego: wykorzystany albo wygasly niczego by nie zalatwil.
+  if (r.powtarzalny && adres) {
+    const { rows } = await pool.query(
+      `SELECT code, valid_from, valid_to, kind, value FROM discount_codes
+        WHERE campaign = $2 AND issued_to = $1 AND active = TRUE AND used_count = 0
+          AND (valid_to IS NULL OR valid_to > NOW())
+        ORDER BY created_at DESC LIMIT 1`,
+      [adres, r.campaign]
+    );
+    if (rows[0]) {
+      return {
+        code: rows[0].code, validFrom: rows[0].valid_from, validTo: rows[0].valid_to,
+        reused: true, kind: rows[0].kind, value: rows[0].value, percent: rows[0].value,
+      };
+    }
+  }
+
+  // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
+  // a nie odmowe wystawienia kodu, wiec probujemy kilka razy.
+  for (let proba = 0; proba < 5; proba += 1) {
+    const code = randomCode(przedrostekKodu(r, znizka, wartosc));
     const { rows } = await pool.query(
       `INSERT INTO discount_codes
          (code, kind, value, applies_to, max_uses, max_uses_per_email,
@@ -288,57 +374,17 @@ export async function issueGiftCode(pool, { email, kind = "percent", value, days
        VALUES ($1, $2, $3, 'all', 1, 1,
                COALESCE($4::TIMESTAMPTZ, NOW()),
                COALESCE($4::TIMESTAMPTZ, NOW()) + ($5 || ' days')::INTERVAL,
-               'prezent', $6, $7, $8)
+               $6, $7, $8, $9)
        ON CONFLICT (code) DO NOTHING
        RETURNING code, valid_from, valid_to`,
-      [code, rodzaj, kwota, validFrom || null, String(ile), adres, note || null, lang || null]
+      [code, znizka, wartosc, validFrom || null, String(dni), r.campaign, adres, notatka, lang || null]
     );
-    if (rows[0]) return { code: rows[0].code, validFrom: rows[0].valid_from, validTo: rows[0].valid_to };
-  }
-  return null;
-}
-
-/**
- * Kod JEDNORAZOWY wystawiony na adres klienta.
- *
- * Jedna droga dla wszystkich kampanii, ktore rozdaja kody mailem: powitanie
- * w newsletterze i rabat doklejony do wyceny sprzed tygodnia. Do 2026-08-31 ten
- * drugi mial kod wpisany w tresc maila na stale, a kod staly jest kodem
- * publicznym w chwili, w ktorej ktokolwiek go przeklei: wystarczy jedno forum
- * i procent dostaje kazdy, takze ci, ktorzy niczego nie wyceniali.
- *
- * Powtarzalne z zamyslu: drugie wolanie tym samym adresem i ta sama kampania
- * oddaje ten sam kod, zamiast rozdawac kolejne. Inaczej wystarczyloby zapisac
- * sie piec razy albo poprosic o piec wycen.
- *
- * @returns {Promise<{code: string, validTo: Date|null, reused: boolean}|null>}
- */
-export async function issueSingleUseCode(pool, { email, percent, days, campaign, prefix, note, lang }) {
-  const adres = String(email || "").trim().toLowerCase();
-  if (!pool || !adres) return null;
-
-  const { rows: istnieje } = await pool.query(
-    `SELECT code, valid_to FROM discount_codes
-      WHERE campaign = $2 AND issued_to = $1 AND active = TRUE AND used_count = 0
-        AND (valid_to IS NULL OR valid_to > NOW())
-      ORDER BY created_at DESC LIMIT 1`,
-    [adres, campaign]
-  );
-  if (istnieje[0]) return { code: istnieje[0].code, validTo: istnieje[0].valid_to, reused: true };
-
-  // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
-  // a nie odmowe wyslania maila, wiec probujemy kilka razy.
-  for (let proba = 0; proba < 5; proba++) {
-    const code = randomCode(prefix);
-    const { rows } = await pool.query(
-      `INSERT INTO discount_codes
-         (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note, lang)
-       VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, $4, $5, $6, $7)
-       ON CONFLICT (code) DO NOTHING
-       RETURNING code, valid_to`,
-      [code, percent, String(days), campaign, adres, note || null, lang || null]
-    );
-    if (rows[0]) return { code: rows[0].code, validTo: rows[0].valid_to, reused: false };
+    if (rows[0]) {
+      return {
+        code: rows[0].code, validFrom: rows[0].valid_from, validTo: rows[0].valid_to,
+        reused: false, kind: znizka, value: wartosc, percent: wartosc,
+      };
+    }
   }
   return null;
 }
