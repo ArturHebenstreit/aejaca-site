@@ -45,7 +45,6 @@ const POZA_MAPA = new Set([
   "/order/status/",
   "/oferta/",
   "/quote/",
-  "/toolsjewelry/kreator/",
 ]);
 
 const adresy = [

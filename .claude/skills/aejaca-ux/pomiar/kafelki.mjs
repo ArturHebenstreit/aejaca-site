@@ -6,6 +6,13 @@
 //
 // Wiersz niesie takze ODCISK KLAS, bo bez niego nie wiadomo, ktora rodzine
 // kafelkow widzimy, a rodzin jest kilkanascie i kazda malowala stan inaczej.
+//
+// I NIESIE KONTRAST, A NIE SAMA SREDNIA JASNOSC. To jest poprawka narzedzia
+// z 2026-09-04: poprzednia wersja mierzyla wylacznie srednia, wiec warstwa
+// bieli nad zdjeciem wygladala w wyniku na poprawe (srednia rosla), a na
+// ekranie byla mgla. Mgla to wysoka srednia przy niskim odchyleniu jasnosci,
+// wiec odchylenie musi stac w wyniku obok sredniej. Nasycenie jest trzecia
+// kolumna, bo odbarwienie tez podnosi srednia i tez psuje podglad produktu.
 import { chromium } from "playwright";
 const HOST = "http://127.0.0.1:4210";
 
@@ -20,17 +27,36 @@ async function jasnosc(page, locator) {
     const x = c.getContext("2d");
     x.drawImage(img, 0, 0);
     const d = x.getImageData(0, 0, c.width, c.height).data;
-    let R = 0, G = 0, B = 0, n = 0;
     const m = 6; // obwodka jest jasna i zawyzalaby wynik; skarga dotyczy WYPELNIENIA
+    const jasnosci = [];
+    let R = 0, G = 0, B = 0, S = 0, n = 0;
     for (let y = m; y < c.height - m; y += 2) {
       for (let xx = m; xx < c.width - m; xx += 2) {
         const i = (y * c.width + xx) * 4;
-        R += d[i]; G += d[i + 1]; B += d[i + 2]; n += 1;
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        R += r; G += g; B += b; n += 1;
+        // Jasnosc percepcyjna piksela, na skali 0 do 255. Uzywamy jej do
+        // ODCHYLENIA, wiec liczy sie rozrzut, a nie zgodnosc z WCAG.
+        jasnosci.push(0.2126 * r + 0.7152 * g + 0.0722 * b);
+        // Nasycenie z modelu HSV: rozpietosc kanalow wzgledem najjasniejszego.
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        S += max === 0 ? 0 : (max - min) / max;
       }
     }
     R = Math.round(R / n); G = Math.round(G / n); B = Math.round(B / n);
+    const sredniaJ = jasnosci.reduce((a, v) => a + v, 0) / n;
+    // ODCHYLENIE STANDARDOWE JASNOSCI, CZYLI "OSTROSC". To jest miara, ktorej
+    // brakowalo przy poprzedniej poprawce: srednia jasnosc rosla, bo warstwa
+    // bieli podnosila kazdy piksel o tyle samo, a obraz stawal sie plaski.
+    // Mgla to jest wysoka srednia przy niskim odchyleniu.
+    const odchylenie = Math.sqrt(jasnosci.reduce((a, v) => a + (v - sredniaJ) ** 2, 0) / n);
     const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-    return { rgb: [R, G, B], L: +(0.2126 * lin(R) + 0.7152 * lin(G) + 0.0722 * lin(B)).toFixed(4) };
+    return {
+      rgb: [R, G, B],
+      L: +(0.2126 * lin(R) + 0.7152 * lin(G) + 0.0722 * lin(B)).toFixed(4),
+      kontrast: +odchylenie.toFixed(1),
+      nasycenie: +(S / n).toFixed(3),
+    };
   }, b64);
 }
 
@@ -81,8 +107,10 @@ for (const motyw of ["dark", "light"]) {
       const roznica = (naj.L - spok.L).toFixed(4);
       console.log("   " + (wybrany ? "WYBRANY " : "spokojny") +
         "  L " + String(spok.L).padEnd(7) + " -> " + String(naj.L).padEnd(7) +
-        " (roznica " + String(roznica).padStart(7) + ")   rgb " + spok.rgb.join(",") +
-        " -> " + naj.rgb.join(",") + "   [" + odcisk(klasy, maZdjecie) + "]");
+        " (" + String(roznica).padStart(7) + ")" +
+        "   kontrast " + String(spok.kontrast).padStart(5) +
+        "   nasyc " + String(spok.nasycenie).padStart(5) +
+        "   rgb " + spok.rgb.join(",") + "   [" + odcisk(klasy, maZdjecie) + "]");
       ile += 1;
     }
     await p.close();

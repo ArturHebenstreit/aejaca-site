@@ -68,48 +68,43 @@ const SRC = join(ROOT, "src");
     });
   }
 
-  // ── Wyszarzenie kafelkow niewybranych ──────────────────────────────────
-  // Ta sama pulapka co wyzej, tylko na `filter` zamiast na `text-shadow`.
-  // Regula rozjasniajaca zdjecia w motywie jasnym ustawia `filter` z `!important`
-  // i wyzsza waga, wiec zjada narzedziowa klase `grayscale` z Tailwinda: kafelki
-  // szarzeja w motywie ciemnym, a w jasnym nie. Zadna strona tego nie zglasza.
-  if (!/img\.tile-dim\s*\{/.test(css)) {
-    zle.push("brak klasy img.tile-dim w src/index.css, wiec niewybrane kafelki nie szarzeja");
+  // ── Zdjecie kafelka nie moze wpasc pod rozjasnienie kontenerowe ────────
+  // Motyw jasny rozjasnia zdjecia w kartach regulami z `!important` i wysoka
+  // waga selektora. Zdjecia kafelkow maja WLASNA klase i wlasne wartosci, wiec
+  // tamte reguly musza je z siebie wykluczyc, inaczej kafelki dostaja jasnosc
+  // karty i zmiana wartosci przy klasie nic nie robi. Ta sama pulapka co przy
+  // `text-shadow` wyzej: nikt jej nie zglosi, bo strona wyglada poprawnie.
+  //
+  // Do 2026-09-04 klasa nazywala sie `tile-dim` i znaczyla "kafelek wygaszony",
+  // wiec kafelek WYBRANY nie mial jej wcale i nie dostawal nic. Nazwa mowi
+  // teraz, czym element jest, a nie w jakim jest stanie (ADR-0041).
+  if (!/img\.tile-foto\s*\{/.test(css)) {
+    zle.push("brak klasy img.tile-foto w src/index.css, wiec zdjecia kafelkow nie maja wlasnych regul");
   }
-  // KAZDA regula rozjasniajaca potrzebuje WLASNEJ pary, a nie jednej wspolnej.
-  // Sprawdzenie "czy gdziekolwiek jest tile-dim w motywie jasnym" przepuszczalo
-  // usuniecie jednej z nich, bo zaliczala je druga. Dlatego pary wyprowadzamy
-  // z samych regul rozjasniajacych, zamiast wypisywac selektory z pamieci.
-  // `filter` zaczyna sie od dowolnej funkcji, nie tylko `brightness`. Od
-  // 2026-09-02 rozjasnienie to `contrast(...) brightness(...)`, bo sam mnoznik
-  // jasnosci nie podnosil ciemnych fotografii (pomiar: srednia 34-36/255).
-  // Wzorzec przybity do slowa "brightness" wywrocil te bramke przy tamtej
-  // zmianie, chociaz reguly byly na miejscu.
-  const ROZJASNIENIA = [...css.matchAll(/\[data-theme="light"\]\s+(\w+:has\([^)]*\))\s+img(:not\(\.tile-dim\))?\s*\{\s*filter:\s*[a-z-]+\(/g)];
+  const ROZJASNIENIA = [...css.matchAll(/\[data-theme="light"\]\s+(\w+:has\([^)]*\))\s+img(:not\(\.tile-foto\))?\s*\{\s*filter:\s*[a-z-]+\(/g)];
   if (!ROZJASNIENIA.length) zle.push("nie znalazlem regul rozjasniajacych zdjecia w motywie jasnym; sprawdzenie stracilo sens");
   for (const m of ROZJASNIENIA) {
-    const selektor = m[1];
-    // Bez `:not(.tile-dim)` rozjasnienie dalej wygrywa o `filter`, bo ma
-    // `!important` i wyzsza wage niz sama klasa. Wtedy kafelki szarzeja
-    // wylacznie w motywie ciemnym, czego nikt nie zglosi jako bledu.
-    if (!m[2]) zle.push(`rozjasnienie "${selektor}" nie wyklucza .tile-dim, wiec skasuje szarosc kafelka`);
-    const para = css.indexOf(`[data-theme="light"] ${selektor} img.tile-dim`);
-    if (para === -1) {
-      zle.push(`rozjasnienie "${selektor}" nie ma pary dla img.tile-dim, wiec skasuje szarosc kafelka`);
-    } else if (para < m.index) {
-      zle.push(`regula img.tile-dim dla "${selektor}" stoi PRZED rozjasnieniem; musi byc po nim`);
-    }
+    if (!m[2]) zle.push(`rozjasnienie "${m[1]}" nie wyklucza .tile-foto, wiec nadpisze reguly zdjec kafelkow`);
   }
-  // Wyszarzenie bez `grayscale` nie robi nic, a klasa dalej wyglada na obecna.
-  const deklaracja = css.match(/img\.tile-dim\s*\{[^}]*\}/);
-  if (deklaracja && !/grayscale\(/.test(deklaracja[0])) {
-    zle.push("img.tile-dim nie odbarwia zdjecia");
+  // KAFELEK NIEWYBRANY NIE JEST JUZ ODBARWIANY (decyzja wlasciciela, 2026-09-04,
+  // ADR-0041): odbarwione zdjecie produktu nie sprzedaje produktu, a stan
+  // wyboru niesie obwodka. Ta bramka pilnowala dotad czegos odwrotnego, wiec
+  // pilnuje teraz nowej reguly, zamiast zostac jako martwa asercja.
+  const deklaracja = css.match(/img\.tile-foto\s*\{[^}]*\}/);
+  if (deklaracja && /grayscale\(\s*(?!0\s*\))/.test(deklaracja[0])) {
+    zle.push("img.tile-foto znowu odbarwia zdjecie produktu, patrz ADR-0041");
   }
-  // Kafelek wybrany musi rozniс sie od reszty czyms wiecej niz obwodka.
+  if (deklaracja && /opacity:\s*0\.\d/.test(deklaracja[0])) {
+    zle.push("img.tile-foto jest przezroczysty, wiec traci kontrast na tle kafelka");
+  }
+  // Kazde zdjecie kafelka niesie klase, takze zdjecie kafelka WYBRANEGO.
   for (const wzgledna of PLIKI_KAFELKOW) {
     const tresc = readFileSync(join(SRC, wzgledna), "utf8");
-    if (/from-black\\?\/95/.test(tresc) && !/tile-dim/.test(tresc)) {
-      zle.push(`src/${wzgledna}: kafelki ze zdjeciem bez wyszarzenia niewybranych`);
+    if (/from-black\\?\/95/.test(tresc) && !/tile-foto/.test(tresc)) {
+      zle.push(`src/${wzgledna}: zdjecia kafelkow bez klasy tile-foto`);
+    }
+    if (/active \? "scale-105"/.test(tresc)) {
+      zle.push(`src/${wzgledna}: zdjecie kafelka wybranego gubi klase tile-foto, wiec zostaje bez rozjasnienia`);
     }
   }
 

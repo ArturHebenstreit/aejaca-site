@@ -52,8 +52,6 @@ const PrintabilityPage = strona(() => import("./pages/PrintabilityPage.jsx"));
 const PrintSettingsPage = strona(() => import("./pages/PrintSettingsPage.jsx"));
 const LaserParametersPage = strona(() => import("./pages/LaserParametersPage.jsx"));
 const RingBlankPage = strona(() => import("./pages/RingBlankPage.jsx"));
-// Wersja robocza: trasa istnieje, ale nic do niej nie prowadzi.
-const RingConfiguratorPage = strona(() => import("./pages/RingConfiguratorPage.jsx"));
 const ShrinkagePage = strona(() => import("./pages/ShrinkagePage.jsx"));
 const ResinSettingsPage = strona(() => import("./pages/ResinSettingsPage.jsx"));
 const Reviews = strona(() => import("./pages/Reviews.jsx"));
@@ -104,7 +102,7 @@ const KOMPONENTY = {
   ToolsJewelry,
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
-  LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
+  LaserParametersPage, ShrinkagePage, RingBlankPage,
   Privacy, Reviews, B2B, LocalPrint3D, NotFound,
 };
 
