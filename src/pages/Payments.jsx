@@ -767,7 +767,7 @@ export default function Payments() {
 
             <p className="text-neutral-500 text-sm text-center mb-8">
               {l.contact}{" "}
-              <Link to="/contact/" className="text-amber-400 hover:text-amber-300">{l.contactLink}</Link>
+              <Link to="/contact/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{l.contactLink}</Link>
             </p>
 
             <PolicyLinks current="payments" />

@@ -234,15 +234,15 @@ export default function Faq() {
           <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-8 text-sm">
             <p className="text-neutral-400 mb-3">{l.procesy}</p>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
-              <Link to="/payments/" className="text-amber-400 hover:text-amber-300">{l.linkPlatnosci}</Link>
-              <Link to="/order-process/" className="text-amber-400 hover:text-amber-300">{l.linkRealizacji}</Link>
-              <Link to="/order/status/" className="text-amber-400 hover:text-amber-300">{l.linkZamowienie}</Link>
+              <Link to="/payments/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{l.linkPlatnosci}</Link>
+              <Link to="/order-process/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{l.linkRealizacji}</Link>
+              <Link to="/order/status/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{l.linkZamowienie}</Link>
             </div>
           </div>
 
           <p className="text-neutral-500 text-sm text-center mb-8">
             {l.kontakt}{" "}
-            <Link to="/contact/" className="text-amber-400 hover:text-amber-300">{l.kontaktLink}</Link>
+            <Link to="/contact/" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">{l.kontaktLink}</Link>
           </p>
 
           <PolicyLinks current="faq" />

@@ -59,7 +59,7 @@ const LABELS = {
 // eslint-disable-next-line no-useless-escape
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function NewsletterForm({ compact = false }) {
+export default function NewsletterForm({ compact = false, wStopce = false }) {
   // Formularz stoi teraz w dwoch miejscach strony glownej, przy kalkulatorach
   // i w stopce. Staly identyfikator dawalby dwa te same id w jednym dokumencie,
   // przez co etykieta wskazywalaby zawsze pierwsze pole.
@@ -144,17 +144,24 @@ export default function NewsletterForm({ compact = false }) {
   }
 
   return (
+    // DWA TE SAME FORMULARZE NA JEDNEJ STRONIE TO DWA PUNKTY ORIENTACYJNE
+    // O TEJ SAMEJ NAZWIE. Strona glowna ma zapis w tresci i drugi w stopce,
+    // wiec czytnik ekranu wymienial dwa razy "Zapis na newsletter" i nie
+    // dawalo sie ich rozroznic. axe: landmark-unique, pomiar 2026-09-04.
     <form
       onSubmit={handleSubmit}
       className={`rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/10 via-neutral-900/40 to-blue-400/10 backdrop-blur-sm p-5 ${compact ? "" : "md:p-6"}`}
-      aria-label={t.a11y.newsletter}
+      aria-label={wStopce ? t.a11y.newsletterStopka : t.a11y.newsletter}
     >
       <div className="flex items-center gap-2 mb-2">
         <Gift className="w-4 h-4 text-amber-300" aria-hidden="true" />
         <span className="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">{l.hook}</span>
       </div>
+      {/* h2, NIE h3. Formularz stoi na stronach, ktore po `h1` nie maja zadnego
+          innego naglowka, wiec skok o dwa poziomy robil dziure w spisie tresci
+          czytnika ekranu. axe: heading-order, /reviews/, pomiar 2026-09-04. */}
       {!compact && (
-        <h3 className="font-serif text-lg md:text-xl font-semibold text-white mb-2">{l.title}</h3>
+        <h2 className="font-serif text-lg md:text-xl font-semibold text-white mb-2">{l.title}</h2>
       )}
       <p className="text-neutral-400 text-sm leading-relaxed mb-4">{compact ? l.descShort : l.desc}</p>
 

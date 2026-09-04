@@ -251,9 +251,18 @@ const UI = {
 };
 
 
-function StepBar({ step, labels }) {
+function StepBar({ step, labels, nazwa }) {
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2 mb-8 overflow-x-auto">
+    // PASEK PRZEWIJA SIE W BOK NA TELEFONIE, wiec bez `tabIndex` klawiatura
+    // nie ma czego przesunac: kroki poza ekranem sa dla niej niewidoczne.
+    // Nazwa jest konieczna, bo obszar, ktory da sie zlapac, musi umiec sie
+    // przedstawic. axe: scrollable-region-focusable, /order/, 2026-09-04.
+    <div
+      className="flex items-center gap-1.5 sm:gap-2 mb-8 overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+      role="group"
+      aria-label={nazwa}
+      tabIndex={0}
+    >
       {labels.map((label, i) => {
         const done = i < step;
         const active = i === step;
@@ -344,7 +353,10 @@ async function postJSON(url, body, timeoutMs = 20000) {
 }
 
 export default function Order() {
-  const { lang } = useLanguage();
+  // SLOWNIK POD INNA NAZWA, bo `t` w tym pliku to pomocnik `t(etykieta, lang)`
+  // z rdzenia cenowego. Dwa rozne `t` w jednym pliku konczylyby sie tym,
+  // ze slownik zostaje wywolany jak funkcja i cale drzewo sie odmontowuje.
+  const { lang, t: napisy } = useLanguage();
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
 
@@ -616,7 +628,7 @@ export default function Order() {
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-3">{u.title}</h1>
           <p className="text-neutral-400 text-sm mb-8 max-w-xl leading-relaxed">{u.lead}</p>
 
-          <StepBar step={step} labels={u.steps} />
+          <StepBar step={step} labels={u.steps} nazwa={napisy.a11y.krokiZamowienia} />
 
           {/* KROK 1: wybor uslugi */}
           {step === 0 && (

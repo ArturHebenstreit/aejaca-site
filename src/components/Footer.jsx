@@ -157,13 +157,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Lead magnet, email capture before users bounce. Placed above nav for CRO. */}
         <div id="newsletter" className="mb-10 max-w-2xl">
-          <NewsletterForm />
+          <NewsletterForm wStopce />
         </div>
 
         <div className="grid md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/brand-sign-128.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+              <img src="/brand-sign-128.webp" alt="" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
@@ -173,7 +173,7 @@ export default function Footer() {
               i dokumenty po prawej. Jedna kolumna czternastu pozycji rozciagala
               stopke i psula proporcje wzgledem pozostalych kolumn. */}
           <nav aria-label={t.a11y.footerNav} className="md:col-span-2">
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h4>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="space-y-2">
                 <Link to="/shop/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shop}</Link>
@@ -207,7 +207,7 @@ export default function Footer() {
 
           {/* "Obserwuj nas" column, market rates appended below socials */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.followUs}</h4>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.followUs}</h3>
             <div className="flex flex-wrap gap-3">
               {socials.map(({ icon: Icon, href, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}

@@ -102,7 +102,6 @@ export default function Tips({ data, accent = "amber", id }) {
                 </button>
                 <div
                   id={`tip-panel-${i}`}
-                  role="region"
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   }`}
