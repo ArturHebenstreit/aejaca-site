@@ -262,7 +262,20 @@ export default function Navbar() {
                   {isDropdownOnly ? (
                     <button
                       type="button"
-                      onClick={() => setOpenDropdown(openDropdown === dropKey ? null : dropKey)}
+                      // NA MYSZY KLIKNIECIE OTWIERA, A NIE PRZELACZA. Najechanie
+                      // kursorem juz rozwinelo liste, wiec przelacznik zamykal ja
+                      // w tej samej chwili, w ktorej czlowiek w nia klikal, i nie
+                      // otwierala sie ponownie, dopoki kursor nie wyszedl poza
+                      // element i nie wrocil. Pomiar martwych klikniec, 2026-09-04:
+                      // "klik: Tools & Knowledge nie zmienil niczego na stronie".
+                      // Na ekranie dotykowym najechania nie ma, wiec tam przelacznik
+                      // zostaje, inaczej listy nie dalo by sie zamknac.
+                      onClick={() => {
+                        const bezKursora = typeof window !== "undefined"
+                          && window.matchMedia?.("(hover: none)")?.matches;
+                        setOpenDropdown((biezacy) =>
+                          bezKursora ? (biezacy === dropKey ? null : dropKey) : dropKey);
+                      }}
                       aria-haspopup="true"
                       aria-expanded={openDropdown === dropKey}
                       className={triggerClass}

@@ -229,3 +229,22 @@ Dwie rzeczy, ktore ten pomiar pokazal, a czytanie kodu nie:
 
 Pomiar: `npm run ux:kafelki`. Bramka, zeby nie wrocilo po raz siodmy:
 `scripts/check-kafelki-jasnosc.mjs`. Decyzja: ADR-0039.
+
+### Mapa serwisu starzeje sie szybciej niz serwis
+
+`audyt-ux/sitemap.json` trzyma adresy bezwzgledne razem z portem, a port
+statycznego serwera zmienia sie miedzy sesjami. Uruchomiony na starej mapie
+`bledy.mjs` oddal 186 znalezisk: 180 razy "odnosnik nie odpowiada" i szesc razy
+"strona sie nie wczytala", przy ZERO wykonanych klikniec, bo nie bylo w co
+klikac. Wygladalo to jak awaria serwisu i bylo awaria pomiaru.
+
+**Pomiar, ktory nie umie odroznic martwego serwera od zepsutej strony, jest
+gorszy od braku pomiaru**, bo oddaje liczby, ktore wyglądają na prawdziwe.
+`bledy.mjs` pyta teraz HEAD-em o pierwszy adres z mapy i przerywa z wyjasnieniem,
+zamiast liczyc martwy port jako wady. `--host=127.0.0.1:4210` przestawia mape na
+zywy adres bez crawlowania jej od nowa.
+
+Ta sama mapa na zywym adresie znalazla jedna prawdziwa rzecz: w pasku nawigacji
+najechanie kursorem rozwijalo liste, a klikniecie w te sama etykiete zamykalo ja
+w tej samej chwili i nie otwieralo ponownie, dopoki kursor nie wyszedl poza
+element. Bez klikania tego nie widac: HTML jest poprawny w kazdej chwili.
