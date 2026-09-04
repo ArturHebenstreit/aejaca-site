@@ -468,7 +468,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
 
         return (
           <button key={opt.id} aria-pressed={active} onClick={() => !optDisabled && onChange(opt.id)} disabled={disabled || optDisabled}
-            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
+            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[148px] sm:min-h-[172px] ${
               optDisabled
                 ? "opacity-30 pointer-events-none border-white/5"
                 : active
@@ -485,13 +485,11 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                       nazwy, a nie osobna informacja. */}
                   <Obraz sizes="(min-width: 640px) 180px, 40vw" src={opt.img} alt="" loading="lazy"
                     className={`w-full h-full object-cover transition-all duration-500 ${
-                      active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
+                      active ? "tile-foto scale-105" : "tile-foto group-hover:scale-105"
                     }`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
-                  {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
                 </div>
-                <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
+                <div className="relative p-2.5 sm:p-3 h-full min-h-[148px] sm:min-h-[172px] flex flex-col justify-end">
                   <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-emerald-300" : "text-white"}`}>
                     {label}
                   </div>
@@ -503,7 +501,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                 </div>
               </>
             ) : (
-              <div className={`p-3 sm:p-4 h-full min-h-[120px] sm:min-h-[140px] flex flex-col ${
+              <div className={`p-3 sm:p-4 h-full min-h-[148px] sm:min-h-[172px] flex flex-col ${
                 active ? "bg-emerald-400/10" : ""
               }`}>
                 <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-emerald-300" : "text-neutral-400"}`} />
