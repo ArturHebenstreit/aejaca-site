@@ -1122,6 +1122,7 @@ export default function OrderStatus() {
               {mozliwaRezygnacja && !rezygnacjaOtwarta && (
                 <button
                   type="button"
+                  id="rezygnacja"
                   onClick={() => setRezygnacjaOtwarta(true)}
                   className="mb-4 w-full rounded-lg border border-white/10 px-5 py-2.5 text-xs text-neutral-400 transition-colors hover:border-white/25 hover:text-neutral-200"
                 >
@@ -1130,7 +1131,7 @@ export default function OrderStatus() {
               )}
 
               {mozliwaRezygnacja && rezygnacjaOtwarta && (
-                <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-left">
+                <div id="rezygnacja" className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-left">
                   <h2 className="mb-1 text-sm font-semibold text-white">{u.cancelTitle}</h2>
                   <p className="mb-4 text-xs leading-relaxed text-neutral-400">{u.cancelIntro}</p>
 

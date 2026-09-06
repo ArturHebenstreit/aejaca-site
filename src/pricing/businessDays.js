@@ -77,3 +77,43 @@ export function addBusinessDays(from, count) {
 
 /** Ile dni roboczych trzymamy towar i kwote przy platnosci przelewem. */
 export const TRANSFER_HOLD_BUSINESS_DAYS = 3;
+
+// ============================================================
+// BLOKADA PRZY PLATNOSCI NATYCHMIASTOWEJ
+// ============================================================
+// Kwadrans, bo tyle mniej wiecej trwa platnosc, a nie tyle, ile trwa decyzja
+// klienta. Po klikniecie "zaplac" przegladarka jest juz w Autopay i rezygnacja
+// wyglada tam tak samo jak odejscie od dystrybutora na stacji: nikt nie wraca
+// odwiesic pistoletu. Trzymanie pozycji dobe albo tydzien po takim odejsciu
+// blokowalo klientowi jego wlasna oferte, w tym zmiane waluty na euro, ktora
+// idzie przelewem, czyli osobnym zamowieniem.
+//
+// Zegar liczy sie od OSTATNIEJ proby zaplaty, a nie od zlozenia zamowienia:
+// klient, ktory wraca do bramki po godzinie, dostaje pelny kwadrans, a nie
+// resztke po pierwszym podejsciu.
+//
+// Zaplata, ktora dojdzie po tym czasie, NIE ginie: potwierdzenie z Autopay dla
+// zamowienia poza stanem "czeka na platnosc" idzie do przegladu (`itnAction`),
+// czyli na biurko czlowieka, a nie do kosza.
+//
+// Decyzja wlasciciela z 2026-09-06. Wczesniej: 20 minut przy rezerwacji towaru
+// i SIEDEM DNI przy waznosci zamowienia, w dodatku zapisane w dwoch plikach
+// osobno.
+export const INSTANT_HOLD_MINUTES = 15;
+
+/** Do kiedy trzymamy nieoplacone zamowienie z bramka platnicza. */
+export function instantHoldUntil(now = new Date()) {
+  return new Date(now.getTime() + INSTANT_HOLD_MINUTES * 60_000);
+}
+
+/**
+ * Do kiedy trzymamy nieoplacone zamowienie, zaleznie od metody platnosci.
+ *
+ * Jedna funkcja na oba przypadki, bo kazde miejsce, ktore liczylo to samo
+ * po swojemu, roznilo sie od pozostalych o jedna zmiane.
+ */
+export function holdUntil(paymentMethod, now = new Date()) {
+  return paymentMethod === "bank_transfer"
+    ? addBusinessDays(now, TRANSFER_HOLD_BUSINESS_DAYS)
+    : instantHoldUntil(now);
+}

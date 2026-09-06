@@ -15,6 +15,7 @@ import { dataISO } from "./daty.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
 import { defaultCurrency, normalizeCurrency, eurCentsFromGrosze } from "./pricing/currency.js";
 import { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
+import { holdUntil } from "./pricing/businessDays.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
 export { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
@@ -151,6 +152,14 @@ export const DEFAULT_GROUP = "wybor";
 const ZAMOWIENIE_W_TOKU = new Set(["draft", "awaiting_payment", "awaiting_transfer", "payment_review"]);
 
 /**
+ * Stany, w ktorych pozycje trzyma sam TERMIN, a nie decyzja czlowieka.
+ *
+ * `payment_review` swiadomie tu nie stoi: tam zaplata doszla i czeka na nasze
+ * spojrzenie, wiec pozycji nie zwalnia zaden zegar.
+ */
+const CZEKA_NA_ZAPLATE = new Set(["draft", "awaiting_payment", "awaiting_transfer"]);
+
+/**
  * Zamowienie doszlo do skutku: pozycja jest ZAMKNIETA i znika z oferty.
  *
  * Lista obejmuje WSZYSTKIE etapy pracy, lacznie z ustalaniem szczegolow
@@ -178,11 +187,22 @@ const ZAMOWIENIE_DOSZLO = new Set([
  * Stanu nieznanego nie bierzemy za wolny: pomylka w te strone kaze klientowi
  * zapytac, a w druga sprzedaje mu drugi raz to, co juz od nas dostal.
  */
-export function stanPozycji(item) {
+export function stanPozycji(item, teraz = new Date()) {
   if (item?.order_id == null) return "wolna";
   const stan = String(item.order_status || "");
   // Zamowienie porzucone albo odwolane oddaje pozycje z powrotem do oferty.
   if (stan === "expired" || stan === "cancelled") return "wolna";
+  // TERMIN LICZY SIE SAM, NIE CZEKA NA ZAMIATARKE.
+  //
+  // Stan `expired` wpisuje do bazy cykliczne zadanie, wiec miedzy uplywem
+  // terminu a jego przebiegiem pozycja stala zajeta mimo uplynietej blokady.
+  // Przy tygodniowej blokadzie te kilkadziesiat minut niczego nie zmienialo,
+  // przy kwadransie jest to podwojenie czasu oczekiwania. Zamowienie po
+  // terminie i bez zaplaty nie trzyma juz niczego, niezaleznie od tego, co
+  // stoi w kolumnie `status`.
+  const termin = item.order_expires_at ? new Date(item.order_expires_at) : null;
+  const zaplacone = Boolean(item.order_paid_at);
+  if (!zaplacone && termin && termin <= teraz && CZEKA_NA_ZAPLATE.has(stan)) return "wolna";
   if (ZAMOWIENIE_DOSZLO.has(stan)) return "zamknieta";
   if (ZAMOWIENIE_W_TOKU.has(stan)) return "zajeta";
   return "zajeta";
@@ -598,6 +618,7 @@ export async function getQuoteByRef(pool, quoteRef) {
   const { rows: items } = await pool.query(
     `SELECT i.*, u.token AS upload_token, u.drive_url,
             o.status AS order_status, o.order_ref AS order_ref, o.paid_at AS order_paid_at,
+            o.expires_at AS order_expires_at,
             o.access_token AS order_access_token
        FROM quote_items i
        LEFT JOIN uploads u ON u.id = i.upload_id
@@ -651,13 +672,14 @@ export function quoteItemsForDiscount(quote) {
  * @param {object} [opcje.discount]  { code, reserve } gdzie `reserve` rezerwuje kod w tej transakcji
  * @param {string} [opcje.paymentMethod] 'autopay' albo 'bank_transfer'
  * @param {number} [opcje.eurRate] kurs, po ktorym zamrazamy kwote przelewu w euro
- * @param {Date}   [opcje.expiresAt] wlasny termin waznosci zamowienia
+ * @param {Date}   [opcje.expiresAt] wlasny termin waznosci zamowienia; bez niego
+ *                 liczy go `holdUntil` z metody platnosci, tak samo jak w sklepie
  * @returns {Promise<{orderRef:string, accessToken:string, totalGrosze:number}>}
  */
 export async function convertQuoteToOrder(
   pool, quoteRef,
   { orderRef, delivery = {}, customer = {}, discount = null, consents = null, paymentMethod = "autopay",
-    validityDays = 7, eurRate = null, expiresAt: terminZlecony = null }
+    eurRate = null, expiresAt: terminZlecony = null }
 ) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
@@ -675,11 +697,16 @@ export async function convertQuoteToOrder(
   const credit = await availableDesignCredit(pool, quote.customer_email);
   const creditGrosze = credit ? Math.min(credit.grosze, kwotaPozycji) : 0;
   const accessToken = generateToken();
-  const expiresAt = terminZlecony || new Date(Date.now() + validityDays * 86400_000);
   // Zaplata w euro idzie przelewem, a kwote w euro ZAMRAZAMY przy skladaniu
   // zamowienia, razem z kursem. Gdybysmy przeliczali ja dopiero przy ksiegowaniu,
   // klient przelalby jedna kwote, a my oczekiwalibysmy innej.
   const przelew = paymentMethod === "bank_transfer";
+  // ILE TRZYMAMY NIEOPLACONE ZAMOWIENIE, LICZY JEDNA FUNKCJA DLA CALEGO SERWISU.
+  // Wczesniej stalo tu wlasne "siedem dni", niezalezne od sklepu, i pozycja
+  // wyceny zostawala zajeta przez tydzien po tym, jak klient zamknal karte
+  // w Autopay. Blokowalo mu to jego wlasna oferte, w tym zmiane waluty na euro,
+  // ktora idzie przelewem, czyli osobnym zamowieniem. Decyzja: ADR-0044.
+  const expiresAt = terminZlecony || holdUntil(przelew ? "bank_transfer" : "autopay");
 
   // Dane kontaktowe: to, co klient wpisal na stronie oferty, ma pierwszenstwo
   // przed tym, co zanotowalismy przy rozmowie. Adres e-mail zostaje jednak
@@ -703,7 +730,8 @@ export async function convertQuoteToOrder(
     // `ORDER BY i.id` daje obu transakcjom te sama kolejnosc, wiec zamiast
     // zakleszczenia jedna z nich po prostu czeka.
     const { rows: teraz } = await client.query(
-      `SELECT i.id, i.order_id, o.status AS order_status
+      `SELECT i.id, i.order_id, o.status AS order_status,
+              o.paid_at AS order_paid_at, o.expires_at AS order_expires_at
          FROM quote_items i
          LEFT JOIN orders o ON o.id = i.order_id
         WHERE i.quote_id = $1
@@ -1182,7 +1210,10 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
                 'kind', i.kind, 'group_key', i.group_key, 'selected', i.selected,
                 -- Bez stanu zamowienia regula wyboru wzielaby pozycje juz
                 -- sprzedana za wolna i policzyla ja do kwoty drugi raz.
-                'order_id', i.order_id, 'order_status', o.status
+                -- Termin i zaplata jada razem ze stanem, bo stan pozycji
+                -- zwalnia sie po uplywie blokady, nie czekajac na zamiatarke.
+                'order_id', i.order_id, 'order_status', o.status,
+                'order_paid_at', o.paid_at, 'order_expires_at', o.expires_at
               ) ORDER BY i.id) FILTER (WHERE i.id IS NOT NULL), '[]') AS items
          FROM quotes q
          LEFT JOIN quote_items i ON i.quote_id = q.id
