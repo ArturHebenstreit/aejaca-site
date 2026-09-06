@@ -669,6 +669,28 @@ zmniejsza kartke o kilka procent, co daje bledny rozmiar o jeden do dwoch numero
 
 ---
 
+## KILKA MODELI W JEDNYM ZLECENIU (od 2026-09-06)
+
+Klient może wgrać **do dziesięciu plików naraz** w kalkulatorze druku 3D i na karcie
+usługi w sklepie (druk FDM, druk żywiczny, odlew z metalu). Trzy rzeczy, które warto
+powiedzieć, gdy ktoś pyta o paczkę plików:
+
+1. **Każdy model dostaje własną pozycję w koszyku**, własną cenę policzoną z jego
+   własnej bryły i własną liczbę sztuk. Można więc zamówić trzy sztuki jednego modelu
+   i jedną drugiego.
+2. **Ustawienia są wspólne dla całej paczki** (materiał, kolor, wypełnienie,
+   wykończenie), bo tak wygląda typowe zlecenie. Pojedynczy model da się zmienić
+   później, na jego pozycji w koszyku.
+3. **Dziesięć dotyczy jednego wgrania, nie zamówienia.** Kto ma więcej, wgrywa drugą
+   paczkę **do tego samego koszyka**, a nie składa drugiego zamówienia: wysyłka zostaje
+   jedna. NIE mów klientowi, że ma złożyć osobne zlecenie.
+
+Cena każdego modelu jest wiążąca na tych samych warunkach co zawsze: liczy się
+z objętości zmierzonego pliku. Model, którego nie da się zmierzyć, nie wchodzi do
+koszyka i klient widzi powód przy jego nazwie.
+
+---
+
 ## NARZĘDZIA DO LICZENIA CEN - UŻYWAJ ICH ZAMIAST PAMIĘCI
 
 Masz trzy narzędzia i one, a nie ten dokument, są źródłem kwot i warunków kodów.

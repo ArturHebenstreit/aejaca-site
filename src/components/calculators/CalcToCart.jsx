@@ -11,8 +11,9 @@
 // ten sam rdzen z src/pricing/.
 
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
+import { LIMIT_PACZKI, FORMATY_MODELU, podzielPaczke, komunikatPaczki, wgrajModel, wycenModel, idModelu } from "../../shop/paczkaModeli.js";
 import { Link } from "../../i18n/nav.jsx";
-import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
+import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info, X } from "lucide-react";
 import { DISTORTION_NOTE } from "../../pricing/quoteSummary.js";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
@@ -54,6 +55,13 @@ const UI = {
     describeHintStudio: "np. znak z logo 15x10 cm w sklejce 3 mm, projekt gotowy, termin za 2 tygodnie",
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia do realizacji.",
     attachFailed: "Nie udało się wysłać tego pliku. Spróbuj ponownie albo usuń go i opisz zlecenie.",
+    paczkaTytul: "Kolejne modele w tym samym zleceniu",
+    paczkaOpis: "Wgraj do dziesięciu plików naraz. Każdy dostanie własną pozycję w koszyku, z tymi samymi ustawieniami co powyżej, i własną liczbę sztuk. Ustawienia pojedynczego modelu zmienisz później, na jego pozycji.",
+    paczkaDodaj: "Dodaj modele",
+    paczkaLiczenie: "Liczymy...",
+    paczkaOdrzucony: "Ten plik nie przeszedł wyceny. Usuń go albo wgraj w innym formacie.",
+    paczkaUsun: "Usuń model",
+    paczkaPelna: "Paczka jest pełna. Dodaj ją do koszyka i wgraj następną.",
     needModel: "Wgrany plik",
     needModelHint: "Tego pliku nie przyjęliśmy. Usuń go w kalkulatorze i wgraj inny albo wyślij zlecenie do wyceny.",
     missingSomething: "Uzupełnij brakujące dane",
@@ -114,6 +122,13 @@ const UI = {
     describeHintStudio: "e.g. logo sign 15x10 cm in 3 mm plywood, artwork ready, needed in 2 weeks",
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     attachFailed: "We could not upload this file. Try again, or remove it and describe the job instead.",
+    paczkaTytul: "More models in the same job",
+    paczkaOpis: "Upload up to ten files at once. Each gets its own basket line, with the same settings as above, and its own quantity. You can change a single model later, on its own line.",
+    paczkaDodaj: "Add models",
+    paczkaLiczenie: "Pricing...",
+    paczkaOdrzucony: "This file did not price. Remove it or upload it in another format.",
+    paczkaUsun: "Remove model",
+    paczkaPelna: "The batch is full. Add it to the basket and upload the next one.",
     needModel: "Uploaded file",
     needModelHint: "We did not accept this file. Remove it in the calculator and upload another, or send the job for a quote.",
     missingSomething: "Fill in what is missing",
@@ -174,6 +189,13 @@ const UI = {
     describeHintStudio: "z. B. Logo-Schild 15x10 cm aus 3 mm Sperrholz, Vorlage fertig, benötigt in 2 Wochen",
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     attachFailed: "Diese Datei konnte nicht hochgeladen werden. Versuchen Sie es erneut, oder entfernen Sie sie und beschreiben Sie den Auftrag.",
+    paczkaTytul: "Weitere Modelle im selben Auftrag",
+    paczkaOpis: "Bis zu zehn Dateien auf einmal. Jede bekommt eine eigene Warenkorbzeile mit denselben Einstellungen wie oben und eigener Stückzahl. Ein einzelnes Modell lässt sich später auf seiner Zeile ändern.",
+    paczkaDodaj: "Modelle hinzufügen",
+    paczkaLiczenie: "Wird berechnet...",
+    paczkaOdrzucony: "Diese Datei konnte nicht kalkuliert werden. Entfernen Sie sie oder laden Sie ein anderes Format.",
+    paczkaUsun: "Modell entfernen",
+    paczkaPelna: "Das Paket ist voll. Legen Sie es in den Warenkorb und laden Sie das nächste.",
     needModel: "Hochgeladene Datei",
     needModelHint: "Diese Datei haben wir nicht angenommen. Entfernen Sie sie im Kalkulator und laden eine andere hoch, oder fordern Sie ein Angebot an.",
     missingSomething: "Fehlende Angaben ergänzen",
@@ -292,6 +314,14 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // Kazda pozycja niesie wlasny stan, bo wysylki ida rownolegle i jedna moze
   // sie nie udac, kiedy druga juz przeszla.
   const [attachments, setAttachments] = useState([]);
+  // PACZKA MODELI. Kazdy wpis to przyszla, OSOBNA pozycja koszyka: wlasny plik,
+  // wlasna zmierzona bryla, wlasna cena i wlasna liczba sztuk. Ustawienia bierze
+  // z formularza powyzej, bo taka jest typowa paczka: te same czesci z tego
+  // samego materialu. Stan jest przy kazdym wpisie osobno, bo wysylki i wyceny
+  // ida rownolegle i jedna moze sie nie udac, kiedy druga juz przeszla.
+  const [paczka, setPaczka] = useState([]);
+  const [paczkaKomunikat, setPaczkaKomunikat] = useState(null);
+  const paczkaRef = useRef(null);
   // Plik glowny, ten z ktorego liczy sie cena, tez musi do nas dojechac.
   // Rysunek wektorowy nie ma geometrii, wiec sciezka modelu go odrzucala
   // i zlecenie szlo do pracowni BEZ PLIKU, na ktorym je wyceniono.
@@ -424,6 +454,56 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   const paramsZPodstawa = useMemo(() => ({ ...params, ...podstawaZReki }), [params, podstawaZReki]);
   const paramsKey = JSON.stringify(zamowionych != null ? { ...paramsZPodstawa, qty: zamowionych } : paramsZPodstawa);
+
+  /**
+   * Wgranie kolejnych modeli do tego samego zlecenia.
+   *
+   * Kazdy plik przechodzi ta sama droge, co model glowny: idzie na serwer,
+   * dostaje token, a cena liczy sie przez `/api/price`, czyli przez ten sam
+   * kod, ktory wystawia kwote w koszyku. Osobna formula dla modeli
+   * dodatkowych rozjechalaby sie z rdzeniem przy pierwszej zmianie stawki.
+   *
+   * Wysylki ida rownolegle, bo dziesiec plikow po kolei to dziesiec razy
+   * czekanie. Wynik kazdego wpisuje sie po jego identyfikatorze, wiec
+   * kolejnosc odpowiedzi nie ma znaczenia.
+   */
+  const dodajModele = useCallback(async (pliki) => {
+    if (!API) return;
+    const { przyjete, odrzucone } = podzielPaczke(pliki, paczka.length);
+    setPaczkaKomunikat(komunikatPaczki(odrzucone, lang));
+    if (!przyjete.length) return;
+
+    const nowe = przyjete.map((f, i) => ({
+      id: idModelu(f, i), file: f, name: f.name,
+      busy: true, error: null, token: null, unitGrosze: null, binding: false,
+    }));
+    setPaczka((biezace) => [...biezace, ...nowe]);
+
+    await Promise.all(nowe.map(async (poz) => {
+      const { token, error } = await wgrajModel({ api: API, file: poz.file, lang });
+      if (!token) {
+        setPaczka((b) => b.map((x) => x.id !== poz.id ? x : { ...x, busy: false, error: error || u.paczkaOdrzucony }));
+        return;
+      }
+      const wycena = await wycenModel({ api: API, calculator, lang, paramsKey, uploadToken: token });
+      setPaczka((b) => b.map((x) => x.id !== poz.id ? x : {
+        ...x,
+        busy: false,
+        token,
+        unitGrosze: wycena.ok ? wycena.item?.unitGrosze ?? null : null,
+        // KWOTA WIAZACA MA TEN SAM WARUNEK, CO PRZY MODELU GLOWNYM. Model
+        // dodatkowy bez zmierzonej bryly nie moze wejsc do koszyka jako cena
+        // wiazaca, bo kasa i tak by go odrzucila.
+        binding: Boolean(wycena.ok && wycena.binding),
+        error: wycena.ok ? null : (wycena.wiadomosc || u.paczkaOdrzucony),
+      }));
+    }));
+  }, [calculator, paramsKey, lang, paczka.length, u.paczkaOdrzucony]);
+
+  const usunModel = useCallback((id) => {
+    setPaczka((b) => b.filter((x) => x.id !== id));
+    setPaczkaKomunikat(null);
+  }, []);
 
   const fetchPrice = useCallback(async () => {
     if (!API || !calculator) return;
@@ -616,6 +696,16 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     ...attachments.filter((a) => a.token).map((a) => a.name),
   ];
 
+
+  // PACZKA MA SENS TAM, GDZIE CENA BIERZE SIE Z PLIKU. W kalkulatorze bez
+  // modelu (laser z pola, naprawa) drugi plik nie zmienia niczego, bo cena
+  // wynika z parametrow, a nie z bryly.
+  const paczkaMozliwa = Boolean(uploadToken)
+    && ["print3d_fdm", "print3d_msla", "jewelry_casting"].includes(calculator);
+
+  /** Modele gotowe do wlozenia do koszyka: z tokenem, z cena i bez bledu. */
+  const paczkaGotowa = paczka.filter((m) => m.token && m.binding && m.unitGrosze != null && !m.error);
+
   function addToCart() {
     if (!price || !ready) return;
     cart.add({
@@ -651,6 +741,34 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       // niz karta uslugi, wiec warto wiedziec, skad przyszla.
       source: "calculator",
     });
+
+    // KAZDY MODEL Z PACZKI TO OSOBNA POZYCJA, z tymi samymi ustawieniami
+    // i wlasna cena policzona z jego wlasnej bryly. Liczba sztuk startuje
+    // z jednej: paczka to zwykle rozne czesci, a nie ten sam element wiele
+    // razy, i latwiej dolozyc niz odjac.
+    for (const model of paczkaGotowa) {
+      cart.add({
+        kind: "service",
+        calculator,
+        serviceId,
+        title: t(card.title, lang),
+        image: card.image,
+        params: paramsZPodstawa,
+        scale: 1,
+        fileName: model.name,
+        uploadToken: model.token,
+        fileRetained: true,
+        unitGrosze: model.unitGrosze,
+        description: description.trim() || null,
+        packagingId: isDigital ? null : packagingId,
+        packagingGrosze: packGrosze,
+        withdrawal: "made_to_order",
+        qty: 1,
+        source: "calculator",
+      });
+    }
+    setPaczka([]);
+    setPaczkaKomunikat(null);
     setAdded(true);
   }
 
@@ -793,6 +911,63 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
                 accent={accent}
               />
             </>
+          )}
+
+          {/* PACZKA MODELI. Pole pokazuje sie dopiero, gdy model glowny jest
+              u nas: dopiero wtedy wiadomo, ze ustawienia powyzej maja sens
+              i jest z czego dziedziczyc. Kalkulatory bez pliku go nie widza,
+              bo tam nie ma czego mnozyc. */}
+          {paczkaMozliwa && (
+            <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <div className="mb-1 text-xs uppercase tracking-wide text-neutral-500">{u.paczkaTytul}</div>
+              <p className="mb-3 text-xs leading-relaxed text-neutral-400">{u.paczkaOpis}</p>
+
+              {paczka.length > 0 && (
+                <ul className="mb-3 flex flex-col gap-1.5">
+                  {paczka.map((m) => (
+                    <li key={m.id} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-xs">
+                      <span className="min-w-0 flex-1 truncate text-neutral-300">{m.name}</span>
+                      <span className="shrink-0 text-neutral-400">
+                        {m.busy ? u.paczkaLiczenie
+                          : m.error ? <span className="text-red-300">{m.error}</span>
+                          : money(m.unitGrosze)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => usunModel(m.id)}
+                        aria-label={u.paczkaUsun}
+                        className="shrink-0 rounded p-1 text-neutral-500 transition-colors hover:text-neutral-200"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {paczkaKomunikat && (
+                <p className="mb-3 rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-200">
+                  {paczkaKomunikat}
+                </p>
+              )}
+
+              <input
+                ref={paczkaRef}
+                type="file"
+                multiple
+                accept={FORMATY_MODELU}
+                className="hidden"
+                onChange={(e) => { dodajModele(e.target.files); e.target.value = ""; }}
+              />
+              <button
+                type="button"
+                onClick={() => paczkaRef.current?.click()}
+                disabled={paczka.length >= LIMIT_PACZKI}
+                className="w-full rounded-lg border border-dashed border-white/20 px-4 py-2.5 text-xs text-neutral-300 transition-colors hover:border-white/35 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {paczka.length >= LIMIT_PACZKI ? u.paczkaPelna : u.paczkaDodaj}
+              </button>
+            </div>
           )}
 
           {/* JEDNO POLE NA PLIKI. Wczesniej byly dwa, kazde na jeden plik,

@@ -17,6 +17,7 @@
 // regul: powloke galwaniczna napisalismy przez to dwa razy. Zostaje tu tylko
 // to, czego katalog nie opisuje: pole modelu, suwak skali i wynik.
 import { useState, useMemo, lazy, Suspense } from "react";
+import { FORMATY_MODELU } from "../../shop/paczkaModeli.js";
 import { t, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 // PROGI ILOSCI IDA Z JUBILERKI, nie ze sTuDiO. Odlew liczy `calcNew`, ktore
@@ -40,7 +41,7 @@ import {
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
 /** Te same formaty, ktore mierzy serwer przy wystawianiu kwoty wiazacej */
-const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
+const ACCEPT_MODEL = FORMATY_MODELU;
 
 const TECH_LABEL = { pl: "Odlew z metali szlachetnych", en: "Precious metal casting", de: "Edelmetallguss" };
 

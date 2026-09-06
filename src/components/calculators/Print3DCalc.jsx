@@ -9,6 +9,7 @@
 // Decyzja: ADR-0037.
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
+import { FORMATY_MODELU } from "../../shop/paczkaModeli.js";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import DimensionBox from "./DimensionBox.jsx";
 import { uniformScale, isUniform, dimsFor, volumeFactor, fitsBox, parseScale, serializeScale, describeDims } from "../../utils/dimScale.js";
@@ -22,7 +23,7 @@ import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 
 /** Te same formaty, ktore przyjmuje konfigurator w sklepie */
-const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
+const ACCEPT_MODEL = FORMATY_MODELU;
 import { RESIN_COLORS, getResin } from "../../data/resins.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));

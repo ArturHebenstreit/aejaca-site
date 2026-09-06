@@ -10,10 +10,11 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
 import { Link } from "../../i18n/nav.jsx";
 import { claimHandoff } from "../../data/calcHandoff.js";
-import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
+import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight, X } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
+import { LIMIT_PACZKI, FORMATY_MODELU, podzielPaczke, komunikatPaczki, wgrajModel, wycenModel, idModelu } from "../../shop/paczkaModeli.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
 import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
 import PolaUslugi, { poprawkiWyboru } from "./PolaUslugi.jsx";
@@ -109,6 +110,13 @@ const UI = {
     parsingFile: "Analizuję model",
     printSize: "Wielkość wydruku",
     sendingFile: "Wysyłam plik do wyceny",
+    paczkaTytul: "Więcej modeli w tym zamówieniu",
+    paczkaOpis: "Wgraj do dziesięciu plików naraz. Każdy trafi do koszyka jako osobna pozycja z takimi samymi ustawieniami jak powyżej i własną liczbą sztuk. Pojedynczy model zmienisz później, na jego pozycji w koszyku.",
+    paczkaDodaj: "Dodaj modele",
+    paczkaLiczenie: "Liczymy...",
+    paczkaOdrzucony: "Tego pliku nie wyceniliśmy. Usuń go albo wgraj w innym formacie.",
+    paczkaUsun: "Usuń model z paczki",
+    paczkaPelna: "Paczka jest pełna. Dodaj ją do koszyka, potem wgraj kolejną.",
   },
   en: {
     configure: "Configure and add to cart",
@@ -178,6 +186,13 @@ const UI = {
     parsingFile: "Analysing the model",
     printSize: "Print size",
     sendingFile: "Sending the file for pricing",
+    paczkaTytul: "More models in this order",
+    paczkaOpis: "Upload up to ten files at once. Each one becomes its own basket line, with the same settings as above and its own quantity. You can change a single model later, on its own line in the cart.",
+    paczkaDodaj: "Add models",
+    paczkaLiczenie: "Pricing...",
+    paczkaOdrzucony: "We could not price this file. Remove it or upload it in another format.",
+    paczkaUsun: "Remove model from the batch",
+    paczkaPelna: "The batch is full. Add it to the cart, then upload the next one.",
   },
   de: {
     configure: "Konfigurieren und in den Warenkorb",
@@ -247,6 +262,13 @@ const UI = {
     parsingFile: "Modell wird analysiert",
     printSize: "Druckgroesse",
     sendingFile: "Datei wird zur Kalkulation gesendet",
+    paczkaTytul: "Weitere Modelle in dieser Bestellung",
+    paczkaOpis: "Bis zu zehn Dateien auf einmal hochladen. Jede wird eine eigene Warenkorbzeile mit denselben Einstellungen wie oben und eigener Stückzahl. Ein einzelnes Modell lässt sich später auf seiner Zeile im Warenkorb ändern.",
+    paczkaDodaj: "Modelle hinzufügen",
+    paczkaLiczenie: "Wird berechnet...",
+    paczkaOdrzucony: "Diese Datei konnte nicht kalkuliert werden. Entfernen Sie sie oder laden Sie ein anderes Format hoch.",
+    paczkaUsun: "Modell aus dem Paket entfernen",
+    paczkaPelna: "Das Paket ist voll. Legen Sie es in den Warenkorb, dann laden Sie das nächste hoch.",
   },
 };
 
@@ -304,6 +326,15 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   const [packEngraving, setPackEngraving] = useState("");
   const [lidBackText, setLidBackText] = useState("");
   const [qty, setQty] = useState(1);
+  // PACZKA MODELI. Kazdy wpis to przyszla, OSOBNA pozycja koszyka: wlasny
+  // plik, wlasna zmierzona bryla, wlasna cena. Ustawienia bierze z formularza
+  // powyzej, bo taka jest typowa paczka: te same czesci z tego samego
+  // materialu (patrz src/shop/paczkaModeli.js). Stan jest przy kazdym wpisie
+  // osobno, bo wysylki i wyceny ida rownolegle i jedna moze sie nie udac,
+  // kiedy druga juz przeszla.
+  const [paczka, setPaczka] = useState([]);
+  const [paczkaKomunikat, setPaczkaKomunikat] = useState(null);
+  const paczkaRef = useRef(null);
 
   const [price, setPrice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -496,6 +527,16 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && binding
     && !substrateGap && !needsHumanQuote && !castingFileMissing && !printHold && !fileError;
 
+  // PACZKA MA SENS TAM, GDZIE CENA BIERZE SIE Z PLIKU, i dopiero gdy model
+  // glowny jest juz u nas: dopiero wtedy wiadomo, ze ustawienia powyzej maja
+  // sens i jest z czego dziedziczyc. Przy uslugach liczonych z parametrow
+  // drugi plik nie zmienia niczego, bo cena wynika z parametrow, a nie z bryly.
+  const paczkaMozliwa = Boolean(uploadToken)
+    && ["print3d_fdm", "print3d_msla", "jewelry_casting"].includes(service.calculator);
+
+  /** Modele gotowe do wlozenia do koszyka: z tokenem, z cena i bez bledu. */
+  const paczkaGotowa = paczka.filter((m) => m.token && m.binding && m.unitGrosze != null && !m.error);
+
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
   // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
   // ktory przy naszym materiale nie ma sensu, a serwer i tak by go odrzucil.
@@ -678,6 +719,61 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
     }
   }
 
+  /**
+   * Wgranie kolejnych modeli do tego samego zamowienia.
+   *
+   * Kazdy plik przechodzi ta sama droge, co model glowny: idzie na serwer,
+   * dostaje token, a cena liczy sie przez `/api/price`, czyli przez ten sam
+   * kod, ktory wystawia kwote w koszyku. Osobna formula dla modeli
+   * dodatkowych rozjechalaby sie z rdzeniem przy pierwszej zmianie stawki.
+   *
+   * Wysylki ida rownolegle, bo dziesiec plikow po kolei to dziesiec razy
+   * czekanie. Wynik kazdego wpisuje sie po jego identyfikatorze, wiec
+   * kolejnosc odpowiedzi nie ma znaczenia.
+   */
+  async function dodajModele(pliki) {
+    if (!API) return;
+    const { przyjete, odrzucone } = podzielPaczke(pliki, paczka.length);
+    setPaczkaKomunikat(komunikatPaczki(odrzucone, lang));
+    if (!przyjete.length) return;
+
+    const nowe = przyjete.map((f, i) => ({
+      id: idModelu(f, i), file: f, name: f.name,
+      busy: true, error: null, token: null, unitGrosze: null, binding: false,
+    }));
+    setPaczka((biezace) => [...biezace, ...nowe]);
+
+    // Te same ustawienia co model glowny, zamrozone na chwile wgrania: paczka
+    // to zwykle rozne czesci z tego samego materialu, wiec dziedziczy z
+    // formularza powyzej, a nie liczy wlasnych parametrow.
+    const paramsKey = JSON.stringify({ ...params, ...(service.fixed || {}), ...podstawaZReki });
+
+    await Promise.all(nowe.map(async (poz) => {
+      const { token, error } = await wgrajModel({ api: API, file: poz.file, lang });
+      if (!token) {
+        setPaczka((b) => b.map((x) => x.id !== poz.id ? x : { ...x, busy: false, error: error || u.paczkaOdrzucony }));
+        return;
+      }
+      const wycena = await wycenModel({ api: API, calculator: service.calculator, lang, paramsKey, uploadToken: token });
+      setPaczka((b) => b.map((x) => x.id !== poz.id ? x : {
+        ...x,
+        busy: false,
+        token,
+        unitGrosze: wycena.ok ? wycena.item?.unitGrosze ?? null : null,
+        // KWOTA WIAZACA MA TEN SAM WARUNEK, CO PRZY MODELU GLOWNYM. Model
+        // dodatkowy bez zmierzonej bryly nie moze wejsc do koszyka jako cena
+        // wiazaca, bo kasa i tak by go odrzucila.
+        binding: Boolean(wycena.ok && wycena.binding),
+        error: wycena.ok ? null : (wycena.wiadomosc || u.paczkaOdrzucony),
+      }));
+    }));
+  }
+
+  function usunModel(id) {
+    setPaczka((b) => b.filter((x) => x.id !== id));
+    setPaczkaKomunikat(null);
+  }
+
   function addToCart() {
     if (!price || !ready) return;
     cart.add({
@@ -711,6 +807,33 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
       packagingTextBack: lidBackText.trim() || null,
       qty: effectiveQty,
     });
+
+    // KAZDY MODEL Z PACZKI TO OSOBNA POZYCJA, z tymi samymi ustawieniami
+    // i wlasna cena policzona z jego wlasnej bryly. Liczba sztuk startuje
+    // z jednej: paczka to zwykle rozne czesci, a nie ten sam element wiele
+    // razy, i latwiej dolozyc niz odjac.
+    for (const model of paczkaGotowa) {
+      cart.add({
+        kind: "service",
+        calculator: service.calculator,
+        serviceId: card.id,
+        title: t(card.title, lang),
+        image: card.image,
+        params: { ...params, ...(service.fixed || {}), ...podstawaZReki, ...(printability ? { printability } : {}) },
+        scale: 1,
+        fileName: model.name,
+        uploadToken: model.token,
+        fileRetained: true,
+        unitGrosze: model.unitGrosze,
+        description: description.trim() || null,
+        packagingId: isDigital ? null : packagingId,
+        packagingGrosze: packGrosze,
+        withdrawal: isDigital ? "digital" : "made_to_order",
+        qty: 1,
+      });
+    }
+    setPaczka([]);
+    setPaczkaKomunikat(null);
     setAdded(true);
   }
 
@@ -799,6 +922,63 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
             <p className="text-neutral-500 text-xs -mt-4 mb-6">{u.castingFileRequired}</p>
           )}
         </>
+      )}
+
+      {/* PACZKA MODELI. Pole pokazuje sie dopiero, gdy model glowny jest
+          u nas: dopiero wtedy wiadomo, ze ustawienia powyzej maja sens
+          i jest z czego dziedziczyc. Uslugi liczone z parametrow, bez
+          pliku, go nie widza, bo tam nie ma czego mnozyc. */}
+      {paczkaMozliwa && (
+        <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <div className="mb-1 text-xs uppercase tracking-wide text-neutral-500">{u.paczkaTytul}</div>
+          <p className="mb-3 text-xs leading-relaxed text-neutral-400">{u.paczkaOpis}</p>
+
+          {paczka.length > 0 && (
+            <ul className="mb-3 flex flex-col gap-1.5">
+              {paczka.map((m) => (
+                <li key={m.id} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-xs">
+                  <span className="min-w-0 flex-1 truncate text-neutral-300">{m.name}</span>
+                  <span className="shrink-0 text-neutral-400">
+                    {m.busy ? u.paczkaLiczenie
+                      : m.error ? <span className="text-red-300">{m.error}</span>
+                      : money(m.unitGrosze)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => usunModel(m.id)}
+                    aria-label={u.paczkaUsun}
+                    className="shrink-0 rounded p-1 text-neutral-500 transition-colors hover:text-neutral-200"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {paczkaKomunikat && (
+            <p className="mb-3 rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-200">
+              {paczkaKomunikat}
+            </p>
+          )}
+
+          <input
+            ref={paczkaRef}
+            type="file"
+            multiple
+            accept={FORMATY_MODELU}
+            className="hidden"
+            onChange={(e) => { dodajModele(e.target.files); e.target.value = ""; }}
+          />
+          <button
+            type="button"
+            onClick={() => paczkaRef.current?.click()}
+            disabled={paczka.length >= LIMIT_PACZKI}
+            className="w-full rounded-lg border border-dashed border-white/20 px-4 py-2.5 text-xs text-neutral-300 transition-colors hover:border-white/35 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {paczka.length >= LIMIT_PACZKI ? u.paczkaPelna : u.paczkaDodaj}
+          </button>
+        </div>
       )}
 
       {service.acceptsVector && (

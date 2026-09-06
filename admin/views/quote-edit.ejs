@@ -430,6 +430,40 @@
           <% }); %>
         </div>
 
+        <%
+          // PODSUMOWANIE STOI POD POZYCJAMI, a nie tylko w naglowku strony.
+          // Kwoty wpisuje sie tutaj, na dole listy, i tutaj trzeba widziec, co
+          // z nich wyszlo: przewijanie na gore po kazdej wpisanej liczbie
+          // znaczy, ze sumy nie oglada sie w ogole.
+          //
+          // `it.selected` przychodzi z serwera i znaczy "ta pozycja LICZY SIE
+          // do kwoty", a nie "ptaszek jest zaznaczony w bazie": rozstrzyga
+          // o tym `selectedQuoteItems`, ten sam kod, ktory liczy kwote na
+          // stronie oferty i w mailu. Panel niczego tu nie przelicza sam,
+          // wiec nie ma jak sie z nimi rozjechac.
+          var liczone = (items || []).filter(function (it) { return it.selected; });
+          var bezKwoty = (items || []).filter(function (it) { return it.unitGrosze == null; });
+          var poza = (items || []).length - liczone.length;
+        %>
+        <div data-podsumowanie class="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <div class="flex flex-wrap items-baseline justify-between gap-3">
+            <span class="text-neutral-400 text-sm">Do zapłaty za tę ofertę</span>
+            <span class="text-white text-2xl font-semibold">
+              <span data-suma-dol><%= zl(quote.totalGrosze) %></span>
+              <span class="text-neutral-400 text-base" data-waluta-dol><%= quote.currency || "PLN" %></span>
+            </span>
+          </div>
+          <p data-podsumowanie-opis class="text-neutral-500 text-xs mt-1.5 leading-relaxed">
+            Liczą się <span data-liczone><%= liczone.length %></span> z <span data-wszystkie><%= (items || []).length %></span> pozycji.
+            <% if (poza > 0) { %>
+              Poza kwotą: <%= poza %> (odznaczone albo alternatywy w grupie wyboru).
+            <% } %>
+            <% if (bezKwoty.length > 0) { %>
+              Bez wpisanej kwoty: <%= bezKwoty.length %>.
+            <% } %>
+          </p>
+        </div>
+
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
           <button data-dymek="Dopisz pozycję do oferty. Kwota całości przeliczy się sama" type="button" data-dodaj
                   class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
@@ -528,14 +562,19 @@
 
       <div class="flex flex-wrap items-center gap-3">
         <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/send">
-          <button data-dymek="Wyślij ofertę na adres klienta razem z odnośnikiem do zapłaty" class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors"
+          <button data-wyslij data-dymek="Wyślij ofertę na adres klienta razem z odnośnikiem do zapłaty" class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   <%= quote.totalGrosze ? '' : 'disabled' %>>
             <%= wyslana ? 'Wyślij ponownie' : 'Wyślij ofertę' %>
           </button>
         </form>
-        <% if (!quote.totalGrosze) { %>
-          <span class="text-amber-300/80 text-xs">Najpierw wpisz kwoty pozycji.</span>
-        <% } %>
+        <%# PRZYCISK ODZYWA SIE OD RAZU PO WPISANIU KWOTY.
+            Do 2026-09-06 jego stan powstawal raz, przy rysowaniu strony, a kwoty
+            wpisuje sie bez przeladowania. Skutek: kwoty stoja na ekranie, suma
+            u gory sie zgadza, a przycisk dalej jest wygaszony i pisze "najpierw
+            wpisz kwoty pozycji". Zgloszenie wlasciciela, 2026-09-06. %>
+        <span data-wyslij-brak class="text-amber-300/80 text-xs" <%= quote.totalGrosze ? 'hidden' : '' %>>
+          Najpierw wpisz kwoty pozycji.
+        </span>
       </div>
     </section>
 
@@ -788,6 +827,48 @@
       odswiezGrupy(pozycje);
     }
 
+    /**
+     * Podsumowanie pod pozycjami i przycisk wysylki.
+     *
+     * PRZYCISK WYSYLKI POWSTAWAL RAZ, przy rysowaniu strony, a kwoty wpisuje
+     * sie bez przeladowania. Skutek widzial wlasciciel 2026-09-06: piec pozycji
+     * po 49 zl na ekranie, suma u gory zgodna, a przycisk dalej wygaszony
+     * i napis "najpierw wpisz kwoty pozycji", ktory zaprzeczal temu, co widac.
+     * Jedyna droga byl F5, czyli rzecz, ktorej nikt nie zgadnie.
+     *
+     * `poz.selected` przychodzi z serwera i znaczy "ta pozycja LICZY SIE do
+     * kwoty": rozstrzyga o tym `selectedQuoteItems`, ten sam kod, ktory liczy
+     * kwote na stronie oferty i w mailu. Panel nie liczy tego sam, wiec nie ma
+     * jak sie z nimi rozjechac.
+     */
+    function odswiezPodsumowanie(dane) {
+      if (!dane || !dane.quote) return;
+      var pozycje = dane.items || [];
+      var liczone = pozycje.filter(function (poz) { return poz.selected; });
+      var bezKwoty = pozycje.filter(function (poz) { return poz.unitGrosze == null; });
+      var poza = pozycje.length - liczone.length;
+
+      var sumaDol = document.querySelector("[data-suma-dol]");
+      if (sumaDol) sumaDol.textContent = dane.quote.totalGrosze != null
+        ? (dane.quote.totalGrosze / 100).toFixed(2) : "-";
+      var walutaDol = document.querySelector("[data-waluta-dol]");
+      if (walutaDol) walutaDol.textContent = dane.quote.currency || "PLN";
+
+      var opis = document.querySelector("[data-podsumowanie-opis]");
+      if (opis) {
+        var zdania = ["Liczą się " + liczone.length + " z " + pozycje.length + " pozycji."];
+        if (poza > 0) zdania.push("Poza kwotą: " + poza + " (odznaczone albo alternatywy w grupie wyboru).");
+        if (bezKwoty.length > 0) zdania.push("Bez wpisanej kwoty: " + bezKwoty.length + ".");
+        opis.textContent = zdania.join(" ");
+      }
+
+      var wyslij = document.querySelector("[data-wyslij]");
+      var brak = document.querySelector("[data-wyslij-brak]");
+      var mozna = Boolean(dane.quote.totalGrosze);
+      if (wyslij) wyslij.disabled = !mozna;
+      if (brak) brak.hidden = mozna;
+    }
+
     function odswiezNaglowek(dane) {
       if (!dane || !dane.quote) return;
       var suma = document.querySelector("[data-suma]");
@@ -797,6 +878,8 @@
         ? (dane.quote.totalGrosze / 100).toFixed(2) + " zł" : "-";
       if (stanOferty) stanOferty.textContent = dane.quote.status;
       if (waluta) waluta.textContent = dane.quote.currency || "PLN";
+
+      odswiezPodsumowanie(dane);
 
       // Termin liczy SERWER: wpisana liczba dni zamienia sie w date, a data
       // w liczbe dni. Bez przepisania obu pol z odpowiedzi ekran pokazywal

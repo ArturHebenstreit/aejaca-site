@@ -376,8 +376,21 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   const acceptMesh = /const ACCEPT_MESH = "([^"]*)"/.exec(svcConf)?.[1];
   const acceptVector = /const ACCEPT_VECTOR = "([^"]*)"/.exec(svcConf)?.[1];
 
+  // LISTA FORMATOW MOZE STAC W JEDNYM MIEJSCU, i tak jest lepiej: plik, ktory
+  // wskazuje na `FORMATY_MODELU`, nie ma jak sie rozjechac. Bramka czyta wiec
+  // albo napis wpisany wprost, albo wartosc wspolnej stalej, zamiast wymagac
+  // kopii w kazdym pliku. Od 2026-09-06 tak robia `Print3DCalc`
+  // i `MetalCastCalc` (paczka modeli, ADR-0042).
+  const wspolne = czytaj("src/shop/paczkaModeli.js");
+  const FORMATY = /export const FORMATY_MODELU = "([^"]*)"/.exec(wspolne)?.[1] ?? null;
+  const lista = (tresc, nazwa) => {
+    const wprost = new RegExp(`const ${nazwa} = "([^"]*)"`).exec(tresc)?.[1];
+    if (wprost !== undefined) return wprost;
+    return new RegExp(`const ${nazwa} = FORMATY_MODELU`).test(tresc) ? FORMATY : undefined;
+  };
+
   const print3d = czytaj("src/components/calculators/Print3DCalc.jsx");
-  const acceptModel = /const ACCEPT_MODEL = "([^"]*)"/.exec(print3d)?.[1];
+  const acceptModel = lista(print3d, "ACCEPT_MODEL");
 
   const printabilityCheck = czytaj("src/components/calculators/PrintabilityCheck.jsx");
   const acceptCheck = /const ACCEPT = "([^"]*)"/.exec(printabilityCheck)?.[1];
