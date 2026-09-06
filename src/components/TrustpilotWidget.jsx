@@ -1,16 +1,24 @@
-import { useEffect, useRef } from "react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
+import { TRUSTPILOT_BUSINESS, TRUSTPILOT_REVIEWS } from "../data/googleReviews.js";
 
-// ── Trustpilot Business Unit ID ───────────────────────────────────────────────
-// Find it: business.trustpilot.com → Integrations → TrustBox → any widget code
-// Look for: data-businessunit-id="xxxxxxxxxxxxxxxxxxxxxxxx"  (24-char hex string)
-// Then replace the placeholder below and redeploy.
-const BUSINESS_UNIT_ID = "3ZAbneSM708zd1i8";
-// ─────────────────────────────────────────────────────────────────────────────
-
-const PROFILE_URL = "https://www.trustpilot.com/review/aejaca.com";
-const LOCALES = { pl: "pl-PL", en: "en-US", de: "de-DE" };
+// ============================================================
+// OPINIE Z TRUSTPILOTA, RYSOWANE PRZEZ NAS
+// ============================================================
+// Do 6 wrzesnia 2026 stala tu ramka Trustpilota, dociagana skryptem
+// z `widget.trustpilot.com`. Nasze CSP dopuszcza skrypty tylko z wlasnej
+// domeny i z Cloudflare, wiec przegladarka odmawiala go wykonac i ramka nie
+// mogla sie pojawic ani razu, od poczatku. Sekcja nie byla widoczna wylacznie
+// dlatego, ze strona glowna zaslania ja progiem liczby opinii.
+//
+// Decyzja wlasciciela z 2026-09-06: pokazujemy opinie, ktore trzymamy u siebie,
+// tak jak robi to blok Google. Tresci lezaly juz w `googleReviews.js` razem
+// z tlumaczeniami i nie czytal ich zaden plik.
+//
+// Co przez to tracimy: gwiazdki nie odswiezaja sie same, wiec nowa opinia
+// wymaga dopisania jej do `TRUSTPILOT_REVIEWS`. Co zyskujemy: sekcja rysuje sie
+// zawsze, tak samo w prerenderze i u klienta, i nikt obcy nie wykonuje kodu na
+// stronie glownej.
 
 const LABELS = {
   pl: {
@@ -18,25 +26,51 @@ const LABELS = {
     title: "Zaufały nam kolejne osoby",
     subtitle: "Sprawdź opinie lub podziel się swoim doświadczeniem z AEJaCA.",
     ctaBtn: "Napisz recenzję na Trustpilot",
-    setupNote: "Widget załaduje się po dodaniu Business Unit ID.",
+    stars: "gwiazdek na pięć",
+    translationOf: "Tłumaczenie",
+    all: "Zobacz wszystkie opinie na Trustpilot",
   },
   en: {
     tag: "Trustpilot",
     title: "Trusted by our customers",
     subtitle: "Check our reviews or share your own experience with AEJaCA.",
     ctaBtn: "Write a review on Trustpilot",
-    setupNote: "Widget will load after adding the Business Unit ID.",
+    stars: "stars out of five",
+    translationOf: "Translation",
+    all: "See all reviews on Trustpilot",
   },
   de: {
     tag: "Trustpilot",
     title: "Von unseren Kunden vertraut",
     subtitle: "Lesen Sie unsere Bewertungen oder teilen Sie Ihre eigene Erfahrung.",
     ctaBtn: "Bewertung auf Trustpilot schreiben",
-    setupNote: "Widget wird geladen, nachdem die Business Unit ID hinzugefügt wurde.",
+    stars: "von fünf Sternen",
+    translationOf: "Übersetzung",
+    all: "Alle Bewertungen auf Trustpilot ansehen",
   },
 };
 
-// Trustpilot star icon (official shape)
+// Nazwy miesiecy wpisane wprost, z tego samego powodu, co w bloku Google:
+// dane lokalizacyjne w Node i w przegladarce bywaja z roznych wersji ICU,
+// a rozjazd w renderze wyrzuca gotowy HTML do kosza.
+const MIESIACE = {
+  pl: ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+       "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"],
+  en: ["January", "February", "March", "April", "May", "June",
+       "July", "August", "September", "October", "November", "December"],
+  de: ["Januar", "Februar", "März", "April", "Mai", "Juni",
+       "Juli", "August", "September", "Oktober", "November", "Dezember"],
+};
+
+function dataOpinii(dateStr, lang) {
+  const m = /^(\d{4})-(\d{2})/.exec(dateStr || "");
+  if (!m) return "";
+  const nazwy = MIESIACE[lang] || MIESIACE.en;
+  const miesiac = nazwy[Number(m[2]) - 1];
+  return miesiac ? `${miesiac} ${m[1]}` : m[1];
+}
+
+// Gwiazdka Trustpilota: bialy znak na zielonym kwadracie marki.
 function TpStar({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -45,45 +79,81 @@ function TpStar({ size = 16 }) {
   );
 }
 
+function Gwiazdki({ rating, label }) {
+  const ile = Math.round(Number(rating) || 0);
+  return (
+    <span className="tp-marka inline-flex gap-0.5" role="img" aria-label={`${ile} ${label}`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} className={i < ile ? "" : "opacity-25"}>
+          <TpStar size={13} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function KartaOpinii({ opinia, lang, L }) {
+  const wOryginale = opinia.originalLang === lang;
+  const tlumaczenie = !wOryginale && opinia.translations?.[lang];
+
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3 text-left hover:border-white/20 transition-colors duration-300">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-white font-medium text-sm">{opinia.author}</div>
+          <div className="flex items-center gap-2 mt-1">
+            <Gwiazdki rating={opinia.rating} label={L.stars} />
+            <time className="text-xs text-neutral-400" dateTime={opinia.date}>
+              {dataOpinii(opinia.date, lang)}
+            </time>
+          </div>
+        </div>
+      </header>
+
+      {opinia.title && (
+        <div className="text-white text-sm font-semibold" lang={opinia.originalLang}>
+          {opinia.title}
+        </div>
+      )}
+
+      <blockquote lang={opinia.originalLang} className="text-neutral-300 text-sm leading-relaxed">
+        &ldquo;{opinia.text}&rdquo;
+      </blockquote>
+
+      {tlumaczenie && (
+        <div className="pt-3 border-t border-white/5">
+          <div className="text-xs uppercase tracking-wider text-neutral-400 mb-1">
+            {L.translationOf} ({lang.toUpperCase()})
+          </div>
+          <p lang={lang} className="text-neutral-400 text-xs leading-relaxed italic">
+            {tlumaczenie}
+          </p>
+        </div>
+      )}
+    </article>
+  );
+}
+
 export default function TrustpilotWidget() {
   const { lang, t } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
-  const widgetRef = useRef(null);
   const headerRef = useScrollReveal();
   const boxRef = useScrollReveal();
 
-  const isConfigured = BUSINESS_UNIT_ID !== "PASTE_YOUR_BUSINESS_UNIT_ID_HERE";
+  // Kolejnosc bierzemy z zapisanej daty, a nie z zegara: napis ma byc ten sam
+  // przy buildzie i przy ogladaniu. Porownujemy napisy ISO zwyklym mniejsze
+  // wieksze, bo `localeCompare` siega po dane lokalizacyjne, a te w Node i
+  // w przegladarce bywaja z roznych wersji i wtedy kolejnosc potrafi sie
+  // rozjechac miedzy prerenderem a hydracja.
+  const opinie = [...TRUSTPILOT_REVIEWS]
+    .filter((o) => o.text && o.text.trim())
+    .sort((a, b) => (String(a.date) < String(b.date) ? 1 : String(a.date) > String(b.date) ? -1 : 0));
 
-  useEffect(() => {
-    if (!isConfigured || !widgetRef.current) return;
-
-    const init = () => {
-      if (window.Trustpilot) {
-        window.Trustpilot.loadFromElement(widgetRef.current, true);
-      }
-    };
-
-    // Script already loaded (e.g. navigated back to Home)
-    if (window.Trustpilot) {
-      init();
-      return;
-    }
-
-    // Load script once, then init
-    if (!document.querySelector('script[src*="trustpilot.com/bootstrap"]')) {
-      const script = document.createElement("script");
-      script.src = "//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js";
-      script.async = true;
-      script.onload = init;
-      document.head.appendChild(script);
-    }
-  }, [lang, isConfigured]);
+  if (!opinie.length) return null;
 
   return (
     <section className="py-14 px-4 bg-neutral-950" aria-label={t.a11y.trustpilot}>
       <div className="max-w-4xl mx-auto text-center">
-
-        {/* Header */}
         <div ref={headerRef} className="reveal mb-8">
           <div className="tp-napis inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] font-semibold mb-3">
             <TpStar size={14} />
@@ -95,42 +165,33 @@ export default function TrustpilotWidget() {
           <p className="text-neutral-400 text-sm">{L.subtitle}</p>
         </div>
 
-        {/* TrustBox or setup notice */}
         <div ref={boxRef} className="reveal flex flex-col items-center gap-6">
-          {isConfigured ? (
-            <div
-              ref={widgetRef}
-              className="trustpilot-widget w-full max-w-xl"
-              data-locale={LOCALES[lang] || "pl-PL"}
-              data-template-id="53aa8912dec7e10d38f59f36"
-              data-businessunit-id={BUSINESS_UNIT_ID}
-              data-style-height="140px"
-              data-style-width="100%"
-              data-theme="dark"
+          <div className="grid gap-4 sm:grid-cols-2 w-full">
+            {opinie.map((o) => (
+              <KartaOpinii key={o.id} opinia={o} lang={lang} L={L} />
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={TRUSTPILOT_BUSINESS.profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-400 hover:text-white text-sm underline underline-offset-4 transition-colors"
             >
-              {/* Fallback link shown before widget loads */}
-              <a href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
-                Trustpilot
-              </a>
-            </div>
-          ) : (
-            <div className="w-full max-w-xl h-[140px] rounded-xl border border-[#00b67a]/20 bg-[#00b67a]/5 flex items-center justify-center">
-              <p className="tp-napis text-xs font-mono opacity-70">{L.setupNote}</p>
-            </div>
-          )}
-
-          {/* CTA button */}
-          <a
-            href={PROFILE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-trustpilot inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-[#00b67a]/25 transition-all duration-300"
-          >
-            <TpStar size={15} />
-            {L.ctaBtn}
-          </a>
+              {L.all}
+            </a>
+            <a
+              href={TRUSTPILOT_BUSINESS.writeReviewUrl || TRUSTPILOT_BUSINESS.profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-trustpilot inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-[#00b67a]/25 transition-all duration-300"
+            >
+              <TpStar size={15} />
+              {L.ctaBtn}
+            </a>
+          </div>
         </div>
-
       </div>
     </section>
   );
