@@ -292,6 +292,11 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const [lidBackText, setLidBackText] = useState("");
 
   const [price, setPrice] = useState(null);
+  // GEOMETRIA ZMIERZONA PRZEZ SERWER JEDZIE DO KOSZYKA RAZEM Z POZYCJA.
+  // Kasa sprawdza na niej podstawe kwoty wiazacej. Konfigurator sklepowy
+  // wkladal ja od poczatku, ten kalkulator nie, wiec ta sama pozycja
+  // przechodzila przez kase albo odbijala sie od niej zaleznie od drogi.
+  const [geometry, setGeometry] = useState(null);
   // PODSTAWA KWOTY WIAZACEJ. `binding` przychodzi z serwera, z tej samej
   // reguly, ktora odmawia przyjecia zamowienia. Dopoki jest falszem, kwota
   // jest szacunkiem i koszyk zostaje wygaszony razem z powodem.
@@ -475,7 +480,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
     const nowe = przyjete.map((f, i) => ({
       id: idModelu(f, i), file: f, name: f.name,
-      busy: true, error: null, token: null, unitGrosze: null, binding: false,
+      busy: true, error: null, token: null, geometry: null, unitGrosze: null, binding: false,
     }));
     setPaczka((biezace) => [...biezace, ...nowe]);
 
@@ -490,6 +495,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
         ...x,
         busy: false,
         token,
+        geometry: wycena.geometry || null,
         unitGrosze: wycena.ok ? wycena.item?.unitGrosze ?? null : null,
         // KWOTA WIAZACA MA TEN SAM WARUNEK, CO PRZY MODELU GLOWNYM. Model
         // dodatkowy bez zmierzonej bryly nie moze wejsc do koszyka jako cena
@@ -529,6 +535,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       if (mine !== reqId.current) return;
       if (!resp.ok) {
         setPrice(null);
+        setGeometry(null);
         setBinding(false);
         setMissing(Array.isArray(data.missing) ? data.missing : []);
         setError(data.code || "no_price");
@@ -536,6 +543,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
         return;
       }
       setPrice(data.item);
+      setGeometry(data.geometry || null);
       setBinding(data.binding !== false);
       setMissing(Array.isArray(data.missing) ? data.missing : []);
       setErrorMsg(null);
@@ -718,6 +726,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       // kwote, bo sprawdza to samo, co sprawdzil ekran: czy kwota wynika
       // z pomiaru albo z wpisanych wymiarow, czy z przedzialu.
       params: paramsZPodstawa,
+      geometry,
       scale,
       fileName: file?.name || null,
       uploadToken,
@@ -754,6 +763,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
         title: t(card.title, lang),
         image: card.image,
         params: paramsZPodstawa,
+        geometry: model.geometry || null,
         scale: 1,
         fileName: model.name,
         uploadToken: model.token,

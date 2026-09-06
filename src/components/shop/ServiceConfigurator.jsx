@@ -759,6 +759,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
         ...x,
         busy: false,
         token,
+        geometry: wycena.geometry || null,
         unitGrosze: wycena.ok ? wycena.item?.unitGrosze ?? null : null,
         // KWOTA WIAZACA MA TEN SAM WARUNEK, CO PRZY MODELU GLOWNYM. Model
         // dodatkowy bez zmierzonej bryly nie moze wejsc do koszyka jako cena
@@ -820,6 +821,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
         title: t(card.title, lang),
         image: card.image,
         params: { ...params, ...(service.fixed || {}), ...podstawaZReki, ...(printability ? { printability } : {}) },
+        geometry: model.geometry || null,
         scale: 1,
         fileName: model.name,
         uploadToken: model.token,

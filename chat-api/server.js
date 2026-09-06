@@ -3560,6 +3560,19 @@ const MIN_JOB_DESCRIPTION = 20;
  */
 const USLUGI_BEZ_OPISU = new Set(["jewelry_ring_config"]);
 
+/**
+ * Odmowa przyjecia pozycji zostawia slad w logu.
+ *
+ * 6 wrzesnia 2026 klientka trzy razy probowala zlozyc zamowienie i trzy razy
+ * dostala czterysta. W logu nie bylo NIC: piecsetka krzyczy sama, a odmowa
+ * ze zdaniem dla klienta wychodzila cicho. Zeby dowiedziec sie, ktora regula
+ * odbila zamowienie, trzeba bylo zgadywac z opisu, ktory przyslala mailem.
+ * Piszemy wiec sam powod i kalkulator, bez danych osobowych i bez tresci pliku.
+ */
+function logOdmowyZamowienia(kod, kalkulator) {
+  console.warn(`[orders] pozycja odrzucona: ${kod}${kalkulator ? ` (${kalkulator})` : ""}`);
+}
+
 app.post("/api/orders", express.json({ limit: "1mb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo zamowien z tego miejsca, sprobuj za chwile" }),
   async (req, res) => {
@@ -3698,6 +3711,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       const bezOpisu = USLUGI_BEZ_OPISU.has(String(raw.calculator || ""))
         || Boolean(raw.quoteRef);
       if (!bezOpisu && (!description || description.length < MIN_JOB_DESCRIPTION)) {
+        logOdmowyZamowienia("description_required", raw.calculator);
         return res.status(400).json({
           error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
             + MIN_JOB_DESCRIPTION + " znakow).",
@@ -3715,13 +3729,24 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       //
       // Regula stoi w lustrze `src/pricing/bindingBasis.js`, wiec przegladarka
       // wygasza przycisk z tego samego powodu, dla ktorego serwer odmawia.
+      //
+      // GEOMETRIA DO TEJ DECYZJI MUSI BYC TA SAMA, Z KTOREJ WYSZLA CENA.
+      // Do 6 wrzesnia 2026 cena szla z `itemGeometry` (czyli z bazy, spod
+      // tokenu pliku), a ten sprawdzian z `raw.geometry`, czyli z przegladarki.
+      // Kalkulator w sTuDiO nie wklada geometrii do koszyka, bo plik lezy
+      // u nas i wystarczy token. Konfigurator sklepowy wklada. Ta sama pozycja
+      // przechodzila wiec albo odbijala sie od kasy zaleznie od tego, ktora
+      // droga klient przyszedl, a komunikat brzmial "wgraj model" przy modelu
+      // dawno wgranym i zmierzonym. Klientka opisala to slowami: koszyk ich nie
+      // widzi, a konstruktor widzi i liczy.
       const podstawa = bindingBasis({
         calculator: raw.calculator,
         params: raw.params,
-        geometry: raw.geometry || null,
+        geometry: itemGeometry,
         fromQuote: Boolean(raw.quoteRef),
       });
       if (!podstawa.binding) {
+        logOdmowyZamowienia(`no_binding_basis:${podstawa.missing.join("+")}`, raw.calculator);
         return res.status(400).json({
           error: "Tej pozycji nie mozemy przyjac po cenie wiazacej, bo nie wynika ona z pomiaru."
             + " Wgraj model albo podaj wymiary, albo wyslij zapytanie o wycene.",
@@ -3744,6 +3769,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       // blad dopiero przy platnosci.
       const brakPodl = brakPodloza({ calculator: raw.calculator, params: raw.params });
       if (brakPodl) {
+        logOdmowyZamowienia(brakPodl, raw.calculator);
         return res.status(400).json({
           error: {
             substrate_required: "Wybierz, na czym mamy pracowac: na Twoim przedmiocie, na Twoim materiale czy na naszym.",

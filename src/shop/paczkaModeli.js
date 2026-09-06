@@ -116,7 +116,17 @@ export async function wycenModel({ api, calculator, lang = "pl", paramsKey, uplo
         wiadomosc: typeof data?.error === "string" && data.error.trim() ? data.error.trim() : null,
       };
     }
-    return { ok: true, item: data.item, binding: data.binding !== false, missing: data.missing || [] };
+    // Geometria wraca razem z cena i jedzie do koszyka razem z pozycja: kasa
+    // sprawdza na niej podstawe kwoty wiazacej. Token pliku wystarczy serwerowi,
+    // ale pozycja, ktora niesie oba, przezyje tez wygasniecie pliku bez zmiany
+    // kwoty w oczach klienta.
+    return {
+      ok: true,
+      item: data.item,
+      geometry: data.geometry || null,
+      binding: data.binding !== false,
+      missing: data.missing || [],
+    };
   } catch {
     return { ok: false, error: "network" };
   }
