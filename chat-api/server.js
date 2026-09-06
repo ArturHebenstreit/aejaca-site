@@ -54,6 +54,7 @@ import {
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
   sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
+import { znanyPowod, zapisPowodu } from "./pricing/powodyRezygnacji.js";
 import { DROGI_ZAMKNIECIA, drogaZamkniecia, domyslnyZwrotGrosze } from "./drogiZamkniecia.js";
 import { dataISO, dzisISO } from "./daty.js";
 import {
@@ -5616,6 +5617,81 @@ app.post("/api/orders/:ref/transfer-shortfall", express.json({ limit: "8kb" }), 
  * Wiersz zostaje. Zamowienie jest dokumentem, wiec pytanie "dlaczego ta sztuka
  * wrocila do sprzedazy" musi miec odpowiedz takze za pol roku.
  */
+/**
+ * REZYGNACJA KLIENTA, na jego wlasny wniosek i z podanym powodem.
+ *
+ * Do 2026-09-06 rezygnowac umial wylacznie panel, wiec `cancel_reason` bylo
+ * zawsze NASZYM zdaniem o tym, dlaczego klient odpadl, pisanym po fakcie.
+ * Na pytanie "dlaczego ludzie rezygnuja" nie dalo sie odpowiedziec danymi.
+ *
+ * Trzy rzeczy, ktore ta trasa robi inaczej niz panelowa:
+ *
+ * 1. WPUSZCZA ZETON ZAMOWIENIA, a nie zeton administratora. Ten sam sekret,
+ *    ktorym klient oglada swoje zamowienie i ponawia platnosc. Bez niego
+ *    kazdy, kto zna numer sprawy, kasowalby cudze zamowienia.
+ * 2. POWOD MA KOD Z ZAMKNIETEJ LISTY. Napis poszedlby do bazy w trzech
+ *    jezykach i ten sam powod bylby w zestawieniu trzema roznymi powodami.
+ *    Wlasne zdanie klienta dopisuje sie ZA kodem, wiec raport dalej grupuje.
+ * 3. NIE DOTYKA ZAMOWIENIA OPLACONEGO. Zwrot pieniedzy to osobna droga
+ *    (`/close`), bo tam rozstrzyga sie, czy zwrot jest obowiazkiem
+ *    z regulaminu, czy decyzja handlowa. Przycisk na stronie zamowienia
+ *    pokazuje sie wylacznie przy `awaiting_payment` i `awaiting_transfer`.
+ *
+ * Towar i kod rabatowy wracaja do puli od razu, tak samo jak przy rezygnacji
+ * z panelu: to ta sama czynnosc, tylko z innej reki.
+ */
+app.post("/api/orders/:ref/cancel-by-customer", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const token = String(req.body?.token || "");
+  const kod = String(req.body?.reason || "");
+  const wlasne = String(req.body?.note || "");
+
+  if (!znanyPowod(kod)) {
+    return res.status(400).json({ error: "Nieznany powod rezygnacji", code: "bad_reason" });
+  }
+
+  const { rows } = await pool.query(
+    `SELECT id, status, access_token, fulfilled_at, paid_at FROM orders WHERE order_ref = $1`, [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (!secretMatches(token, order.access_token)) return res.status(403).json({ error: "Brak dostepu" });
+  if (order.paid_at || order.fulfilled_at) {
+    return res.status(409).json({
+      error: "Zamowienie zostalo juz oplacone, napisz do nas",
+      code: "already_paid",
+    });
+  }
+  if (!CANCELLABLE_STATUSES.includes(order.status)) {
+    return res.status(409).json({
+      error: `Zamowienie ma status ${order.status}, nie ma z czego rezygnowac`,
+      code: "not_cancellable",
+    });
+  }
+
+  const cancelled = await pool.query(
+    `UPDATE orders SET status = 'cancelled', cancelled_at = NOW(),
+       cancelled_by = 'klient', cancel_reason = $2
+     WHERE id = $1 AND paid_at IS NULL AND fulfilled_at IS NULL AND status = ANY($3::text[])
+     RETURNING id`,
+    [order.id, zapisPowodu(kod, wlasne), CANCELLABLE_STATUSES]
+  );
+  if (!cancelled.rowCount) {
+    return res.status(409).json({
+      error: "Stan zamowienia zmienil sie przed rezygnacja",
+      code: "state_changed",
+    });
+  }
+
+  const stock = await releaseOrderReservations(pool, order.id);
+  const codes = await releaseOrderRedemptions(pool, order.id);
+  console.log(`[zamowienia] ${ref} rezygnacja klienta (${kod}), zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
+
+  res.json({ ok: true, orderRef: ref });
+});
+
 app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

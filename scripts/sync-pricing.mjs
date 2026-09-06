@@ -45,6 +45,11 @@ const EXTRA = [
   // pierwszej zmianie, a objawem bylby blad dopiero przy platnosci.
   { from: join(ROOT, "src", "data", "inboundDelivery.js"), name: "inboundDelivery.js", source: "src/data/inboundDelivery.js" },
   { from: join(ROOT, "src", "data", "laserSubstrate.js"), name: "laserSubstrate.js", source: "src/data/laserSubstrate.js" },
+  // POWODY REZYGNACJI. Klient wybiera je na stronie zamowienia, serwer musi
+  // uznawac za poprawne DOKLADNIE te same kody, a panel grupuje po nich raport.
+  // Trzecia kopia rozjechalaby sie przy dolozeniu jednego powodu i objawem
+  // byloby ciche odrzucenie rezygnacji, ktora klient uwaza za zlozona.
+  { from: join(ROOT, "src", "data", "powodyRezygnacji.js"), name: "powodyRezygnacji.js", source: "src/data/powodyRezygnacji.js" },
   // KATALOG PYTAN I OPISYWANIE ODPOWIEDZI. Jada tu razem, bo drugie czyta
   // pierwsze. Do 2026-09-03 serwer pocztowy ich nie widzial i wkladal do maila
   // dla pracowni surowy JSON parametrow, a do potwierdzenia dla klienta nie

@@ -425,3 +425,165 @@ export function sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd 
   }
   return lista;
 }
+
+// ============================================================
+// RAPORT: PLATNOSCI NIEUDANE I REZYGNACJE
+// ============================================================
+// Serwer zapisywal kazde powiadomienie od Autopay do tabeli
+// `payment_notifications`, w tym kazde FAILURE, od poczatku istnienia sklepu.
+// Jedynym uzyciem tej tabeli w calym serwisie bylo policzenie wierszy, zeby
+// zablokowac skasowanie zamowienia, ktore ma juz z czym sie wiazac. Nikt nie
+// widzial, ile platnosci pada, przez co konkretnie, ani czy klient po
+// niepowodzeniu wraca i placi za druga proba, czy odpada calkiem. Tak samo
+// rezygnacje: klient moze je zglaszac sam od 2026-09-06, z kodem powodu
+// z zamknietej listy (`src/data/powodyRezygnacji.js`), ale bez tego raportu
+// ta odpowiedz lezala w bazie nieprzeczytana.
+
+/**
+ * Kody powodow rezygnacji, powielone z `src/data/powodyRezygnacji.js`.
+ *
+ * Panel jest osobna aplikacja, wdrazana z wlasnego katalogu (patrz komentarz
+ * przy `MATERIAL_MARKUP` w `admin/server.js`), wiec import przez `../src/`
+ * TUTAJ wywrocilby uruchomienie, gdyby root wdrozenia Railway byl kiedys
+ * ustawiony na `admin/`. Ta kopia jest wiec celowa, nie przeoczeniem.
+ * Zgodnosc z oryginalem pilnuje test w `admin/analityka.test.mjs`: uruchamiany
+ * bezposrednio przez `node` z korzenia repozytorium, a nie w produkcyjnym
+ * wdrozeniu panelu, moze bezpiecznie zaimportowac zrodlo i porownac obie listy.
+ */
+export const KODY_REZYGNACJI = ["cena", "termin", "zmiana_zdania", "platnosc", "pomylka", "gdzie_indziej", "inny"];
+
+/** Kod odczytany z prefiksu `cancel_reason` przed dwukropkiem, albo `null`, gdy nieznany. */
+export function kodZPrefiksu(zapis) {
+  const kod = String(zapis || "").trim().split(":")[0].trim();
+  return KODY_REZYGNACJI.includes(kod) ? kod : null;
+}
+
+/**
+ * Platnosci: ile przychodzi powiadomien wedlug statusu, i co dokladnie pada.
+ *
+ * `status_details` i `gateway_id` mowia, CO i GDZIE nie dziala: odrzucenie
+ * przez bank a przerwana sesja BLIK to dwie rozne rozmowy z Autopay, i dwie
+ * rozne rzeczy do naprawienia. Najwazniejsza liczba jest `odzyskanych`:
+ * zamowienie z FAILURE, po ktorym mimo to przyszlo SUCCESS (na dowolnym
+ * powiadomieniu, NIE tylko w tym oknie: klient czesto wraca dopiero
+ * nastepnego dnia), znaczy, ze niepowodzenie kosztowalo nerwy, a nie
+ * zamowienie. Bez tego rozroznienia kazda FAILURE wygladalaby tak samo
+ * groznie, choc jedna jest kolejka pomylek klienta przy wpisywaniu karty,
+ * a druga jest zepsuta bramka.
+ */
+export async function platnosciNieudane(pool, od, doKiedy) {
+  const [status, szczegoly, kanaly, odzysk] = await Promise.all([
+    pool.query(
+      `SELECT payment_status AS status, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2
+        GROUP BY payment_status ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT COALESCE(status_details, '(brak)') AS szczegol, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2 AND payment_status = 'FAILURE'
+        GROUP BY status_details ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT gateway_id AS kanal, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2 AND payment_status = 'FAILURE'
+        GROUP BY gateway_id ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `WITH nieudane AS (
+         SELECT DISTINCT order_ref FROM payment_notifications
+          WHERE received_at >= $1 AND received_at < $2
+            AND payment_status = 'FAILURE' AND order_ref IS NOT NULL
+       )
+       SELECT COUNT(*) AS zamowien_z_niepowodzeniem,
+              COUNT(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM payment_notifications s
+                 WHERE s.order_ref = nieudane.order_ref AND s.payment_status = 'SUCCESS'
+              )) AS odzyskanych
+         FROM nieudane`,
+      [od, doKiedy]
+    ),
+  ]);
+  return {
+    wedlugStatusu: status.rows,
+    niepowodzeniaWedlugSzczegolu: szczegoly.rows,
+    niepowodzeniaWedlugKanalu: kanaly.rows,
+    zamowienZNiepowodzeniem: Number(odzysk.rows[0]?.zamowien_z_niepowodzeniem || 0),
+    odzyskanych: Number(odzysk.rows[0]?.odzyskanych || 0),
+  };
+}
+
+/**
+ * Rezygnacje, pogrupowane po kodzie powodu i po tym, kto ja zlozyl.
+ *
+ * Kod stoi w PREFIKSIE `cancel_reason`, przed dwukropkiem (`zapisPowodu` w
+ * `src/data/powodyRezygnacji.js`); za dwukropkiem idzie wlasne zdanie klienta.
+ * Grupowanie robimy w JS, nie w SQL: kod liczy sie tylko wtedy, gdy nalezy do
+ * znanej listy, a notatka wpisana recznie przez panel (bez prefiksu) ma isc do
+ * OSOBNEGO worka "reczne", a nie byc zgadywana samym `split_part`. Kwota stoi
+ * obok liczby wierszy, bo rezygnacja z zamowienia za 2000 zl znaczy co innego
+ * niz z zamowienia za 80 zl.
+ */
+export async function rezygnacje(pool, od, doKiedy) {
+  const { rows } = await pool.query(
+    `SELECT cancelled_by, cancel_reason, total_grosze
+       FROM orders
+      WHERE status = 'cancelled' AND cancelled_at >= $1 AND cancelled_at < $2`,
+    [od, doKiedy]
+  );
+  const grupy = new Map();
+  for (const r of rows) {
+    const kto = r.cancelled_by === "klient" ? "klient" : "panel";
+    const kod = kodZPrefiksu(r.cancel_reason) || "reczne";
+    const klucz = `${kto}|${kod}`;
+    const wpis = grupy.get(klucz) || { kto, kod, ile: 0, sumaGrosze: 0 };
+    wpis.ile += 1;
+    wpis.sumaGrosze += Number(r.total_grosze || 0);
+    grupy.set(klucz, wpis);
+  }
+  return [...grupy.values()].sort((a, b) => b.ile - a.ile);
+}
+
+/**
+ * Nieudane podejscia do kasy, jeszcze zanim powstanie wiersz w `orders`.
+ *
+ * `place_order` liczy PROBY zlozenia zamowienia, nie sukcesy: przy bledzie
+ * serwera klient klika ten sam przycisk kilka razy z rzedu. `order_created`
+ * mowi, ile z tych prob naprawde zapisalo wiersz w bazie. Trojka proby ->
+ * utworzone -> oplacone pokazuje, na ktorym etapie gubi sie najwiecej: przed
+ * baza (blad po naszej stronie), po bazie (bramka platnicza), albo nigdzie,
+ * co tez jest odpowiedzia wartosciowa.
+ */
+export async function nieudaneKasy(pool, od, doKiedy, { zWlasnymi = false } = {}) {
+  const [proby, przyczyny] = await Promise.all([
+    pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE action = 'place_order')    AS proby,
+         COUNT(*) FILTER (WHERE action = 'order_created')  AS utworzone,
+         (SELECT COUNT(*) FROM orders
+            WHERE paid_at IS NOT NULL AND created_at >= $1 AND created_at < $2) AS oplacone
+       FROM events
+      WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)} AND category = 'shop'`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT split_part(label, '|', 1) AS powod, COUNT(*) AS ile
+         FROM events
+        WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
+          AND category = 'shop' AND action = 'checkout_failed'
+        GROUP BY 1 ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+  ]);
+  return {
+    proby: Number(proby.rows[0]?.proby || 0),
+    utworzone: Number(proby.rows[0]?.utworzone || 0),
+    oplacone: Number(proby.rows[0]?.oplacone || 0),
+    checkoutFailed: przyczyny.rows,
+  };
+}

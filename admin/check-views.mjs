@@ -301,6 +301,20 @@ const ZESTAWY = {
       { waga: "uwaga", tresc: "Strona wejscia bez ani jednego zapytania." },
       { waga: "spokoj", tresc: "Nic nie odstaje od poprzedniego okresu." },
     ],
+    platnosci: {
+      wedlugStatusu: [{ status: "SUCCESS", ile: 41 }, { status: "FAILURE", ile: 9 }, { status: "PENDING", ile: 2 }],
+      niepowodzeniaWedlugSzczegolu: [{ szczegol: "card_declined", ile: 5 }, { szczegol: "(brak)", ile: 4 }],
+      niepowodzeniaWedlugKanalu: [{ kanal: 101, ile: 6 }, { kanal: 102, ile: 3 }],
+      zamowienZNiepowodzeniem: 7, odzyskanych: 4,
+    },
+    rezygnacje: [
+      { kto: "klient", kod: "cena", ile: 3, sumaGrosze: 45000 },
+      { kto: "panel", kod: "reczne", ile: 1, sumaGrosze: 20000 },
+    ],
+    nieudaneKasy: {
+      proby: 120, utworzone: 98, oplacone: 80,
+      checkoutFailed: [{ powod: "order_create", ile: 10 }, { powod: "payment_start", ile: 6 }],
+    },
   },
   "analytics-szczegoly": {
     user: uzytkownik, days: 30, wymiar: "kanal", wartosc: "wyszukiwarki",
