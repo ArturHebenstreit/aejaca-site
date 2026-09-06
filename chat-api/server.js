@@ -50,7 +50,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
-  sendTopUpRequest, sendOrderExpired, sendLeadMail,
+  sendTopUpRequest, sendOrderExpired, sendPaymentReminder, sendLeadMail,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
   sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
@@ -511,6 +511,9 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
   // Chwila prosby o doplate. Od niej biegna trzy dni na uzupelnienie kwoty.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_asked_at TIMESTAMPTZ`).catch(() => {});
+  // Chwila przypomnienia o niedokonczonej platnosci przelewem. Jedno na
+  // zamowienie, patrz `przypomnijONiedokonczonejPlatnosci`.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reminded_at TIMESTAMPTZ`).catch(() => {});
   // Jedno przypomnienie na kod i slad po wiadomosciach sprzed zamowienia.
   pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS reminded_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS mail_log (
@@ -3449,6 +3452,71 @@ async function przypomnijOKodach() {
   }
 }
 if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
+
+/**
+ * Przypomnienie o niedokonczonej wplacie przelewem, dzien przed koncem
+ * rezerwacji (decyzja wlasciciela, 2026-09-06).
+ *
+ * TYLKO przelew. Zamowienie kartowe trzymamy kwadrans (`INSTANT_HOLD_MINUTES`,
+ * `src/pricing/businessDays.js`), wiec przypomnienie doszloby po zwolnieniu
+ * pozycji, gdy nie ma juz czego przypominac. Przelew trzymamy trzy dni robocze
+ * (`TRANSFER_HOLD_BUSINESS_DAYS`), i tam przypomnienie ma sens.
+ *
+ * Warunki, kazdy z osobnym powodem:
+ * - `status = 'awaiting_transfer' AND paid_at IS NULL`, bo mail o platnosci,
+ *   ktora juz doszla, bylby falszem;
+ * - `payment_reminded_at IS NULL`, bo przypomnienie ma byc JEDNO;
+ * - `customer_email IS NOT NULL`, bo nie ma dokad wyslac;
+ * - `expires_at::date - CURRENT_DATE = 1`, doba przed koncem, zeby klient
+ *   zdazyl zlecic przelew, a nie dowiedzial sie o tym po fakcie;
+ * - `transfer_asked_at IS NULL`, bo NIEDOPLATA MA WLASNA ROZMOWE. Zamowienie
+ *   niedoplacone zostaje w `awaiting_transfer` bez `paid_at`, a termin przesuwa
+ *   sie o `DNI_NA_DOPLATE`, wiec bez tego warunku doba przed jego koncem
+ *   poszlaby prosba o przelew na PELNA kwote, zaraz po tym, jak poprosilismy
+ *   o sama roznice. Klient dostalby dwie sprzeczne wiadomosci o jednym
+ *   zamowieniu i mogl zaplacic drugi raz.
+ *
+ * Celowo BEZ `pisalismyDzisiaj` i BEZ sprawdzania wypisu z newslettera
+ * (`wypisany`): to jest wiadomosc TRANSAKCYJNA o wlasnym zamowieniu klienta,
+ * a nie marketing, wiec nie podlega ani limitowi jednej wiadomosci na dobe,
+ * ani zgodzie na newsletter.
+ */
+async function przypomnijONiedokonczonejPlatnosci() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders
+        WHERE status = 'awaiting_transfer' AND paid_at IS NULL
+          AND payment_reminded_at IS NULL AND customer_email IS NOT NULL
+          AND transfer_asked_at IS NULL
+          AND expires_at IS NOT NULL AND expires_at::date - CURRENT_DATE = 1
+        ORDER BY expires_at
+        LIMIT 200`
+    );
+    for (const order of rows) {
+      // Te same dane rachunku, co w pierwszej wiadomosci: `sendTransferInstructions`
+      // sklada `tr` dokladnie tak samo, z tej samej stalej `TRANSFER` i z tych
+      // samych pol zamowienia.
+      const tr = {
+        ...TRANSFER,
+        amountEur: ((order.amount_eur_cents ?? 0) / 100).toFixed(2),
+        reference: order.order_ref,
+        dueAt: order.expires_at,
+      };
+      const poszlo = await sendPaymentReminder(pool, order.id, tr);
+      if (!poszlo) {
+        console.error(`[przypomnienie-platnosci] ${order.order_ref}: bez wysylki, sprobujemy jutro`);
+        continue;
+      }
+      // Stempel PO udanej wysylce. Postawiony wczesniej zamknalby przypomnienie
+      // na zawsze przy pierwszej awarii poczty, i to po cichu.
+      await pool.query("UPDATE orders SET payment_reminded_at = NOW() WHERE id = $1", [order.id]);
+      console.log(`[przypomnienie-platnosci] ${order.order_ref}: przypomnienie poszlo do ${order.customer_email}`);
+    }
+  } catch (e) {
+    console.error("[przypomnienie-platnosci] przeglad nie powiodl sie:", e.message);
+  }
+}
+if (pool) cron.schedule("0 8 * * *", przypomnijONiedokonczonejPlatnosci, { timezone: "Europe/Warsaw" });
 
 /** Ile dni po odbiorze prosimy o ocene. Decyzja wlasciciela, 2026-08-31. */
 const DNI_DO_PROSBY_O_OCENE = 3;

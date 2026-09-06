@@ -166,6 +166,14 @@ const T = {
     wgPoTerminie: "Gdyby przelew wyszedł po tym terminie, zwrócimy go na rachunek nadawcy. Nie musisz o to prosić.",
     wgPonownie: "Zamówienie możesz złożyć ponownie w każdej chwili, na tych samych zasadach. Ceny kruszcu przeliczymy wtedy na nowo.",
 
+    // Przypomnienie o niedokonczonej wplacie przelewem, dzien przed koncem
+    // rezerwacji (decyzja wlasciciela, 2026-09-06). TYLKO przelew: zamowienie
+    // kartowe trzymamy kwadrans, wiec przypomnienie doszloby po zwolnieniu
+    // pozycji.
+    prSubject: (ref) => `Zamówienie ${ref} czeka na wpłatę`,
+    prIntro: "zamówienie nadal czeka na wpłatę, kwota i pozycje są dla Ciebie zarezerwowane. Poniżej jeszcze raz dane do przelewu.",
+    prRezygnacja: "Gdyby zamówienie było już nieaktualne, rezygnacja idzie jednym kliknięciem ze strony zamówienia. Rezerwacja zwalnia się wtedy od razu, a pozycje z wyceny wracają do oferty.",
+
     // Prosba o ocene. Wychodzi TRZY DNI po odbiorze (decyzja wlasciciela,
     // 2026-08-31), a nie w dniu doreczenia: opinia wystawiona po uzyciu rzeczy
     // mowi cos komus, kto ja czyta, a opinia w dniu odbioru ocenia opakowanie.
@@ -302,6 +310,10 @@ const T = {
     wgPoTerminie: "Should the transfer leave after that date, we will return it to the sender's account. You do not need to ask.",
     wgPonownie: "You can place the order again at any time, on the same terms. Precious metal will be recalculated then at the current rate.",
 
+    prSubject: (ref) => `Order ${ref} is waiting for payment`,
+    prIntro: "your order is still waiting for payment, the amount and the items are reserved for you. Below are the transfer details again.",
+    prRezygnacja: "If the order is no longer wanted, one click on the order page cancels it. The reservation is released right away, and items that came from a quote go back to it.",
+
     ocSubject: "How did it turn out? One sentence from you means a lot to us",
     ocIntro: "your order arrived a few days ago and we hope the piece is working out in daily use. Thank you for the trust: with made to order work it is always trust in advance, because the piece comes into being only after the decision.",
     ocProsba: "If the piece works out, one sentence of review helps the next person choose a small workshop over an off the shelf shop.",
@@ -431,6 +443,10 @@ const T = {
     wgIntroCzesc: (kwota) => `die Zahlung wurde nicht rechtzeitig ergänzt, daher schließen wir die Bestellung und die reservierte Ware geht zurück in den Verkauf. Die eingegangenen ${kwota} senden wir an das Konto zurück, von dem sie kamen.`,
     wgPoTerminie: "Sollte die Überweisung nach diesem Termin herausgehen, erstatten wir sie auf das Konto des Absenders. Sie müssen nicht darum bitten.",
     wgPonownie: "Sie können jederzeit erneut bestellen, zu denselben Bedingungen. Edelmetall rechnen wir dann zum aktuellen Kurs neu.",
+
+    prSubject: (ref) => `Bestellung ${ref} wartet auf die Zahlung`,
+    prIntro: "Ihre Bestellung wartet weiterhin auf die Zahlung, Betrag und Positionen sind für Sie reserviert. Nachfolgend noch einmal die Überweisungsdaten.",
+    prRezygnacja: "Sollte die Bestellung nicht mehr aktuell sein, genügt ein Klick auf der Bestellseite. Die Reservierung wird sofort frei, und Positionen aus einem Angebot gehen dorthin zurück.",
 
     ocSubject: "Wie ist es geworden? Ein Satz von Ihnen bedeutet uns viel",
     ocIntro: "vor einigen Tagen ist die Bestellung angekommen und wir hoffen, das Stück bewährt sich im Alltag. Danke für Ihr Vertrauen: bei Auftragsarbeit ist es immer Vertrauen im Voraus, denn das Stück entsteht erst nach der Entscheidung.",
@@ -1200,6 +1216,68 @@ export function buildOrderExpired(order) {
 }
 
 /**
+ * Przypomnienie o niedokonczonej wplacie przelewem, dzien przed koncem
+ * rezerwacji (`TRANSFER_HOLD_BUSINESS_DAYS`, patrz `src/pricing/businessDays.js`).
+ *
+ * TYLKO przelew. Zamowienie kartowe trzymamy kwadrans (`INSTANT_HOLD_MINUTES`),
+ * wiec przypomnienie doszloby po zwolnieniu pozycji, gdy nie ma juz czego
+ * przypominac. Decyzja wlasciciela, 2026-09-06.
+ *
+ * Dane do przelewu i tytul sa TE SAME, co w pierwszej wiadomosci: `tr` sklada
+ * ten sam kod, ktory wysyla `sendTransferInstructions`, a nie wlasna kopia.
+ *
+ * Bez nacisku i bez marketingu: to wiadomosc o wlasnym zamowieniu klienta,
+ * wiec mowi tylko, ile jest do zaplaty, do kiedy czekamy i jak zrezygnowac,
+ * gdyby zamowienie bylo juz nieaktualne. Zdanie o rezygnacji nie obiecuje
+ * powrotu do oferty kazdemu: zamowienie ze sklepu zadnej oferty nie ma.
+ */
+export function buildPaymentReminder(order, tr) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const rows = transferRows(l, tr);
+  // Pelne odnosniki zamowienia (status, proces, regulamin) razem ze zdaniem
+  // o platnosciach: to jedyny mail o przelewie, w ktorym klient moze chciec
+  // zobaczyc takze status, a nie tylko dane do wplaty.
+  const odnosniki = [
+    zdanieZAdresem(l.zdaniePlatnosci, adres(lang, "/payments/")),
+    ...odnosnikiZamowienia(order, l, lang),
+  ];
+
+  const html = koperta({ lang, odnosniki, srodek: `
+    <p style="margin:0 0 6px">${esc(l.hi)}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${esc(l.prIntro)}</p>
+
+    <div style="border:1px solid #eee;border-radius:10px;padding:18px;margin-bottom:20px">
+      <p style="margin:0 0 4px;font-size:12px;color:#777">${esc(l.trAmount)}</p>
+      <p style="margin:0 0 16px;font-size:26px;font-weight:800">${esc(tr.amountEur)} EUR</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${rows.map(([k, v]) => `<tr>
+          <td style="padding:6px 0;color:#777;white-space:nowrap;vertical-align:top">${esc(k)}</td>
+          <td style="padding:6px 0;text-align:right;font-family:ui-monospace,monospace;word-break:break-all">${esc(String(v))}</td>
+        </tr>`).join("")}
+      </table>
+    </div>
+
+    <p style="margin:0 0 18px;line-height:1.6;font-size:14px;color:#444">${esc(l.prRezygnacja)}</p>
+
+    <h3 style="font-size:14px;margin:20px 0 6px">${esc(l.questions)}</h3>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${esc(l.questionsBody)}</p>
+  ` });
+
+  const text = [
+    l.hi, "", l.prIntro, "",
+    `${l.trAmount}: ${tr.amountEur} EUR`,
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    "", l.prRezygnacja,
+    "", `${l.questions}: ${l.questionsBody}`,
+    "", odnosnikiText(lang, odnosniki),
+    "", stopkaText(lang),
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.prSubject(order.order_ref), text, html };
+}
+
+/**
  * Podziekowanie i prosba o ocene, TRZY DNI po odbiorze.
  *
  * Osobna wiadomosc, a nie dopisek do potwierdzenia odbioru, z dwoch powodow.
@@ -1360,6 +1438,23 @@ export async function sendOrderExpired(pool, orderId) {
     return await sendViaGmail([buildOrderExpired(order)]);
   } catch (e) {
     console.error("[wygasniecie] wiadomosc nie zostala wyslana:", e.message);
+    return false;
+  }
+}
+
+/**
+ * Wysylka przypomnienia o niedokonczonej platnosci. Wolana z crona, wiec
+ * nigdy nie rzuca wyjatkiem: stempel w bazie stawia dopiero wywolujacy, po
+ * odebraniu `true`.
+ */
+export async function sendPaymentReminder(pool, orderId, tr) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = rows[0];
+    if (!order?.customer_email) return false;
+    return await sendViaGmail([buildPaymentReminder(order, tr)]);
+  } catch (e) {
+    console.error("[przypomnienie-platnosci] wiadomosc nie zostala wyslana:", e.message);
     return false;
   }
 }
