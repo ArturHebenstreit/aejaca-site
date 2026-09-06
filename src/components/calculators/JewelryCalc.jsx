@@ -631,11 +631,10 @@ export default function JewelryCalc({ lang = "pl" }) {
                         onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
                           <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
-                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "tile-foto scale-105" : "tile-foto group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40">⛓</span>
                         )}
-                        <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                       </div>
                       <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(w.label, lang)}
@@ -681,11 +680,10 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-black">
                         {c.img ? (
                           <Obraz sizes="(min-width: 640px) 180px, 40vw" src={c.img} alt={t(c.label, lang)} loading="lazy"
-                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "tile-foto scale-105" : "tile-foto group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
                         )}
-                        <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                       </div>
                       <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(c.label, lang)}

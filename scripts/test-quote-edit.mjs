@@ -442,5 +442,27 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   else ok("wersja backendu odswieza sie w tle");
 }
 
+// ── Podsumowanie i przycisk wysylki zyja razem z kwotami ───────────────────
+// Zgloszenie wlasciciela 2026-09-06: piec pozycji po 49 zl wpisanych i zapisanych,
+// suma w naglowku zgodna, a przycisk "Wyslij oferte" dalej wygaszony z napisem
+// "Najpierw wpisz kwoty pozycji". Stan przycisku powstawal RAZ, przy rysowaniu
+// strony, a kwoty wpisuje sie bez przeladowania: jedyna droga byl F5, czyli
+// rzecz, ktorej nikt nie zgadnie. Do tego suma stala wylacznie w naglowku,
+// czyli poza ekranem w chwili, w ktorej sie ja tworzy.
+{
+  ma(WIDOK, /data-wyslij\b/, "przycisk wysylki ma zaczep do odswiezenia");
+  ma(WIDOK, /data-wyslij-brak/, "napis o brakujacych kwotach tez");
+  ma(WIDOK, /wyslij\.disabled = !mozna/, "zapis pozycji przestawia przycisk wysylki");
+  ma(WIDOK, /brak\.hidden = mozna/, "i chowa napis, ktory przestal byc prawda");
+  ma(WIDOK, /data-podsumowanie\b/, "podsumowanie stoi pod pozycjami, a nie tylko w naglowku");
+  ma(WIDOK, /data-suma-dol/, "z kwota, ktora odswieza sie po zapisie");
+  ma(WIDOK, /odswiezPodsumowanie\(dane\)/, "odswiezanie naglowka wola odswiezanie podsumowania");
+  // Panel nie ma prawa liczyc kwoty sam: `selected` przychodzi z serwera,
+  // z tego samego `selectedQuoteItems`, ktore liczy kwote na stronie oferty
+  // i w mailu. Wlasna arytmetyka w przegladarce rozjechalaby sie z nimi.
+  if (/liczone\s*=\s*[^;]*reduce/.test(WIDOK)) zle("panel liczy kwote sam, zamiast czytac ja z serwera");
+  else ok("kwota w podsumowaniu pochodzi z serwera, panel jej nie przelicza");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nEdycja, uklad wyboru i usuwanie oferty: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

@@ -248,3 +248,28 @@ Ta sama mapa na zywym adresie znalazla jedna prawdziwa rzecz: w pasku nawigacji
 najechanie kursorem rozwijalo liste, a klikniecie w te sama etykiete zamykalo ja
 w tej samej chwili i nie otwieralo ponownie, dopoki kursor nie wyszedl poza
 element. Bez klikania tego nie widac: HTML jest poprawny w kazdej chwili.
+
+### Srednia jasnosc przepuszcza mgle. Mierz tez odchylenie
+
+Poprawka kafelkow przeszla moj pomiar i zostala zwrocona przez wlasciciela
+tego samego dnia: "sa juz jasne, ale jakby byly za mgla". Pomiar liczyl SREDNIA
+jasnosc namalowanych pikseli i wszystkie cztery rzeczy, ktore te mgle robily,
+srednia podnosily: odbarwienie, obnizony kontrast, krycie ponizej jedynki
+i warstwa bieli w trybie `plus-lighter`.
+
+**Mgla to wysoka srednia przy niskim odchyleniu.** Miara, ktora nie widzi
+drugiego skladnika, nagradza dokladnie to, co psuje obraz. Od 2026-09-04
+`npm run ux:kafelki` wypisuje trzy kolumny: srednia jasnosc, odchylenie
+standardowe jasnosci i nasycenie. Odbarwienie tez podnosi srednia, wiec
+nasycenie musi stac obok.
+
+Druga rzecz, ktorej nie widac w liczbach, a widac w nazwach: klasa nazywala sie
+`tile-dim`, czyli "kafelek wygaszony", wiec kafelek WYBRANY nie mial jej wcale.
+Kiedy przestalismy wygaszac, wybrany przestal dostawac cokolwiek i zjechal na
+surowa, ciemna fotografie. **Klasa ma nazywac to, CZYM element jest, a nie
+w jakim jest stanie**, bo stan sie zmienia, a reguly zostaja przy nazwie.
+
+Trzecia: mnoznik jasnosci nie podnosi czerni, bo nie ma czego mnozyc. Do
+ciemnych fotografii sluzy krzywa gamma (`feComponentTransfer` w SVG), ktora
+podnosi cienie, zostawia swiatla i ma w cieniach nachylenie WIEKSZE od jedynki,
+czyli zwieksza tam kontrast. Decyzja: ADR-0041.

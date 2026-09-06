@@ -425,3 +425,356 @@ export function sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd 
   }
   return lista;
 }
+
+// ============================================================
+// RAPORT: PLATNOSCI NIEUDANE I REZYGNACJE
+// ============================================================
+// Serwer zapisywal kazde powiadomienie od Autopay do tabeli
+// `payment_notifications`, w tym kazde FAILURE, od poczatku istnienia sklepu.
+// Jedynym uzyciem tej tabeli w calym serwisie bylo policzenie wierszy, zeby
+// zablokowac skasowanie zamowienia, ktore ma juz z czym sie wiazac. Nikt nie
+// widzial, ile platnosci pada, przez co konkretnie, ani czy klient po
+// niepowodzeniu wraca i placi za druga proba, czy odpada calkiem. Tak samo
+// rezygnacje: klient moze je zglaszac sam od 2026-09-06, z kodem powodu
+// z zamknietej listy (`src/data/powodyRezygnacji.js`), ale bez tego raportu
+// ta odpowiedz lezala w bazie nieprzeczytana.
+
+/**
+ * Kody powodow rezygnacji, powielone z `src/data/powodyRezygnacji.js`.
+ *
+ * Panel jest osobna aplikacja, wdrazana z wlasnego katalogu (patrz komentarz
+ * przy `MATERIAL_MARKUP` w `admin/server.js`), wiec import przez `../src/`
+ * TUTAJ wywrocilby uruchomienie, gdyby root wdrozenia Railway byl kiedys
+ * ustawiony na `admin/`. Ta kopia jest wiec celowa, nie przeoczeniem.
+ * Zgodnosc z oryginalem pilnuje test w `admin/analityka.test.mjs`: uruchamiany
+ * bezposrednio przez `node` z korzenia repozytorium, a nie w produkcyjnym
+ * wdrozeniu panelu, moze bezpiecznie zaimportowac zrodlo i porownac obie listy.
+ */
+export const KODY_REZYGNACJI = ["cena", "termin", "zmiana_zdania", "platnosc", "pomylka", "gdzie_indziej", "inny"];
+
+/** Kod odczytany z prefiksu `cancel_reason` przed dwukropkiem, albo `null`, gdy nieznany. */
+export function kodZPrefiksu(zapis) {
+  const kod = String(zapis || "").trim().split(":")[0].trim();
+  return KODY_REZYGNACJI.includes(kod) ? kod : null;
+}
+
+/**
+ * Platnosci: ile przychodzi powiadomien wedlug statusu, i co dokladnie pada.
+ *
+ * `status_details` i `gateway_id` mowia, CO i GDZIE nie dziala: odrzucenie
+ * przez bank a przerwana sesja BLIK to dwie rozne rozmowy z Autopay, i dwie
+ * rozne rzeczy do naprawienia. Najwazniejsza liczba jest `odzyskanych`:
+ * zamowienie z FAILURE, po ktorym mimo to przyszlo SUCCESS (na dowolnym
+ * powiadomieniu, NIE tylko w tym oknie: klient czesto wraca dopiero
+ * nastepnego dnia), znaczy, ze niepowodzenie kosztowalo nerwy, a nie
+ * zamowienie. Bez tego rozroznienia kazda FAILURE wygladalaby tak samo
+ * groznie, choc jedna jest kolejka pomylek klienta przy wpisywaniu karty,
+ * a druga jest zepsuta bramka.
+ */
+export async function platnosciNieudane(pool, od, doKiedy) {
+  const [status, szczegoly, kanaly, odzysk] = await Promise.all([
+    pool.query(
+      `SELECT payment_status AS status, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2
+        GROUP BY payment_status ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT COALESCE(status_details, '(brak)') AS szczegol, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2 AND payment_status = 'FAILURE'
+        GROUP BY status_details ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT gateway_id AS kanal, COUNT(*) AS ile
+         FROM payment_notifications
+        WHERE received_at >= $1 AND received_at < $2 AND payment_status = 'FAILURE'
+        GROUP BY gateway_id ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `WITH nieudane AS (
+         SELECT DISTINCT order_ref FROM payment_notifications
+          WHERE received_at >= $1 AND received_at < $2
+            AND payment_status = 'FAILURE' AND order_ref IS NOT NULL
+       )
+       SELECT COUNT(*) AS zamowien_z_niepowodzeniem,
+              COUNT(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM payment_notifications s
+                 WHERE s.order_ref = nieudane.order_ref AND s.payment_status = 'SUCCESS'
+              )) AS odzyskanych
+         FROM nieudane`,
+      [od, doKiedy]
+    ),
+  ]);
+  return {
+    wedlugStatusu: status.rows,
+    niepowodzeniaWedlugSzczegolu: szczegoly.rows,
+    niepowodzeniaWedlugKanalu: kanaly.rows,
+    zamowienZNiepowodzeniem: Number(odzysk.rows[0]?.zamowien_z_niepowodzeniem || 0),
+    odzyskanych: Number(odzysk.rows[0]?.odzyskanych || 0),
+  };
+}
+
+/**
+ * Rezygnacje, pogrupowane po kodzie powodu i po tym, kto ja zlozyl.
+ *
+ * Kod stoi w PREFIKSIE `cancel_reason`, przed dwukropkiem (`zapisPowodu` w
+ * `src/data/powodyRezygnacji.js`); za dwukropkiem idzie wlasne zdanie klienta.
+ * Grupowanie robimy w JS, nie w SQL: kod liczy sie tylko wtedy, gdy nalezy do
+ * znanej listy, a notatka wpisana recznie przez panel (bez prefiksu) ma isc do
+ * OSOBNEGO worka "reczne", a nie byc zgadywana samym `split_part`. Kwota stoi
+ * obok liczby wierszy, bo rezygnacja z zamowienia za 2000 zl znaczy co innego
+ * niz z zamowienia za 80 zl.
+ */
+export async function rezygnacje(pool, od, doKiedy) {
+  const { rows } = await pool.query(
+    `SELECT cancelled_by, cancel_reason, total_grosze
+       FROM orders
+      WHERE status = 'cancelled' AND cancelled_at >= $1 AND cancelled_at < $2`,
+    [od, doKiedy]
+  );
+  const grupy = new Map();
+  for (const r of rows) {
+    const kto = r.cancelled_by === "klient" ? "klient" : "panel";
+    const kod = kodZPrefiksu(r.cancel_reason) || "reczne";
+    const klucz = `${kto}|${kod}`;
+    const wpis = grupy.get(klucz) || { kto, kod, ile: 0, sumaGrosze: 0 };
+    wpis.ile += 1;
+    wpis.sumaGrosze += Number(r.total_grosze || 0);
+    grupy.set(klucz, wpis);
+  }
+  return [...grupy.values()].sort((a, b) => b.ile - a.ile);
+}
+
+/**
+ * Nieudane podejscia do kasy, jeszcze zanim powstanie wiersz w `orders`.
+ *
+ * `place_order` liczy PROBY zlozenia zamowienia, nie sukcesy: przy bledzie
+ * serwera klient klika ten sam przycisk kilka razy z rzedu. `order_created`
+ * mowi, ile z tych prob naprawde zapisalo wiersz w bazie. Trojka proby ->
+ * utworzone -> oplacone pokazuje, na ktorym etapie gubi sie najwiecej: przed
+ * baza (blad po naszej stronie), po bazie (bramka platnicza), albo nigdzie,
+ * co tez jest odpowiedzia wartosciowa.
+ */
+export async function nieudaneKasy(pool, od, doKiedy, { zWlasnymi = false } = {}) {
+  const [proby, przyczyny] = await Promise.all([
+    pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE action = 'place_order')    AS proby,
+         COUNT(*) FILTER (WHERE action = 'order_created')  AS utworzone,
+         (SELECT COUNT(*) FROM orders
+            WHERE paid_at IS NOT NULL AND created_at >= $1 AND created_at < $2) AS oplacone
+       FROM events
+      WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)} AND category = 'shop'`,
+      [od, doKiedy]
+    ),
+    pool.query(
+      `SELECT split_part(label, '|', 1) AS powod, COUNT(*) AS ile
+         FROM events
+        WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
+          AND category = 'shop' AND action = 'checkout_failed'
+        GROUP BY 1 ORDER BY ile DESC`,
+      [od, doKiedy]
+    ),
+  ]);
+  return {
+    proby: Number(proby.rows[0]?.proby || 0),
+    utworzone: Number(proby.rows[0]?.utworzone || 0),
+    oplacone: Number(proby.rows[0]?.oplacone || 0),
+    checkoutFailed: przyczyny.rows,
+  };
+}
+
+// ============================================================
+// PORZUCENIA: GDZIE DOKLADNIE ODPADA KLIENT
+// ============================================================
+// Raporty wyzej podaja liczby zbiorcze i to wystarcza, zeby wiedziec, ZE cos
+// sie psuje. Nie wystarcza, zeby wiedziec CO: przy siedmiu porzuconych
+// koszykach w tygodniu srednia nie mowi nic, a siedem wierszy mowi wszystko.
+// Dlatego ponizsze funkcje oddaja POJEDYNCZE zdarzenia, z numerem sprawy albo
+// identyfikatorem wizyty, zeby dalo sie kliknac i zobaczyc cala droge.
+//
+// KAZDY WIERSZ MA PROWADZIC DALEJ. Wiersz, ktorego nie da sie sprawdzic, jest
+// ciekawostka, a nie danymi: nieudana platnosc prowadzi do zamowienia, a
+// porzucony koszyk do sciezki wizyty (`/analytics/sesja/...`).
+
+/** Krok, na ktorym stanela wizyta. Kolejnosc ma znaczenie, liczby tez. */
+export const KROKI_SKLEPU = [
+  { nr: 1, id: "koszyk", label: "dodano do koszyka" },
+  { nr: 2, id: "kasa", label: "wejscie do kasy" },
+  { nr: 3, id: "proba", label: "proba zlozenia zamowienia" },
+  { nr: 4, id: "zamowienie", label: "zamowienie zlozone, bez zaplaty" },
+];
+
+const KROK_SQL = `MAX(CASE action
+    WHEN 'add_to_cart'   THEN 1
+    WHEN 'begin_checkout' THEN 2
+    WHEN 'place_order'    THEN 3
+    WHEN 'order_created'  THEN 4
+    ELSE 0 END)`;
+
+/**
+ * Porzucone koszyki, po jednym wierszu na wizyte.
+ *
+ * KROK 3 BEZ KROKU 4 TO NAJWAZNIEJSZY WIERSZ W TEJ TABELI. `place_order` idzie
+ * PRZED sprawdzeniem odpowiedzi serwera, a `order_created` dopiero po niej,
+ * wiec wizyta, ktora ma trzeci krok i nie ma czwartego, to klient, ktory
+ * nacisnal "zamawiam" i dostal odmowe. Takiej wizyty nie widac nigdzie indziej:
+ * w bazie nie ma nawet wiersza zamowienia.
+ *
+ * Kolejnosc po WARTOSCI, nie po czasie: porzucony koszyk za dwa tysiace to
+ * inna sprawa niz porzucony za osiemdziesiat zlotych, a przy przegladaniu od
+ * gory chce sie zobaczyc najpierw ten pierwszy.
+ */
+export async function porzuconeKoszyki(pool, od, doKiedy, { zWlasnymi = false, limit = 100 } = {}) {
+  const { rows } = await pool.query(
+    `WITH zdarzenia AS (
+       SELECT * FROM events WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
+     ),
+     sklep AS (
+       SELECT session,
+              MIN(ts) AS pierwsze,
+              MAX(ts) AS ostatnie,
+              ${KROK_SQL} AS krok,
+              MAX(value) AS wartosc,
+              COALESCE(MAX(country), '') AS kraj,
+              COALESCE(MAX(device), '')  AS urzadzenie,
+              COALESCE(MAX(channel), 'wprost') AS kanal,
+              COUNT(*) FILTER (WHERE action = 'checkout_failed') AS bledy,
+              MAX(label) FILTER (WHERE action = 'checkout_failed') AS powod
+         FROM zdarzenia
+        WHERE category = 'shop'
+        GROUP BY session
+       HAVING ${KROK_SQL} >= 1
+     ),
+     -- Wizyta zakonczona zaplata nie jest porzuceniem, nawet jesli po drodze
+     -- cos w niej padlo. Liczymy zaplacone zamowienia w calej historii tej
+     -- wizyty, a nie tylko w oknie raportu: klient wraca nastepnego dnia.
+     zaplacone AS (
+       SELECT DISTINCT session_id FROM orders
+        WHERE session_id IS NOT NULL AND paid_at IS NOT NULL
+     )
+     SELECT s.* FROM sklep s
+      WHERE s.session NOT IN (SELECT session_id FROM zaplacone)
+      ORDER BY s.wartosc DESC NULLS LAST, s.ostatnie DESC
+      LIMIT $3`,
+    [od, doKiedy, limit]
+  );
+  return rows;
+}
+
+/**
+ * Nieudane platnosci, po jednej.
+ *
+ * `status_details` mowi, CO odmowilo: odrzucenie przez bank, przerwana sesja
+ * BLIK i brak srodkow to trzy rozne rzeczy i trzy rozne rozmowy. `gateway_id`
+ * mowi GDZIE. A `odzyskana` mowi, czy ta odmowa kosztowala nas zamowienie,
+ * czy tylko nerwy: SUCCESS liczymy w calej historii zamowienia, NIE w oknie
+ * raportu, bo klient czesto wraca dopiero nastepnego dnia.
+ */
+export async function nieudanePlatnosci(pool, od, doKiedy, { limit = 100 } = {}) {
+  const { rows } = await pool.query(
+    `SELECT n.id, n.ts, n.order_ref, n.status_details, n.gateway_id,
+            n.amount_grosze, n.currency, n.hash_valid,
+            o.status AS stan_zamowienia, o.paid_at, o.customer_email, o.total_grosze,
+            EXISTS (
+              SELECT 1 FROM payment_notifications s
+               WHERE s.order_ref = n.order_ref AND s.payment_status = 'SUCCESS'
+            ) AS odzyskana
+       FROM payment_notifications n
+       LEFT JOIN orders o ON o.order_ref = n.order_ref
+      WHERE n.ts >= $1 AND n.ts < $2 AND n.payment_status = 'FAILURE'
+      ORDER BY n.ts DESC
+      LIMIT $3`,
+    [od, doKiedy, limit]
+  );
+  return rows;
+}
+
+/**
+ * Nieudane kasy, po jednej probie.
+ *
+ * To sa te niepowodzenia, po ktorych w bazie NIE MA nawet wiersza zamowienia:
+ * serwer odmowil zalozenia, bramka nie oddala formularza albo przegladarka
+ * zgubila polaczenie. Bez tej listy widac je wylacznie jako roznice miedzy
+ * "proby" a "zlozone" w lejku, czyli jako liczbe bez nazwiska.
+ */
+export async function nieudaneKasyLista(pool, od, doKiedy, { zWlasnymi = false, limit = 100 } = {}) {
+  const { rows } = await pool.query(
+    `SELECT ts, session, label, value, path,
+            COALESCE(country, '') AS kraj, COALESCE(device, '') AS urzadzenie
+       FROM events
+      WHERE ts >= $1 AND ts < $2 ${bezWlasnych(zWlasnymi)}
+        AND category = 'shop' AND action = 'checkout_failed'
+      ORDER BY ts DESC
+      LIMIT $3`,
+    [od, doKiedy, limit]
+  );
+  return rows;
+}
+
+/**
+ * Zamowienia zlozone i nieoplacone.
+ *
+ * Rozni sie od porzuconego koszyka tym, ze TU JEST NUMER SPRAWY i jest adres
+ * e-mail: do tego klienta da sie napisac. To najtansza lista w tym raporcie,
+ * bo kazdy jej wiersz to pieniadze, ktore juz raz byly blisko.
+ */
+export async function zamowieniaBezZaplaty(pool, od, doKiedy, { limit = 100 } = {}) {
+  const { rows } = await pool.query(
+    `SELECT order_ref, status, total_grosze, currency, customer_email, lang,
+            created_at, expires_at, payment_method, payment_status,
+            cancelled_at, cancel_reason, cancelled_by
+       FROM orders
+      WHERE created_at >= $1 AND created_at < $2
+        AND paid_at IS NULL
+        AND status IN ('draft', 'awaiting_payment', 'awaiting_transfer', 'payment_review', 'expired', 'cancelled')
+      ORDER BY total_grosze DESC NULLS LAST, created_at DESC
+      LIMIT $3`,
+    [od, doKiedy, limit]
+  );
+  return rows;
+}
+
+/**
+ * Lejek przelozony na ODPADANIE, czyli na to, ilu ludzi zniknelo na kazdym progu.
+ *
+ * Funkcja czysta, bez bazy, zeby dalo sie ja sprawdzic bez Postgresa i zeby
+ * widok nie liczyl niczego sam. Liczba przy kroku odpowiada na pytanie "ile
+ * osob tu doszlo", a `stracone` na pytanie, po ktorym progu jest dziura.
+ * `udzial` liczymy wzgledem POPRZEDNIEGO kroku, a nie wzgledem wizyt: sto
+ * procent porzucen w kasie znaczy co innego niz jeden procent wizyt.
+ */
+export function odpadanie(lejek = {}) {
+  const progi = [
+    { id: "wizyty", label: "wizyty", ile: Number(lejek.wizyty || 0) },
+    { id: "sklep", label: "sklep", ile: Number(lejek.sklep || 0) },
+    { id: "karta", label: "karta produktu albo uslugi", ile: Number(lejek.karta || 0) },
+    { id: "koszyk", label: "koszyk", ile: Number(lejek.koszyk || 0) },
+    { id: "kasa", label: "kasa", ile: Number(lejek.kasa || 0) },
+    { id: "proba", label: "proba zlozenia", ile: Number(lejek.zlozone || 0) },
+    { id: "oplacone", label: "oplacone", ile: Number(lejek.oplacone || 0) },
+  ];
+  const kroki = progi.map((p, i) => {
+    const poprzedni = i === 0 ? null : progi[i - 1].ile;
+    const stracone = poprzedni == null ? 0 : Math.max(0, poprzedni - p.ile);
+    const udzial = poprzedni ? Math.round((stracone / poprzedni) * 100) : 0;
+    return { ...p, stracone, udzial, zPoprzedniego: poprzedni ? Math.round((p.ile / poprzedni) * 100) : 100 };
+  });
+
+  // NAJWIEKSZEJ DZIURY SZUKAMY OD KOSZYKA W DOL, i to nie jest zawezenie dla
+  // wygody. Przejscie "wizyty -> sklep" zawsze traci najwiecej ludzi w liczbach
+  // bezwzglednych, bo wiekszosc odwiedzajacych przyszla po darmowe narzedzie
+  // albo po wpis na blogu i nigdy nie zamierzala nic kupic. Wskazywanie tego
+  // progu jako problemu numer jeden jest prawdziwe arytmetycznie i bezuzyteczne:
+  // od koszyka w dol stoja ludzie, ktorzy juz chcieli, wiec kazdy stracony
+  // procent jest tam czyms, co da sie naprawic.
+  const doNaprawy = kroki.filter((k) => ["koszyk", "kasa", "proba", "oplacone"].includes(k.id) && k.stracone > 0);
+  const najwieksza = doNaprawy.length
+    ? doNaprawy.reduce((a, b2) => (b2.udzial > a.udzial ? b2 : a))
+    : null;
+  return { kroki, najwieksza };
+}

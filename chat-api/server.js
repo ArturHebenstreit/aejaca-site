@@ -54,6 +54,7 @@ import {
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
   sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
+import { znanyPowod, zapisPowodu } from "./pricing/powodyRezygnacji.js";
 import { DROGI_ZAMKNIECIA, drogaZamkniecia, domyslnyZwrotGrosze } from "./drogiZamkniecia.js";
 import { dataISO, dzisISO } from "./daty.js";
 import {
@@ -2688,6 +2689,29 @@ app.post("/api/quotes/:ref/discount", express.json({ limit: "8kb" }),
  * jej ruszyc; z jego strony przychodzi wylacznie to, czego wczesniej nie
  * wiedzielismy, czyli sposob dostawy, adres i ewentualny kod rabatowy.
  */
+/**
+ * Blad z bazy zapisany tak, zeby dalo sie po nim naprawic usterke.
+ *
+ * 6 wrzesnia 2026 kazda zaplata z oferty konczyla sie piecsetka, a w logu
+ * stalo samo `e.message`. Zdanie bylo akurat dosc dobre, zeby usterke
+ * znalezc ("column amount_eur_cents is of type integer but expression is of
+ * type text"), i to byl przypadek: `pg` niesie w bledzie tabele, kolumne,
+ * ograniczenie i szczegol, a my wyrzucalismy je wszystkie. Przy naruszeniu
+ * klucza obcego albo warunku CHECK samo `message` mowi tyle co nic.
+ *
+ * Do klienta NIE idzie nic z tego: kod bledu bazy opisuje nasz schemat.
+ */
+function logBleduBazy(gdzie, e) {
+  const szczegoly = [
+    e.code ? `kod ${e.code}` : null,
+    e.table ? `tabela ${e.table}` : null,
+    e.column ? `kolumna ${e.column}` : null,
+    e.constraint ? `ograniczenie ${e.constraint}` : null,
+    e.detail ? `szczegol: ${e.detail}` : null,
+  ].filter(Boolean);
+  console.error(`${gdzie}: ${e.message}${szczegoly.length ? ` (${szczegoly.join(", ")})` : ""}`);
+}
+
 app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
   async (req, res) => {
@@ -2803,8 +2827,8 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   } catch (e) {
     if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code });
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[wycena] zaplata z oferty nie powiodla sie:", e.message);
-    res.status(500).json({ error: "Nie udalo sie zlozyc zamowienia" });
+    logBleduBazy("[wycena] zaplata z oferty nie powiodla sie", e);
+    res.status(500).json({ error: "Nie udalo sie zlozyc zamowienia", code: "server_error" });
   }
 });
 
@@ -2917,8 +2941,8 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
     });
   } catch (e) {
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[wycena] konwersja nie powiodla sie:", e.message);
-    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
+    logBleduBazy("[wycena] konwersja nie powiodla sie", e);
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia", code: "server_error" });
   }
 });
 
@@ -3536,6 +3560,19 @@ const MIN_JOB_DESCRIPTION = 20;
  */
 const USLUGI_BEZ_OPISU = new Set(["jewelry_ring_config"]);
 
+/**
+ * Odmowa przyjecia pozycji zostawia slad w logu.
+ *
+ * 6 wrzesnia 2026 klientka trzy razy probowala zlozyc zamowienie i trzy razy
+ * dostala czterysta. W logu nie bylo NIC: piecsetka krzyczy sama, a odmowa
+ * ze zdaniem dla klienta wychodzila cicho. Zeby dowiedziec sie, ktora regula
+ * odbila zamowienie, trzeba bylo zgadywac z opisu, ktory przyslala mailem.
+ * Piszemy wiec sam powod i kalkulator, bez danych osobowych i bez tresci pliku.
+ */
+function logOdmowyZamowienia(kod, kalkulator) {
+  console.warn(`[orders] pozycja odrzucona: ${kod}${kalkulator ? ` (${kalkulator})` : ""}`);
+}
+
 app.post("/api/orders", express.json({ limit: "1mb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo zamowien z tego miejsca, sprobuj za chwile" }),
   async (req, res) => {
@@ -3674,6 +3711,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       const bezOpisu = USLUGI_BEZ_OPISU.has(String(raw.calculator || ""))
         || Boolean(raw.quoteRef);
       if (!bezOpisu && (!description || description.length < MIN_JOB_DESCRIPTION)) {
+        logOdmowyZamowienia("description_required", raw.calculator);
         return res.status(400).json({
           error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
             + MIN_JOB_DESCRIPTION + " znakow).",
@@ -3691,13 +3729,24 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       //
       // Regula stoi w lustrze `src/pricing/bindingBasis.js`, wiec przegladarka
       // wygasza przycisk z tego samego powodu, dla ktorego serwer odmawia.
+      //
+      // GEOMETRIA DO TEJ DECYZJI MUSI BYC TA SAMA, Z KTOREJ WYSZLA CENA.
+      // Do 6 wrzesnia 2026 cena szla z `itemGeometry` (czyli z bazy, spod
+      // tokenu pliku), a ten sprawdzian z `raw.geometry`, czyli z przegladarki.
+      // Kalkulator w sTuDiO nie wklada geometrii do koszyka, bo plik lezy
+      // u nas i wystarczy token. Konfigurator sklepowy wklada. Ta sama pozycja
+      // przechodzila wiec albo odbijala sie od kasy zaleznie od tego, ktora
+      // droga klient przyszedl, a komunikat brzmial "wgraj model" przy modelu
+      // dawno wgranym i zmierzonym. Klientka opisala to slowami: koszyk ich nie
+      // widzi, a konstruktor widzi i liczy.
       const podstawa = bindingBasis({
         calculator: raw.calculator,
         params: raw.params,
-        geometry: raw.geometry || null,
+        geometry: itemGeometry,
         fromQuote: Boolean(raw.quoteRef),
       });
       if (!podstawa.binding) {
+        logOdmowyZamowienia(`no_binding_basis:${podstawa.missing.join("+")}`, raw.calculator);
         return res.status(400).json({
           error: "Tej pozycji nie mozemy przyjac po cenie wiazacej, bo nie wynika ona z pomiaru."
             + " Wgraj model albo podaj wymiary, albo wyslij zapytanie o wycene.",
@@ -3720,6 +3769,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       // blad dopiero przy platnosci.
       const brakPodl = brakPodloza({ calculator: raw.calculator, params: raw.params });
       if (brakPodl) {
+        logOdmowyZamowienia(brakPodl, raw.calculator);
         return res.status(400).json({
           error: {
             substrate_required: "Wybierz, na czym mamy pracowac: na Twoim przedmiocie, na Twoim materiale czy na naszym.",
@@ -3882,7 +3932,17 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          discount_code, discount_grosze, inbound_delivery, session_id, lead_days)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
-         $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
+       -- TYP PARAMETRU PODAJEMY WPROST, i to nie jest ozdobnik.
+       -- 6 wrzesnia 2026 kazda zaplata z oferty konczyla sie piecsetka:
+       -- "column amount_eur_cents is of type integer but expression is of type
+       -- text". Sterownik wysyla parametry BEZ typu, wiec typ ustala serwer
+       -- z kontekstu. Ten sam parametr stoi tu dwa razy: raz goly, przy
+       -- kolumnie, i raz z rzutowaniem, w warunku nizej. Nierozstrzygniety
+       -- parametr schodzi w Postgresie do typu text, a rzutowanie w drugim
+       -- miejscu tego nie cofa: przy kolumnie zostaje tekst i wpis pada.
+       -- Rzutowanie PRZY KOLUMNIE zamyka sprawe niezaleznie od tego, jak
+       -- serwer rozstrzygnalby reszte. Pilnuje scripts/check-parametry-sql.mjs
+         $23, $24::INTEGER, $25::NUMERIC, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
          $26, $27, $28, $29, $30)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
@@ -5616,6 +5676,81 @@ app.post("/api/orders/:ref/transfer-shortfall", express.json({ limit: "8kb" }), 
  * Wiersz zostaje. Zamowienie jest dokumentem, wiec pytanie "dlaczego ta sztuka
  * wrocila do sprzedazy" musi miec odpowiedz takze za pol roku.
  */
+/**
+ * REZYGNACJA KLIENTA, na jego wlasny wniosek i z podanym powodem.
+ *
+ * Do 2026-09-06 rezygnowac umial wylacznie panel, wiec `cancel_reason` bylo
+ * zawsze NASZYM zdaniem o tym, dlaczego klient odpadl, pisanym po fakcie.
+ * Na pytanie "dlaczego ludzie rezygnuja" nie dalo sie odpowiedziec danymi.
+ *
+ * Trzy rzeczy, ktore ta trasa robi inaczej niz panelowa:
+ *
+ * 1. WPUSZCZA ZETON ZAMOWIENIA, a nie zeton administratora. Ten sam sekret,
+ *    ktorym klient oglada swoje zamowienie i ponawia platnosc. Bez niego
+ *    kazdy, kto zna numer sprawy, kasowalby cudze zamowienia.
+ * 2. POWOD MA KOD Z ZAMKNIETEJ LISTY. Napis poszedlby do bazy w trzech
+ *    jezykach i ten sam powod bylby w zestawieniu trzema roznymi powodami.
+ *    Wlasne zdanie klienta dopisuje sie ZA kodem, wiec raport dalej grupuje.
+ * 3. NIE DOTYKA ZAMOWIENIA OPLACONEGO. Zwrot pieniedzy to osobna droga
+ *    (`/close`), bo tam rozstrzyga sie, czy zwrot jest obowiazkiem
+ *    z regulaminu, czy decyzja handlowa. Przycisk na stronie zamowienia
+ *    pokazuje sie wylacznie przy `awaiting_payment` i `awaiting_transfer`.
+ *
+ * Towar i kod rabatowy wracaja do puli od razu, tak samo jak przy rezygnacji
+ * z panelu: to ta sama czynnosc, tylko z innej reki.
+ */
+app.post("/api/orders/:ref/cancel-by-customer", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const token = String(req.body?.token || "");
+  const kod = String(req.body?.reason || "");
+  const wlasne = String(req.body?.note || "");
+
+  if (!znanyPowod(kod)) {
+    return res.status(400).json({ error: "Nieznany powod rezygnacji", code: "bad_reason" });
+  }
+
+  const { rows } = await pool.query(
+    `SELECT id, status, access_token, fulfilled_at, paid_at FROM orders WHERE order_ref = $1`, [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (!secretMatches(token, order.access_token)) return res.status(403).json({ error: "Brak dostepu" });
+  if (order.paid_at || order.fulfilled_at) {
+    return res.status(409).json({
+      error: "Zamowienie zostalo juz oplacone, napisz do nas",
+      code: "already_paid",
+    });
+  }
+  if (!CANCELLABLE_STATUSES.includes(order.status)) {
+    return res.status(409).json({
+      error: `Zamowienie ma status ${order.status}, nie ma z czego rezygnowac`,
+      code: "not_cancellable",
+    });
+  }
+
+  const cancelled = await pool.query(
+    `UPDATE orders SET status = 'cancelled', cancelled_at = NOW(),
+       cancelled_by = 'klient', cancel_reason = $2
+     WHERE id = $1 AND paid_at IS NULL AND fulfilled_at IS NULL AND status = ANY($3::text[])
+     RETURNING id`,
+    [order.id, zapisPowodu(kod, wlasne), CANCELLABLE_STATUSES]
+  );
+  if (!cancelled.rowCount) {
+    return res.status(409).json({
+      error: "Stan zamowienia zmienil sie przed rezygnacja",
+      code: "state_changed",
+    });
+  }
+
+  const stock = await releaseOrderReservations(pool, order.id);
+  const codes = await releaseOrderRedemptions(pool, order.id);
+  console.log(`[zamowienia] ${ref} rezygnacja klienta (${kod}), zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
+
+  res.json({ ok: true, orderRef: ref });
+});
+
 app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

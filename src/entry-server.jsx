@@ -58,7 +58,6 @@ import PrintabilityPage from "./pages/PrintabilityPage.jsx";
 import PrintSettingsPage from "./pages/PrintSettingsPage.jsx";
 import LaserParametersPage from "./pages/LaserParametersPage.jsx";
 import RingBlankPage from "./pages/RingBlankPage.jsx";
-import RingConfiguratorPage from "./pages/RingConfiguratorPage.jsx";
 import ShrinkagePage from "./pages/ShrinkagePage.jsx";
 import ResinSettingsPage from "./pages/ResinSettingsPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
@@ -75,7 +74,7 @@ const KOMPONENTY = {
   ToolsJewelry,
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
-  LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
+  LaserParametersPage, ShrinkagePage, RingBlankPage,
   Privacy, Reviews, B2B, LocalPrint3D, NotFound,
 };
 

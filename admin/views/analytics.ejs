@@ -360,6 +360,135 @@
       </table>
     </div>
 
+    <%
+      // Platnosci nieudane i rezygnacje: dane lezaly w `payment_notifications`
+      // i w `orders.cancel_reason` od poczatku sklepu, ale jedynym uzyciem
+      // pierwszej tabeli bylo zablokowanie kasowania zamowienia, a druga nikt
+      // nie czytal grupowo. Ten blok jest pierwszym miejscem, gdzie te dwie
+      // rzeczy widac razem z reszta okresu, zamiast wierszami w bazie.
+      const kodLabel = (k) => String(k || "").replace(/_/g, " ");
+      const ktoLabel = (k) => (k === "klient" ? "Klient" : "Panel");
+    %>
+
+    <!-- Platnosci: co pada i co wraca -->
+    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Platnosci wedlug statusu</h3>
+        <p class="text-xs text-neutral-500 mb-4">Kazde powiadomienie od Autopay w tym oknie.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Status</th><th class="text-right">Ile</th></tr>
+          </thead>
+          <tbody>
+            <% if (!platnosci.wedlugStatusu || !platnosci.wedlugStatusu.length) { %><tr><td colspan="2" class="py-3 text-neutral-500">Brak danych.</td></tr><% } %>
+            <% (platnosci.wedlugStatusu || []).forEach(function (s) { %>
+              <tr class="border-b border-white/5">
+                <td class="py-2 <%= s.status === 'FAILURE' ? 'text-rose-300' : s.status === 'SUCCESS' ? 'text-emerald-300' : 'text-neutral-300' %>"><%= s.status || '(brak)' %></td>
+                <td class="text-right text-white"><%= n(s.ile) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <p class="text-xs text-neutral-500 mt-4">
+          <% if (n(platnosci.zamowienZNiepowodzeniem)) { %>
+            Z <span class="text-white"><%= n(platnosci.zamowienZNiepowodzeniem) %></span> zamowien z co najmniej jednym niepowodzeniem,
+            <span class="text-emerald-300"><%= n(platnosci.odzyskanych) %></span> zostalo mimo to oplaconych za kolejna proba.
+          <% } else { %>
+            W tym okresie zadne zamowienie nie mialo niepowodzenia platnosci.
+          <% } %>
+        </p>
+      </div>
+
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Niepowodzenia wedlug przyczyny</h3>
+        <p class="text-xs text-neutral-500 mb-4">Szczegol podany przez Autopay przy statusie FAILURE.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Przyczyna</th><th class="text-right">Ile</th></tr>
+          </thead>
+          <tbody>
+            <% if (!platnosci.niepowodzeniaWedlugSzczegolu || !platnosci.niepowodzeniaWedlugSzczegolu.length) { %><tr><td colspan="2" class="py-3 text-neutral-500">Brak niepowodzen w tym oknie.</td></tr><% } %>
+            <% (platnosci.niepowodzeniaWedlugSzczegolu || []).forEach(function (s) { %>
+              <tr class="border-b border-white/5">
+                <td class="py-2 font-mono text-xs text-neutral-300"><%= s.szczegol %></td>
+                <td class="text-right text-white"><%= n(s.ile) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Niepowodzenia wedlug kanalu</h3>
+        <p class="text-xs text-neutral-500 mb-4">Rozklad statusu FAILURE po kanale platnosci.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Kanal</th><th class="text-right">Ile</th></tr>
+          </thead>
+          <tbody>
+            <% if (!platnosci.niepowodzeniaWedlugKanalu || !platnosci.niepowodzeniaWedlugKanalu.length) { %><tr><td colspan="2" class="py-3 text-neutral-500">Brak niepowodzen w tym oknie.</td></tr><% } %>
+            <% (platnosci.niepowodzeniaWedlugKanalu || []).forEach(function (k) { %>
+              <tr class="border-b border-white/5">
+                <td class="py-2 text-neutral-300"><%= k.kanal === null ? '(brak)' : k.kanal %></td>
+                <td class="text-right text-white"><%= n(k.ile) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <p class="text-xs text-neutral-500 mt-4">Kanal to identyfikator kanalu platnosci w Autopay (bank, BLIK, karta), nie kod bledu.</p>
+      </div>
+    </div>
+
+    <!-- Rezygnacje i nieudane kasy -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Rezygnacje</h3>
+        <p class="text-xs text-neutral-500 mb-4">Zamowienia anulowane w tym oknie, wedlug tego, kto zlozyl rezygnacje i z jakiego powodu. "Reczne" to notatka wpisana w panelu bez wybranego kodu.</p>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Kto</th><th class="text-left">Powod</th><th class="text-right">Ile</th><th class="text-right">Kwota</th></tr>
+          </thead>
+          <tbody>
+            <% if (!rezygnacje || !rezygnacje.length) { %><tr><td colspan="4" class="py-3 text-neutral-500">Brak rezygnacji w tym oknie.</td></tr><% } %>
+            <% (rezygnacje || []).forEach(function (r) { %>
+              <tr class="border-b border-white/5">
+                <td class="py-2 <%= r.kto === 'klient' ? 'text-sky-300' : 'text-neutral-300' %>"><%= ktoLabel(r.kto) %></td>
+                <td class="text-neutral-300"><%= kodLabel(r.kod) %></td>
+                <td class="text-right text-white"><%= n(r.ile) %></td>
+                <td class="text-right text-neutral-400"><%= pln(r.sumaGrosze) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-1">Nieudane kasy</h3>
+        <p class="text-xs text-neutral-500 mb-4">Proby zlozenia zamowienia zanim zdazyla powstac plyta w bazie, i to, ile z nich w ogole zapisalo sie i doszlo do zaplaty.</p>
+        <div class="flex items-baseline gap-4 mb-4 text-sm">
+          <div><span class="text-white font-semibold"><%= n(nieudaneKasy.proby) %></span> <span class="text-neutral-500">prob</span></div>
+          <span class="text-neutral-600">&rarr;</span>
+          <div><span class="text-white font-semibold"><%= n(nieudaneKasy.utworzone) %></span> <span class="text-neutral-500">zapisanych</span></div>
+          <span class="text-neutral-600">&rarr;</span>
+          <div><span class="text-emerald-300 font-semibold"><%= n(nieudaneKasy.oplacone) %></span> <span class="text-neutral-500">oplaconych</span></div>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-neutral-500 border-b border-white/10">
+            <tr><th class="text-left py-2">Przyczyna nieudanej kasy</th><th class="text-right">Ile</th></tr>
+          </thead>
+          <tbody>
+            <% if (!nieudaneKasy.checkoutFailed || !nieudaneKasy.checkoutFailed.length) { %><tr><td colspan="2" class="py-3 text-neutral-500">Brak nieudanych prob w tym oknie.</td></tr><% } %>
+            <% (nieudaneKasy.checkoutFailed || []).forEach(function (c) { %>
+              <tr class="border-b border-white/5">
+                <td class="py-2 font-mono text-xs text-neutral-300"><%= c.powod %></td>
+                <td class="text-right text-white"><%= n(c.ile) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </body>
 </html>

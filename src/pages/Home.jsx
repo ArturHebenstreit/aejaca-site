@@ -27,11 +27,20 @@ import HeroObraz from "../components/HeroObraz.jsx";
 import Obraz from "../components/Obraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
-// Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
-// obok "5,0 z 27 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
-// wniosek, ktorego nie chcemy, a sekcja widgetu renderuje sie pusta. Odznaka
-// i sekcja wroca same, gdy liczba opinii przekroczy prog. Bez TODO do zapomnienia.
-const TRUSTPILOT_MIN_REVIEWS = 10;
+// PROG DOTYCZY ODZNAKI, NIE SEKCJI. Jedna liczba trzymala dwie rozne rzeczy
+// z dwoch roznych powodow, wiec 6 wrzesnia 2026 rozdzielilismy je.
+//
+// Odznaka niesie WSKAZNIK: stoi obok "5,0 z 27 opinii Google" i kaze czytelnikowi
+// porownac 4,0 z 5,0. Trustpilot wazy ocene wolumenem, wiec przy czterech
+// piatkach wskaznik nadal wynosi 4,0 i wniosek z tego porownania jest falszywy.
+// Ten powod zyje dalej i odznaka czeka na dziesiata opinie.
+//
+// Sekcja nizej niesie TRESC, a nie wskaznik: cytaty z nazwiskiem i data. Jej prog
+// istnial wylacznie dlatego, ze ramka Trustpilota renderowala sie pusta i
+// czytelnik widzial dziure w srodku strony. Ramki juz nie ma, opinie rysujemy
+// sami, wiec sekcja pojawia sie od pierwszej opinii z trescia i chowa sie sama,
+// gdy zadnej nie ma. Decyzja wlasciciela z 2026-09-06.
+const TRUSTPILOT_MIN_ODZNAKA = 10;
 
 // Trustpilot trust pill, sits next to the Google one. Anchors to the Trustpilot
 // widget further down the page rather than leaving the site, same as the Google
@@ -114,7 +123,7 @@ export default function Home() {
               <span className="text-neutral-400">·</span>
               <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
             </a>
-            {TRUSTPILOT_BUSINESS.totalReviews >= TRUSTPILOT_MIN_REVIEWS && (
+            {TRUSTPILOT_BUSINESS.totalReviews >= TRUSTPILOT_MIN_ODZNAKA && (
               <TrustpilotPill lang={lang} />
             )}
           </div>
@@ -364,19 +373,14 @@ export default function Home() {
 
       <div className="gradient-divider" />
 
-      {/* Trustpilot, druga warstwa zaufania po opiniach Google. Pokazujemy ja
-          dopiero od TRUSTPILOT_MIN_REVIEWS opinii. Ponizej progu sekcja
-          renderowala sam naglowek i przycisk, bez ani jednej opinii, wiec
-          czytelnik widzial dziure w srodku strony i czytal ja jak awarie. */}
-      {TRUSTPILOT_BUSINESS.totalReviews >= TRUSTPILOT_MIN_REVIEWS && (
-        <>
-          <div id="trustpilot" className="scroll-mt-20">
-            <TrustpilotWidget />
-          </div>
+      {/* Trustpilot, druga warstwa zaufania po opiniach Google. Sekcja rysuje
+          opinie, ktore trzymamy u siebie, i sama nie zwraca nic, gdy zadna nie
+          ma tresci, wiec nie potrzebuje juz progu z zewnatrz. */}
+      <div id="trustpilot" className="scroll-mt-20">
+        <TrustpilotWidget />
+      </div>
 
-          <div className="gradient-divider" />
-        </>
-      )}
+      <div className="gradient-divider" />
 
       {/* FAQ - brand-level Q&A; visible content mirrors the FAQPage JSON-LD
           (parity = SEO-safe) and targets AI-engine "what is AEJaCA" queries. */}

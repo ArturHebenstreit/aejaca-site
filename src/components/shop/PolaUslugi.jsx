@@ -156,7 +156,7 @@ function Kontrolka({ f, warianty: surowe, params, setParam, lang, accent, wyglad
         onChange={(v) => setParam(f.key, v)}
         lang={lang}
         cols={f.kolumny || "grid-cols-1 sm:grid-cols-3"}
-        minH={f.wysokosc || 150}
+        minH={f.wysokosc || 172}
         accent={accent}
       />
     );

@@ -376,8 +376,21 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   const acceptMesh = /const ACCEPT_MESH = "([^"]*)"/.exec(svcConf)?.[1];
   const acceptVector = /const ACCEPT_VECTOR = "([^"]*)"/.exec(svcConf)?.[1];
 
+  // LISTA FORMATOW MOZE STAC W JEDNYM MIEJSCU, i tak jest lepiej: plik, ktory
+  // wskazuje na `FORMATY_MODELU`, nie ma jak sie rozjechac. Bramka czyta wiec
+  // albo napis wpisany wprost, albo wartosc wspolnej stalej, zamiast wymagac
+  // kopii w kazdym pliku. Od 2026-09-06 tak robia `Print3DCalc`
+  // i `MetalCastCalc` (paczka modeli, ADR-0042).
+  const wspolne = czytaj("src/shop/paczkaModeli.js");
+  const FORMATY = /export const FORMATY_MODELU = "([^"]*)"/.exec(wspolne)?.[1] ?? null;
+  const lista = (tresc, nazwa) => {
+    const wprost = new RegExp(`const ${nazwa} = "([^"]*)"`).exec(tresc)?.[1];
+    if (wprost !== undefined) return wprost;
+    return new RegExp(`const ${nazwa} = FORMATY_MODELU`).test(tresc) ? FORMATY : undefined;
+  };
+
   const print3d = czytaj("src/components/calculators/Print3DCalc.jsx");
-  const acceptModel = /const ACCEPT_MODEL = "([^"]*)"/.exec(print3d)?.[1];
+  const acceptModel = lista(print3d, "ACCEPT_MODEL");
 
   const printabilityCheck = czytaj("src/components/calculators/PrintabilityCheck.jsx");
   const acceptCheck = /const ACCEPT = "([^"]*)"/.exec(printabilityCheck)?.[1];
@@ -605,6 +618,42 @@ console.log("\n11. Zalaczniki w zapytaniu o wycene");
     const n = (shared.match(new RegExp(`${klucz}:`, "g")) || []).length;
     sprawdz(n >= 3, `${klucz} musi istniec w trzech jezykach, znaleziono ${n}`,
       `${klucz} istnieje w trzech jezykach`);
+  }
+}
+
+console.log("\n12. Cena i podstawa kwoty czytaja te sama geometrie");
+
+// 6 wrzesnia 2026 klientka wgrala cztery modele, kalkulator je zmierzyl
+// i wycenil, a kasa trzy razy odbila zamowienie zdaniem "wgraj model albo
+// podaj wymiary". W tej samej petli cena szla z geometrii wyjetej z bazy
+// spod tokenu pliku, a sprawdzian podstawy z geometrii przyslanej przez
+// przegladarke. Kalkulator w sTuDiO jej nie wkladal do koszyka, konfigurator
+// sklepowy wkladal, wiec ta sama pozycja przechodzila albo nie zaleznie od
+// drogi, ktora klient przyszedl. Zaden element z osobna nie byl zepsuty.
+{
+  const blok = start >= 0 && koniec >= 0 ? server.slice(start, koniec) : "";
+  const wywolanie = blok.match(/bindingBasis\(\{[\s\S]*?\}\)/);
+  if (!wywolanie) {
+    zle("nie znalazlem w petli wyceny wywolania bindingBasis, sprawdzian nie ma czego pilnowac");
+  } else if (/geometry:\s*raw\.geometry/.test(wywolanie[0])) {
+    zle("podstawa kwoty czyta geometrie z przegladarki, a cena z bazy: to sa dwa zrodla jednej decyzji");
+  } else if (!/geometry:\s*itemGeometry/.test(wywolanie[0])) {
+    zle("podstawa kwoty nie czyta tej samej geometrii, co cena (itemGeometry)");
+  } else {
+    ok("podstawa kwoty i cena wychodza z jednej geometrii");
+  }
+
+  // Pozycja wlozona do koszyka niesie geometrie tak samo w obu drogach.
+  // Bez tego kasa dostaje pusto od jednej z nich, a klient nie ma jak zgadnac,
+  // czym rozni sie kalkulator od konfiguratora.
+  for (const plik of ["src/components/calculators/CalcToCart.jsx", "src/components/shop/ServiceConfigurator.jsx"]) {
+    const tresc = czytaj(plik);
+    const dodania = [...tresc.matchAll(/cart\.add\(\{[\s\S]*?\n\s*\}\);/g)].map((m) => m[0]);
+    const zTokenem = dodania.filter((d) => /uploadToken/.test(d));
+    if (!zTokenem.length) { zle(`${plik}: nie znalazlem dodania pozycji z plikiem`); continue; }
+    const bezGeometrii = zTokenem.filter((d) => !/(^|\s)geometry[,:]/m.test(d));
+    if (bezGeometrii.length) zle(`${plik}: ${bezGeometrii.length} pozycji z plikiem idzie do koszyka bez geometrii`);
+    else ok(`${plik}: pozycja z plikiem niesie geometrie`);
   }
 }
 

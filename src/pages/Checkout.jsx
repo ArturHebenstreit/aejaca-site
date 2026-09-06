@@ -518,7 +518,13 @@ export default function Checkout() {
       // oplaconych to jest dokladnie to, co gubi sie na bramce i przy przelewie.
       trackCheckout("place_order", `${payMode}|${delivery.id}`, subtotalGrosze);
 
+      // NIEUDANA PROBA TEZ ZOSTAWIA SLAD, i to jest sedno pomiaru z 2026-09-06.
+      // `place_order` wyzej liczy PROBY, wiec bez tego zdarzenia kasa, ktora
+      // odmowila, wygladala w lejku dokladnie jak kasa, ktora przyjela.
+      // Klient chcial zaplacic i nie mogl, a po tej scieżce nie zostawalo nic:
+      // przy nieudanym zalozeniu zamowienia nie ma nawet wiersza w bazie.
       if (!created.ok) {
+        trackCheckout("checkout_failed", `order_create|${created.status}`, subtotalGrosze);
         setError(
           [created.data?.error || `${u.generic} (${created.status})`, created.data?.detail]
             .filter(Boolean)
@@ -527,6 +533,7 @@ export default function Checkout() {
         setBusy(false);
         return;
       }
+      trackCheckout("order_created", `${payMode}|${delivery.id}`, subtotalGrosze);
 
       // Przelew nie ma bramki. Zamowienie jest zlozone, wiec czyscimy koszyk
       // i prowadzimy klienta na strone z danymi rachunku.
@@ -542,6 +549,7 @@ export default function Checkout() {
       });
 
       if (!payment.ok) {
+        trackCheckout("checkout_failed", `payment_start|${payment.status}`, subtotalGrosze);
         setError(payment.data?.error || `${u.generic} (${payment.status})`);
         setBusy(false);
         return;
@@ -551,11 +559,16 @@ export default function Checkout() {
       // klient wraca do pelnego koszyka, a nie do pustej strony.
       clear();
       submitPaymentForm(payment.data, () => {
+        // Formularz bramki nie wyszedl z przegladarki. Zamowienie ISTNIEJE
+        // i czeka na platnosc, wiec ta scieżka konczy sie inaczej niz dwie
+        // wyzej i musi dac sie od nich odroznic w zestawieniu.
+        trackCheckout("checkout_failed", "gateway_form_blocked", subtotalGrosze);
         setBusy(false);
         setError(u.blocked);
       });
     } catch (e) {
       console.error("[checkout] blad:", e);
+      trackCheckout("checkout_failed", `wyjatek|${e?.name || "?"}`, subtotalGrosze);
       setError(e?.name === "AbortError" ? u.timeout : `${u.generic}: ${e?.message || e}`);
       setBusy(false);
     }

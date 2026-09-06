@@ -5,9 +5,11 @@
 // odpytuje backend o stan zamowienia. Status ustawia wylacznie
 // komunikat ITN od Autopay, bo tylko on jest podpisany kluczem.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
+import { trackCheckout } from "../utils/analytics.js";
+import { POWODY_REZYGNACJI } from "../data/powodyRezygnacji.js";
 import { Link } from "../i18n/nav.jsx";
 import { sciezkaJezyka } from "../routes.js";
 import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck } from "lucide-react";
@@ -332,6 +334,17 @@ const UI = {
     reviewDesc: "Operator potwierdził wpłatę, ale zamówienie było już zamknięte albo kwota wymaga sprawdzenia. Nie płać ponownie. Skontaktujemy się z Tobą po ręcznej weryfikacji.",
     invalidTitle: "Nie udało się potwierdzić tego zamówienia",
     invalidDesc: "Podpis linku powrotnego jest nieprawidłowy. Jeśli płatność została pobrana, napisz do nas z numerem zamówienia, sprawdzimy to ręcznie.",
+    cancelTitle: "Rezygnuję z tego zamówienia",
+    cancelIntro: "Zamówienie nie jest opłacone, więc możesz z niego zrezygnować od razu. Zarezerwowany towar wróci do sprzedaży, a kod rabatowy, jeżeli był użyty, wróci do Ciebie.",
+    cancelReasonLabel: "Dlaczego rezygnujesz?",
+    cancelNoteLabel: "Chcesz coś dodać? (nieobowiązkowe)",
+    cancelNotePlaceholder: "Jedno zdanie wystarczy",
+    cancelConfirm: "Potwierdzam rezygnację",
+    cancelWorking: "Anulowanie...",
+    cancelBack: "Wróć",
+    cancelOpen: "Rezygnuję z zamówienia",
+    cancelFailed: "Nie udało się anulować zamówienia. Odśwież stronę albo napisz do nas.",
+    cancelThanks: "Dziękujemy za odpowiedź. Dzięki niej wiemy, co poprawić.",
     accessTitle: "Ten link nie daje dostępu do zamówienia",
     accessDesc: "Ze względów bezpieczeństwa pełny status wymaga prywatnego linku otrzymanego po złożeniu zamówienia. Napisz do nas z numerem zamówienia, prześlemy nowy link.",
     notFound: "Nie znaleziono takiego zamówienia",
@@ -447,6 +460,17 @@ const UI = {
     reviewDesc: "The provider confirmed the payment, but the order was already closed or the amount needs checking. Do not pay again. We will contact you after a manual review.",
     invalidTitle: "We could not confirm this order",
     invalidDesc: "The signature of the return link is invalid. If you were charged, write to us with the order number and we will check it manually.",
+    cancelTitle: "Cancel this order",
+    cancelIntro: "The order is not paid, so you can cancel it right away. Reserved goods go back on sale and a discount code, if one was used, returns to you.",
+    cancelReasonLabel: "Why are you cancelling?",
+    cancelNoteLabel: "Anything to add? (optional)",
+    cancelNotePlaceholder: "One sentence is enough",
+    cancelConfirm: "Confirm cancellation",
+    cancelWorking: "Cancelling...",
+    cancelBack: "Back",
+    cancelOpen: "Cancel the order",
+    cancelFailed: "The order could not be cancelled. Refresh the page or write to us.",
+    cancelThanks: "Thank you for the answer. It tells us what to improve.",
     accessTitle: "This link cannot access the order",
     accessDesc: "For security, the full status requires the private link received after placing the order. Write to us with the order number and we will send a new link.",
     notFound: "Order not found",
@@ -563,6 +587,17 @@ const UI = {
     reviewDesc: "Der Zahlungsanbieter hat den Eingang bestätigt, aber die Bestellung war bereits geschlossen oder der Betrag muss geprüft werden. Zahlen Sie nicht erneut. Wir melden uns nach der manuellen Prüfung.",
     invalidTitle: "Diese Bestellung konnte nicht bestätigt werden",
     invalidDesc: "Die Signatur des Rücksprunglinks ist ungültig. Falls abgebucht wurde, schreiben Sie uns mit der Bestellnummer, wir prüfen das manuell.",
+    cancelTitle: "Diese Bestellung stornieren",
+    cancelIntro: "Die Bestellung ist nicht bezahlt, Sie können sie also sofort stornieren. Reservierte Ware geht zurück in den Verkauf und ein eingelöster Rabattcode kommt zu Ihnen zurück.",
+    cancelReasonLabel: "Warum stornieren Sie?",
+    cancelNoteLabel: "Möchten Sie etwas ergänzen? (freiwillig)",
+    cancelNotePlaceholder: "Ein Satz genügt",
+    cancelConfirm: "Stornierung bestätigen",
+    cancelWorking: "Wird storniert...",
+    cancelBack: "Zurück",
+    cancelOpen: "Bestellung stornieren",
+    cancelFailed: "Die Bestellung konnte nicht storniert werden. Laden Sie die Seite neu oder schreiben Sie uns.",
+    cancelThanks: "Danke für die Antwort. Sie zeigt uns, was wir verbessern können.",
     accessTitle: "Dieser Link gibt keinen Zugriff auf die Bestellung",
     accessDesc: "Aus Sicherheitsgründen erfordert der vollständige Status den privaten Link, den Sie nach der Bestellung erhalten haben. Schreiben Sie uns mit der Bestellnummer, dann senden wir einen neuen Link.",
     notFound: "Bestellung nicht gefunden",
@@ -703,6 +738,15 @@ export default function OrderStatus() {
   const [notFound, setNotFound] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState("");
+  const [rezygnacjaOtwarta, setRezygnacjaOtwarta] = useState(false);
+  const [powodRezygnacji, setPowodRezygnacji] = useState("");
+  const [wlasneZdanie, setWlasneZdanie] = useState("");
+  const [rezygnuje, setRezygnuje] = useState(false);
+  const [bladRezygnacji, setBladRezygnacji] = useState("");
+  // Licznik, ktorego zmiana kaze odpytac serwer jeszcze raz. Po rezygnacji
+  // ekran ma pokazac stan "anulowane" TYM SAMYM kodem, ktory pokazuje go po
+  // rezygnacji z panelu, a nie wlasna, rownolegla wersja tego ekranu.
+  const [odswiez, setOdswiez] = useState(0);
 
   useEffect(() => {
     setAccessResolved(false);
@@ -776,7 +820,7 @@ export default function OrderStatus() {
     }
     check();
     return () => { cancelled = true; };
-  }, [accessResolved, ref, token, signatureError]);
+  }, [accessResolved, ref, token, signatureError, odswiez]);
 
   const paid = order?.status === "paid";
   // Etapy pracy z kolejki pracowni. Bez nich zamowienie pchniete do produkcji
@@ -801,6 +845,30 @@ export default function OrderStatus() {
   // wprost zaprasza na te strone, wiec klamstwo bylo widoczne dla kazdego.
   const expired = order?.status === "expired";
   const cancelledOrder = order?.status === "cancelled";
+  // REZYGNOWAC MOZNA Z TEGO, ZA CO NIE ZAPLACONO. Zwrot pieniedzy to osobna
+  // droga i osobna decyzja (regulamin par. 11 nie daje prawa odstapienia od
+  // rzeczy robionej na zamowienie), wiec przycisk pokazuje sie wylacznie tam,
+  // gdzie rezygnacja jest czynnoscia bez skutkow finansowych.
+  const mozliwaRezygnacja = Boolean(
+    token && !order?.paidAt
+    && ["awaiting_payment", "awaiting_transfer"].includes(order?.status)
+  );
+
+  // NIEUDANA PLATNOSC ZOBACZONA PRZEZ KLIENTA TO INNE ZDARZENIE NIZ NIEUDANA
+  // PLATNOSC ZAPISANA PRZEZ BRAMKE. Pierwsze mowi, ze czlowiek wrocil i wie,
+  // co sie stalo; drugie tylko, ze operator odmowil. Roznica miedzy tymi
+  // liczbami to sa ludzie, ktorzy o niepowodzeniu nie dowiedzieli sie od nas.
+  // Zdarzenie idzie RAZ na wejscie, stad zapamietany numer sprawy.
+  const zgloszonyStan = useRef("");
+  useEffect(() => {
+    if (!order || !ref) return;
+    const stan = failed ? "payment_failed_seen" : expired ? "order_expired_seen" : null;
+    if (!stan) return;
+    const znacznik = `${ref}:${stan}`;
+    if (zgloszonyStan.current === znacznik) return;
+    zgloszonyStan.current = znacznik;
+    trackCheckout(stan, ref, order.totalGrosze ?? null);
+  }, [order, ref, failed, expired]);
   // "Zaplacone" znaczy tu: pieniadze u nas. Stany dalsze (produkcja, wysylka,
   // zakonczone) tez sa oplacone i bez tej listy strona mowilaby oplaconemu
   // klientowi, ze czeka na jego wplate.
@@ -834,6 +902,12 @@ export default function OrderStatus() {
 
   async function retryPayment() {
     if (!API || !ref || !token || retrying) return;
+    // KLIKNIECIE TEZ JEST DANA. Z samej tabeli powiadomien bramki wiadomo,
+    // ze platnosc padla, i nic wiecej: czy klient w ogole wrocil na te strone,
+    // czy sprobowal jeszcze raz i czy druga proba przeszla, bylo poza zasiegiem
+    // pomiaru. Bez tego nie da sie powiedziec, czy niepowodzenie kosztuje nas
+    // zamowienie, czy tylko nerwy.
+    trackCheckout("payment_retry_click", ref);
     setRetrying(true);
     setRetryError("");
     try {
@@ -842,17 +916,56 @@ export default function OrderStatus() {
         gatewayId: 0,
       });
       if (!payment.ok) {
+        trackCheckout("checkout_failed", `retry|${payment.status}`);
         setRetrying(false);
         setRetryError(payment.data?.error || t.orderStatus.retryFailed);
         return;
       }
       submitPaymentForm(payment.data, () => {
+        trackCheckout("checkout_failed", "retry|gateway_form_blocked");
         setRetrying(false);
         setRetryError(t.orderStatus.retryFailed);
       });
-    } catch {
+    } catch (e) {
+      trackCheckout("checkout_failed", `retry|wyjatek|${e?.name || "?"}`);
       setRetrying(false);
       setRetryError(t.orderStatus.retryFailed);
+    }
+  }
+
+  /**
+   * Rezygnacja klienta z podanym powodem.
+   *
+   * Powod idzie do bazy KODEM z zamknietej listy, a nie napisem: ten sam powod
+   * po polsku i po niemiecku bylby w zestawieniu dwoma roznymi powodami. Wlasne
+   * zdanie klienta dopisuje sie za kodem i jest nieobowiazkowe, bo prosba
+   * o uzasadnienie na drodze wyjscia zniechecalaby do jej uzycia, a wtedy
+   * zostawaloby milczace porzucenie, z ktorego nie wiadomo nic.
+   */
+  async function zrezygnuj() {
+    if (!API || !ref || !token || rezygnuje || !powodRezygnacji) return;
+    setRezygnuje(true);
+    setBladRezygnacji("");
+    try {
+      const r = await postJSON(`${API}/api/orders/${encodeURIComponent(ref)}/cancel-by-customer`, {
+        token,
+        reason: powodRezygnacji,
+        note: wlasneZdanie,
+      });
+      if (!r.ok) {
+        setRezygnuje(false);
+        setBladRezygnacji(r.data?.error || u.cancelFailed);
+        return;
+      }
+      trackCheckout("order_cancelled_by_customer", powodRezygnacji, order?.totalGrosze ?? null);
+      setRezygnuje(false);
+      setRezygnacjaOtwarta(false);
+      // Strona przeladowuje stan z serwera, zeby pokazac ekran "anulowane"
+      // tym samym kodem, ktory pokazuje go po rezygnacji z panelu.
+      setOdswiez((n) => n + 1);
+    } catch {
+      setRezygnuje(false);
+      setBladRezygnacji(u.cancelFailed);
     }
   }
 
@@ -997,6 +1110,88 @@ export default function OrderStatus() {
                 <p className="mb-4 rounded-lg border border-red-400/25 bg-red-400/10 p-3 text-xs leading-relaxed text-red-200">
                   {retryError}
                 </p>
+              )}
+
+              {/* DROGA WYJSCIA JEST CZESCIA OBSLUGI, a nie jej przeciwienstwem.
+                  Do 2026-09-06 zrezygnowac umial wylacznie panel, wiec klient,
+                  ktory sie rozmyslil, mial dwie mozliwosci: napisac do nas albo
+                  milczec. Wiekszosc milczy, a wtedy towar stoi zarezerwowany do
+                  wygasniecia i nie wiadomo, dlaczego odpadl. Pytanie o powod
+                  stoi tutaj, bo to jedyna chwila, w ktorej klient wie odpowiedz
+                  i ma powod ja podac. */}
+              {mozliwaRezygnacja && !rezygnacjaOtwarta && (
+                <button
+                  type="button"
+                  onClick={() => setRezygnacjaOtwarta(true)}
+                  className="mb-4 w-full rounded-lg border border-white/10 px-5 py-2.5 text-xs text-neutral-400 transition-colors hover:border-white/25 hover:text-neutral-200"
+                >
+                  {u.cancelOpen}
+                </button>
+              )}
+
+              {mozliwaRezygnacja && rezygnacjaOtwarta && (
+                <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-left">
+                  <h2 className="mb-1 text-sm font-semibold text-white">{u.cancelTitle}</h2>
+                  <p className="mb-4 text-xs leading-relaxed text-neutral-400">{u.cancelIntro}</p>
+
+                  <fieldset className="mb-4">
+                    <legend className="mb-2 text-xs uppercase tracking-wide text-neutral-500">
+                      {u.cancelReasonLabel}
+                    </legend>
+                    <div className="flex flex-col gap-1.5">
+                      {POWODY_REZYGNACJI.map((powod) => (
+                        <label key={powod.id} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-xs leading-snug text-neutral-300 transition-colors hover:bg-white/[0.04]">
+                          <input
+                            type="radio"
+                            name="powod-rezygnacji"
+                            value={powod.id}
+                            checked={powodRezygnacji === powod.id}
+                            onChange={() => setPowodRezygnacji(powod.id)}
+                            className="mt-0.5 accent-amber-400"
+                          />
+                          <span>{powod.label[lang] || powod.label.pl}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  <label className="mb-1.5 block text-xs uppercase tracking-wide text-neutral-500" htmlFor="rezygnacja-notatka">
+                    {u.cancelNoteLabel}
+                  </label>
+                  <textarea
+                    id="rezygnacja-notatka"
+                    value={wlasneZdanie}
+                    onChange={(e) => setWlasneZdanie(e.target.value.slice(0, 500))}
+                    placeholder={u.cancelNotePlaceholder}
+                    rows={2}
+                    className="mb-4 w-full rounded-lg border border-white/10 bg-neutral-950 px-3 py-2 text-xs text-neutral-200 placeholder:text-neutral-600 focus-visible:border-amber-400/50 focus-visible:outline-none"
+                  />
+
+                  {bladRezygnacji && (
+                    <p className="mb-3 rounded-lg border border-red-400/25 bg-red-400/10 p-3 text-xs leading-relaxed text-red-200">
+                      {bladRezygnacji}
+                    </p>
+                  )}
+
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={zrezygnuj}
+                      disabled={rezygnuje || !powodRezygnacji}
+                      className="flex-1 rounded-lg bg-red-500/90 px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {rezygnuje ? u.cancelWorking : u.cancelConfirm}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setRezygnacjaOtwarta(false); setBladRezygnacji(""); }}
+                      disabled={rezygnuje}
+                      className="rounded-lg border border-white/10 px-5 py-2.5 text-xs text-neutral-300 transition-colors hover:border-white/25 disabled:opacity-40"
+                    >
+                      {u.cancelBack}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {awaitingTransfer && (

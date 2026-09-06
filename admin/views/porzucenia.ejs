@@ -1,0 +1,294 @@
+<%- include('partials/header', { user: user, title: 'Porzucenia', active: 'porzucenia' }) %>
+<%#
+  GDZIE ODPADA KLIENT, WIERSZ PO WIERSZU.
+
+  Kokpit `/analytics` odpowiada na pytanie, CZY cos sie psuje. Ta strona
+  odpowiada na pytanie, CO: przy siedmiu porzuconych koszykach w tygodniu
+  srednia nie mowi nic, a siedem wierszy mowi wszystko.
+
+  Trzy zasady tego ekranu:
+
+  1. Kazdy wiersz prowadzi dalej. Wiersz, ktorego nie da sie sprawdzic, jest
+     ciekawostka, a nie dana: porzucony koszyk prowadzi do sciezki wizyty,
+     nieudana platnosc do zamowienia.
+  2. Kolejnosc po WARTOSCI, nie po czasie. Porzucony koszyk za dwa tysiace to
+     inna sprawa niz porzucony za osiemdziesiat zlotych.
+  3. Pusta sekcja mowi wprost, ze jest pusta, i czym by byla, gdyby nie byla.
+     "Brak danych" bez wyjasnienia czyta sie jak awaria.
+-%>
+<%
+  const n = (x) => Number(x || 0);
+  const pln = (grosze) => grosze == null ? "-" : (n(grosze) / 100).toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zl";
+  const kiedy = (t) => {
+    if (!t) return "-";
+    const d = new Date(t);
+    return d.toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  };
+  const link = (d) => `/porzucenia?days=${d}${wew ? "&wew=1" : ""}`;
+
+  // Nazwa kroku, na ktorym stanela wizyta. Numer bierze sie z kolejnosci
+  // zdarzen, a nie z domyslu: `place_order` idzie PRZED sprawdzeniem odpowiedzi
+  // serwera, a `order_created` dopiero po niej, wiec trojka bez czworki to
+  // klient, ktory nacisnal "zamawiam" i dostal odmowe.
+  const KROK = {
+    1: { label: "koszyk", opis: "dodano do koszyka i na tym koniec", kolor: "text-neutral-300" },
+    2: { label: "kasa", opis: "wszedl do kasy, nie zlozyl zamowienia", kolor: "text-amber-300" },
+    3: { label: "proba", opis: "nacisnal zamawiam i dostal odmowe", kolor: "text-rose-300" },
+    4: { label: "zamowienie", opis: "zamowienie powstalo, zaplaty nie ma", kolor: "text-amber-200" },
+  };
+  const POWOD = {
+    order_create: "serwer odmowil zalozenia zamowienia",
+    payment_start: "bramka nie zwrocila formularza",
+    gateway_form_blocked: "formularz bramki nie wyszedl z przegladarki",
+    wyjatek: "przegladarka zgubila polaczenie",
+    retry: "nieudane ponowienie platnosci",
+  };
+  const powodSlowami = (label) => {
+    const klucz = String(label || "").split("|")[0];
+    return POWOD[klucz] || klucz || "nieznany";
+  };
+  const STAN = {
+    draft: "szkic", awaiting_payment: "czeka na platnosc", awaiting_transfer: "czeka na przelew",
+    payment_review: "weryfikacja platnosci", expired: "wygaslo", cancelled: "anulowane",
+  };
+%>
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div>
+      <h2 class="text-xl font-semibold text-white">Porzucenia i nieudane transakcje</h2>
+      <p class="text-xs text-neutral-500 mt-1">
+        Ostatnie <%= days %> dni. Kazdy wiersz prowadzi do sciezki wizyty albo do zamowienia.
+        <%= wew ? "Liczone razem z Twoimi wizytami." : "Twoje oznaczone wizyty sa pominiete." %>
+      </p>
+    </div>
+    <div class="flex gap-2 text-sm items-center">
+      <% [7, 30, 90, 365].forEach(function (d) { %>
+        <a href="<%= link(d) %>"
+           class="px-3 py-1.5 rounded-lg border transition-colors <%= days == d ? 'bg-emerald-900 border-emerald-600 text-emerald-300' : 'border-white/10 text-neutral-400 hover:text-white hover:border-white/20' %>">
+          <%= d %>d
+        </a>
+      <% }); %>
+      <a href="/porzucenia?days=<%= days %><%= wew ? '' : '&wew=1' %>"
+         class="px-3 py-1.5 rounded-lg border transition-colors <%= wew ? 'bg-amber-900 border-amber-600 text-amber-200' : 'border-white/10 text-neutral-500 hover:text-white hover:border-white/20' %>">
+        <%= wew ? "z moim ruchem" : "bez mojego ruchu" %>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Lejek: na ktorym progu znika najwiecej ludzi ───────────────────── -->
+  <section class="rounded-xl border border-white/10 bg-neutral-900 p-5 mb-6">
+    <h3 class="text-sm font-semibold text-white mb-1">Na ktorym progu odpadaja</h3>
+    <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+      Liczba przy kroku to liczba WIZYT, ktore tam doszly. Procent obok mowi, ile z nich
+      zniknelo przed nastepnym krokiem.
+      <% if (lejek.najwieksza) { %>
+        Najwieksza dziura, liczac od koszyka w dol: <span class="text-rose-300 font-semibold"><%= lejek.najwieksza.label %></span>,
+        traci <span class="text-rose-300 font-semibold"><%= lejek.najwieksza.udzial %>%</span> tego, co przyszlo z poprzedniego kroku.
+      <% } %>
+    </p>
+    <div class="space-y-2">
+      <% lejek.kroki.forEach(function (k, i) { %>
+        <div class="flex items-center gap-3">
+          <span class="w-52 shrink-0 text-xs text-neutral-400"><%= k.label %></span>
+          <div class="flex-1 h-6 rounded bg-white/[0.03] relative overflow-hidden">
+            <div class="h-full <%= lejek.najwieksza && lejek.najwieksza.id === k.id ? 'bg-rose-500/25' : 'bg-emerald-500/20' %>"
+                 style="width: <%= lejek.kroki[0].ile ? Math.max(1, Math.round((k.ile / lejek.kroki[0].ile) * 100)) : 0 %>%"></div>
+            <span class="absolute inset-y-0 left-2 flex items-center text-xs text-white font-medium"><%= k.ile %></span>
+          </div>
+          <span class="w-40 shrink-0 text-right text-xs <%= k.udzial >= 50 ? 'text-rose-300' : k.udzial >= 25 ? 'text-amber-300' : 'text-neutral-500' %>">
+            <% if (i > 0) { %>traci <%= k.stracone %> (<%= k.udzial %>%)<% } %>
+          </span>
+        </div>
+      <% }); %>
+    </div>
+  </section>
+
+  <!-- ── Porzucone koszyki ──────────────────────────────────────────────── -->
+  <section class="rounded-xl border border-white/10 bg-neutral-900 p-5 mb-6">
+    <h3 class="text-sm font-semibold text-white mb-1">Porzucone koszyki (<%= koszyki.length %>)</h3>
+    <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+      Wizyty, ktore doszly przynajmniej do koszyka i nie skonczyly sie zaplata. Od najwiekszej kwoty.
+      Klikniecie w wiersz otwiera cala sciezke tej wizyty, zdarzenie po zdarzeniu.
+    </p>
+    <% if (!koszyki.length) { %>
+      <p class="text-xs text-neutral-600">Zaden koszyk nie zostal porzucony w tym okresie. Gdyby byl, stalby tu z kwota i z krokiem, na ktorym stanal.</p>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="text-neutral-500 border-b border-white/10">
+            <tr>
+              <th class="text-left py-2 pr-3 font-medium">Kiedy</th>
+              <th class="text-left py-2 pr-3 font-medium">Stanelo na</th>
+              <th class="text-right py-2 pr-3 font-medium">Wartosc</th>
+              <th class="text-left py-2 pr-3 font-medium">Kanal</th>
+              <th class="text-left py-2 pr-3 font-medium">Kraj</th>
+              <th class="text-left py-2 pr-3 font-medium">Urzadzenie</th>
+              <th class="text-left py-2 font-medium">Blad po drodze</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% koszyki.forEach(function (k) { const kr = KROK[k.krok] || KROK[1]; %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  onclick="location.href='/analytics/sesja/<%= encodeURIComponent(k.session) %>'">
+                <td class="py-2 pr-3 text-neutral-400 whitespace-nowrap"><%= kiedy(k.ostatnie) %></td>
+                <td class="py-2 pr-3">
+                  <span class="<%= kr.kolor %> font-medium"><%= kr.label %></span>
+                  <span class="text-neutral-600 block"><%= kr.opis %></span>
+                </td>
+                <td class="py-2 pr-3 text-right text-white whitespace-nowrap"><%= pln(k.wartosc) %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= k.kanal %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= k.kraj || "-" %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= k.urzadzenie || "-" %></td>
+                <td class="py-2 text-neutral-400">
+                  <% if (n(k.bledy) > 0) { %>
+                    <span class="text-rose-300"><%= powodSlowami(k.powod) %></span>
+                  <% } else { %>
+                    <span class="text-neutral-600">bez bledu, po prostu wyszedl</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- ── Nieudane platnosci ─────────────────────────────────────────────── -->
+  <section class="rounded-xl border border-white/10 bg-neutral-900 p-5 mb-6">
+    <h3 class="text-sm font-semibold text-white mb-1">Nieudane platnosci (<%= platnosci.length %>)</h3>
+    <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+      Kazde powiadomienie FAILURE z Autopay. Kolumna "odzyskana" mowi, czy do tego samego zamowienia
+      przyszlo pozniej SUCCESS: jesli tak, odmowa kosztowala nerwy, a nie zamowienie.
+      Numer kanalu to identyfikator bramki Autopay (bank, BLIK, karta).
+    </p>
+    <% if (!platnosci.length) { %>
+      <p class="text-xs text-neutral-600">Zadna platnosc nie zostala odrzucona w tym okresie.</p>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="text-neutral-500 border-b border-white/10">
+            <tr>
+              <th class="text-left py-2 pr-3 font-medium">Kiedy</th>
+              <th class="text-left py-2 pr-3 font-medium">Zamowienie</th>
+              <th class="text-right py-2 pr-3 font-medium">Kwota</th>
+              <th class="text-left py-2 pr-3 font-medium">Powod odmowy</th>
+              <th class="text-left py-2 pr-3 font-medium">Kanal</th>
+              <th class="text-left py-2 pr-3 font-medium">Stan zamowienia</th>
+              <th class="text-left py-2 font-medium">Odzyskana</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% platnosci.forEach(function (p) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                <td class="py-2 pr-3 text-neutral-400 whitespace-nowrap"><%= kiedy(p.ts) %></td>
+                <td class="py-2 pr-3 font-mono text-neutral-300"><%= p.order_ref || "-" %></td>
+                <td class="py-2 pr-3 text-right text-white whitespace-nowrap"><%= pln(p.amount_grosze) %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= p.status_details || "bez opisu" %></td>
+                <td class="py-2 pr-3 text-neutral-500"><%= p.gateway_id == null ? "-" : p.gateway_id %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= STAN[p.stan_zamowienia] || p.stan_zamowienia || "-" %></td>
+                <td class="py-2">
+                  <% if (p.odzyskana) { %>
+                    <span class="text-emerald-400">tak, zaplacil pozniej</span>
+                  <% } else { %>
+                    <span class="text-rose-300">nie</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- ── Nieudane kasy ──────────────────────────────────────────────────── -->
+  <section class="rounded-xl border border-white/10 bg-neutral-900 p-5 mb-6">
+    <h3 class="text-sm font-semibold text-white mb-1">Nieudane kasy (<%= kasy.length %>)</h3>
+    <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+      Proby, po ktorych w bazie NIE MA nawet wiersza zamowienia: serwer odmowil zalozenia,
+      bramka nie oddala formularza albo przegladarka zgubila polaczenie. Bez tej listy widac je
+      wylacznie jako roznice miedzy "proba" a "zlozone" w lejku, czyli jako liczbe bez nazwiska.
+    </p>
+    <% if (!kasy.length) { %>
+      <p class="text-xs text-neutral-600">Zadna proba zlozenia zamowienia nie zawiodla w tym okresie.</p>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="text-neutral-500 border-b border-white/10">
+            <tr>
+              <th class="text-left py-2 pr-3 font-medium">Kiedy</th>
+              <th class="text-left py-2 pr-3 font-medium">Co zawiodlo</th>
+              <th class="text-right py-2 pr-3 font-medium">Wartosc koszyka</th>
+              <th class="text-left py-2 pr-3 font-medium">Kraj</th>
+              <th class="text-left py-2 font-medium">Szczegol</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% kasy.forEach(function (k) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  onclick="location.href='/analytics/sesja/<%= encodeURIComponent(k.session) %>'">
+                <td class="py-2 pr-3 text-neutral-400 whitespace-nowrap"><%= kiedy(k.ts) %></td>
+                <td class="py-2 pr-3 text-rose-300"><%= powodSlowami(k.label) %></td>
+                <td class="py-2 pr-3 text-right text-white whitespace-nowrap"><%= pln(k.value) %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= k.kraj || "-" %></td>
+                <td class="py-2 font-mono text-neutral-600"><%= k.label || "-" %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- ── Zamowienia bez zaplaty ─────────────────────────────────────────── -->
+  <section class="rounded-xl border border-white/10 bg-neutral-900 p-5">
+    <h3 class="text-sm font-semibold text-white mb-1">Zamowienia bez zaplaty (<%= zamowienia.length %>)</h3>
+    <p class="text-xs text-neutral-500 mb-4 leading-relaxed">
+      Najtansza lista na tej stronie: tu jest numer sprawy i jest adres e-mail, wiec do tego
+      klienta da sie napisac. Kazdy wiersz to pieniadze, ktore juz raz byly blisko.
+    </p>
+    <% if (!zamowienia.length) { %>
+      <p class="text-xs text-neutral-600">Kazde zamowienie z tego okresu zostalo oplacone.</p>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="text-neutral-500 border-b border-white/10">
+            <tr>
+              <th class="text-left py-2 pr-3 font-medium">Numer</th>
+              <th class="text-left py-2 pr-3 font-medium">Zlozone</th>
+              <th class="text-right py-2 pr-3 font-medium">Kwota</th>
+              <th class="text-left py-2 pr-3 font-medium">Stan</th>
+              <th class="text-left py-2 pr-3 font-medium">Sposob zaplaty</th>
+              <th class="text-left py-2 pr-3 font-medium">Klient</th>
+              <th class="text-left py-2 font-medium">Powod rezygnacji</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% zamowienia.forEach(function (z) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                <td class="py-2 pr-3 font-mono text-neutral-300"><%= z.order_ref %></td>
+                <td class="py-2 pr-3 text-neutral-400 whitespace-nowrap"><%= kiedy(z.created_at) %></td>
+                <td class="py-2 pr-3 text-right text-white whitespace-nowrap"><%= pln(z.total_grosze) %></td>
+                <td class="py-2 pr-3 <%= z.status === 'cancelled' ? 'text-rose-300' : z.status === 'expired' ? 'text-neutral-500' : 'text-amber-300' %>">
+                  <%= STAN[z.status] || z.status %>
+                </td>
+                <td class="py-2 pr-3 text-neutral-400"><%= z.payment_method || "-" %></td>
+                <td class="py-2 pr-3 text-neutral-400"><%= z.customer_email || "bez adresu" %></td>
+                <td class="py-2 text-neutral-400">
+                  <%= z.cancel_reason || "-" %>
+                  <% if (z.cancelled_by) { %><span class="text-neutral-600">(<%= z.cancelled_by %>)</span><% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+</main>
+</body>
+</html>

@@ -51,7 +51,6 @@ export function klasyAkcentu(accent = "blue") {
       obraczka: "ring-amber-400/60",
       poswiataMala: "shadow-[0_0_0_5px_rgba(251,191,36,0.14)]",
       poswiataDuza: "shadow-[0_0_0_6px_rgba(251,191,36,0.16)]",
-      nalozenie: "bg-amber-400/10",
     }
     : {
       obwodka: "border-blue-400",
@@ -60,7 +59,6 @@ export function klasyAkcentu(accent = "blue") {
       obraczka: "ring-blue-400/60",
       poswiataMala: "shadow-[0_0_0_5px_rgba(96,165,250,0.14)]",
       poswiataDuza: "shadow-[0_0_0_6px_rgba(96,165,250,0.16)]",
-      nalozenie: "bg-blue-400/10",
     };
 }
 
@@ -101,13 +99,14 @@ export function Chips({ options, value, onChange, lang = "pl", accent = "blue" }
   );
 }
 
-// WYBRANY KAFELEK MA BYC WIDOCZNY Z DRUGIEGO KONCA POKOJU. Sama obwodka
-// w kolorze akcentu ginela na zdjeciu produktowym, ktore samo w sobie jest
-// kontrastowe: klient przewijal liste i nie wiedzial, co ma zaznaczone.
-// Dlatego roznica idzie DWOMA kanalami naraz. Niewybrane zdjecia schodza
-// do szarosci i sciemniaja sie, a wybrane zostaje w kolorze i dostaje szersza
-// poswiate. Najazd myszka przywraca kolor, wiec przegladanie oferty nie
-// odbywa sie po szarych miniaturach.
+// ZDJECIE PRODUKTU MA BYC OSTRE I JASNE, A ZAZNACZENIE MA BYC RAMKA.
+// Przez dwa tygodnie szlo odwrotnie: niewybrane kafelki schodzily do szarosci,
+// wszystkie dostawaly obnizony kontrast, a na wierzchu lezala warstwa bieli.
+// Kazda z tych rzeczy osobno mialaby sens, razem daly mgle, przez ktora nie
+// bylo widac, co kafelek przedstawia (zgloszenie wlasciciela, 2026-09-04).
+// Fotografia jest teraz w pelnym kolorze i pelnym kontrascie, tylko
+// rozjasniona, a stan wyboru niesie obwodka z pierscieniem i poswiata na samym
+// przycisku. Decyzja: ADR-0041.
 export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5", accent = "blue" }) {
   const a = klasyAkcentu(accent);
   return (
@@ -134,10 +133,8 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
                 <>
                   <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={label} loading="lazy"
                     className={`w-full h-full object-cover transition-all duration-300 ${
-                      active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
+                      active ? "tile-foto scale-105" : "tile-foto group-hover:scale-105"
                     }`} />
-                  {/* Patrz komentarz przy `tile-lift` w HeroCards. */}
-                  <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
                 </>
               ) : (
                 <span className="text-2xl opacity-60">⬡</span>
@@ -196,17 +193,15 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
               <div className="absolute inset-0 overflow-hidden">
                 <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={lbl(o.label)} loading="lazy"
                   className={`w-full h-full object-cover transition-all duration-500 ${
-                    active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
+                    active ? "tile-foto scale-105" : "tile-foto group-hover:scale-105"
                   }`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
-                {/* KAFELEK WYBRANY DOSTAJE SWIATLA, a nie mnoznika jasnosci.
-                    Zdjecia produktowe sa prawie czarne, a `brightness()` mnozy,
-                    wiec czern razy trzy to dalej czern: pomiar pokazal, ze
-                    podniesienie z 1,38 do 3,00 rusza srednia o piec poziomow
-                    na 255. `tile-lift` DODAJE swiatlo (`plus-lighter`), wiec
-                    dziala tam, gdzie mnozenie nie ma czego mnozyc. */}
-                <div className={`absolute inset-0 tile-lift ${active ? "tile-lift-on" : ""}`} aria-hidden="true" />
-                {active && <div className={`absolute inset-0 ${a.nalozenie} mix-blend-overlay`} />}
+                {/* ZDJECIE ZOSTAJE ZDJECIEM, ZAZNACZENIE NIESIE RAMKA.
+                    Nakladka w kolorze akcentu byla trzecia warstwa nad
+                    fotografia, po bieli i po gradiencie, i razem z nimi robila
+                    z kafelka mgle. Zaznaczenie ma teraz pelna obwodke, pierscien
+                    i poswiate na samym przycisku, wiec podglad produktu nie musi
+                    za nic odpowiadac poza pokazaniem produktu (ADR-0041). */}
               </div>
             )}
             {/* OBWODKA NAPISU JEST DLA ZDJECIA, a nie dla kazdego kafelka.

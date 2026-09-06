@@ -10,16 +10,42 @@
 // KSZTALT zapytania, a nie wynik, bo bazy tu nie ma.
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   okresy, kpi, dzienne, wedlug, tresc, lejekSklepu, lejekWycen,
   wyboryKalkulatora, narzedzia, sesje, sciezkaSesji, sygnaly,
+  platnosciNieudane, rezygnacje, nieudaneKasy, KODY_REZYGNACJI,
+  porzuconeKoszyki, nieudanePlatnosci, nieudaneKasyLista, zamowieniaBezZaplaty, odpadanie,
 } from "./analityka.js";
+// Import ponad granica katalogow jest tu bezpieczny: ten plik uruchamia sie
+// wylacznie recznie przez `node`, z korzenia repozytorium, nigdy jako czesc
+// wdrozonego panelu. Dzieki temu moze pelnic role, ktorej `analityka.js` (kod
+// dzialajacy w produkcji, w osobnym katalogu wdrozenia) pelnic nie moze:
+// sprawdzic, czy jego reczna kopia listy kodow nie rozjechala sie ze zrodlem.
+import { KODY_REZYGNACJI as KODY_REZYGNACJI_ZRODLO } from "../src/data/powodyRezygnacji.js";
 
 function atrapa(wiersze = []) {
   const zapytania = [];
   return {
     zapytania,
     query: async (sql, params) => { zapytania.push({ sql, params }); return { rows: wiersze }; },
+  };
+}
+
+/** Jak `atrapa`, ale kazde kolejne wywolanie `query` oddaje NASTEPNA liste
+ *  wierszy z `listy`. Potrzebne tam, gdzie jedna funkcja robi kilka roznych
+ *  zapytan naraz i kazde ma zwrocic co innego. */
+function atrapaSekw(...listy) {
+  const zapytania = [];
+  let i = 0;
+  return {
+    zapytania,
+    query: async (sql, params) => {
+      zapytania.push({ sql, params });
+      const rows = listy[i] ?? [];
+      i += 1;
+      return { rows };
+    },
   };
 }
 
@@ -155,6 +181,7 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
     ["wyboryKalkulatora", (p, o) => wyboryKalkulatora(p, new Date(), new Date(), 20, o)],
     ["narzedzia", (p, o) => narzedzia(p, new Date(), new Date(), o)],
     ["sesje", (p, o) => sesje(p, { od: new Date(), do: new Date(), ...o })],
+    ["nieudaneKasy", (p, o) => nieudaneKasy(p, new Date(), new Date(), o)],
   ]) {
     const pool = atrapa();
     await wywolaj(pool, {});
@@ -244,6 +271,184 @@ await assert.rejects(() => wedlug(atrapa(), "haslo", new Date(), new Date()), /n
   assert.match(tresci, /laser-parameters/, "strona z realnym ruchem i zerem zapytan jest sygnalem");
   assert.match(tresci, /Z koszyka do kasy/, "ucieczka miedzy koszykiem a kasa jest sygnalem");
   assert.match(tresci, /nie zostalo oplaconych/, "zamowienia bez zaplaty sa alarmem");
+}
+
+// --- Platnosci nieudane i rezygnacje: raport nad danymi, ktore juz leżą ---
+// w bazie, ale dotad nikt na nie nie patrzyl (payment_notifications, orders
+// anulowane). Patrz naglowek sekcji w analityka.js.
+
+// Kopia kodow rezygnacji w panelu nie moze rozjechac sie ze zrodlem: nowy
+// powod dopisany tylko po jednej stronie znaczylby, ze raport cichcem wrzuca
+// go do worka "reczne", choc klient wybral go z listy.
+assert.deepEqual(
+  [...KODY_REZYGNACJI].sort(),
+  [...KODY_REZYGNACJI_ZRODLO].sort(),
+  "panel zna dokladnie te same kody rezygnacji, co formularz klienta i serwer"
+);
+
+{
+  const pool = atrapaSekw(
+    [{ status: "SUCCESS", ile: "41" }, { status: "FAILURE", ile: "9" }, { status: "PENDING", ile: "2" }],
+    [{ szczegol: "card_declined", ile: "5" }, { szczegol: "(brak)", ile: "4" }],
+    [{ kanal: 101, ile: "6" }, { kanal: 102, ile: "3" }],
+    [{ zamowien_z_niepowodzeniem: "7", odzyskanych: "4" }]
+  );
+  const wynik = await platnosciNieudane(pool, new Date(), new Date());
+
+  assert.equal(pool.zapytania.length, 4, "platnosci nieudane licza statusy, szczegoly, kanaly i odzysk osobnymi zapytaniami");
+  const [status, szczegoly, kanaly, odzysk] = pool.zapytania;
+  for (const q of [status, szczegoly, kanaly, odzysk]) {
+    assert.equal(q.params.length, 2, "okno czasu idzie parametrami w kazdym z czterech zapytan");
+  }
+  assert.match(status.sql, /received_at >= \$1 AND received_at < \$2/, "okno liczy sie od chwili PRZYJECIA powiadomienia");
+  assert.match(szczegoly.sql, /payment_status = 'FAILURE'/, "rozbicie po szczegole dotyczy wylacznie niepowodzen");
+  assert.match(kanaly.sql, /gateway_id/, "rozbicie po kanale Autopay");
+  assert.match(odzysk.sql, /payment_status = 'SUCCESS'/, "odzyskanie sprawdza sie po SUCCESS na tym samym order_ref");
+  // SUCCESS, ktory odzyskuje zamowienie, moze przyjsc juz PO oknie: klient
+  // czesto wraca dopiero nastepnego dnia. Sprawdzenie nie ma wiec prawa
+  // ograniczac sie do tego samego `received_at >= $1`.
+  assert.doesNotMatch(
+    odzysk.sql.slice(odzysk.sql.indexOf("SUCCESS")),
+    /received_at/,
+    "SUCCESS, ktory ratuje zamowienie, nie jest ograniczony do okna raportu"
+  );
+
+  assert.equal(wynik.zamowienZNiepowodzeniem, 7);
+  assert.equal(wynik.odzyskanych, 4, "FAILURE, po ktorym przyszedl SUCCESS, jest policzone jako odzyskane");
+  assert.equal(wynik.niepowodzeniaWedlugSzczegolu[0].szczegol, "card_declined");
+  assert.equal(wynik.niepowodzeniaWedlugKanalu[1].kanal, 102);
+}
+
+{
+  // Rezygnacje: kod z prefiksu grupuje niezaleznie od wlasnego zdania klienta
+  // dopisanego za dwukropkiem; notatka bez prefiksu (wpisana recznie przez
+  // panel) i pusty zapis ida do wspolnego worka "reczne".
+  const pool = atrapa([
+    { cancelled_by: "klient", cancel_reason: "cena: za drogo przy tym terminie", total_grosze: 15000 },
+    { cancelled_by: "klient", cancel_reason: "cena", total_grosze: 5000 },
+    { cancelled_by: "panel", cancel_reason: "Klient zadzwonil i zrezygnowal telefonicznie", total_grosze: 20000 },
+    { cancelled_by: null, cancel_reason: null, total_grosze: 0 },
+  ]);
+  const wynik = await rezygnacje(pool, new Date(), new Date());
+
+  assert.equal(pool.zapytania[0].params.length, 2, "okno czasu idzie parametrami");
+  assert.match(pool.zapytania[0].sql, /status = 'cancelled'/, "raport liczy wylacznie zamowienia anulowane");
+  assert.match(pool.zapytania[0].sql, /cancelled_at >= \$1 AND cancelled_at < \$2/, "okno liczy sie od chwili REZYGNACJI, nie zlozenia zamowienia");
+
+  const klientCena = wynik.find((w) => w.kto === "klient" && w.kod === "cena");
+  assert.ok(klientCena, "rezygnacja z kodem trafia pod ten kod");
+  assert.equal(klientCena.ile, 2, "wlasne zdanie klienta za dwukropkiem nie dzieli grupy");
+  assert.equal(klientCena.sumaGrosze, 20000);
+
+  const reczne = wynik.find((w) => w.kto === "panel" && w.kod === "reczne");
+  assert.ok(reczne, "rezygnacja bez kodu trafia do worka recznego");
+  assert.equal(reczne.ile, 2, "notatka bez prefiksu i zapis pusty ida do tego samego worka");
+}
+
+{
+  const pool = atrapaSekw(
+    [{ proby: "120", utworzone: "98", oplacone: "80" }],
+    [{ powod: "order_create", ile: "10" }, { powod: "payment_start", ile: "6" }]
+  );
+  const wynik = await nieudaneKasy(pool, new Date(), new Date(), {});
+
+  assert.equal(pool.zapytania.length, 2, "proby/utworzone/oplacone i rozbicie checkout_failed to osobne zapytania");
+  assert.match(pool.zapytania[0].sql, /action = 'place_order'/, "proby licza sie z place_order");
+  assert.match(pool.zapytania[0].sql, /action = 'order_created'/, "zapisane licza sie z order_created, nie z prob");
+  assert.match(pool.zapytania[0].sql, /category = 'shop'/);
+  assert.match(pool.zapytania[1].sql, /split_part\(label, '\|', 1\)/, "checkout_failed grupuje sie po PIERWSZYM czlonie etykiety");
+  assert.match(pool.zapytania[1].sql, /action = 'checkout_failed'/);
+
+  assert.equal(wynik.proby, 120);
+  assert.equal(wynik.utworzone, 98);
+  assert.equal(wynik.oplacone, 80);
+  assert.equal(wynik.checkoutFailed[0].powod, "order_create");
+}
+
+// ── PORZUCENIA: pojedyncze wiersze, nie srednie ────────────────────────────
+// Raporty zbiorcze mowia, CZY cos sie psuje. Przy siedmiu porzuconych koszykach
+// w tygodniu srednia nie mowi nic, a siedem wierszy mowi wszystko. Te cztery
+// funkcje oddaja wiersze, wiec sprawdzamy, czy pytaja o to, co obiecuja.
+{
+  const pool = atrapa([]);
+  await porzuconeKoszyki(pool, new Date(), new Date(), {});
+  const sql = pool.zapytania[0].sql;
+  assert.match(sql, /ts >= \$1 AND ts < \$2/, "porzucone koszyki licza sie w oknie raportu");
+  assert.match(sql, /category = 'shop'/, "i tylko ze zdarzen sklepu");
+  assert.match(sql, /HAVING[\s\S]*>= 1/, "wizyta bez koszyka nie jest porzuceniem");
+  // Wizyta zakonczona zaplata nie jest porzuceniem, nawet jesli po drodze cos
+  // w niej padlo. SUCCESS liczymy w CALEJ historii, nie w oknie: klient wraca
+  // nastepnego dnia, a raport za siedem dni nie ma prawa nazwac go porzuceniem.
+  assert.match(sql, /paid_at IS NOT NULL/, "wizyta zakonczona zaplata odpada z listy");
+  assert.doesNotMatch(
+    sql.slice(sql.indexOf("zaplacone AS")),
+    /created_at >= \$1/,
+    "zaplata sprawdza sie w calej historii zamowienia, nie w oknie raportu"
+  );
+  assert.match(sql, /ORDER BY s\.wartosc DESC/, "od najwiekszej kwoty, bo tam boli najbardziej");
+}
+
+{
+  const pool = atrapa([]);
+  await nieudanePlatnosci(pool, new Date(), new Date(), {});
+  const sql = pool.zapytania[0].sql;
+  assert.match(sql, /payment_status = 'FAILURE'/, "lista bierze wylacznie odmowy");
+  assert.match(sql, /status_details/, "z powodem odmowy, bo bank i BLIK psuja sie inaczej");
+  assert.match(sql, /gateway_id/, "i z kanalem, bo to on bywa zepsuty");
+  assert.match(sql, /payment_status = 'SUCCESS'/, "odzyskane poznajemy po pozniejszym SUCCESS");
+  // To samo, co wyzej: klient wraca nastepnego dnia, wiec SUCCESS nie moze byc
+  // zawezony do okna raportu, inaczej przy jego krawedzi kazda odmowa
+  // wygladalaby na strate.
+  const podzapytanie = sql.slice(sql.indexOf("SELECT 1 FROM payment_notifications"));
+  assert.doesNotMatch(podzapytanie.slice(0, 200), /ts >= \$1/, "SUCCESS liczy sie bez wzgledu na okno raportu");
+}
+
+{
+  const pool = atrapa([]);
+  await nieudaneKasyLista(pool, new Date(), new Date(), {});
+  const sql = pool.zapytania[0].sql;
+  assert.match(sql, /action = 'checkout_failed'/, "lista bierze proby, po ktorych nie ma zamowienia");
+  assert.match(sql, /session/, "z identyfikatorem wizyty, zeby dalo sie zobaczyc cala droge");
+}
+
+{
+  const pool = atrapa([]);
+  await zamowieniaBezZaplaty(pool, new Date(), new Date(), {});
+  const sql = pool.zapytania[0].sql;
+  assert.match(sql, /paid_at IS NULL/, "tylko nieoplacone");
+  assert.match(sql, /cancel_reason/, "z powodem rezygnacji, jesli klient go podal");
+  assert.match(sql, /customer_email/, "i z adresem, bo do tego klienta da sie napisac");
+}
+
+{
+  // NAJWIEKSZEJ DZIURY SZUKAMY OD KOSZYKA W DOL. Przejscie "wizyty -> sklep"
+  // zawsze traci najwiecej ludzi w liczbach bezwzglednych, bo wiekszosc przyszla
+  // po darmowe narzedzie i nigdy nie zamierzala nic kupic. Wskazanie tego progu
+  // jest prawdziwe arytmetycznie i bezuzyteczne.
+  const w = odpadanie({ wizyty: 1000, sklep: 400, karta: 250, koszyk: 60, kasa: 22, zlozone: 14, oplacone: 9 });
+  assert.equal(w.kroki.length, 7);
+  assert.equal(w.kroki[0].stracone, 0, "pierwszy prog nie traci nikogo, bo nie ma z czego");
+  assert.equal(w.kroki[1].stracone, 600);
+  assert.equal(w.najwieksza.id, "koszyk", "wskazujemy prog, ktory da sie naprawic, a nie najwiekszy w liczbach");
+  assert.equal(w.najwieksza.udzial, 76);
+  assert.equal(odpadanie({}).najwieksza, null, "pusty okres nie wymysla dziury");
+}
+
+{
+  // Raport, do ktorego nie ma jak wejsc, nie istnieje. Trasa musi stac za
+  // logowaniem, bo pokazuje adresy klientow i kwoty zamowien.
+  const serwer = readFileSync(new URL("./server.js", import.meta.url), "utf8");
+  assert.match(serwer, /app\.get\("\/porzucenia", requireAuth/, "raport porzucen stoi za logowaniem");
+  assert.match(serwer, /porzuconeKoszyki\(pool/, "trasa czyta porzucone koszyki");
+  assert.match(serwer, /nieudanePlatnosci\(pool/, "i nieudane platnosci");
+  assert.match(serwer, /odpadanie\(lejek\)/, "i przeklada lejek na odpadanie");
+  const naglowek = readFileSync(new URL("./views/partials/header.ejs", import.meta.url), "utf8");
+  assert.match(naglowek, /href: "\/porzucenia"/, "pozycja w nawigacji panelu");
+  // Kazdy wiersz ma prowadzic dalej. Wiersz, ktorego nie da sie sprawdzic,
+  // jest ciekawostka, a nie dana.
+  const widok = readFileSync(new URL("./views/porzucenia.ejs", import.meta.url), "utf8");
+  assert.match(widok, /\/analytics\/sesja\//, "wiersz porzucenia prowadzi do sciezki wizyty");
+  assert.match(widok, /order_ref/, "wiersz platnosci niesie numer zamowienia");
 }
 
 console.log("Analityka panelu: zapytania i sygnaly zgodne z tym, co obiecuja");

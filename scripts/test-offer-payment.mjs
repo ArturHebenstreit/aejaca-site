@@ -80,12 +80,16 @@ const znajdz = (log, wzor) => log.find((z) => wzor.test(z.sql));
  * `$n` albo wartosc wpisana wprost.
  */
 function wartoscKolumny(zapis, kolumna) {
-  const kolumny = zapis.sql.slice(zapis.sql.indexOf("(") + 1, zapis.sql.indexOf(")"))
+  // Komentarz w SQL zdejmujemy przed podzialem po przecinkach. Wyjasnienie
+  // przy kolumnie bywa dluzsze niz jedno zdanie i niesie wlasne przecinki,
+  // a te przesuwaja numery pol tak samo jak dopisana kolumna.
+  const sql = zapis.sql.replace(/--[^\n]*/g, "");
+  const kolumny = sql.slice(sql.indexOf("(") + 1, sql.indexOf(")"))
     .split(",").map((k) => k.trim());
   const i = kolumny.indexOf(kolumna);
   if (i < 0) return { brak: true };
 
-  const odVALUES = zapis.sql.slice(zapis.sql.indexOf("VALUES"));
+  const odVALUES = sql.slice(sql.indexOf("VALUES"));
   const tuple = odVALUES.slice(odVALUES.indexOf("(") + 1, odVALUES.lastIndexOf(")"));
   // Podzial po przecinkach spoza nawiasow: CASE WHEN ... END niesie wlasne.
   const pola = [];
