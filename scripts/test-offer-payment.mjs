@@ -25,7 +25,8 @@
 //   node scripts/test-offer-payment.mjs
 
 import { readFileSync } from "node:fs";
-import { convertQuoteToOrder, quoteItemsForDiscount } from "../chat-api/quotes.js";
+import { convertQuoteToOrder, quoteItemsForDiscount, stanPozycji } from "../chat-api/quotes.js";
+import { INSTANT_HOLD_MINUTES, TRANSFER_HOLD_BUSINESS_DAYS } from "../src/pricing/businessDays.js";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -364,6 +365,68 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
     const slownik = OFERTA.slice(OFERTA.indexOf(`\n  ${jezyk}: {`));
     ma(slownik.slice(0, 6000), /validUntilPast:/, `czas przeszly terminu jest po ${jezyk}`);
   }
+}
+
+console.log("\n12. Blokada trwa tyle, ile platnosc, a nie tyle, ile decyzja\n");
+
+// Do 6 wrzesnia 2026 nieoplacone zamowienie z bramki trzymalo pozycje wyceny
+// SIEDEM DNI, chociaz sesja platnicza zyje minuty. Klient, ktory zamknal karte
+// w Autopay, blokowal sobie wlasna oferte na tydzien, w tym zmiane waluty na
+// euro, bo euro idzie przelewem, czyli osobnym zamowieniem. Decyzja: ADR-0044.
+{
+  const pool = fakePool();
+  const przed = Date.now();
+  await convertQuoteToOrder(pool, WYCENA.quote_ref, {
+    orderRef: "ZAM-BLOKADA",
+    delivery: { method: "pickup", shippingGrosze: 0 },
+    consents: { terms: true },
+  });
+  const zamowienie = znajdz(pool.log, /INSERT INTO orders/);
+  const termin = wartoscKolumny(zamowienie, "expires_at").wartosc;
+  const minut = termin instanceof Date ? Math.round((termin.getTime() - przed) / 60000) : null;
+  if (minut === INSTANT_HOLD_MINUTES) ok(`blokada przy bramce trwa ${INSTANT_HOLD_MINUTES} minut`);
+  else zle(`blokada przy bramce wyszla ${minut} minut zamiast ${INSTANT_HOLD_MINUTES}`);
+
+  // Przelew zostaje przy dniach roboczych: tam czekamy na bank, a nie na
+  // klienta, i ten sam termin niesie waznosc kwoty w euro.
+  const pool2 = fakePool();
+  await convertQuoteToOrder(pool2, WYCENA.quote_ref, {
+    orderRef: "ZAM-PRZELEW",
+    paymentMethod: "bank_transfer",
+    eurRate: 4.3,
+    delivery: { method: "pickup", shippingGrosze: 0 },
+    consents: { terms: true },
+  });
+  const przelewem = znajdz(pool2.log, /INSERT INTO orders/);
+  const terminP = wartoscKolumny(przelewem, "expires_at").wartosc;
+  const dni = terminP instanceof Date ? (terminP.getTime() - przed) / 86400000 : null;
+  if (dni != null && dni >= TRANSFER_HOLD_BUSINESS_DAYS) ok(`przelew trzyma co najmniej ${TRANSFER_HOLD_BUSINESS_DAYS} dni`);
+  else zle(`przelew trzyma ${dni} dni, a mial co najmniej ${TRANSFER_HOLD_BUSINESS_DAYS}`);
+}
+
+console.log("\n13. Pozycja zwalnia sie z uplywem terminu, nie z przebiegiem zamiatarki\n");
+
+// Stan `expired` wpisuje do bazy cykliczne zadanie. Przy tygodniowej blokadzie
+// opoznienie zamiatarki bylo niewidoczne, przy kwadransie podwajaloby czas
+// oczekiwania. Stan pozycji liczy sie wiec z terminu, a nie z kolumny.
+{
+  const minute = 60_000;
+  const zajeta = { order_id: 7, order_status: "awaiting_payment", order_paid_at: null,
+                   order_expires_at: new Date(Date.now() + 5 * minute) };
+  const poTerminie = { ...zajeta, order_expires_at: new Date(Date.now() - minute) };
+  const zaplacona = { order_id: 7, order_status: "paid", order_paid_at: new Date(),
+                      order_expires_at: new Date(Date.now() - minute) };
+  const wPrzegladzie = { order_id: 7, order_status: "payment_review", order_paid_at: null,
+                         order_expires_at: new Date(Date.now() - minute) };
+
+  if (stanPozycji(zajeta) === "zajeta") ok("przed terminem pozycja jest zajeta");
+  else zle(`przed terminem wyszlo ${stanPozycji(zajeta)}`);
+  if (stanPozycji(poTerminie) === "wolna") ok("po terminie pozycja jest wolna, choc kolumna nadal mowi awaiting_payment");
+  else zle(`po terminie wyszlo ${stanPozycji(poTerminie)}`);
+  if (stanPozycji(zaplacona) === "zamknieta") ok("zaplacona pozycja zostaje zamknieta mimo minionego terminu");
+  else zle(`zaplacona wyszla ${stanPozycji(zaplacona)}`);
+  if (stanPozycji(wPrzegladzie) === "zajeta") ok("platnosc w przegladzie nie zwalnia sie zegarem");
+  else zle(`platnosc w przegladzie wyszla ${stanPozycji(wPrzegladzie)}`);
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nZaplata za oferte: wszystko sie zgadza\n");

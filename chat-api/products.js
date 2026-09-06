@@ -12,7 +12,7 @@
 // transakcji z blokada wiersza, wiec dwa rownolegle zamowienia nie moga obydwa
 // zobaczyc tej samej wolnej sztuki.
 
-import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
+import { holdUntil, INSTANT_HOLD_MINUTES } from "./pricing/businessDays.js";
 
 export class ProductError extends Error {
   constructor(message, code, extra = {}) {
@@ -37,13 +37,13 @@ export const PRODUCT_STATUSES = ["draft", "live", "sold_out", "hidden", "retired
 /** Stany, w ktorych pozycja jest w sklepie widoczna. */
 export const SHOP_STATUSES = ["live", "sold_out"];
 
-/** Ile trzymamy towar dla nieoplaconego zamowienia z bramka platnicza. */
-export const INSTANT_HOLD_MINUTES = 20;
+// Ile trzymamy towar, liczy `holdUntil` z warstwy cenowej: rezerwacja towaru
+// i waznosc zamowienia to ta sama obietnica i musza konczyc sie w tej samej
+// chwili. Nazwe zostawiamy wystawiona, bo panel wypisuje ja klientowi.
+export { INSTANT_HOLD_MINUTES };
 
 export function reservationExpiry(paymentMethod, now = new Date()) {
-  return paymentMethod === "bank_transfer"
-    ? addBusinessDays(now, TRANSFER_HOLD_BUSINESS_DAYS)
-    : new Date(now.getTime() + INSTANT_HOLD_MINUTES * 60_000);
+  return holdUntil(paymentMethod, now);
 }
 
 const PUBLIC_COLUMNS = `

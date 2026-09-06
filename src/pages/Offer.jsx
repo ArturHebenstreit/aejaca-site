@@ -19,7 +19,7 @@
 // liczy serwer z wlasnego cennika, a znizke rezerwuje dopiero zlozenie
 // zamowienia, w jednej transakcji z jego zapisem. Przegladarka pokazuje.
 
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import { dzienNumerycznie } from "../utils/dataDnia.js";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
@@ -99,6 +99,10 @@ const UI = {
     validUntilPast: "Oferta obowiązywała do",
     expiredTitle: "Ta oferta straciła ważność",
     expiredDesc: "Kwota przestała obowiązywać, więc nie możemy jej teraz przyjąć. Napisz do nas, wystawimy nową.",
+    heldTitle: "Pozycje trzyma Twoje nieopłacone zamówienie",
+    heldDesc: "Płatność nie doszła do skutku, więc nic nie zostało kupione. Dokończ ją albo zwolnij pozycje, a wtedy zapłacisz jeszcze raz, także inną metodą i w euro. Bez tego pozycje zwolnią się same po kwadransie od ostatniej próby.",
+    heldPay: "Dokończ płatność",
+    heldRelease: "Zwolnij pozycje",
     doneTitle: "Oferta opłacona i zlecona",
     doneDesc: "Nie ma tu już nic do zapłacenia. Stan realizacji sprawdzisz na stronie zamówienia.",
     goToOrder: "Przejdź do zamówienia",
@@ -199,6 +203,10 @@ const UI = {
     validUntilPast: "The offer was valid until",
     expiredTitle: "This offer has expired",
     expiredDesc: "The amount no longer stands, so we cannot accept it now. Write to us and we will issue a new one.",
+    heldTitle: "Your unpaid order is holding these items",
+    heldDesc: "The payment did not go through, so nothing has been bought. Finish it or release the items, and then pay again, by another method and in euro if you prefer. Otherwise the items free themselves a quarter of an hour after the last attempt.",
+    heldPay: "Finish the payment",
+    heldRelease: "Release the items",
     doneTitle: "Offer paid and in progress",
     doneDesc: "There is nothing left to pay for here. You can follow the work on the order page.",
     goToOrder: "Go to the order",
@@ -299,6 +307,10 @@ const UI = {
     validUntilPast: "Das Angebot galt bis",
     expiredTitle: "Dieses Angebot ist abgelaufen",
     expiredDesc: "Der Betrag gilt nicht mehr, wir können ihn jetzt nicht annehmen. Schreiben Sie uns, wir stellen ein neues aus.",
+    heldTitle: "Ihre unbezahlte Bestellung hält diese Positionen",
+    heldDesc: "Die Zahlung kam nicht zustande, es wurde also nichts gekauft. Schließen Sie sie ab oder geben Sie die Positionen frei, dann zahlen Sie erneut, auf Wunsch anders und in Euro. Sonst werden die Positionen eine Viertelstunde nach dem letzten Versuch von selbst frei.",
+    heldPay: "Zahlung abschließen",
+    heldRelease: "Positionen freigeben",
     doneTitle: "Angebot bezahlt und beauftragt",
     doneDesc: "Hier ist nichts mehr zu bezahlen. Den Stand der Arbeit sehen Sie auf der Bestellseite.",
     goToOrder: "Zur Bestellung",
@@ -578,6 +590,14 @@ export default function Offer() {
   // zostala.
   const domkniete = Boolean(offer?.settled);
   const zamowienia = offer?.orders || [];
+  // ZAMOWIENIA, KTORE TRZYMAJA POZYCJE, A NIC NIE ZAPLACILY.
+  //
+  // "Nie zostalo nic do wziecia" ma dwie zupelnie rozne przyczyny: wszystko
+  // kupione albo wszystko zablokowane przez kase porzucona w bramce. Do
+  // 6 wrzesnia 2026 obie mowily to samo zielone "oferta oplacona i zlecona",
+  // czyli dziekowalismy klientowi za platnosc, ktorej nie wykonal.
+  const trzymaNieoplacone = (offer?.blockedBy || []).length > 0;
+  const zablokowanaBezZaplaty = domkniete && trzymaNieoplacone;
   const czesciowo = !domkniete && zamowienia.length > 0;
   const zablokowane = choosing || Boolean(offer?.expired) || domkniete;
 
@@ -779,10 +799,48 @@ export default function Offer() {
             <div className="mt-6 space-y-6">
               <div className="text-neutral-500 text-xs font-mono">{u.number}: {offer.quoteRef}</div>
 
-              {domkniete && (
+              {domkniete && !zablokowanaBezZaplaty && (
                 <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-5">
                   <h2 className="text-emerald-300 font-semibold mb-1">{u.doneTitle}</h2>
                   <p className="text-emerald-300/80 text-sm leading-relaxed">{u.doneDesc}</p>
+                  <ListaZamowien zamowienia={zamowienia} u={u} />
+                </div>
+              )}
+
+              {/* Blokada bez zaplaty. Oba wyjscia stoja tu obok siebie, bo
+                  klient, ktory tu trafil, chce albo dokonczyc, albo zaczac
+                  od nowa, i zadne z tych dwoch nie jest bledem. */}
+              {zablokowanaBezZaplaty && (
+                <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-5">
+                  <h2 className="text-amber-300 font-semibold mb-1 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> {u.heldTitle}
+                  </h2>
+                  <p className="text-amber-300/80 text-sm leading-relaxed">{u.heldDesc}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {(offer.blockedBy || []).map((z) => (
+                      <Fragment key={z.orderRef}>
+                        <Link
+                          to={{
+                            pathname: "/order/status/",
+                            search: `?ref=${encodeURIComponent(z.orderRef)}${z.token ? `&token=${encodeURIComponent(z.token)}` : ""}`,
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-neutral-950 hover:bg-amber-300"
+                        >
+                          {u.heldPay} <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                        <Link
+                          to={{
+                            pathname: "/order/status/",
+                            search: `?ref=${encodeURIComponent(z.orderRef)}${z.token ? `&token=${encodeURIComponent(z.token)}` : ""}`,
+                            hash: "#rezygnacja",
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 px-4 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
+                        >
+                          {u.heldRelease}
+                        </Link>
+                      </Fragment>
+                    ))}
+                  </div>
                   <ListaZamowien zamowienia={zamowienia} u={u} />
                 </div>
               )}

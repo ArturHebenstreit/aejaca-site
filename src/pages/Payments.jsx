@@ -25,7 +25,7 @@ import FaqLista from "../components/FaqLista.jsx";
 import SpisTresci from "../components/SpisTresci.jsx";
 import SKLEP from "../data/faq/sklep.js";
 import { EUR_FX_MARGIN } from "../pricing/currency.js";
-import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
+import { INSTANT_HOLD_MINUTES, TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
 /** Narzut kursowy jako procent, liczony z tej samej stalej co kasa. */
 const FX_PCT = Math.round((EUR_FX_MARGIN - 1) * 100);
@@ -102,7 +102,7 @@ const L = {
       ["BLIK", "Kod z aplikacji banku. Najszybsza droga."],
       ["Szybki przelew online", "Ponad dwadzieścia polskich banków. Na wierzchu jest BLIK, banki chowają się pod jednym wierszem z wyszukiwarką, żeby nie trzeba było przewijać długiej listy."],
     ],
-    plNote: "Płatność potwierdza się od razu i od razu ruszamy z pracą. Towar rezerwujemy na 20 minut, czyli na czas potrzebny do dokończenia płatności. Porzucony koszyk nic nie zabiera: rezerwacja wygasa sama.",
+    plNote: "Płatność potwierdza się od razu i od razu ruszamy z pracą. Towar i pozycje z wyceny trzymamy przez {minut} minut od ostatniej próby zapłaty, czyli na czas potrzebny do dokończenia płatności. Porzucony koszyk nic nie zabiera: rezerwacja wygasa sama.",
     euTitle: "Płatność z zagranicy, w euro",
     euLead: "Tak wygląda zapłata, kiedy rozliczasz się w euro. To domyślna waluta wersji angielskiej i niemieckiej, ale wybrać ją może każdy. Należność rozliczamy przelewem SEPA na nasze konto w euro.",
     euRows: [
@@ -128,7 +128,7 @@ const L = {
     metalNote: "Domyślnie oferta wiąże nas 7 dni od wystawienia, ale termin ustalamy osobno dla każdej i podajemy go w niej wprost. Przy wyrobie, w którym kruszec jest główną składową ceny, bywa krótszy. Dlatego liczba z tej strony jest tylko punktem wyjścia: obowiązuje data wpisana w Twojej ofercie. Po tej dacie nie przedłużamy starej oferty, tylko wystawiamy nową, i to jest dokładnie ten powód: przez ten czas metal mógł się ruszyć.",
     timeTitle: "Terminy",
     timeRows: [
-      ["Rezerwacja towaru, płatność z Polski", "20 minut"],
+      ["Rezerwacja towaru, płatność z Polski", "{minut} minut od ostatniej próby"],
       ["Rezerwacja towaru, przelew w euro z zagranicy", "3 dni robocze, czwartego towar wraca do sprzedaży"],
       ["Ważność oferty ustalonej z człowiekiem", "domyślnie 7 dni, obowiązuje data podana w Twojej ofercie"],
       ["Ważność kwoty wiążącej z kalkulatora", "7 dni, kruszec z dnia zamówienia"],
@@ -243,7 +243,7 @@ const L = {
       ["BLIK", "A code from your banking app. The fastest route."],
       ["Instant bank transfer", "Over twenty Polish banks. BLIK sits on top and the banks hide behind one row with a search box, so nobody has to scroll a long list."],
     ],
-    plNote: "The payment confirms immediately and we start work immediately. Goods are reserved for 20 minutes, the time needed to finish paying. An abandoned cart takes nothing: the reservation expires on its own.",
+    plNote: "The payment confirms immediately and we start work immediately. Goods and quoted items are held for {minut} minutes from your last payment attempt, the time needed to finish paying. An abandoned cart takes nothing: the reservation expires on its own.",
     euTitle: "Paying from abroad, in euro",
     euLead: "This is how payment works when you settle in euro. It is the default on the English and German versions, but anyone can choose it. We settle by SEPA transfer to our euro account.",
     euRows: [
@@ -269,7 +269,7 @@ const L = {
     metalNote: "By default an offer binds us for 7 days from issue, but we set the expiry date separately for every offer and state it on the offer itself. On a piece where the metal is the main part of the price it tends to be shorter. So the number on this page is only a starting point: the date written on your offer is the one that counts. Past that date we issue a new offer rather than extending the old one, and this is exactly the reason: the metal may have moved.",
     timeTitle: "Deadlines",
     timeRows: [
-      ["Goods reserved, paying from Poland", "20 minutes"],
+      ["Goods reserved, paying from Poland", "{minut} minutes from the last attempt"],
       ["Goods reserved, euro transfer from abroad", "3 business days; on the fourth the goods go back on sale"],
       ["Validity of an offer agreed with a person", "7 days by default, the date given on your offer applies"],
       ["Validity of a binding calculator amount", "7 days; metal priced on the day of ordering"],
@@ -384,7 +384,7 @@ const L = {
       ["BLIK", "Ein Code aus Ihrer Banking-App. Der schnellste Weg."],
       ["Sofortüberweisung", "Über zwanzig polnische Banken. BLIK steht oben, die Banken verbergen sich hinter einer Zeile mit Suchfeld, damit niemand eine lange Liste scrollen muss."],
     ],
-    plNote: "Die Zahlung wird sofort bestätigt und wir beginnen sofort mit der Arbeit. Die Ware reservieren wir 20 Minuten, also für die Dauer des Bezahlvorgangs. Ein abgebrochener Warenkorb nimmt nichts weg: die Reservierung verfällt von selbst.",
+    plNote: "Die Zahlung wird sofort bestätigt und wir beginnen sofort mit der Arbeit. Ware und Angebotspositionen halten wir {minut} Minuten ab dem letzten Zahlungsversuch, also für die Dauer des Bezahlvorgangs. Ein abgebrochener Warenkorb nimmt nichts weg: die Reservierung verfällt von selbst.",
     euTitle: "Zahlung aus dem Ausland, in Euro",
     euLead: "So läuft die Zahlung, wenn Sie in Euro abrechnen. Das ist die Voreinstellung der englischen und deutschen Version, wählen kann sie aber jeder. Abgerechnet wird per SEPA-Überweisung auf unser Eurokonto.",
     euRows: [
@@ -410,7 +410,7 @@ const L = {
     metalNote: "Standardmäßig bindet uns ein Angebot 7 Tage ab Ausstellung, die Gültigkeitsdauer legen wir jedoch für jedes Angebot einzeln fest und nennen sie im Angebot selbst. Bei einem Stück, dessen Preis überwiegend vom Metall bestimmt wird, fällt sie meist kürzer aus. Die Zahl auf dieser Seite ist also nur ein Ausgangspunkt: maßgeblich ist das Datum auf Ihrem Angebot. Nach diesem Datum stellen wir ein neues Angebot aus statt das alte zu verlängern, und genau das ist der Grund: das Metall kann sich bewegt haben.",
     timeTitle: "Fristen",
     timeRows: [
-      ["Warenreservierung, Zahlung aus Polen", "20 Minuten"],
+      ["Warenreservierung, Zahlung aus Polen", "{minut} Minuten ab dem letzten Versuch"],
       ["Warenreservierung, Euro-Überweisung aus dem Ausland", "3 Werktage; am vierten geht die Ware zurück in den Verkauf"],
       ["Gültigkeit eines persönlich vereinbarten Angebots", "standardmäßig 7 Tage, es gilt das im Angebot genannte Datum"],
       ["Gültigkeit eines verbindlichen Kalkulatorbetrags", "7 Tage; Metall zum Tag der Bestellung"],
@@ -653,7 +653,12 @@ export default function Payments() {
                   </div>
                 ))}
               </div>
-              <p className="text-neutral-500 text-xs leading-relaxed mt-4 pt-4 border-t border-neutral-800">{l.plNote}</p>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-4 pt-4 border-t border-neutral-800">
+                {/* Liczba minut idzie ze wspolnej stalej, a nie z napisu. Strona,
+                    ktora obiecuje inna dlugosc niz ta, ktora naprawde trzyma
+                    serwer, jest gorsza niz strona, ktora milczy. */}
+                {l.plNote.replace("{minut}", String(INSTANT_HOLD_MINUTES))}
+              </p>
             </Karta>
 
             <Karta icon={Globe} title={l.euTitle} innerRef={currencyRef}>
@@ -709,7 +714,9 @@ export default function Payments() {
                 {l.timeRows.map(([name, value], i) => (
                   <div key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
                     <span className="text-sm text-neutral-300">{name}</span>
-                    <span className="text-sm text-amber-400 font-medium">{value}</span>
+                    <span className="text-sm text-amber-400 font-medium">
+                      {value.replace("{minut}", String(INSTANT_HOLD_MINUTES))}
+                    </span>
                   </div>
                 ))}
               </div>

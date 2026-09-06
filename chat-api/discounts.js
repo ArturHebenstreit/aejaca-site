@@ -19,7 +19,7 @@
 // a nie trzy o roznych terminach.
 
 import { randomInt } from "node:crypto";
-import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
+import { holdUntil } from "./pricing/businessDays.js";
 
 export class DiscountError extends Error {
   constructor(message, code, extra = {}) {
@@ -28,9 +28,6 @@ export class DiscountError extends Error {
     Object.assign(this, extra);
   }
 }
-
-/** Ile trzymamy kod dla nieoplaconego zamowienia z bramka platnicza. */
-const INSTANT_HOLD_MINUTES = 20;
 
 /** Gorna granica procentu. Nie po to, zeby ograniczac akcje, tylko zeby
  *  literowka w panelu nie zrobila z 15% dziewiecdziesieciu. */
@@ -43,9 +40,10 @@ export function normalizeCode(raw) {
 }
 
 export function redemptionExpiry(paymentMethod, now = new Date()) {
-  return paymentMethod === "bank_transfer"
-    ? addBusinessDays(now, TRANSFER_HOLD_BUSINESS_DAYS)
-    : new Date(now.getTime() + INSTANT_HOLD_MINUTES * 60_000);
+  // Ten sam termin, co rezerwacja towaru i waznosc zamowienia. Kod trzymany
+  // dluzej niz zamowienie lezalby zajety po tym, jak przestal komukolwiek
+  // sluzyc, a liczony osobno rozjechalby sie przy pierwszej zmianie.
+  return holdUntil(paymentMethod, now);
 }
 
 /**

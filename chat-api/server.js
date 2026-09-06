@@ -38,7 +38,7 @@ import { podpisPasuje, wypisany, zapiszWypis, wypisDziala, STRONA_WYPISU } from 
 // nieznanych funkcji, bo nazwa gdzies istnieje, a wywalilo by sie dopiero
 // w produkcji, przy pierwszym uruchomieniu przypomnien.
 import { dni as dniSlownie } from "./mailSzata.js";
-import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
+import { addBusinessDays, holdUntil, instantHoldUntil, INSTANT_HOLD_MINUTES, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
   listProducts, getProduct, reserveProduct, consumeReservations,
   releaseExpiredReservations, releaseOrderReservations, ProductError, PRODUCT_STATUSES,
@@ -50,7 +50,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
-  sendTopUpRequest, sendOrderExpired, sendLeadMail,
+  sendTopUpRequest, sendOrderExpired, sendPaymentReminder, sendLeadMail,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
   sendZamkniecieSprawy } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
@@ -511,6 +511,9 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(40)`).catch(() => {});
   // Chwila prosby o doplate. Od niej biegna trzy dni na uzupelnienie kwoty.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_asked_at TIMESTAMPTZ`).catch(() => {});
+  // Chwila przypomnienia o niedokonczonej platnosci przelewem. Jedno na
+  // zamowienie, patrz `przypomnijONiedokonczonejPlatnosci`.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reminded_at TIMESTAMPTZ`).catch(() => {});
   // Jedno przypomnienie na kod i slad po wiadomosciach sprzed zamowienia.
   pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS reminded_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS mail_log (
@@ -2020,6 +2023,16 @@ app.get("/api/quotes/:ref", async (req, res) => {
     wgNumeru.get(i.order_ref).titles.push(i.title);
   }
 
+  // ZAMOWIENIA, KTORE TRZYMAJA POZYCJE, A NIC ZA NIE NIE ZAPLACILY.
+  //
+  // Do 6 wrzesnia 2026 strona oferty mowila na to zielonym napisem "zamowienie
+  // zlozone, dziekujemy". Stan "wszystko kupione" i stan "wszystko trzyma
+  // nieoplacona kasa, ktora klient porzucil w bramce" wygladaly identycznie,
+  // bo oba znacza "nie zostalo nic do wziecia". Klient czytal podziekowanie
+  // za platnosc, ktorej nie wykonal, i nie mial jak sie domyslic, ze blokuje
+  // go jego wlasne zamowienie sprzed kwadransa.
+  const trzymajaBezZaplaty = zamowienia.filter((z) => !z.paid);
+
   // Suma pozycji nie jest kwota do zaplaty: wariant z jednej grupy wyklucza
   // pozostale, a niezaznaczony dodatek nie wchodzi do rachunku. Bierzemy wiec
   // wybrane pozycje z listy JUZ PRZELICZONEJ, zeby kwota zgadzala sie z ta,
@@ -2077,6 +2090,9 @@ app.get("/api/quotes/:ref", async (req, res) => {
     // Nie zostalo nic do wziecia: strona ma powiedziec "oplacona i zlecona",
     // a nie pokazac formularz platnosci na pusty koszyk.
     settled: quoteSettled(quote),
+    // Blokada bez zaplaty: strona oferty rysuje z tego wlasna ramke, z droga
+    // do dokonczenia platnosci i do zwolnienia pozycji.
+    blockedBy: trzymajaBezZaplaty,
     // Termin tego, co klient ma zaznaczone TERAZ: najdluzszy z wybranych,
     // bo paczka wychodzi jedna. Liczy serwer, ta sama funkcja co przy
     // zapisie zamowienia, wiec liczba na ekranie jest ta, ktora zamrozimy.
@@ -3267,6 +3283,7 @@ async function expireStaleOrders() {
       await releaseOrderReservations(pool, o.id);
       // Kod z przeterminowanego zamowienia wraca do puli razem z towarem.
       await releaseOrderRedemptions(pool, o.id);
+      await oddajOferteDoZycia(o.id);
       // Zamowienie zamykalo sie PO CICHU (poprawka 2026-08-30). Klient, ktory
       // przegapil termin, dowiadywal sie o tym dopiero wtedy, gdy sam zajrzal
       // na strone, a ten, ktory przelal pieniadze dzien po terminie, nie mial
@@ -3285,7 +3302,46 @@ async function expireStaleOrders() {
     console.error("[zamowienia] wygaszanie nie powiodlo sie:", e.message);
   }
 }
-if (pool) cron.schedule("0 * * * *", expireStaleOrders);
+// Co kwadrans, w rytmie blokady przy bramce platniczej. Przy tygodniowej
+// blokadzie godzina niczego nie zmieniala; przy kwadransie zamiatarka
+// chodzaca raz na godzine podwajalaby czas oczekiwania klienta. Sam odczyt
+// oferty nie czeka na ten przebieg (`stanPozycji` liczy termin), ale maile,
+// rezerwacje towaru i kody zwalniaja sie wlasnie tutaj.
+if (pool) cron.schedule("*/15 * * * *", expireStaleOrders);
+
+/**
+ * Oferta nie starzeje sie pod wlasna blokada.
+ *
+ * Pozycje trzymalo nieoplacone zamowienie, a zegar waznosci oferty biegl w tym
+ * czasie dalej. Klient, ktory porzucil kase szostego dnia, wracal po zwolnieniu
+ * pozycji do oferty juz wygaslej i dostawal 410 zamiast kasy. Blokada zjadala
+ * dokladnie to, czego miala pilnowac.
+ *
+ * Oddajemy wiec ofercie tyle, ile trzymala blokada, ale nie mniej niz trzy dni:
+ * klient ma wrocic do czegos, co da sie kupic, a nie do napisu o wygasnieciu.
+ * Termin tylko WYDLUZAMY: oferta z dalsza data zostaje ze swoja.
+ */
+async function oddajOferteDoZycia(orderId) {
+  try {
+    const { rows } = await pool.query(
+      `UPDATE quotes SET valid_until = GREATEST(valid_until, (NOW() + INTERVAL '3 days')::date),
+              updated_at = NOW()
+        WHERE id IN (SELECT DISTINCT i.quote_id FROM quote_items i WHERE i.order_id = $1)
+          AND status IN ('sent', 'accepted', 'partial', 'converted', 'expired')
+          -- Oferta bez terminu nie ma go dostac tutaj: puste pole znaczy
+          -- "bez daty koncowej", a GREATEST pomija NULL i wpisalby w to
+          -- miejsce date, czyli SKROCILby oferte zamiast ja przedluzyc.
+          AND valid_until IS NOT NULL
+        RETURNING quote_ref`,
+      [orderId]
+    );
+    if (rows.length) {
+      console.log(`[wycena] termin przesuniety po zwolnieniu blokady: ${rows.map((r) => r.quote_ref).join(", ")}`);
+    }
+  } catch (e) {
+    logBleduBazy("[wycena] przesuniecie terminu po zwolnieniu blokady", e);
+  }
+}
 
 /**
  * Codzienny przeglad terminow realizacji (ADR-0027).
@@ -3397,6 +3453,71 @@ async function przypomnijOKodach() {
 }
 if (pool) cron.schedule("30 7 * * *", przypomnijOKodach, { timezone: "Europe/Warsaw" });
 
+/**
+ * Przypomnienie o niedokonczonej wplacie przelewem, dzien przed koncem
+ * rezerwacji (decyzja wlasciciela, 2026-09-06).
+ *
+ * TYLKO przelew. Zamowienie kartowe trzymamy kwadrans (`INSTANT_HOLD_MINUTES`,
+ * `src/pricing/businessDays.js`), wiec przypomnienie doszloby po zwolnieniu
+ * pozycji, gdy nie ma juz czego przypominac. Przelew trzymamy trzy dni robocze
+ * (`TRANSFER_HOLD_BUSINESS_DAYS`), i tam przypomnienie ma sens.
+ *
+ * Warunki, kazdy z osobnym powodem:
+ * - `status = 'awaiting_transfer' AND paid_at IS NULL`, bo mail o platnosci,
+ *   ktora juz doszla, bylby falszem;
+ * - `payment_reminded_at IS NULL`, bo przypomnienie ma byc JEDNO;
+ * - `customer_email IS NOT NULL`, bo nie ma dokad wyslac;
+ * - `expires_at::date - CURRENT_DATE = 1`, doba przed koncem, zeby klient
+ *   zdazyl zlecic przelew, a nie dowiedzial sie o tym po fakcie;
+ * - `transfer_asked_at IS NULL`, bo NIEDOPLATA MA WLASNA ROZMOWE. Zamowienie
+ *   niedoplacone zostaje w `awaiting_transfer` bez `paid_at`, a termin przesuwa
+ *   sie o `DNI_NA_DOPLATE`, wiec bez tego warunku doba przed jego koncem
+ *   poszlaby prosba o przelew na PELNA kwote, zaraz po tym, jak poprosilismy
+ *   o sama roznice. Klient dostalby dwie sprzeczne wiadomosci o jednym
+ *   zamowieniu i mogl zaplacic drugi raz.
+ *
+ * Celowo BEZ `pisalismyDzisiaj` i BEZ sprawdzania wypisu z newslettera
+ * (`wypisany`): to jest wiadomosc TRANSAKCYJNA o wlasnym zamowieniu klienta,
+ * a nie marketing, wiec nie podlega ani limitowi jednej wiadomosci na dobe,
+ * ani zgodzie na newsletter.
+ */
+async function przypomnijONiedokonczonejPlatnosci() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders
+        WHERE status = 'awaiting_transfer' AND paid_at IS NULL
+          AND payment_reminded_at IS NULL AND customer_email IS NOT NULL
+          AND transfer_asked_at IS NULL
+          AND expires_at IS NOT NULL AND expires_at::date - CURRENT_DATE = 1
+        ORDER BY expires_at
+        LIMIT 200`
+    );
+    for (const order of rows) {
+      // Te same dane rachunku, co w pierwszej wiadomosci: `sendTransferInstructions`
+      // sklada `tr` dokladnie tak samo, z tej samej stalej `TRANSFER` i z tych
+      // samych pol zamowienia.
+      const tr = {
+        ...TRANSFER,
+        amountEur: ((order.amount_eur_cents ?? 0) / 100).toFixed(2),
+        reference: order.order_ref,
+        dueAt: order.expires_at,
+      };
+      const poszlo = await sendPaymentReminder(pool, order.id, tr);
+      if (!poszlo) {
+        console.error(`[przypomnienie-platnosci] ${order.order_ref}: bez wysylki, sprobujemy jutro`);
+        continue;
+      }
+      // Stempel PO udanej wysylce. Postawiony wczesniej zamknalby przypomnienie
+      // na zawsze przy pierwszej awarii poczty, i to po cichu.
+      await pool.query("UPDATE orders SET payment_reminded_at = NOW() WHERE id = $1", [order.id]);
+      console.log(`[przypomnienie-platnosci] ${order.order_ref}: przypomnienie poszlo do ${order.customer_email}`);
+    }
+  } catch (e) {
+    console.error("[przypomnienie-platnosci] przeglad nie powiodl sie:", e.message);
+  }
+}
+if (pool) cron.schedule("0 8 * * *", przypomnijONiedokonczonejPlatnosci, { timezone: "Europe/Warsaw" });
+
 /** Ile dni po odbiorze prosimy o ocene. Decyzja wlasciciela, 2026-08-31. */
 const DNI_DO_PROSBY_O_OCENE = 3;
 
@@ -3458,7 +3579,6 @@ if (pool) cron.schedule("15 4 * * *", () => runRetention(pool).catch((e) => cons
 // ============================================================
 
 const SITE_URL = process.env.SITE_URL || "https://www.aejaca.com";
-const ORDER_VALIDITY_DAYS = 7;
 
 // ------------------------------------------------------------
 // Przelew w euro
@@ -3917,10 +4037,10 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
     // Przy przelewie ta sama data konczy rezerwacje towaru i waznosc kwoty.
     // Dwie rozne daty oznaczalyby dwie obietnice, z ktorych klient zapamieta
-    // korzystniejsza.
-    const expiresAt = wantsTransfer
-      ? addBusinessDays(new Date(), TRANSFER_HOLD_BUSINESS_DAYS)
-      : new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
+    // korzystniejsza. Przy bramce jest to kwadrans od tej chwili, odswiezany
+    // przy kazdym starcie platnosci. Liczy to jedna funkcja warstwy cenowej,
+    // wspolna dla obu metod i dla rezerwacji towaru.
+    const expiresAt = holdUntil(wantsTransfer ? "bank_transfer" : "autopay");
 
     const { rows } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
@@ -5746,6 +5866,10 @@ app.post("/api/orders/:ref/cancel-by-customer", express.json({ limit: "4kb" }), 
 
   const stock = await releaseOrderReservations(pool, order.id);
   const codes = await releaseOrderRedemptions(pool, order.id);
+  // Rezygnacja czesto znaczy "chce zaplacic inaczej", najczesciej przelewem
+  // w euro. Oferta ma wiec czekac na to drugie podejscie, a nie wygasnac
+  // miedzy jednym a drugim.
+  await oddajOferteDoZycia(order.id);
   console.log(`[zamowienia] ${ref} rezygnacja klienta (${kod}), zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
 
   res.json({ ok: true, orderRef: ref });
@@ -5787,6 +5911,9 @@ app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, 
 
   const stock = await releaseOrderReservations(pool, order.id);
   const codes = await releaseOrderRedemptions(pool, order.id);
+  // Anulujac z panelu, oddajemy ofercie te sama szanse, co przy rezygnacji
+  // klienta: pozycje wracaja do niej, wiec ma byc do czego wracac.
+  await oddajOferteDoZycia(order.id);
   console.log(`[zamowienia] ${ref} anulowane, zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
 
   res.json({ ok: true, orderRef: ref, releasedReservations: stock, releasedCodes: codes });
@@ -6064,8 +6191,18 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   const limit = await checkQuarterlyLimit(pool, order.total_grosze);
   if (!limit.ok) return res.status(409).json({ error: "Nie mozemy teraz przyjac tej platnosci", code: "quarterly_limit" });
 
+  // ZEGAR LICZY SIE OD TEJ PROBY, A NIE OD ZLOZENIA ZAMOWIENIA.
+  //
+  // Blokada przy bramce trwa kwadrans, wiec liczona od zlozenia zamowienia
+  // dawalaby klientowi, ktory wraca do platnosci po godzinie, zero minut na
+  // jej dokonczenie. Kazde nacisniecie "zaplac" odsuwa termin o pelny kwadrans:
+  // tyle trwa platnosc, a nie decyzja. Przy przelewie nie ruszamy niczego, bo
+  // tam ten sam termin niesie takze waznosc kwoty w euro i rezerwacje towaru.
+  const swiezyTermin = order.payment_method === "bank_transfer" ? null : instantHoldUntil();
+  const terminPlatnosci = swiezyTermin || order.expires_at;
+
   const validity = new Date(Math.min(
-    order.expires_at ? new Date(order.expires_at).getTime() : Number.POSITIVE_INFINITY,
+    terminPlatnosci ? new Date(terminPlatnosci).getTime() : Number.POSITIVE_INFINITY,
     Date.now() + 30 * 86400_000
   ));
   const start = buildStartTransaction({
@@ -6080,13 +6217,18 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
     validityTime: formatValidityTime(validity),
   });
 
+  // Nowy termin zapisujemy TYM SAMYM warunkiem, ktory otwiera platnosc.
+  // Osobnym zapytaniem odsunelibysmy termin takze zamowieniu, ktoremu ten
+  // warunek zaraz odmowi, czyli przedluzalibysmy zycie czemus, co wlasnie
+  // przestalo byc platne. `COALESCE` zostawia termin nietkniety przy przelewie.
   const started = await pool.query(
     `UPDATE orders SET payment_gateway_id = $2, payment_status = 'PENDING',
-       payment_status_details = NULL
+       payment_status_details = NULL,
+       expires_at = COALESCE($3, expires_at)
      WHERE id = $1 AND status = 'awaiting_payment' AND fulfilled_at IS NULL
        AND COALESCE(payment_method, 'autopay') = 'autopay'
      RETURNING id`,
-    [order.id, Number(gatewayId) || null]
+    [order.id, Number(gatewayId) || null, swiezyTermin]
   );
   if (!started.rowCount) {
     return res.status(409).json({
