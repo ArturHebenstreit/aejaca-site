@@ -325,6 +325,56 @@ const ZESTAWY = {
       zapytania: 1, zamowienia: 1, oplacone: 1, przychod: 64000,
     }],
   },
+  // PORZUCENIA. Dane sa tu celowo NIEROWNE: koszyk bez bledu obok koszyka
+  // z bledem, platnosc odzyskana obok straconej, zamowienie anulowane obok
+  // wygaslego. Fixture z samymi ladnymi wierszami sprawdza szablon w jednym
+  // ukladzie, a to wlasnie te nietypowe wywracaly widoki w tym panelu.
+  porzucenia: {
+    user: uzytkownik, days: 30, wew: false,
+    lejek: {
+      kroki: [
+        { id: "wizyty", label: "wizyty", ile: 820, stracone: 0, udzial: 0, zPoprzedniego: 100 },
+        { id: "sklep", label: "sklep", ile: 310, stracone: 510, udzial: 62, zPoprzedniego: 38 },
+        { id: "karta", label: "karta produktu albo uslugi", ile: 190, stracone: 120, udzial: 39, zPoprzedniego: 61 },
+        { id: "koszyk", label: "koszyk", ile: 44, stracone: 146, udzial: 77, zPoprzedniego: 23 },
+        { id: "kasa", label: "kasa", ile: 18, stracone: 26, udzial: 59, zPoprzedniego: 41 },
+        { id: "proba", label: "proba zlozenia", ile: 11, stracone: 7, udzial: 39, zPoprzedniego: 61 },
+        { id: "oplacone", label: "oplacone", ile: 8, stracone: 3, udzial: 27, zPoprzedniego: 73 },
+      ],
+      najwieksza: { id: "koszyk", label: "koszyk", stracone: 146, udzial: 77 },
+    },
+    koszyki: [
+      { session: "abc123", pierwsze: new Date("2026-09-05T10:00:00Z"), ostatnie: new Date("2026-09-05T10:12:00Z"),
+        krok: 3, wartosc: 214000, kraj: "PL", urzadzenie: "desktop", kanal: "wyszukiwarki",
+        bledy: 1, powod: "order_create|409" },
+      { session: "def456", pierwsze: new Date("2026-09-04T18:00:00Z"), ostatnie: new Date("2026-09-04T18:03:00Z"),
+        krok: 1, wartosc: 8900, kraj: "DE", urzadzenie: "mobile", kanal: "wprost",
+        bledy: 0, powod: null },
+    ],
+    platnosci: [
+      { id: 1, ts: new Date("2026-09-05T11:00:00Z"), order_ref: "AE20260905-AAAA", status_details: "Odrzucone przez bank",
+        gateway_id: 1500, amount_grosze: 214000, currency: "PLN", hash_valid: true,
+        stan_zamowienia: "expired", paid_at: null, customer_email: "k@example.com", total_grosze: 214000, odzyskana: false },
+      { id: 2, ts: new Date("2026-09-03T09:00:00Z"), order_ref: "AE20260903-BBBB", status_details: null,
+        gateway_id: null, amount_grosze: 32000, currency: "PLN", hash_valid: true,
+        stan_zamowienia: "paid", paid_at: new Date("2026-09-03"), customer_email: null, total_grosze: 32000, odzyskana: true },
+    ],
+    kasy: [
+      { ts: new Date("2026-09-05T10:11:00Z"), session: "abc123", label: "order_create|409", value: 214000,
+        path: "/checkout/", kraj: "PL", urzadzenie: "desktop" },
+      { ts: new Date("2026-09-02T14:00:00Z"), session: "ghi789", label: "gateway_form_blocked", value: null,
+        path: "/checkout/", kraj: "", urzadzenie: "mobile" },
+    ],
+    zamowienia: [
+      { order_ref: "AE20260905-AAAA", status: "expired", total_grosze: 214000, currency: "PLN",
+        customer_email: "k@example.com", lang: "pl", created_at: new Date("2026-09-05"), expires_at: new Date("2026-09-12"),
+        payment_method: "autopay", payment_status: "FAILURE", cancelled_at: null, cancel_reason: null, cancelled_by: null },
+      { order_ref: "AE20260901-CCCC", status: "cancelled", total_grosze: 45000, currency: "PLN",
+        customer_email: null, lang: "de", created_at: new Date("2026-09-01"), expires_at: new Date("2026-09-08"),
+        payment_method: "bank_transfer", payment_status: null, cancelled_at: new Date("2026-09-02"),
+        cancel_reason: "termin: za dlugo czekac", cancelled_by: "klient" },
+    ],
+  },
   "analytics-sesja": {
     user: uzytkownik, session: "abc123xyz",
     kroki: [

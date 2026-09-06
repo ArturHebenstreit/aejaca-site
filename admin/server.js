@@ -9,7 +9,9 @@ import { fileURLToPath } from "url";
 import { opisWersji } from "./wersja.js";
 import { okresy, kpi, dzienne, wedlug, tresc, lejekSklepu, lejekWycen, narzedzia,
          wyboryKalkulatora, sesje, sciezkaSesji, skutkiSesji, sygnaly,
-         platnosciNieudane, rezygnacje, nieudaneKasy } from "./analityka.js";
+         platnosciNieudane, rezygnacje, nieudaneKasy,
+         porzuconeKoszyki, nieudanePlatnosci, nieudaneKasyLista, zamowieniaBezZaplaty,
+         odpadanie, lejekSklepu as lejekSklepuRaport } from "./analityka.js";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -657,6 +659,40 @@ app.get("/analytics", requireAuth, async (req, res) => {
       // o spadku ruchu milczy, gdy ten okres siega przed zmiana sposobu
       // liczenia: inaczej wolalby o pomoc z powodu naszej wlasnej poprawki.
       sygnaly: sygnaly({ teraz, przedtem, kanaly, wejscia, lejekS, poprzedniOd: o.poprzedniOd }),
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+/**
+ * PORZUCENIA: gdzie odpada klient, wiersz po wierszu.
+ *
+ * Liczby zbiorcze stoja na `/analytics` i odpowiadaja na pytanie, CZY cos sie
+ * psuje. Ta strona odpowiada na pytanie, CO: przy siedmiu porzuconych koszykach
+ * w tygodniu srednia nie mowi nic, a siedem wierszy mowi wszystko. Kazdy wiersz
+ * prowadzi dalej, do sciezki wizyty albo do zamowienia, bo wiersz, ktorego nie
+ * da sie sprawdzic, jest ciekawostka, a nie dana.
+ *
+ * `bezpiecznie` zostaje przy kazdym zapytaniu z osobna: brak jednej tabeli
+ * (starsza baza, nieprzeprowadzona migracja) ma zabrac jedna sekcje, a nie
+ * cala strone.
+ */
+app.get("/porzucenia", requireAuth, async (req, res) => {
+  const o = okresy(req.query.days);
+  const opcje = { zWlasnymi: req.query.wew === "1" };
+  const bezpiecznie = (p, zapas) => p.catch(() => zapas);
+  try {
+    const [lejek, koszyki, platnosci, kasy, zamowienia] = await Promise.all([
+      bezpiecznie(lejekSklepuRaport(pool, o.od, o.do, opcje), {}),
+      bezpiecznie(porzuconeKoszyki(pool, o.od, o.do, { ...opcje, limit: 100 }), []),
+      bezpiecznie(nieudanePlatnosci(pool, o.od, o.do, { limit: 100 }), []),
+      bezpiecznie(nieudaneKasyLista(pool, o.od, o.do, { ...opcje, limit: 100 }), []),
+      bezpiecznie(zamowieniaBezZaplaty(pool, o.od, o.do, { limit: 100 }), []),
+    ]);
+    res.render("porzucenia", {
+      user: req.user, days: o.dni, wew: req.query.wew === "1",
+      lejek: odpadanie(lejek), koszyki, platnosci, kasy, zamowienia,
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
