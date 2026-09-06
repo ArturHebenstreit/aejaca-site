@@ -166,7 +166,7 @@ export default function TrustpilotWidget() {
         </div>
 
         <div ref={boxRef} className="reveal flex flex-col items-center gap-6">
-          <div className="grid gap-4 sm:grid-cols-2 w-full">
+          <div className="grid gap-4 sm:grid-cols-2 items-start w-full">
             {opinie.map((o) => (
               <KartaOpinii key={o.id} opinia={o} lang={lang} L={L} />
             ))}
