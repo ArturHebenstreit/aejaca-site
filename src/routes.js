@@ -47,7 +47,6 @@ export const TRASY = [
   { sciezka: "blog/:slug/", komponent: "BlogPost" },
   { sciezka: "contact/", komponent: "Contact" },
   { sciezka: "glossary/", komponent: "Glossary" },
-  { sciezka: "glossary/:id/", komponent: "GlossaryTerm" },
   { sciezka: "about/", komponent: "About" },
   { sciezka: "warranty/", komponent: "Warranty" },
   { sciezka: "returns/", komponent: "Returns" },

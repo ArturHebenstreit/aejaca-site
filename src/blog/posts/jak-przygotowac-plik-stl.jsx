@@ -9,9 +9,9 @@ export function Body({ lang }) {
   return (
     <>
       <Lead>{t(
-        <>Twój <A href="/glossary/druk-3d-fdm">wydruk 3D</A> jest tak dobry, jak plik źródłowy. Dobrze przygotowany STL oznacza szybszą wycenę, mniej niespodzianek i lepszy efekt końcowy.</>,
-        <>Your <A href="/glossary/druk-3d-fdm">3D print</A> is only as good as your source file. A well-prepared STL means faster quoting, fewer surprises, and a better final result.</>,
-        <>Ihr <A href="/glossary/druk-3d-fdm">3D-Druck</A> ist nur so gut wie Ihre Quelldatei. Eine gut vorbereitete STL bedeutet schnellere Angebote, weniger Überraschungen und ein besseres Endergebnis.</>
+        <>Twój <A href="/glossary/#druk-3d-fdm">wydruk 3D</A> jest tak dobry, jak plik źródłowy. Dobrze przygotowany STL oznacza szybszą wycenę, mniej niespodzianek i lepszy efekt końcowy.</>,
+        <>Your <A href="/glossary/#druk-3d-fdm">3D print</A> is only as good as your source file. A well-prepared STL means faster quoting, fewer surprises, and a better final result.</>,
+        <>Ihr <A href="/glossary/#druk-3d-fdm">3D-Druck</A> ist nur so gut wie Ihre Quelldatei. Eine gut vorbereitete STL bedeutet schnellere Angebote, weniger Überraschungen und ein besseres Endergebnis.</>
       )}</Lead>
 
       <H2 id={id("co-to-stl", "what-is-stl", "was-ist-stl")}>{t("Czym jest plik STL?", "What Is an STL File?", "Was ist eine STL-Datei?")}</H2>

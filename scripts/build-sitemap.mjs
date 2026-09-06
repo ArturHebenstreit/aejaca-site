@@ -24,7 +24,6 @@ import { fileURLToPath } from "node:url";
 
 import { TRASY_STALE, JEZYKI, JEZYK_DOMYSLNY, sciezkaJezyka } from "../src/routes.js";
 import { POSTS_META } from "../src/blog/postsMeta.js";
-import { GLOSSARY } from "../src/data/glossary.js";
 import { PRODUCTS } from "../src/data/shopCatalog.js";
 import { SERVICES_FULL } from "../src/data/serviceCatalog.js";
 
@@ -50,7 +49,6 @@ const POZA_MAPA = new Set([
 const adresy = [
   ...TRASY_STALE,
   ...POSTS_META.map((p) => `/blog/${p.slug}/`),
-  ...GLOSSARY.map((g) => `/glossary/${g.id}/`),
   ...PRODUCTS.map((p) => `/shop/${p.slug}/`),
   ...SERVICES_FULL.map((s) => `/shop/service/${s.id}/`),
 ].filter((p) => !POZA_MAPA.has(p));

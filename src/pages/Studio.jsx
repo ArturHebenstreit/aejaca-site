@@ -321,7 +321,7 @@ export default function Studio() {
               { id: "odlew-zywiczny", pl: "Odlew żywiczny", en: "Resin Casting", de: "Harzguss" },
               { id: "prototypowanie", pl: "Prototypowanie", en: "Prototyping", de: "Prototyping" },
             ].map((term) => (
-              <Link key={term.id} to={`/glossary/${term.id}/`}
+              <Link key={term.id} to={`/glossary/#${term.id}`}
                 className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-blue-400/10 hover:text-blue-300 border border-neutral-700/50 hover:border-blue-400/30 transition-all">
                 {term[lang] || term.en}
               </Link>

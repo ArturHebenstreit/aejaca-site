@@ -75,13 +75,13 @@ export function Body({ lang }) {
         ]}
         rows={[
           [
-            <A href="/glossary/srebro-925">{t("Srebro 925", "Silver 925", "Silber 925")}</A>,
+            <A href="/glossary/#srebro-925">{t("Srebro 925", "Silver 925", "Silber 925")}</A>,
             "92,5% Ag",
             t("~4 zł/g", "~€0,95/g", "~0,95 €/g"),
             t("Wisiorki, kolczyki, pierwsze zamówienie", "Pendants, earrings, first custom piece", "Anhänger, Ohrringe, erstes Maßstück"),
           ],
           [
-            <A href="/glossary/zloto-probowane">{t("Złoto 585 (14K)", "Gold 585 (14K)", "Gold 585 (14K)")}</A>,
+            <A href="/glossary/#zloto-probowane">{t("Złoto 585 (14K)", "Gold 585 (14K)", "Gold 585 (14K)")}</A>,
             "58,5% Au",
             t("~180 zł/g", "~€42/g", "~42 €/g"),
             t("Pierścionki zaręczynowe, obrączki", "Engagement rings, wedding bands", "Verlobungsringe, Eheringe"),
@@ -125,7 +125,7 @@ export function Body({ lang }) {
           t("Twardość (Mohs)", "Hardness (Mohs)", "Härte (Mohs)"),
         ]}
         rows={[
-          [<A href="/glossary/moissanit">{t("Moissanit", "Moissanite", "Moissanit")}</A>, t("od 250 zł", "from €60", "ab 60 €"), t("od 450 zł", "from €105", "ab 105 €"), "9,25"],
+          [<A href="/glossary/#moissanit">{t("Moissanit", "Moissanite", "Moissanit")}</A>, t("od 250 zł", "from €60", "ab 60 €"), t("od 450 zł", "from €105", "ab 105 €"), "9,25"],
           [t("Szafir (naturalny)", "Sapphire (natural)", "Saphir (natürlich)"), t("od 800 zł", "from €190", "ab 190 €"), t("od 2500 zł", "from €580", "ab 580 €"), "9"],
           [t("Diament (naturalny)", "Diamond (natural)", "Diamant (natürlich)"), t("od 3000 zł", "from €700", "ab 700 €"), t("od 8000 zł", "from €1860", "ab 1.860 €"), "10"],
           [t("Szmaragd", "Emerald", "Smaragd"), t("od 600 zł", "from €140", "ab 140 €"), t("od 2000 zł", "from €465", "ab 465 €"), "7,5"],

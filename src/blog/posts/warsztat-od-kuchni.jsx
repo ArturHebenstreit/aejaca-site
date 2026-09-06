@@ -15,9 +15,9 @@ export function Body({ lang }) {
 
       <H2 id={t("drukarki", "printers", "drucker")}>{t("Drukarki 3D", "3D Printers", "3D-Drucker")}</H2>
       <P>{t(
-        <>Serce naszego sTuDiO to Bambu Lab H2D - drukarka <A href="/glossary/druk-3d-fdm">FDM</A> nowej generacji.</>,
-        <>The heart of our sTuDiO is the Bambu Lab H2D - a next-gen <A href="/glossary/druk-3d-fdm">FDM</A> printer.</>,
-        <>Das Herz unseres sTuDiOs ist der Bambu Lab H2D - ein <A href="/glossary/druk-3d-fdm">FDM</A>-Drucker der nächsten Generation.</>
+        <>Serce naszego sTuDiO to Bambu Lab H2D - drukarka <A href="/glossary/#druk-3d-fdm">FDM</A> nowej generacji.</>,
+        <>The heart of our sTuDiO is the Bambu Lab H2D - a next-gen <A href="/glossary/#druk-3d-fdm">FDM</A> printer.</>,
+        <>Das Herz unseres sTuDiOs ist der Bambu Lab H2D - ein <A href="/glossary/#druk-3d-fdm">FDM</A>-Drucker der nächsten Generation.</>
       )}</P>
       <Table
         headers={t(
@@ -54,9 +54,9 @@ export function Body({ lang }) {
       />
       <Callout accent="blue" title={t("Dwie maszyny, pełne pokrycie", "Two machines, full coverage", "Zwei Maschinen, volle Abdeckung")}>
         {t(
-          <><A href="/glossary/laser-co2">CO2</A> tnie i graweruje materiały organiczne. <A href="/glossary/laser-fiber">Fiber</A> graweruje metale z precyzją 0.01mm. Razem obsługują 95% zamówień.</>,
-          <><A href="/glossary/laser-co2">CO2</A> cuts and engraves organic materials. <A href="/glossary/laser-fiber">Fiber</A> engraves metals at 0.01mm precision. Together they handle 95% of orders.</>,
-          <><A href="/glossary/laser-co2">CO2</A> schneidet und graviert organische Materialien. <A href="/glossary/laser-fiber">Faserlaser</A> graviert Metalle mit 0,01mm Präzision. Zusammen decken sie 95 % der Aufträge ab.</>
+          <><A href="/glossary/#laser-co2">CO2</A> tnie i graweruje materiały organiczne. <A href="/glossary/#laser-fiber">Fiber</A> graweruje metale z precyzją 0.01mm. Razem obsługują 95% zamówień.</>,
+          <><A href="/glossary/#laser-co2">CO2</A> cuts and engraves organic materials. <A href="/glossary/#laser-fiber">Fiber</A> engraves metals at 0.01mm precision. Together they handle 95% of orders.</>,
+          <><A href="/glossary/#laser-co2">CO2</A> schneidet und graviert organische Materialien. <A href="/glossary/#laser-fiber">Faserlaser</A> graviert Metalle mit 0,01mm Präzision. Zusammen decken sie 95 % der Aufträge ab.</>
         )}
       </Callout>
 
@@ -78,7 +78,7 @@ export function Body({ lang }) {
       <UL>
         <LI><Strong>{t("Metale", "Metals", "Metalle")}</Strong> - {t("Ag 925, Au 585, Au 750, mosiądz, miedź, stal nierdzewna", "Ag 925, Au 585, Au 750, brass, copper, stainless steel", "Ag 925, Au 585, Au 750, Messing, Kupfer, Edelstahl")}</LI>
         <LI><Strong>{t("Kamienie", "Stones", "Steine")}</Strong> - {t("diamenty, moissanity, szafiry, szmaragdy, rubiny, turmaliny, opale, perły", "diamonds, moissanites, sapphires, emeralds, rubies, tourmalines, opals, pearls", "Diamanten, Moissanite, Saphire, Smaragde, Rubine, Turmaline, Opale, Perlen")}</LI>
-        <LI><Strong>{t("Filamenty 3D", "3D filaments", "3D-Filamente")}</Strong> - {t(<><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA - ponad 40 kolorów</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA - over 40 colors</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (Nylon), ASA - über 40 Farben</>)}</LI>
+        <LI><Strong>{t("Filamenty 3D", "3D filaments", "3D-Filamente")}</Strong> - {t(<><A href="/glossary/#pla">PLA</A>, <A href="/glossary/#petg">PETG</A>, ABS, TPU, PA (nylon), ASA - ponad 40 kolorów</>, <><A href="/glossary/#pla">PLA</A>, <A href="/glossary/#petg">PETG</A>, ABS, TPU, PA (nylon), ASA - over 40 colors</>, <><A href="/glossary/#pla">PLA</A>, <A href="/glossary/#petg">PETG</A>, ABS, TPU, PA (Nylon), ASA - über 40 Farben</>)}</LI>
         <LI><Strong>{t("Żywice", "Resins", "Harze")}</Strong> - {t("UV (ABS-like, flex), epoksydowa dwukomponentowa, barwniki i pigmenty", "UV (ABS-like, flex), 2K epoxy, dyes and pigments", "UV (ABS-artig, flex), 2K-Epoxid, Farbstoffe und Pigmente")}</LI>
         <LI><Strong>{t("Materiały laserowe", "Laser materials", "Lasermaterialien")}</Strong> - {t("sklejka brzozowa, akryl, skóra, filc, anodyzowane aluminium", "birch plywood, acrylic, leather, felt, anodized aluminum", "Birkensperrholz, Acryl, Leder, Filz, eloxiertes Aluminium")}</LI>
       </UL>

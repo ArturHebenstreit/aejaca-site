@@ -16,15 +16,15 @@ export function Body({ lang }) {
 
       <H2 id={id("srebro", "silver", "silber")}>{t("Pielęgnacja srebra 925", "Silver 925 Care", "Pflege von Silber 925")}</H2>
       <P>{t(
-        <><A href="/glossary/srebro-925">Srebro próby 925</A> naturalnie ciemnieje w kontakcie z siarką obecną w powietrzu. To normalne - i w pełni odwracalne. Oto jak o nie dbać:</>,
-        <><A href="/glossary/srebro-925">Sterling silver 925</A> naturally tarnishes when exposed to sulfur in the air. This is normal - and fully reversible. Here's how to care for it:</>,
-        <><A href="/glossary/srebro-925">Sterling-Silber 925</A> läuft bei Kontakt mit Schwefel in der Luft natürlich an. Das ist normal - und vollständig umkehrbar. So pflegen Sie es:</>
+        <><A href="/glossary/#srebro-925">Srebro próby 925</A> naturalnie ciemnieje w kontakcie z siarką obecną w powietrzu. To normalne - i w pełni odwracalne. Oto jak o nie dbać:</>,
+        <><A href="/glossary/#srebro-925">Sterling silver 925</A> naturally tarnishes when exposed to sulfur in the air. This is normal - and fully reversible. Here's how to care for it:</>,
+        <><A href="/glossary/#srebro-925">Sterling-Silber 925</A> läuft bei Kontakt mit Schwefel in der Luft natürlich an. Das ist normal - und vollständig umkehrbar. So pflegen Sie es:</>
       )}</P>
       <UL>
         <LI><Strong>{t("Codziennie", "Daily", "Täglich")}</Strong> - {t("po noszeniu przetrzyj miękką szmatką z mikrofibry", "wipe with a soft microfiber cloth after wearing", "nach dem Tragen mit einem weichen Mikrofasertuch abwischen")}</LI>
         <LI><Strong>{t("Co miesiąc", "Monthly", "Monatlich")}</Strong> - {t("ciepła woda + łagodne mydło, delikatna szczoteczka", "warm water + mild soap, gentle brush", "warmes Wasser + milde Seife, sanfte Bürste")}</LI>
         <LI><Strong>{t("Głębokie czyszczenie", "Deep cleaning", "Tiefenreinigung")}</Strong> - {t("pasta jubilerska lub kąpiel: soda oczyszczona + folia aluminiowa + gorąca woda", "polishing paste or bath: baking soda + aluminum foil + hot water", "Polierpaste oder Bad: Natron + Alufolie + heißes Wasser")}</LI>
-        <LI><Strong>{t(<A href="/glossary/rodowanie">Rodowanie</A>, <A href="/glossary/rodowanie">Rhodium plating</A>, <A href="/glossary/rodowanie">Rhodinierung</A>)}</Strong> - {t("jeśli srebro ma powłokę rodową, unikaj past ściernych - używaj tylko szmatki", "if silver has rhodium coating, avoid abrasive pastes - use cloth only", "bei rhodiniertem Silber keine Scheuermittel - nur Tuch verwenden")}</LI>
+        <LI><Strong>{t(<A href="/glossary/#rodowanie">Rodowanie</A>, <A href="/glossary/#rodowanie">Rhodium plating</A>, <A href="/glossary/#rodowanie">Rhodinierung</A>)}</Strong> - {t("jeśli srebro ma powłokę rodową, unikaj past ściernych - używaj tylko szmatki", "if silver has rhodium coating, avoid abrasive pastes - use cloth only", "bei rhodiniertem Silber keine Scheuermittel - nur Tuch verwenden")}</LI>
       </UL>
 
       <H2 id={id("zloto", "gold", "gold-de")}>{t("Pielęgnacja złota", "Gold Care", "Goldpflege")}</H2>
@@ -50,9 +50,9 @@ export function Body({ lang }) {
 
       <H2 id={id("kamienie", "gemstones", "edelsteine")}>{t("Ochrona kamieni szlachetnych", "Gemstone Protection", "Edelsteinschutz")}</H2>
       <P>{t(
-        <>Różne <A href="/glossary/kamien-szlachetny">kamienie szlachetne</A> wymagają różnej pielęgnacji. Twardość w skali Mohsa to kluczowy wskaźnik:</>,
-        <>Different <A href="/glossary/kamien-szlachetny">gemstones</A> need different care. Mohs hardness is the key indicator:</>,
-        <>Verschiedene <A href="/glossary/kamien-szlachetny">Edelsteine</A> brauchen unterschiedliche Pflege. Die Mohs-Härte ist der Schlüsselindikator:</>
+        <>Różne <A href="/glossary/#kamien-szlachetny">kamienie szlachetne</A> wymagają różnej pielęgnacji. Twardość w skali Mohsa to kluczowy wskaźnik:</>,
+        <>Different <A href="/glossary/#kamien-szlachetny">gemstones</A> need different care. Mohs hardness is the key indicator:</>,
+        <>Verschiedene <A href="/glossary/#kamien-szlachetny">Edelsteine</A> brauchen unterschiedliche Pflege. Die Mohs-Härte ist der Schlüsselindikator:</>
       )}</P>
       <Table
         headers={[

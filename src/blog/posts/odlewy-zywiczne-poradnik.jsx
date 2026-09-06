@@ -16,9 +16,9 @@ export function Body({ lang }) {
 
       <H2 id="uv-vs-2k">{t("Żywica UV vs dwukomponentowa", "UV vs 2K Epoxy Resin", "UV-Harz vs 2K-Epoxid")}</H2>
       <P>{t(
-        <>Pracujemy z dwoma rodzajami <A href="/glossary/zywica-uv">żywic</A> - każda ma swoje mocne strony:</>,
-        <>We work with two types of <A href="/glossary/zywica-uv">resin</A> - each has its strengths:</>,
-        <>Wir arbeiten mit zwei <A href="/glossary/zywica-uv">Harz</A>typen - jeder hat seine Stärken:</>
+        <>Pracujemy z dwoma rodzajami <A href="/glossary/#zywica-uv">żywic</A> - każda ma swoje mocne strony:</>,
+        <>We work with two types of <A href="/glossary/#zywica-uv">resin</A> - each has its strengths:</>,
+        <>Wir arbeiten mit zwei <A href="/glossary/#zywica-uv">Harz</A>typen - jeder hat seine Stärken:</>
       )}</P>
       <Table
         headers={[
@@ -59,7 +59,7 @@ export function Body({ lang }) {
         <LI><Strong>{t("Biżuteria", "Jewelry", "Schmuck")}</Strong> - {t("wisiorki, wkładki do pierścionków, kolczyki z żywicy", "pendants, ring inserts, resin earring drops", "Anhänger, Ringeinsätze, Harz-Ohrringe")}</LI>
         <LI><Strong>{t("Obiekty dekoracyjne", "Decorative objects", "Dekorationsobjekte")}</Strong> - {t("podkładki, zakładki, breloki", "coasters, bookmarks, keychains", "Untersetzer, Lesezeichen, Schlüsselanhänger")}</LI>
         <LI><Strong>{t("Sztuka żywiczna", "Resin art", "Harzkunst")}</Strong> - {t("obrazy żywiczne, miniatury river table", "resin paintings, river table miniatures", "Harzgemälde, River-Table-Miniaturen")}</LI>
-        <LI><Strong><A href="/glossary/prototypowanie">{t("Prototypowanie", "Prototyping", "Prototyping")}</A></Strong> - {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
+        <LI><Strong><A href="/glossary/#prototypowanie">{t("Prototypowanie", "Prototyping", "Prototyping")}</A></Strong> - {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
         <LI><Strong>{t("Utrwalanie pamiątek", "Preservation", "Konservierung")}</Strong> - {t("kwiaty, bilety, zdjęcia zakapslowane w żywicy", "flowers, tickets, photos encapsulated in resin", "Blumen, Tickets, Fotos in Harz eingeschlossen")}</LI>
       </UL>
 
@@ -71,9 +71,9 @@ export function Body({ lang }) {
       )}</P>
       <UL>
         <LI><Strong>{t("1. Konsultacja", "1. Consultation", "1. Beratung")}</Strong> - {t(
-          <>omawiamy projekt + przygotowujemy formę (silikonową lub drukowaną w <A href="/glossary/druk-3d-fdm">druku 3D</A>)</>,
-          <>we discuss the design + prepare the mold (silicone or <A href="/glossary/druk-3d-fdm">3D-printed</A>)</>,
-          <>wir besprechen das Design + bereiten die Form vor (Silikon oder per <A href="/glossary/druk-3d-fdm">3D-Druck</A> gedruckt)</>
+          <>omawiamy projekt + przygotowujemy formę (silikonową lub drukowaną w <A href="/glossary/#druk-3d-fdm">druku 3D</A>)</>,
+          <>we discuss the design + prepare the mold (silicone or <A href="/glossary/#druk-3d-fdm">3D-printed</A>)</>,
+          <>wir besprechen das Design + bereiten die Form vor (Silikon oder per <A href="/glossary/#druk-3d-fdm">3D-Druck</A> gedruckt)</>
         )}</LI>
         <LI><Strong>{t("2. Dobór materiałów", "2. Material selection", "2. Materialwahl")}</Strong> - {t("typ żywicy, pigmenty, wkładki, wykończenie", "resin type, pigments, inserts, finish", "Harztyp, Pigmente, Einlagen, Finish")}</LI>
         <LI><Strong>{t("3. Odlew + utwardzanie", "3. Casting + curing", "3. Guss + Aushärtung")}</Strong> - {t("lampa UV lub 24h utwardzanie chemiczne", "UV lamp or 24-hour chemical cure", "UV-Lampe oder 24-stündige chemische Aushärtung")}</LI>

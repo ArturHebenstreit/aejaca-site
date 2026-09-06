@@ -193,44 +193,45 @@ Yes, at [aejaca.com/b2b](https://www.aejaca.com/b2b/). Four pillars: CAD design 
 
 ## Glossary - key terms explained
 
-AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication terms, each with its own dedicated page:
+AEJaCA maintains a glossary of jewelry and digital fabrication terms. All of them
+live on one page, each under its own anchor:
 
 **Jewelry terms:**
-- [925 Sterling Silver](https://www.aejaca.com/glossary/srebro-925/) - 92.5% pure silver alloy standard
-- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/zloto-probowane/) - gold purity grades
-- [Engagement Ring](https://www.aejaca.com/glossary/pierscionek-zareczynowy/) - custom engagement rings
-- [Wedding Bands](https://www.aejaca.com/glossary/obraczki-slubne/) - personalized wedding ring pairs
-- [Gemstone](https://www.aejaca.com/glossary/kamien-szlachetny/) - natural minerals (diamond, ruby, sapphire, emerald)
-- [Rhodium Plating](https://www.aejaca.com/glossary/rodowanie/) - protective electroplating finish
-- [Moissanite](https://www.aejaca.com/glossary/moissanit/) - diamond-alternative synthetic mineral
-- [Ring Size](https://www.aejaca.com/glossary/rozmiar-pierscionka/) - sizing guide and standards
-- [Personalized Engraving](https://www.aejaca.com/glossary/personalizowany-grawer/) - custom text and symbol engraving
-- [Jewelry as Investment](https://www.aejaca.com/glossary/bizuteria-inwestycyjna/) - precious metal investment value
+- [925 Sterling Silver](https://www.aejaca.com/glossary/#srebro-925) - 92.5% pure silver alloy standard
+- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/#zloto-probowane) - gold purity grades
+- [Engagement Ring](https://www.aejaca.com/glossary/#pierscionek-zareczynowy) - custom engagement rings
+- [Wedding Bands](https://www.aejaca.com/glossary/#obraczki-slubne) - personalized wedding ring pairs
+- [Gemstone](https://www.aejaca.com/glossary/#kamien-szlachetny) - natural minerals (diamond, ruby, sapphire, emerald)
+- [Rhodium Plating](https://www.aejaca.com/glossary/#rodowanie) - protective electroplating finish
+- [Moissanite](https://www.aejaca.com/glossary/#moissanit) - diamond-alternative synthetic mineral
+- [Ring Size](https://www.aejaca.com/glossary/#rozmiar-pierscionka) - sizing guide and standards
+- [Personalized Engraving](https://www.aejaca.com/glossary/#personalizowany-grawer) - custom text and symbol engraving
+- [Jewelry as Investment](https://www.aejaca.com/glossary/#bizuteria-inwestycyjna) - precious metal investment value
 
 **Digital fabrication terms:**
-- [FDM 3D Printing](https://www.aejaca.com/glossary/druk-3d-fdm/) - fused deposition modeling technology
-- [STL File](https://www.aejaca.com/glossary/plik-stl/) - 3D model file format for printing
-- [PLA](https://www.aejaca.com/glossary/pla/) - biodegradable 3D printing filament
-- [PETG](https://www.aejaca.com/glossary/petg/) - durable 3D printing filament
-- [UV Resin](https://www.aejaca.com/glossary/zywica-uv/) - light-curing resin for SLA printing
-- [CO2 Laser](https://www.aejaca.com/glossary/laser-co2/) - engraving and cutting laser technology
-- [Fiber Laser](https://www.aejaca.com/glossary/laser-fiber/) - metal marking laser technology
-- [SVG File](https://www.aejaca.com/glossary/plik-svg/) - vector file format for laser work
-- [Resin Casting](https://www.aejaca.com/glossary/odlew-zywiczny/) - epoxy and polyurethane casting
-- [Prototyping](https://www.aejaca.com/glossary/prototypowanie/) - rapid prototype development
-- [Lost-Resin Casting](https://www.aejaca.com/glossary/lost-resin/), casting from a burned-out castable resin pattern, invested in plaster, burned out at ~600°C, used for jewelry rings and figurines in Ag 925/Au 585
-- [Castable Resin (BlueCast)](https://www.aejaca.com/glossary/zywica-castable/), MSLA resin engineered to burn out cleanly in a casting kiln (BlueCast X-One V2, X-Wax Filigree)
-- [MSLA Printing](https://www.aejaca.com/glossary/druk-msla/), resin printing technology curing a whole layer at once via a mono LCD screen, detail from 0.2 mm
-- [Casting Shrinkage Compensation](https://www.aejaca.com/glossary/kompensacja-skurczu/), scaling a CAD model up before printing to offset alloy shrinkage during solidification (Au 585 x1.0196, Ag 925 x1.016, Au 9K x1.021, Au 18K x1.018)
+- [FDM 3D Printing](https://www.aejaca.com/glossary/#druk-3d-fdm) - fused deposition modeling technology
+- [STL File](https://www.aejaca.com/glossary/#plik-stl) - 3D model file format for printing
+- [PLA](https://www.aejaca.com/glossary/#pla) - biodegradable 3D printing filament
+- [PETG](https://www.aejaca.com/glossary/#petg) - durable 3D printing filament
+- [UV Resin](https://www.aejaca.com/glossary/#zywica-uv) - light-curing resin for SLA printing
+- [CO2 Laser](https://www.aejaca.com/glossary/#laser-co2) - engraving and cutting laser technology
+- [Fiber Laser](https://www.aejaca.com/glossary/#laser-fiber) - metal marking laser technology
+- [SVG File](https://www.aejaca.com/glossary/#plik-svg) - vector file format for laser work
+- [Resin Casting](https://www.aejaca.com/glossary/#odlew-zywiczny) - epoxy and polyurethane casting
+- [Prototyping](https://www.aejaca.com/glossary/#prototypowanie) - rapid prototype development
+- [Lost-Resin Casting](https://www.aejaca.com/glossary/#lost-resin), casting from a burned-out castable resin pattern, invested in plaster, burned out at ~600°C, used for jewelry rings and figurines in Ag 925/Au 585
+- [Castable Resin (BlueCast)](https://www.aejaca.com/glossary/#zywica-castable), MSLA resin engineered to burn out cleanly in a casting kiln (BlueCast X-One V2, X-Wax Filigree)
+- [MSLA Printing](https://www.aejaca.com/glossary/#druk-msla), resin printing technology curing a whole layer at once via a mono LCD screen, detail from 0.2 mm
+- [Casting Shrinkage Compensation](https://www.aejaca.com/glossary/#kompensacja-skurczu), scaling a CAD model up before printing to offset alloy shrinkage during solidification (Au 585 x1.0196, Ag 925 x1.016, Au 9K x1.021, Au 18K x1.018)
 
 **General terms:**
-- [CAD Design](https://www.aejaca.com/glossary/cad/) - computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
-- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/modelowanie-3d/) - organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
-- [Personalization](https://www.aejaca.com/glossary/personalizacja/) - custom product creation
-- [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) - AI tools in the design process
-- [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) - instant price calculator
+- [CAD Design](https://www.aejaca.com/glossary/#cad) - computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
+- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/#modelowanie-3d) - organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
+- [Personalization](https://www.aejaca.com/glossary/#personalizacja) - custom product creation
+- [AI-Assisted Design](https://www.aejaca.com/glossary/#projektowanie-ai) - AI tools in the design process
+- [Online Quoting](https://www.aejaca.com/glossary/#wycena-online) - instant price calculator
 
-Full glossary index: https://www.aejaca.com/glossary/
+Full glossary: https://www.aejaca.com/glossary/
 
 ## Crawl policy
 

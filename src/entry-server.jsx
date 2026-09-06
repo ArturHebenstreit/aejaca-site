@@ -30,7 +30,6 @@ import BlogPost from "./pages/BlogPost.jsx";
 import Contact from "./pages/Contact.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import Glossary from "./pages/Glossary.jsx";
-import GlossaryTerm from "./pages/GlossaryTerm.jsx";
 import About from "./pages/About.jsx";
 import Warranty from "./pages/Warranty.jsx";
 import Returns from "./pages/Returns.jsx";
@@ -68,7 +67,7 @@ import NotFound from "./pages/NotFound.jsx";
 // Ta sama lista tras co w `main.jsx`, tylko ze stronami importowanymi
 // zwyczajnie: prerender rysuje wszystko na raz i nie ma czego odkladac.
 const KOMPONENTY = {
-  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
+  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary,
   About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
   Order, OrderStatus, QuotePage, Offer, Shipping, Payments, OrderProcess, Faq,
   ToolsJewelry,

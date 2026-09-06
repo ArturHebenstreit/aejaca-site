@@ -51,6 +51,214 @@
 /de/blog/pierscionek-zareczynowy     /de/blog/pierscionek-zareczynowy-na-zamowienie/  301
 /de/blog/pierscionek-zareczynowy/    /de/blog/pierscionek-zareczynowy-na-zamowienie/  301
 
+# Hasla slownika, wycofane 6 wrzesnia 2026 (ADR-0045).
+#
+# Kazde haslo mialo wlasny adres: 32 hasla razy trzy jezyki to 96 stron, czyli
+# jedna trzecia mapy witryny. Pomiar na gotowym `dist` pokazal, ze taka strona
+# ma SREDNIO 4 PROCENT slow wlasnych, a kilka ma zero: cala reszta to menu,
+# stopka, wezwanie do dzialania i odnosniki, identyczne na trzydziestu innych
+# stronach. Google nazywa to "wykryta, obecnie niezindeksowana" i tak wlasnie
+# raportowal we wrzesniu 2026.
+#
+# Definicje NIE ZGINELY: stoja na stronie zbiorczej, kazda pod wlasna kotwica,
+# razem z odnosnikami do narzedzi i do powiazanego wpisu.
+#
+# TA LISTA JEST ZAMKNIETA. Dotyczy adresow, ktore Google zna z przeszlosci.
+# Nowe haslo nigdy nie mialo wlasnego adresu, wiec nie dopisuje sie tu nic.
+
+/glossary/srebro-925/                         /glossary/#srebro-925                   301
+/glossary/srebro-925                          /glossary/#srebro-925                   301
+/glossary/zloto-probowane/                    /glossary/#zloto-probowane              301
+/glossary/zloto-probowane                     /glossary/#zloto-probowane              301
+/glossary/pierscionek-zareczynowy/            /glossary/#pierscionek-zareczynowy      301
+/glossary/pierscionek-zareczynowy             /glossary/#pierscionek-zareczynowy      301
+/glossary/obraczki-slubne/                    /glossary/#obraczki-slubne              301
+/glossary/obraczki-slubne                     /glossary/#obraczki-slubne              301
+/glossary/kamien-szlachetny/                  /glossary/#kamien-szlachetny            301
+/glossary/kamien-szlachetny                   /glossary/#kamien-szlachetny            301
+/glossary/rodowanie/                          /glossary/#rodowanie                    301
+/glossary/rodowanie                           /glossary/#rodowanie                    301
+/glossary/moissanit/                          /glossary/#moissanit                    301
+/glossary/moissanit                           /glossary/#moissanit                    301
+/glossary/rozmiar-pierscionka/                /glossary/#rozmiar-pierscionka          301
+/glossary/rozmiar-pierscionka                 /glossary/#rozmiar-pierscionka          301
+/glossary/personalizowany-grawer/             /glossary/#personalizowany-grawer       301
+/glossary/personalizowany-grawer              /glossary/#personalizowany-grawer       301
+/glossary/bizuteria-inwestycyjna/             /glossary/#bizuteria-inwestycyjna       301
+/glossary/bizuteria-inwestycyjna              /glossary/#bizuteria-inwestycyjna       301
+/glossary/druk-3d-fdm/                        /glossary/#druk-3d-fdm                  301
+/glossary/druk-3d-fdm                         /glossary/#druk-3d-fdm                  301
+/glossary/plik-stl/                           /glossary/#plik-stl                     301
+/glossary/plik-stl                            /glossary/#plik-stl                     301
+/glossary/pla/                                /glossary/#pla                          301
+/glossary/pla                                 /glossary/#pla                          301
+/glossary/petg/                               /glossary/#petg                         301
+/glossary/petg                                /glossary/#petg                         301
+/glossary/zywica-uv/                          /glossary/#zywica-uv                    301
+/glossary/zywica-uv                           /glossary/#zywica-uv                    301
+/glossary/laser-co2/                          /glossary/#laser-co2                    301
+/glossary/laser-co2                           /glossary/#laser-co2                    301
+/glossary/laser-fiber/                        /glossary/#laser-fiber                  301
+/glossary/laser-fiber                         /glossary/#laser-fiber                  301
+/glossary/plik-svg/                           /glossary/#plik-svg                     301
+/glossary/plik-svg                            /glossary/#plik-svg                     301
+/glossary/odlew-zywiczny/                     /glossary/#odlew-zywiczny               301
+/glossary/odlew-zywiczny                      /glossary/#odlew-zywiczny               301
+/glossary/prototypowanie/                     /glossary/#prototypowanie               301
+/glossary/prototypowanie                      /glossary/#prototypowanie               301
+/glossary/cad/                                /glossary/#cad                          301
+/glossary/cad                                 /glossary/#cad                          301
+/glossary/modelowanie-3d/                     /glossary/#modelowanie-3d               301
+/glossary/modelowanie-3d                      /glossary/#modelowanie-3d               301
+/glossary/personalizacja/                     /glossary/#personalizacja               301
+/glossary/personalizacja                      /glossary/#personalizacja               301
+/glossary/projektowanie-ai/                   /glossary/#projektowanie-ai             301
+/glossary/projektowanie-ai                    /glossary/#projektowanie-ai             301
+/glossary/wycena-online/                      /glossary/#wycena-online                301
+/glossary/wycena-online                       /glossary/#wycena-online                301
+/glossary/lost-resin/                         /glossary/#lost-resin                   301
+/glossary/lost-resin                          /glossary/#lost-resin                   301
+/glossary/zywica-castable/                    /glossary/#zywica-castable              301
+/glossary/zywica-castable                     /glossary/#zywica-castable              301
+/glossary/druk-msla/                          /glossary/#druk-msla                    301
+/glossary/druk-msla                           /glossary/#druk-msla                    301
+/glossary/kompensacja-skurczu/                /glossary/#kompensacja-skurczu          301
+/glossary/kompensacja-skurczu                 /glossary/#kompensacja-skurczu          301
+/glossary/splot-lancuszka/                    /glossary/#splot-lancuszka              301
+/glossary/splot-lancuszka                     /glossary/#splot-lancuszka              301
+/glossary/skurcz-odlewniczy/                  /glossary/#skurcz-odlewniczy            301
+/glossary/skurcz-odlewniczy                   /glossary/#skurcz-odlewniczy            301
+/glossary/stopy-jubilerskie/                  /glossary/#stopy-jubilerskie            301
+/glossary/stopy-jubilerskie                   /glossary/#stopy-jubilerskie            301
+/en/glossary/srebro-925/                      /en/glossary/#srebro-925                301
+/en/glossary/srebro-925                       /en/glossary/#srebro-925                301
+/en/glossary/zloto-probowane/                 /en/glossary/#zloto-probowane           301
+/en/glossary/zloto-probowane                  /en/glossary/#zloto-probowane           301
+/en/glossary/pierscionek-zareczynowy/         /en/glossary/#pierscionek-zareczynowy   301
+/en/glossary/pierscionek-zareczynowy          /en/glossary/#pierscionek-zareczynowy   301
+/en/glossary/obraczki-slubne/                 /en/glossary/#obraczki-slubne           301
+/en/glossary/obraczki-slubne                  /en/glossary/#obraczki-slubne           301
+/en/glossary/kamien-szlachetny/               /en/glossary/#kamien-szlachetny         301
+/en/glossary/kamien-szlachetny                /en/glossary/#kamien-szlachetny         301
+/en/glossary/rodowanie/                       /en/glossary/#rodowanie                 301
+/en/glossary/rodowanie                        /en/glossary/#rodowanie                 301
+/en/glossary/moissanit/                       /en/glossary/#moissanit                 301
+/en/glossary/moissanit                        /en/glossary/#moissanit                 301
+/en/glossary/rozmiar-pierscionka/             /en/glossary/#rozmiar-pierscionka       301
+/en/glossary/rozmiar-pierscionka              /en/glossary/#rozmiar-pierscionka       301
+/en/glossary/personalizowany-grawer/          /en/glossary/#personalizowany-grawer    301
+/en/glossary/personalizowany-grawer           /en/glossary/#personalizowany-grawer    301
+/en/glossary/bizuteria-inwestycyjna/          /en/glossary/#bizuteria-inwestycyjna    301
+/en/glossary/bizuteria-inwestycyjna           /en/glossary/#bizuteria-inwestycyjna    301
+/en/glossary/druk-3d-fdm/                     /en/glossary/#druk-3d-fdm               301
+/en/glossary/druk-3d-fdm                      /en/glossary/#druk-3d-fdm               301
+/en/glossary/plik-stl/                        /en/glossary/#plik-stl                  301
+/en/glossary/plik-stl                         /en/glossary/#plik-stl                  301
+/en/glossary/pla/                             /en/glossary/#pla                       301
+/en/glossary/pla                              /en/glossary/#pla                       301
+/en/glossary/petg/                            /en/glossary/#petg                      301
+/en/glossary/petg                             /en/glossary/#petg                      301
+/en/glossary/zywica-uv/                       /en/glossary/#zywica-uv                 301
+/en/glossary/zywica-uv                        /en/glossary/#zywica-uv                 301
+/en/glossary/laser-co2/                       /en/glossary/#laser-co2                 301
+/en/glossary/laser-co2                        /en/glossary/#laser-co2                 301
+/en/glossary/laser-fiber/                     /en/glossary/#laser-fiber               301
+/en/glossary/laser-fiber                      /en/glossary/#laser-fiber               301
+/en/glossary/plik-svg/                        /en/glossary/#plik-svg                  301
+/en/glossary/plik-svg                         /en/glossary/#plik-svg                  301
+/en/glossary/odlew-zywiczny/                  /en/glossary/#odlew-zywiczny            301
+/en/glossary/odlew-zywiczny                   /en/glossary/#odlew-zywiczny            301
+/en/glossary/prototypowanie/                  /en/glossary/#prototypowanie            301
+/en/glossary/prototypowanie                   /en/glossary/#prototypowanie            301
+/en/glossary/cad/                             /en/glossary/#cad                       301
+/en/glossary/cad                              /en/glossary/#cad                       301
+/en/glossary/modelowanie-3d/                  /en/glossary/#modelowanie-3d            301
+/en/glossary/modelowanie-3d                   /en/glossary/#modelowanie-3d            301
+/en/glossary/personalizacja/                  /en/glossary/#personalizacja            301
+/en/glossary/personalizacja                   /en/glossary/#personalizacja            301
+/en/glossary/projektowanie-ai/                /en/glossary/#projektowanie-ai          301
+/en/glossary/projektowanie-ai                 /en/glossary/#projektowanie-ai          301
+/en/glossary/wycena-online/                   /en/glossary/#wycena-online             301
+/en/glossary/wycena-online                    /en/glossary/#wycena-online             301
+/en/glossary/lost-resin/                      /en/glossary/#lost-resin                301
+/en/glossary/lost-resin                       /en/glossary/#lost-resin                301
+/en/glossary/zywica-castable/                 /en/glossary/#zywica-castable           301
+/en/glossary/zywica-castable                  /en/glossary/#zywica-castable           301
+/en/glossary/druk-msla/                       /en/glossary/#druk-msla                 301
+/en/glossary/druk-msla                        /en/glossary/#druk-msla                 301
+/en/glossary/kompensacja-skurczu/             /en/glossary/#kompensacja-skurczu       301
+/en/glossary/kompensacja-skurczu              /en/glossary/#kompensacja-skurczu       301
+/en/glossary/splot-lancuszka/                 /en/glossary/#splot-lancuszka           301
+/en/glossary/splot-lancuszka                  /en/glossary/#splot-lancuszka           301
+/en/glossary/skurcz-odlewniczy/               /en/glossary/#skurcz-odlewniczy         301
+/en/glossary/skurcz-odlewniczy                /en/glossary/#skurcz-odlewniczy         301
+/en/glossary/stopy-jubilerskie/               /en/glossary/#stopy-jubilerskie         301
+/en/glossary/stopy-jubilerskie                /en/glossary/#stopy-jubilerskie         301
+/de/glossary/srebro-925/                      /de/glossary/#srebro-925                301
+/de/glossary/srebro-925                       /de/glossary/#srebro-925                301
+/de/glossary/zloto-probowane/                 /de/glossary/#zloto-probowane           301
+/de/glossary/zloto-probowane                  /de/glossary/#zloto-probowane           301
+/de/glossary/pierscionek-zareczynowy/         /de/glossary/#pierscionek-zareczynowy   301
+/de/glossary/pierscionek-zareczynowy          /de/glossary/#pierscionek-zareczynowy   301
+/de/glossary/obraczki-slubne/                 /de/glossary/#obraczki-slubne           301
+/de/glossary/obraczki-slubne                  /de/glossary/#obraczki-slubne           301
+/de/glossary/kamien-szlachetny/               /de/glossary/#kamien-szlachetny         301
+/de/glossary/kamien-szlachetny                /de/glossary/#kamien-szlachetny         301
+/de/glossary/rodowanie/                       /de/glossary/#rodowanie                 301
+/de/glossary/rodowanie                        /de/glossary/#rodowanie                 301
+/de/glossary/moissanit/                       /de/glossary/#moissanit                 301
+/de/glossary/moissanit                        /de/glossary/#moissanit                 301
+/de/glossary/rozmiar-pierscionka/             /de/glossary/#rozmiar-pierscionka       301
+/de/glossary/rozmiar-pierscionka              /de/glossary/#rozmiar-pierscionka       301
+/de/glossary/personalizowany-grawer/          /de/glossary/#personalizowany-grawer    301
+/de/glossary/personalizowany-grawer           /de/glossary/#personalizowany-grawer    301
+/de/glossary/bizuteria-inwestycyjna/          /de/glossary/#bizuteria-inwestycyjna    301
+/de/glossary/bizuteria-inwestycyjna           /de/glossary/#bizuteria-inwestycyjna    301
+/de/glossary/druk-3d-fdm/                     /de/glossary/#druk-3d-fdm               301
+/de/glossary/druk-3d-fdm                      /de/glossary/#druk-3d-fdm               301
+/de/glossary/plik-stl/                        /de/glossary/#plik-stl                  301
+/de/glossary/plik-stl                         /de/glossary/#plik-stl                  301
+/de/glossary/pla/                             /de/glossary/#pla                       301
+/de/glossary/pla                              /de/glossary/#pla                       301
+/de/glossary/petg/                            /de/glossary/#petg                      301
+/de/glossary/petg                             /de/glossary/#petg                      301
+/de/glossary/zywica-uv/                       /de/glossary/#zywica-uv                 301
+/de/glossary/zywica-uv                        /de/glossary/#zywica-uv                 301
+/de/glossary/laser-co2/                       /de/glossary/#laser-co2                 301
+/de/glossary/laser-co2                        /de/glossary/#laser-co2                 301
+/de/glossary/laser-fiber/                     /de/glossary/#laser-fiber               301
+/de/glossary/laser-fiber                      /de/glossary/#laser-fiber               301
+/de/glossary/plik-svg/                        /de/glossary/#plik-svg                  301
+/de/glossary/plik-svg                         /de/glossary/#plik-svg                  301
+/de/glossary/odlew-zywiczny/                  /de/glossary/#odlew-zywiczny            301
+/de/glossary/odlew-zywiczny                   /de/glossary/#odlew-zywiczny            301
+/de/glossary/prototypowanie/                  /de/glossary/#prototypowanie            301
+/de/glossary/prototypowanie                   /de/glossary/#prototypowanie            301
+/de/glossary/cad/                             /de/glossary/#cad                       301
+/de/glossary/cad                              /de/glossary/#cad                       301
+/de/glossary/modelowanie-3d/                  /de/glossary/#modelowanie-3d            301
+/de/glossary/modelowanie-3d                   /de/glossary/#modelowanie-3d            301
+/de/glossary/personalizacja/                  /de/glossary/#personalizacja            301
+/de/glossary/personalizacja                   /de/glossary/#personalizacja            301
+/de/glossary/projektowanie-ai/                /de/glossary/#projektowanie-ai          301
+/de/glossary/projektowanie-ai                 /de/glossary/#projektowanie-ai          301
+/de/glossary/wycena-online/                   /de/glossary/#wycena-online             301
+/de/glossary/wycena-online                    /de/glossary/#wycena-online             301
+/de/glossary/lost-resin/                      /de/glossary/#lost-resin                301
+/de/glossary/lost-resin                       /de/glossary/#lost-resin                301
+/de/glossary/zywica-castable/                 /de/glossary/#zywica-castable           301
+/de/glossary/zywica-castable                  /de/glossary/#zywica-castable           301
+/de/glossary/druk-msla/                       /de/glossary/#druk-msla                 301
+/de/glossary/druk-msla                        /de/glossary/#druk-msla                 301
+/de/glossary/kompensacja-skurczu/             /de/glossary/#kompensacja-skurczu       301
+/de/glossary/kompensacja-skurczu              /de/glossary/#kompensacja-skurczu       301
+/de/glossary/splot-lancuszka/                 /de/glossary/#splot-lancuszka           301
+/de/glossary/splot-lancuszka                  /de/glossary/#splot-lancuszka           301
+/de/glossary/skurcz-odlewniczy/               /de/glossary/#skurcz-odlewniczy         301
+/de/glossary/skurcz-odlewniczy                /de/glossary/#skurcz-odlewniczy         301
+/de/glossary/stopy-jubilerskie/               /de/glossary/#stopy-jubilerskie         301
+/de/glossary/stopy-jubilerskie                /de/glossary/#stopy-jubilerskie         301
+
 # No SPA catch-all. Every route is prerendered to its own index.html, so
 # Cloudflare Pages resolves real pages as static assets and falls through to
 # dist/404.html (with a real HTTP 404) for everything else. A catch-all here
