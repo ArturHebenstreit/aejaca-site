@@ -2689,6 +2689,29 @@ app.post("/api/quotes/:ref/discount", express.json({ limit: "8kb" }),
  * jej ruszyc; z jego strony przychodzi wylacznie to, czego wczesniej nie
  * wiedzielismy, czyli sposob dostawy, adres i ewentualny kod rabatowy.
  */
+/**
+ * Blad z bazy zapisany tak, zeby dalo sie po nim naprawic usterke.
+ *
+ * 6 wrzesnia 2026 kazda zaplata z oferty konczyla sie piecsetka, a w logu
+ * stalo samo `e.message`. Zdanie bylo akurat dosc dobre, zeby usterke
+ * znalezc ("column amount_eur_cents is of type integer but expression is of
+ * type text"), i to byl przypadek: `pg` niesie w bledzie tabele, kolumne,
+ * ograniczenie i szczegol, a my wyrzucalismy je wszystkie. Przy naruszeniu
+ * klucza obcego albo warunku CHECK samo `message` mowi tyle co nic.
+ *
+ * Do klienta NIE idzie nic z tego: kod bledu bazy opisuje nasz schemat.
+ */
+function logBleduBazy(gdzie, e) {
+  const szczegoly = [
+    e.code ? `kod ${e.code}` : null,
+    e.table ? `tabela ${e.table}` : null,
+    e.column ? `kolumna ${e.column}` : null,
+    e.constraint ? `ograniczenie ${e.constraint}` : null,
+    e.detail ? `szczegol: ${e.detail}` : null,
+  ].filter(Boolean);
+  console.error(`${gdzie}: ${e.message}${szczegoly.length ? ` (${szczegoly.join(", ")})` : ""}`);
+}
+
 app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
   async (req, res) => {
@@ -2804,8 +2827,8 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   } catch (e) {
     if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code });
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[wycena] zaplata z oferty nie powiodla sie:", e.message);
-    res.status(500).json({ error: "Nie udalo sie zlozyc zamowienia" });
+    logBleduBazy("[wycena] zaplata z oferty nie powiodla sie", e);
+    res.status(500).json({ error: "Nie udalo sie zlozyc zamowienia", code: "server_error" });
   }
 });
 
@@ -2918,8 +2941,8 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
     });
   } catch (e) {
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[wycena] konwersja nie powiodla sie:", e.message);
-    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
+    logBleduBazy("[wycena] konwersja nie powiodla sie", e);
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia", code: "server_error" });
   }
 });
 
@@ -3883,7 +3906,17 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          discount_code, discount_grosze, inbound_delivery, session_id, lead_days)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
-         $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
+       -- TYP PARAMETRU PODAJEMY WPROST, i to nie jest ozdobnik.
+       -- 6 wrzesnia 2026 kazda zaplata z oferty konczyla sie piecsetka:
+       -- "column amount_eur_cents is of type integer but expression is of type
+       -- text". Sterownik wysyla parametry BEZ typu, wiec typ ustala serwer
+       -- z kontekstu. Ten sam parametr stoi tu dwa razy: raz goly, przy
+       -- kolumnie, i raz z rzutowaniem, w warunku nizej. Nierozstrzygniety
+       -- parametr schodzi w Postgresie do typu text, a rzutowanie w drugim
+       -- miejscu tego nie cofa: przy kolumnie zostaje tekst i wpis pada.
+       -- Rzutowanie PRZY KOLUMNIE zamyka sprawe niezaleznie od tego, jak
+       -- serwer rozstrzygnalby reszte. Pilnuje scripts/check-parametry-sql.mjs
+         $23, $24::INTEGER, $25::NUMERIC, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
          $26, $27, $28, $29, $30)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,

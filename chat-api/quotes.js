@@ -784,7 +784,17 @@ export async function convertQuoteToOrder(
          lead_days, requires_details)
        -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
        VALUES ($1,$25,'quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-         $23,$24, CASE WHEN $23::INTEGER IS NULL THEN NULL ELSE NOW() END,
+       -- TYP PARAMETRU PODAJEMY WPROST, i to nie jest ozdobnik.
+       -- 6 wrzesnia 2026 kazda zaplata z oferty konczyla sie piecsetka:
+       -- "column amount_eur_cents is of type integer but expression is of type
+       -- text". Sterownik wysyla parametry BEZ typu, wiec typ ustala serwer
+       -- z kontekstu. Ten sam parametr stoi tu dwa razy: raz goly, przy
+       -- kolumnie, i raz z rzutowaniem, w warunku nizej. Nierozstrzygniety
+       -- parametr schodzi w Postgresie do typu text, a rzutowanie w drugim
+       -- miejscu tego nie cofa: przy kolumnie zostaje tekst i wpis pada.
+       -- Rzutowanie PRZY KOLUMNIE zamyka sprawe niezaleznie od tego, jak
+       -- serwer rozstrzygnalby reszte. Pilnuje scripts/check-parametry-sql.mjs
+         $23::INTEGER, $24::NUMERIC, CASE WHEN $23::INTEGER IS NULL THEN NULL ELSE NOW() END,
          $21,$22,
          $26,$27)
        RETURNING id`,

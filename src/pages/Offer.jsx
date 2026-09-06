@@ -478,7 +478,18 @@ export default function Offer() {
   const [error, setError] = useState(null);
 
   // --- wejscie z numeru ----------------------------------------------------
-  const [formRef, setFormRef] = useState(ref);
+  // ADRES Z PARAMETREM NIE MOZE ZMIENIC PIERWSZEGO RYSOWANIA. Strona jest
+  // prerenderowana bez zapytania, wiec serwer nie widzi `?ref=` i rysuje pole
+  // puste. Wypelnienie go w `useState` znaczy, ze klient rysuje co innego niz
+  // przyszlo w HTML-u, React uznaje to za rozjazd i wyrzuca cale poddrzewo.
+  // Konsola klientki 2026-09-06: React #418 i #422 na `/oferta/?ref=...`.
+  const [formRef, setFormRef] = useState("");
+  const [numerPrzyjety, setNumerPrzyjety] = useState(false);
+  useEffect(() => {
+    if (numerPrzyjety || !ref) return;
+    setFormRef(ref);
+    setNumerPrzyjety(true);
+  }, [numerPrzyjety, ref]);
   const [formEmail, setFormEmail] = useState("");
   const [formCode, setFormCode] = useState("");
   const [looking, setLooking] = useState(false);
