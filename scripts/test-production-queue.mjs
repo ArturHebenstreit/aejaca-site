@@ -28,7 +28,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta, etapPoZaplacie, terminRealizacji,
+import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta, etapPoZaplacie, terminRealizacji, pierwszyDzienPracy,
          dniDoTerminu, zegarBiegnie, ustaleniaDomkniete, ileDoUstalenia,
          ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM } from "../chat-api/productionQueue.js";
 import { PROGI, progDoWyslania, szturchnacSzczegoly, nazwaProgu } from "../chat-api/deadlineReminders.js";
@@ -506,6 +506,58 @@ console.log("\nEtap pracy przy pozycji\n");
   if (Object.keys(ETAPY_POZYCJI).some((e) => e === "shipped" || e === "completed")) {
     zle("wysylka albo zamkniecie trafily do etapow pozycji, a paczka wychodzi jedna");
   } else ok("wysylka i zamkniecie zostaja przy zamowieniu, nie przy sztuce");
+}
+
+// ── Dzien zaplaty sie nie liczy, a kalendarz jest polski ───────────────────
+// Zgloszenie wlasciciela 2026-09-07: "zaplata dzisiaj o 18:45, termin 3 dni,
+// finalizacja 10.09, czyli na prace mamy nie 3 dni tylko 2". Decyzja z tego
+// samego dnia: data terminu to DZIEN GOTOWOSCI, liczymy pelne dni od dnia po
+// zaplacie, dzien zaplaty sie nie liczy.
+//
+// Byl przy tym blad, ktorego nikt nie mial szansy zglosic, bo data wygladala
+// poprawnie: termin liczyl sie z kalendarza UTC, a nie polskiego. Zaplata
+// miedzy polnoca a druga w nocy czasu polskiego wypada w UTC jeszcze
+// poprzedniego dnia, wiec klient placacy o 00:30 dostawal ten sam termin co
+// ten, ktory zaplacil poprzedniego wieczorem: caly dzien pracy znikal.
+// Ta sama pomylka co przy `ValidityTime` dla Autopay.
+{
+  const termin = (iso, dni) => terminRealizacji(new Date(iso), dni);
+
+  // 7 wrzesnia 18:45 czasu polskiego to 16:45 UTC: ten sam dzien w obu.
+  if (termin("2026-09-07T16:45:00Z", 3) === "2026-09-10") ok("wplata wieczorem: 8, 9 i 10 wrzesnia, czyli trzy pelne dni");
+  else zle(`wplata wieczorem dala ${termin("2026-09-07T16:45:00Z", 3)}, a miala dac 2026-09-10`);
+
+  // 8 wrzesnia 00:30 czasu polskiego to 7 wrzesnia 22:30 UTC. Klient zaplacil
+  // osmego, wiec liczymy 9, 10 i 11, a nie 8, 9 i 10.
+  if (termin("2026-09-07T22:30:00Z", 3) === "2026-09-11") ok("wplata po polnocy liczy sie od SWOJEGO dnia, nie od poprzedniego");
+  else zle(`wplata o 00:30 dala ${termin("2026-09-07T22:30:00Z", 3)}, a miala dac 2026-09-11`);
+
+  // Zima: przesuniecie to godzina, wiec granica lezy gdzie indziej. Stala
+  // liczba godzin zamiast nazwanej strefy pomylilaby sie tutaj.
+  if (termin("2026-01-14T23:30:00Z", 3) === "2026-01-18") ok("czas zimowy tez liczy sie po polskim kalendarzu");
+  else zle(`zimowa wplata dala ${termin("2026-01-14T23:30:00Z", 3)}, a miala dac 2026-01-18`);
+
+  // Zmiana czasu w srodku terminu nie moze zjesc ani dolozyc dnia.
+  if (termin("2026-10-24T21:00:00Z", 3) === "2026-10-27") ok("zmiana czasu w srodku terminu nie rusza liczby dni");
+  else zle(`termin przez zmiane czasu dal ${termin("2026-10-24T21:00:00Z", 3)}, a mial dac 2026-10-27`);
+
+  // Pierwszy liczony dzien to po prostu termin jednodniowy: jedna regula,
+  // a nie druga arytmetyka obok.
+  if (pierwszyDzienPracy("2026-09-07T16:45:00Z") === "2026-09-08") ok("pierwszy liczony dzien to dzien po wplacie");
+  else zle(`pierwszy liczony dzien wyszedl ${pierwszyDzienPracy("2026-09-07T16:45:00Z")}`);
+
+  // Klient ma to PRZECZYTAC, a nie wyliczyc z dwoch dat.
+  const STRONA = readFileSync(join(ROOT, "src/pages/OrderStatus.jsx"), "utf8");
+  const MAIL = readFileSync(join(ROOT, "chat-api/orderMail.js"), "utf8");
+  const CENNIK = readFileSync(join(ROOT, "src/pricing/terminy.js"), "utf8");
+  if (/tlLiczenie/.test(STRONA) && /order\.countFromAt/.test(STRONA)) ok("strona zamowienia pisze, od kiedy liczymy");
+  else zle("strona zamowienia nie mowi, od kiedy liczymy dni");
+  if (/terminLiczenie/.test(MAIL)) ok("mail do klienta pisze to samo przy dacie");
+  else zle("mail do klienta podaje sama date, bez sposobu liczenia");
+  if (/dzien wplaty sie nie liczy/.test(MAIL)) ok("mail do pracowni pokazuje te sama arytmetyke");
+  else zle("mail do pracowni nie pokazuje, od kiedy liczymy");
+  if (/dzień wpłaty się nie liczy/.test(CENNIK)) ok("obietnica przed zaplata mowi to samo co po niej");
+  else zle("koszyk obiecuje inaczej, niz liczy pracownia");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nKolejka pracowni: wszystko sie zgadza\n");

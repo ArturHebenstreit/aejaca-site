@@ -178,8 +178,12 @@ assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierd
   // (ADR-0027), wiec mail do pracowni nazywa go tak samo jak mail do klienta,
   // a nie "wysylka", ktora jest pozniej. Data po ludzku, bo RRRR-MM-DD w zdaniu
   // do czlowieka lamie regule z PROJECT_RULES.
-  assert.match(doNas({ lead_days: 14, deadline_at: "2026-09-12" }),
-    /TERMIN: 14 dni, planowana finalizacja 12\.09\.2026/);
+  // Pracownia widzi takze PIERWSZY LICZONY DZIEN, bo bez niego to samo zdanie
+  // czyta sie na dwa sposoby, rozne o caly dzien pracy (zgloszenie wlasciciela
+  // 2026-09-07). Dzien zaplaty sie nie liczy: zegar ruszyl 29 sierpnia, wiec
+  // liczymy od 30 sierpnia.
+  assert.match(doNas({ lead_days: 14, deadline_at: "2026-09-12", queued_at: "2026-08-29T16:45:00Z" }),
+    /TERMIN: 14 dni, liczone od 30\.08\.2026 \(dzien wplaty sie nie liczy\), gotowe 12\.09\.2026/);
   assert.doesNotMatch(doNas({ lead_days: 14, deadline_at: "2026-09-12" }),
     /2026-09-12/, "data nie wychodzi w ksztalcie bazodanowym");
   assert.match(doNas({ lead_days: 14, requires_details: true }),

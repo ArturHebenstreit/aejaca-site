@@ -227,6 +227,16 @@ function OsCzasu({ order, u, lang, odbiorOsobisty, zaplacone, nazwaDostawy }) {
         </span>
       </div>
 
+      {/* Zdanie o liczeniu dni stoi POD data, a nie w regulaminie: to tutaj
+          klient patrzy, gdy sprawdza, kiedy to bedzie. Pierwszy liczony dzien
+          przychodzi z serwera policzony, bo daty liczone w renderze rozjezdzaja
+          sie miedzy buildem a przegladarka (ADR-0022). */}
+      {order.deadlineAt && order.countFromAt && (
+        <p className="text-neutral-500 text-xs mt-2 leading-relaxed">
+          {u.tlLiczenie(dzienZeStempla(order.countFromAt))}
+        </p>
+      )}
+
       {/* CO USTALILISMY. Data mowi, ze rozmowa byla, ale nie mowi, na czym
           stanela, a to jest jedyna rzecz, ktora klient i pracownia musza
           pamietac tak samo. Pokazujemy wylacznie pozycje juz domkniete:
@@ -371,6 +381,10 @@ const UI = {
     tlDeadline: "Planowana finalizacja",
     tlAfterDetails: "po dokonaniu wszystkich ustaleń",
     tlUpTo: "do",
+    // JAK LICZYMY DNI, przy samej dacie. Data konca i data wplaty bez tego
+    // zdania pozwalaja policzyc termin na dwa sposoby, rozne o caly dzien.
+    // Decyzja wlasciciela 2026-09-07: dzien wplaty sie nie liczy.
+    tlLiczenie: (odDnia) => `Liczone od ${odDnia}. Dzień wpłaty się nie liczy, liczymy pełne dni od następnego.`,
     tlWaitingFor: "Czekamy na ustalenia do:",
     tlAgreed: "Co ustaliliśmy",
     tlPickupPoint: "Punkt odbioru",
@@ -497,6 +511,7 @@ const UI = {
     tlDeadline: "Planned completion",
     tlAfterDetails: "once everything is agreed",
     tlUpTo: "up to",
+    tlLiczenie: (odDnia) => `Counted from ${odDnia}. The day of payment does not count, we count full days from the next one.`,
     tlWaitingFor: "Waiting to agree:",
     tlAgreed: "What we agreed",
     tlPickupPoint: "Pickup point",
@@ -624,6 +639,7 @@ const UI = {
     tlDeadline: "Geplante Fertigstellung",
     tlAfterDetails: "nach allen Absprachen",
     tlUpTo: "bis zu",
+    tlLiczenie: (odDnia) => `Ab ${odDnia} gerechnet. Der Zahltag zählt nicht mit, wir zählen volle Tage ab dem folgenden.`,
     tlWaitingFor: "Wir warten auf Absprachen zu:",
     tlAgreed: "Was wir vereinbart haben",
     tlPickupPoint: "Abholpunkt",
