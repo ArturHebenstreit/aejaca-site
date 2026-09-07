@@ -24,7 +24,6 @@ const BlogIndex = strona(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = strona(() => import("./pages/BlogPost.jsx"));
 const Privacy = strona(() => import("./pages/Privacy.jsx"));
 const Glossary = strona(() => import("./pages/Glossary.jsx"));
-const GlossaryTerm = strona(() => import("./pages/GlossaryTerm.jsx"));
 const About = strona(() => import("./pages/About.jsx"));
 const Warranty = strona(() => import("./pages/Warranty.jsx"));
 const Returns = strona(() => import("./pages/Returns.jsx"));
@@ -96,7 +95,7 @@ function LazyFallback() {
 // nowa strona musiala trafic w dwa miejsca, a brak w jednym z nich nie byl
 // bledem, tylko adresem dzialajacym w polowie przypadkow.
 const KOMPONENTY = {
-  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
+  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary,
   About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
   Order, OrderStatus, QuotePage, Offer, Shipping, Payments, OrderProcess, Faq,
   ToolsJewelry,

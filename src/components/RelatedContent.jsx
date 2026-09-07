@@ -102,7 +102,7 @@ export default function RelatedContent({ category = "studio", service = null, li
               {slownik.map((term) => (
                 <Link
                   key={term.id}
-                  to={`/glossary/${term.id}/`}
+                  to={`/glossary/#${term.id}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02] text-neutral-300 text-xs hover:border-white/25 hover:text-white transition-all duration-300"
                 >
                   {term.term[lang] || term.term.en}

@@ -4,6 +4,7 @@ import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
+import { getToolsForTerm } from "../data/toolLinks.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -17,7 +18,8 @@ const LABELS = {
     description: "Kluczowe pojęcia ze świata biżuterii, druku 3D, grawerowania laserowego i odlewów żywicznych, wyjaśnione prosto i zwięźle.",
     search: "Szukaj pojęcia…",
     all: "Wszystkie",
-    readMore: "Czytaj więcej",
+    readArticle: "Czytaj artykuł",
+    toolsFor: "Narzędzia do tego pojęcia",
     noResults: "Brak wyników dla",
   },
   en: {
@@ -26,7 +28,8 @@ const LABELS = {
     description: "Key terms from the world of jewelry, 3D printing, laser engraving, and resin casting, explained simply and concisely.",
     search: "Search terms…",
     all: "All",
-    readMore: "Read more",
+    readArticle: "Read the article",
+    toolsFor: "Tools for this term",
     noResults: "No results for",
   },
   de: {
@@ -35,7 +38,8 @@ const LABELS = {
     description: "Schlüsselbegriffe aus der Welt des Schmucks, 3D-Drucks, der Lasergravur und des Harzgusses, einfach und prägnant erklärt.",
     search: "Begriff suchen…",
     all: "Alle",
-    readMore: "Mehr lesen",
+    readArticle: "Artikel lesen",
+    toolsFor: "Werkzeuge zu diesem Begriff",
     noResults: "Keine Ergebnisse für",
   },
 };
@@ -149,29 +153,57 @@ export default function Glossary() {
               </p>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filtered.map((term, i) => (
-                  <Link
-                    key={term.id}
-                    to={`/glossary/${term.id}/`}
-                    ref={getCardRef(i)}
-                    className="reveal-scale block bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
-                  >
-                    <div className={`text-xs uppercase tracking-widest mb-2 ${
-                      term.category === "jewelry" ? "text-amber-400" : term.category === "studio" ? "text-blue-400" : "text-emerald-400"
-                    }`}>
-                      {CATEGORIES[term.category]?.[lang] || term.category}
-                    </div>
-                    <h2 className="text-white font-semibold text-lg mb-2">
-                      {term.term[lang] || term.term.en}
-                    </h2>
-                    <p className="text-neutral-400 text-sm leading-relaxed mb-3">
-                      {term.definition[lang] || term.definition.en}
-                    </p>
-                    <span className="text-amber-400 text-xs">
-                      {l.readMore} &rarr;
-                    </span>
-                  </Link>
-                ))}
+                {filtered.map((term, i) => {
+                  const barwa = term.category === "jewelry" ? "text-amber-400"
+                    : term.category === "studio" ? "text-blue-400" : "text-emerald-400";
+                  // Najwyzej dwa narzedzia na haslo. Do 2026-09-06 kazde haslo
+                  // mialo wlasna strone i wlasny blok narzedzi; teraz definicja
+                  // stoi tutaj, wiec odnosniki musza stac razem z nia, inaczej
+                  // przepadlyby razem z tamtymi stronami.
+                  const narzedzia = getToolsForTerm(term.id, term.category).slice(0, 2);
+                  return (
+                    <article
+                      key={term.id}
+                      id={term.id}
+                      ref={getCardRef(i)}
+                      className="reveal-scale scroll-mt-28 bg-neutral-900/60 border border-neutral-800 rounded-xl p-5"
+                    >
+                      <div className={`text-xs uppercase tracking-widest mb-2 ${barwa}`}>
+                        {CATEGORIES[term.category]?.[lang] || term.category}
+                      </div>
+                      <h2 className="text-white font-semibold text-lg mb-2">
+                        {term.term[lang] || term.term.en}
+                      </h2>
+                      <p className="text-neutral-400 text-sm leading-relaxed mb-3">
+                        {term.definition[lang] || term.definition.en}
+                      </p>
+
+                      {narzedzia.length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-neutral-800">
+                          <div className="text-neutral-500 text-xs uppercase tracking-widest mb-1.5">{l.toolsFor}</div>
+                          <ul className="space-y-1">
+                            {narzedzia.map((n) => (
+                              <li key={n.id}>
+                                <Link to={n.to} className={`${barwa} text-xs hover:underline`}>
+                                  {n.label?.[lang] || n.label?.en || n.id}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {term.relatedBlog && (
+                        <Link
+                          to={`/blog/${term.relatedBlog}/`}
+                          className={`${barwa} text-xs hover:underline inline-block mt-3`}
+                        >
+                          {l.readArticle} &rarr;
+                        </Link>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             )}
           </div>

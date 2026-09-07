@@ -27,7 +27,7 @@ function BodyPL() {
         ]}
       />
       <P>
-        <Strong>Krótko:</Strong> im mniejszy obiekt i im więcej detalu na powierzchni, tym bardziej opłaca się <A href="/glossary/druk-msla">druk MSLA</A>. Miniatury bitewne, biusty kolekcjonerskie, terenowe elementy do gier planszowych to klasyczny przypadek dla żywicy, nie filamentu.
+        <Strong>Krótko:</Strong> im mniejszy obiekt i im więcej detalu na powierzchni, tym bardziej opłaca się <A href="/glossary/#druk-msla">druk MSLA</A>. Miniatury bitewne, biusty kolekcjonerskie, terenowe elementy do gier planszowych to klasyczny przypadek dla żywicy, nie filamentu.
       </P>
 
       <H2 id="sprzet">Nasz sprzęt: Elegoo Saturn 4 Ultra 16K</H2>
@@ -158,7 +158,7 @@ function BodyEN() {
         ]}
       />
       <P>
-        <Strong>In short:</Strong> the smaller the object and the more surface detail it carries, the more <A href="/glossary/druk-msla">MSLA resin printing</A> pays off. Wargame miniatures, collectible busts, and board game terrain pieces are the textbook case for resin, not filament.
+        <Strong>In short:</Strong> the smaller the object and the more surface detail it carries, the more <A href="/glossary/#druk-msla">MSLA resin printing</A> pays off. Wargame miniatures, collectible busts, and board game terrain pieces are the textbook case for resin, not filament.
       </P>
 
       <H2 id="hardware">Our hardware: Elegoo Saturn 4 Ultra 16K</H2>
@@ -289,7 +289,7 @@ function BodyDE() {
         ]}
       />
       <P>
-        <Strong>Kurz gesagt:</Strong> je kleiner das Objekt und je mehr Oberflächendetail es trägt, desto mehr lohnt sich der <A href="/glossary/druk-msla">MSLA-Harzdruck</A>. Tabletop-Miniaturen, Sammlerbüsten und Brettspiel-Geländeteile sind das Lehrbuchbeispiel für Harz statt Filament.
+        <Strong>Kurz gesagt:</Strong> je kleiner das Objekt und je mehr Oberflächendetail es trägt, desto mehr lohnt sich der <A href="/glossary/#druk-msla">MSLA-Harzdruck</A>. Tabletop-Miniaturen, Sammlerbüsten und Brettspiel-Geländeteile sind das Lehrbuchbeispiel für Harz statt Filament.
       </P>
 
       <H2 id="hardware">Unsere Hardware: Elegoo Saturn 4 Ultra 16K</H2>

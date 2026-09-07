@@ -54,7 +54,6 @@ const { render } = await import(serverPath);
 // a route missing from this list would be served as a hard 404 by Cloudflare
 // Pages instead of silently falling back to client-side rendering.
 const { POSTS_META } = await import("../src/blog/postsMeta.js");
-const { GLOSSARY } = await import("../src/data/glossary.js");
 const { PRODUCTS } = await import("../src/data/shopCatalog.js");
 const { SERVICES_FULL } = await import("../src/data/serviceCatalog.js");
 const { TRASY_STALE, JEZYKI, sciezkaJezyka, rozbierzSciezke } = await import("../src/routes.js");
@@ -65,7 +64,6 @@ const { TRASY_STALE, JEZYKI, sciezkaJezyka, rozbierzSciezke } = await import("..
 // czego pilnowac: brak strony w prerenderze bylby teraz brakiem trasy w ogole.
 const STATIC_ROUTES = TRASY_STALE.map((p) => (p === "/" ? "/" : p.replace(/\/$/, "")));
 
-const GLOSSARY_IDS = GLOSSARY.map((term) => term.id);
 const BLOG_SLUGS = POSTS_META.map((post) => post.slug);
 // Slugi produktow pochodza z katalogu, wiec nowy produkt nie wymaga wpisu recznego
 const PRODUCT_SLUGS = PRODUCTS.map((p) => p.slug);
@@ -74,7 +72,6 @@ const SERVICE_IDS = SERVICES_FULL.map((s) => s.id);
 const TRASY_POLSKIE = [
   ...STATIC_ROUTES,
   ...BLOG_SLUGS.map((s) => `/blog/${s}`),
-  ...GLOSSARY_IDS.map((id) => `/glossary/${id}`),
   ...PRODUCT_SLUGS.map((slug) => `/shop/${slug}`),
   ...SERVICE_IDS.map((id) => `/shop/service/${id}`),
 ];

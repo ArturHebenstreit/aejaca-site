@@ -333,7 +333,7 @@ export default function Jewelry() {
               { id: "pierscionek-zareczynowy", pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring" },
               { id: "obraczki-slubne", pl: "Obrączki ślubne", en: "Wedding bands", de: "Eheringe" },
             ].map((term) => (
-              <Link key={term.id} to={`/glossary/${term.id}/`}
+              <Link key={term.id} to={`/glossary/#${term.id}`}
                 className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-amber-400/10 hover:text-amber-300 border border-neutral-700/50 hover:border-amber-400/30 transition-all">
                 {term[lang] || term.en}
               </Link>

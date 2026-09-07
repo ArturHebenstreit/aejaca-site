@@ -14,7 +14,7 @@ function BodyPL() {
 
       <H2 id="co-to">Czym jest modelowanie 3D na zamówienie?</H2>
       <P>
-        <Strong>Modelowanie 3D</Strong> (zwane też <A href="/glossary/cad">CAD</A>) to tworzenie cyfrowej, trójwymiarowej
+        <Strong>Modelowanie 3D</Strong> (zwane też <A href="/glossary/#cad">CAD</A>) to tworzenie cyfrowej, trójwymiarowej
         reprezentacji przedmiotu, którą maszyna potrafi wyprodukować - wydrukować, wyciąć albo odlać. To pierwszy i
         najważniejszy etap całego procesu: bez dobrego modelu nawet najlepsza drukarka wydrukuje błędy.
       </P>
@@ -129,7 +129,7 @@ function BodyEN() {
 
       <H2 id="what">What is 3D modeling on demand?</H2>
       <P>
-        <Strong>3D modeling</Strong> (also called <A href="/glossary/cad">CAD</A>) is creating a digital, three-dimensional
+        <Strong>3D modeling</Strong> (also called <A href="/glossary/#cad">CAD</A>) is creating a digital, three-dimensional
         representation of an object that a machine can produce - print, cut, or cast. It's the first and most important
         step of the whole process: without a good model, even the best printer will faithfully print your mistakes.
       </P>
@@ -238,7 +238,7 @@ function BodyDE() {
 
       <H2 id="was">Was ist 3D-Modellierung nach Maß?</H2>
       <P>
-        <Strong>3D-Modellierung</Strong> (auch <A href="/glossary/cad">CAD</A> genannt) ist das Erstellen einer digitalen,
+        <Strong>3D-Modellierung</Strong> (auch <A href="/glossary/#cad">CAD</A> genannt) ist das Erstellen einer digitalen,
         dreidimensionalen Darstellung eines Objekts, das eine Maschine produzieren kann - drucken, schneiden oder gießen.
         Es ist der erste und wichtigste Schritt des gesamten Prozesses: Ohne ein gutes Modell druckt selbst der beste
         Drucker zuverlässig Ihre Fehler.
