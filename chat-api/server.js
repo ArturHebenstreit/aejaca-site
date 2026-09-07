@@ -14,7 +14,7 @@ import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyL
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { zrodloWizyty, jezykZeSciezki, toRobot } from "./zrodlaRuchu.js";
-import { generateQuoteRef, createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { generateQuoteRef, createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, sciezkaJezyka, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -2363,18 +2363,43 @@ app.post("/api/quotes/:ref/send", express.json({ limit: "8kb" }), async (req, re
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
-  const quote = await getQuoteByRef(pool, req.params.ref);
+  let quote = await getQuoteByRef(pool, req.params.ref);
   if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+
+  // JEZYK OFERTY WYBIERA SIE PRZY WYSYLCE, a nie w osobnym formularzu wyzej.
+  // Zapytanie po polsku bywa od Niemca, ktory po prostu nie zna innej drogi na
+  // strone, i przeciwnie. Jezyk zapisujemy przy ofercie, a nie tylko przy
+  // liscie: mail, strona oferty i zaplata musza mowic tym samym.
+  const jezyk = req.body?.lang;
+  if (jezyk !== undefined && jezyk !== null && String(jezyk) !== quote.lang) {
+    try {
+      await updateQuote(pool, req.params.ref, { lang: String(jezyk) });
+      quote = await getQuoteByRef(pool, req.params.ref);
+    } catch (e) {
+      if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+      throw e;
+    }
+  }
+
+  // DWA POWODY, DLA KTORYCH NIE MA CZEGO WYSLAC, i tylko jeden z nich to brak
+  // kwot. Oferta domknieta ma `total_grosze` rowne NULL dokladnie tak samo jak
+  // oferta nietknieta, bo naglowek niesie od ADR-0026 kwote RESZTY, a reszty
+  // nie ma. Panel czytal z tego jednego pola i pisal "najpierw wpisz kwoty"
+  // przy ofercie, w ktorej wszystkie kwoty stoja i wszystko jest juz zlecone.
+  // Zgloszenie wlasciciela 2026-09-07.
+  if (quoteSettled(quote)) {
+    return res.status(400).json({ error: "Wszystkie pozycje z tej oferty sa juz zlecone", code: "already_converted" });
+  }
   if (!quoteAmountGrosze(quote)) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
 
-  const url = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quote_ref)}&token=${encodeURIComponent(quote.access_token)}`;
+  const url = `${SITE_URL}${sciezkaJezyka("/oferta/", quote.lang)}?ref=${encodeURIComponent(quote.quote_ref)}&token=${encodeURIComponent(quote.access_token)}`;
   const wyslano = quote.customer_email ? await sendQuoteLink(pool, quote.quote_ref, url) : false;
   await pool.query(
     "UPDATE quotes SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW() WHERE id = $1",
     [quote.id]
   );
-  console.log(`[wycena] ${quote.quote_ref} oznaczona jako wyslana, mail: ${wyslano ? "tak" : "nie"}`);
-  res.json({ ok: true, url, mailed: wyslano });
+  console.log(`[wycena] ${quote.quote_ref} oznaczona jako wyslana w jezyku ${quote.lang}, mail: ${wyslano ? "tak" : "nie"}`);
+  res.json({ ok: true, url, mailed: wyslano, lang: quote.lang });
 });
 /** Numer zamowienia po jego identyfikatorze. Wycena zna tylko id. */
 async function orderRefById(id) {

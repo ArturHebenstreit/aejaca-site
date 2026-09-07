@@ -453,7 +453,8 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   ma(WIDOK, /data-wyslij\b/, "przycisk wysylki ma zaczep do odswiezenia");
   ma(WIDOK, /data-wyslij-brak/, "napis o brakujacych kwotach tez");
   ma(WIDOK, /wyslij\.disabled = !mozna/, "zapis pozycji przestawia przycisk wysylki");
-  ma(WIDOK, /brak\.hidden = mozna/, "i chowa napis, ktory przestal byc prawda");
+  ma(WIDOK, /brak\.hidden = zlecona \|\| Boolean\(dane\.quote\.totalGrosze\)/,
+    "i chowa napis, ktory przestal byc prawda");
   ma(WIDOK, /data-podsumowanie\b/, "podsumowanie stoi pod pozycjami, a nie tylko w naglowku");
   ma(WIDOK, /data-suma-dol/, "z kwota, ktora odswieza sie po zapisie");
   ma(WIDOK, /odswiezPodsumowanie\(dane\)/, "odswiezanie naglowka wola odswiezanie podsumowania");
@@ -462,6 +463,47 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   // i w mailu. Wlasna arytmetyka w przegladarce rozjechalaby sie z nimi.
   if (/liczone\s*=\s*[^;]*reduce/.test(WIDOK)) zle("panel liczy kwote sam, zamiast czytac ja z serwera");
   else ok("kwota w podsumowaniu pochodzi z serwera, panel jej nie przelicza");
+}
+
+// ── Dwa powody, dla ktorych nie ma czego wyslac ────────────────────────────
+// Zgloszenie wlasciciela 2026-09-07: oferta w calosci zamieniona na zamowienie,
+// piec pozycji po 49 zl, a pod przyciskiem napis "Najpierw wpisz kwoty pozycji".
+// Kwoty stoja. Winne jest jedno pole niosace dwa stany: `total_grosze` rowne
+// NULL znaczy zarowno "nikt tego nie wycenil", jak i "nie zostalo nic do
+// wziecia", bo naglowek niesie od ADR-0026 kwote RESZTY. Ekran musi je
+// rozroznic, inaczej pisze o brakujacej kwocie tam, gdzie nic nie brakuje.
+{
+  ma(WIDOK, /data-wyslij-zlecona/, "widok ma osobny napis dla oferty w calosci zleconej");
+  ma(WIDOK, /settled \? '' : 'hidden'/, "napis o zleconej ofercie pojawia sie z `settled`, a nie z kwoty");
+  ma(WIDOK, /\(settled \|\| !quote\.totalGrosze\) \? 'disabled'/,
+    "przycisk wysylki gasnie z obu powodow naraz");
+  ma(WIDOK, /var zlecona = dane\.settled === true/, "odswiezanie tez czyta stan domkniecia");
+  ma(PANEL, /settled, openCount,/, "panel podaje widokowi stan domkniecia oferty");
+  ma(PANEL, /settled: swieza\.settled/, "zapis pozycji oddaje stan domkniecia razem z kwota");
+  ma(SERWER, /if \(quoteSettled\(quote\)\) \{\s*\n\s*return res\.status\(400\)\.json\(\{ error: "Wszystkie pozycje/,
+    "backend odmawia wysylki domknietej oferty wlasnym powodem, a nie brakiem kwot");
+}
+
+// ── Jezyk oferty wybiera sie przy wysylce ──────────────────────────────────
+// Polecenie wlasciciela 2026-09-07. Zapytanie po polsku bywa od Niemca, ktory
+// nie znalazl innej drogi na strone, i odwrotnie; wiadomo to dopiero po
+// przeczytaniu tresci, czyli w chwili odpisywania. Wybor musi zapisac sie PRZY
+// OFERCIE, bo mail, strona oferty i zaplata maja mowic jednym jezykiem.
+{
+  ma(WIDOK, /name="lang" data-wyslij-jezyk/, "przy przycisku wysylki stoi wybor jezyka");
+  ma(WIDOK, /\["de", "niemiecki"\]/, "jezyki nazwane po ludzku, nie kodami");
+  ma(PANEL, /body: lang \? \{ lang \} : undefined/, "panel przekazuje wybrany jezyk do backendu");
+  ma(SERWER, /await updateQuote\(pool, req\.params\.ref, \{ lang: String\(jezyk\) \}\)/,
+    "backend zapisuje jezyk przy ofercie, a nie tylko przy liscie");
+  // ADRES OFERTY NIESIE JEZYK. Goly `/oferta/` to adres POLSKI, wiec oferta po
+  // niemiecku prowadzila na polska strone: mail byl niemiecki, a strona nie.
+  ma(SERWER, /sciezkaJezyka\("\/oferta\/", quote\.lang\)/, "link w mailu z oferta niesie prefiks jezyka");
+  ma(PANEL, /jezyk === "pl" \? "" : `\/\$\{jezyk\}`/, "link kopiowany z panelu tez");
+  const QUOTES = readFileSync(join(ROOT, "chat-api/quotes.js"), "utf8");
+  ma(QUOTES, /export function sciezkaJezyka/, "regula prefiksu stoi w jednym miejscu");
+  const MAIL = readFileSync(join(ROOT, "chat-api/orderMail.js"), "utf8");
+  if (/lang === "pl" \? `\$\{SELLER\.site\}/.test(MAIL)) zle("maile maja wlasna kopie reguly prefiksu");
+  else ok("maile czytaja te sama regule, a nie wlasna kopie");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nEdycja, uklad wyboru i usuwanie oferty: wszystko sie zgadza\n");

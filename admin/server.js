@@ -1670,11 +1670,19 @@ app.get("/quotes", requireAuth, async (req, res) => {
 
 app.get("/quotes/:ref", requireAuth, async (req, res) => {
   try {
-    const { quote, items, orders = [] } = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
+    const { quote, items, orders = [], settled = false, openCount = null } =
+      await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
     // Link buduje sie tu, a nie w widoku, bo klient przy rozmowie telefonicznej
     // nie dostanie maila i jedynym sposobem przekazania oferty jest skopiowanie
     // tego adresu z ekranu.
-    const offerUrl = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quoteRef)}&token=${encodeURIComponent(quote.accessToken)}`;
+    //
+    // ADRES NIESIE JEZYK OFERTY. Do 2026-09-07 stal tu goly `/oferta/`, czyli
+    // adres POLSKI, wiec oferta po niemiecku prowadzila na polska strone.
+    // Skopiowany z ekranu i podyktowany przez telefon robil to samo co ten
+    // z maila, bo obie drogi sklejaly go osobno.
+    const jezyk = ["pl", "en", "de"].includes(quote.lang) ? quote.lang : "pl";
+    const offerUrl = `${SITE_URL}${jezyk === "pl" ? "" : `/${jezyk}`}/oferta/`
+      + `?ref=${encodeURIComponent(quote.quoteRef)}&token=${encodeURIComponent(quote.accessToken)}`;
     // Link do KAZDEGO zamowienia z tej oferty. Powstaje tu, a nie w widoku,
     // z tego samego powodu co link do oferty: to jest adres do wklejenia
     // klientowi, a nie ozdoba ekranu.
@@ -1684,7 +1692,14 @@ app.get("/quotes/:ref", requireAuth, async (req, res) => {
         ? `${SITE_URL}/order/status/?ref=${encodeURIComponent(o.orderRef)}&token=${encodeURIComponent(o.token)}`
         : null,
     }));
-    res.render("quote-edit", { user: req.user, quote, items, offerUrl, zamowienia, msg: req.query.msg, err: req.query.err });
+    res.render("quote-edit", {
+      user: req.user, quote, items, offerUrl, zamowienia,
+      // `settled` odroznia oferte DOMKNIETA od nietknietej. Obie maja kwote
+      // rowna NULL, wiec bez tego pola panel pisal "najpierw wpisz kwoty"
+      // przy ofercie, ktora w calosci stala sie zamowieniem.
+      settled, openCount,
+      msg: req.query.msg, err: req.query.err,
+    });
   } catch (err) {
     back(res, "/quotes", { err: err.message });
   }
@@ -1780,7 +1795,10 @@ app.post("/quotes/:ref/item", requireAuth, express.json({ limit: "64kb" }), asyn
     // Stan oferty czytamy od nowa, bo zapis jednej pozycji potrafi przestawic
     // cala oferte: sume, zaznaczenie w grupie i stan "nowa albo oferta".
     const swieza = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
-    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items });
+    // `settled` jedzie razem z kwota, bo to ono odroznia oferte DOMKNIETA od
+    // nietknietej: obie maja kwote rowna NULL i bez niego ekran nazwalby jedna
+    // druga.
+    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items, settled: swieza.settled });
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }
@@ -1805,7 +1823,10 @@ app.post("/quotes/:ref/header", requireAuth, express.json({ limit: "64kb" }), as
 
     const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/update`, { method: "POST", body: patch });
     const swieza = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
-    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items });
+    // `settled` jedzie razem z kwota, bo to ono odroznia oferte DOMKNIETA od
+    // nietknietej: obie maja kwote rowna NULL i bez niego ekran nazwalby jedna
+    // druga.
+    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items, settled: swieza.settled });
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }
@@ -1835,7 +1856,13 @@ app.post("/quotes/:ref/delete", requireAuth, async (req, res) => {
 /** Wyslanie oferty klientowi. */
 app.post("/quotes/:ref/send", requireAuth, async (req, res) => {
   try {
-    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/send`, { method: "POST" });
+    // Jezyk wybiera sie przy wysylce, przy samym przycisku. Backend zapisuje go
+    // przy ofercie, wiec mail, strona oferty i zaplata ida tym samym jezykiem.
+    const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : undefined;
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/send`, {
+      method: "POST",
+      body: lang ? { lang } : undefined,
+    });
     back(res, `/quotes/${req.params.ref}`, {
       msg: r.mailed ? "Oferta wysłana mailem" : `Oznaczono jako wysłaną. Bez maila, przekaż link: ${r.url}`,
     });
