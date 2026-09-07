@@ -171,19 +171,31 @@ AEJaCA Studio to warsztat jubilerski łączący parametryczne projektowanie CAD,
 - 9 programowalnych profili, zakres 30-1200°C, czas 1-60 min
 - Timer=0 w profilu 1 = tryb bezterminowy (brak auto-stop)
 - Timer=0 w profilach 2-9 = segment pomijany automatycznie
-- LIMIT OPERACYJNY: max 2h ciągłej pracy, min 30 min chłodzenia przed restartem
+- **Odliczanie timera startuje dopiero po osiągnięciu zadanej temperatury.** Rampy
+  nagrzewania nie zajmują czasu timera, dlatego pełna krzywa mieści się w 9 slotach
+- **Limit 2 h ciągłej pracy dotyczy topienia metali przy 1200°C.** Przy wypalaniu masy
+  formierskiej (max 720°C) potwierdzono empirycznie 9 h ciągłej pracy bez przerwy
 - Otwór wentylacyjny w pokrywie ZAWSZE otwarty
 
-**Kolba odlewnicza**
-- Średnica 30mm, wysokość 50mm, ściana 0,4mm
-- Maks. średnica modelu 24mm (margines 3mm od ścian kolby)
+**Kolba odlewnicza: RADIANCE3.5, perforowana, stalowa**
+- Średnica wewnętrzna 83mm, wysokość 100mm, perforacja na całym płaszczu
+- Objętość wewnętrzna ok. 525 cm3, masa gotowej formy ok. 1,3 kg
+- Maks. średnica modelu 60mm (margines 10mm od ścianek)
+- Maks. wysokość modelu z wlewem ok. 60mm (20mm masy nad koroną, 20mm na podstawę
+  wlewową i guzik)
+- Kolba 30 x 50 mm, lita, blacha 0,4mm, pozostaje w warsztacie jako pozostałość po
+  setupie grawitacyjnym. **Do odlewu próżniowego nie jest używana**
 
 ### Materiały
 
 **Masa inwestycyjna: Whip Mix Omni-II**
-- Proporcje: 40:100 woda:proszek (mix ręczny)
-- Wypełnienie kolby: 480-610g
+- Proporcje NIE są wspólne dla obu technologii: **40:100 woda:proszek dla lost-PLA**
+  (potwierdzone w warsztacie), **38:100 dla lost-resin** (karta producenta)
+- Wypełnienie kolby 83 x 100 mm: 480-610g, przelicznik ok. 1,22 g proszku na 1 ml
+  objętości formy przy 40:100
 - Minimum 15-20mm masy nad koroną modelu (zapobieganie zawaleniu pod próżnią)
+- Procedury, harmonogram mieszania, czasy wiązania i przechowywanie: patrz
+  `AEJaCA_Odlewnictwo_Procedury.md`, rozdz. 2
 
 **Olej do pompy:** Matrix Vacumax 46 ISO VG 46
 
@@ -207,10 +219,15 @@ AEJaCA Studio to warsztat jubilerski łączący parametryczne projektowanie CAD,
 ### Parametry temperaturowe i skurcz
 | Stop | Temperatura kolby | Temperatura metalu | Skurcz |
 |---|---|---|---|
-| Au 585 (14K) | 600°C | 1000°C (max 1050°C) | x1,0196 |
-| Ag 925 | - | - | x1,016 |
+| Au 585 (14K) | 550-600°C | 1000°C (max 1050°C) | x1,0196 |
+| Ag 925, wyroby średnie i masywne | 450-480°C | 980-1020°C (max 1030°C) | x1,016 |
+| Ag 925, filigran i cienkie ścianki | 500-550°C | 980-1020°C (max 1030°C) | x1,016 |
 | Au 9K | - | - | x1,021 |
 | Au 18K | - | - | x1,018 |
+
+Krzywe wypalania, kalkulacja wsadu, procedura topienia srebra i studzenie:
+`AEJaCA_Odlewnictwo_Procedury.md`. Mnożniki skurczu żyją w kodzie
+(`src/data/castingAlloys.js`) i to on jest źródłem dla kalkulatora.
 
 ### Możliwości
 - Pełny cykl odlewniczy lost-PLA i lost-resin do Au 585 i Ag 925
