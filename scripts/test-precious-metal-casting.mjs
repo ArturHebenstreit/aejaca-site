@@ -31,7 +31,9 @@ import {
   castingFinishesFor,
   CASTING_PLATINGS,
   castingPlatingAvailable,
-  CASTING_ENVELOPE_MM,
+  CASTING_FOOTPRINT_MM,
+  CASTING_HEIGHT_MM,
+  CASTING_TILT_BONUS_MM,
   CASTING_ENVELOPE_LABEL,
   PRECIOUS_METAL_CASTING_BUILD,
 } from "../src/pricing/preciousMetalCasting.js";
@@ -48,43 +50,55 @@ assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.009");
 // RADIANCE3.5, kolba, ktora naprawde stoi w warsztacie: 83 x 100 mm.
 // Zrodlo: MDs/AEJaCA_Odlewnictwo_Procedury.md, rozdz. 1.1 (7 wrzesnia 2026).
 assert.deepEqual(CASTING_FLASK_MM, { diameter: 83, depth: 100 });
+
+// KOLBA JEST WALCEM, WIEC LIMIT TEZ. Do 7 wrzesnia 2026 stal tu kwadrat wpisany
+// w swiatlo kolby, czyli 44 x 44 mm, i odrzucal wszystko plaskie i szerokie.
+// Klucz 59 x 22 mm ma przekatna 63,0 mm, czyli miesci sie w kole, a odbijal sie
+// od kwadratu. Decyzja wlasciciela z 7 wrzesnia 2026: liczymy przekatna.
 const swiatlo = CASTING_FLASK_MM.diameter - 20;
-// 40 mm zapasu na wysokosci: 20 mm na podstawe wlewowa z guzikiem i 20 mm masy
-// nad korona. Dolna granica z dokumentu to 15 mm, ale bierzemy gorna, bo skutkiem
-// niedomiaru jest pekniecie formy po dwunastu godzinach wypalu.
-assert.deepEqual(CASTING_ENVELOPE_MM, [
-  Math.floor(swiatlo / Math.SQRT2),
-  Math.floor(swiatlo / Math.SQRT2),
-  CASTING_FLASK_MM.depth - 40,
-]);
-assert.equal(CASTING_ENVELOPE_LABEL, "44 x 44 x 60 mm");
-// Kwadrat o tym boku musi zmiescic sie w swietle kolby, inaczej limit obiecuje
-// wiecej, niz kolba przyjmie.
-assert.ok(Math.hypot(CASTING_ENVELOPE_MM[0], CASTING_ENVELOPE_MM[1]) <= swiatlo);
-assert.ok(CASTING_ENVELOPE_MM.every((v, i, a) => i === 0 || a[i - 1] <= v), "limit musi byc posortowany rosnaco");
-assert.equal(CASTING_ENVELOPE_LABEL, `${CASTING_ENVELOPE_MM.join(" x ")} mm`);
+assert.equal(CASTING_FOOTPRINT_MM, swiatlo);
 
-assert.equal(fitsCastingFlask({ x: 2.0, y: 2.2, z: 3.0 }), true);
-// Dwie osie ponad 44 mm. Wymiary sa w centymetrach, a silnik sortuje je rosnaco,
-// wiec najdluzsza os idzie na glebokosc kolby: model 46 x 45 x 30 mm odbija sie
-// dopiero na drugiej osi. Przy kolbie 80 x 90 nie miescil sie juz model 45 x 44,
-// bo swiatlo bylo o 3 mm wezsze.
-assert.equal(fitsCastingFlask({ x: 4.6, y: 4.5, z: 3.0 }), false);
-assert.equal(fitsCastingFlask({ x: 4.6, y: 4.5, z: 3.0 }, 0.9), true);
+// Wysokosc: 60 mm z samej kolby (100 minus 20 na podstawe wlewowa z guzikiem,
+// minus 20 masy nad korona) plus 2 mm, ktore daje pochyl przy ukladaniu modelu.
+assert.equal(CASTING_HEIGHT_MM, CASTING_FLASK_MM.depth - 40 + CASTING_TILT_BONUS_MM);
+assert.equal(CASTING_HEIGHT_MM, 62);
+assert.equal(CASTING_ENVELOPE_LABEL, "\u00d863 x 62 mm");
 
-// NAJWIEKSZA SKALA TO NAJCIASNIEJSZA OS PO OBROCIE, i nie wolno zakladac,
-// KTORA to os. Do 3 wrzesnia 2026 test porownywal wynik z `ENVELOPE[2] / 30`,
-// czyli z gory przyjmowal, ze wiaze glebokosc. Bylo to prawda tylko przy kolbie
-// 80 x 80: po poglębieniu do 90 mm limit wysokosci urosl do 65 i dla modelu
-// 30 x 20 x 10 mm wiaze juz szerokosc (42/20 = 2,1 wobec 65/30 = 2,17).
-// Liczymy wiec minimum ze wszystkich osi, tak jak robi to sam silnik.
+const mm = (x, y, z) => ({ x: x / 10, y: y / 10, z: z / 10 });
+
+// KLUCZ Z WARSZTATU. Odlany 7 wrzesnia 2026, przekatna podstawy 63,0 mm.
+// Regula kwadratu odsylala go do wyceny recznej, regula kola przyjmuje.
+assert.equal(fitsCastingFlask(mm(59, 22, 5)), true, "klucz 59 x 22 x 5 mm ma sie miescic");
+
+// Rzecz DLUZSZA niz wysokosc kolby miesci sie POLOZONA, po przekatnej podstawy.
+// Tego nie umiala zadna regula oparta na trzech osobnych osiach.
+assert.equal(fitsCastingFlask(mm(62, 20, 5)), true, "model 62 mm dlugi lezy po przekatnej");
+
+// Granice z obu stron. Kostka 44 x 44 x 60 to dokladnie stary limit i nadal
+// przechodzi; milimetr wiecej na kazdej osi juz nie.
+assert.equal(fitsCastingFlask(mm(44, 44, 60)), true);
+assert.equal(fitsCastingFlask(mm(45, 45, 60)), false);
+assert.equal(fitsCastingFlask(mm(30, 30, 70)), false, "za wysoki i za gruby, zeby polozyc");
+assert.equal(fitsCastingFlask(mm(20, 22, 30)), true);
+assert.equal(fitsCastingFlask(mm(46, 45, 30)), true, "po polozeniu miesci sie w kole");
+
+// Skala liczy sie z tej samej reguly, wiec model na granicy dostaje dokladnie 1.
 {
-  const bok = [10, 20, 30]; // milimetry, posortowane rosnaco, jak w silniku
-  const oczekiwana = Math.min(...bok.map((mm, i) => CASTING_ENVELOPE_MM[i] / mm));
-  assert.ok(Math.abs(maxCastingScaleForBBox({ x: 3.0, y: 2.0, z: 1.0 }) - oczekiwana) < 1e-9);
-  // Model dokladnie na granicy limitu ma dostac skale 1, ani mniej, ani wiecej.
-  const naGranicy = { x: CASTING_ENVELOPE_MM[0] / 10, y: CASTING_ENVELOPE_MM[1] / 10, z: CASTING_ENVELOPE_MM[2] / 10 };
-  assert.ok(Math.abs(maxCastingScaleForBBox(naGranicy) - 1) < 1e-9, "model rowny limitowi ma miescic sie w skali 1");
+  // Podstawa o przekatnej rownej swiatlu kolby: kwadrat o boku srednica przez
+  // pierwiastek z dwoch, do tego pelna wysokosc.
+  const bok = CASTING_FOOTPRINT_MM / Math.SQRT2;
+  const rowny = mm(bok, bok, CASTING_HEIGHT_MM);
+  assert.ok(Math.abs(maxCastingScaleForBBox(rowny) - 1) < 1e-9, "model rowny limitowi ma skale 1");
+}
+
+// Skala mniejsza od jedynki ratuje model za duzy, i to ta sama liczba, ktora
+// pokazujemy klientowi w komunikacie o przekroczeniu limitu.
+{
+  const zaDuzy = mm(50, 50, 60);
+  const skala = maxCastingScaleForBBox(zaDuzy);
+  assert.ok(skala < 1 && skala > 0.8, `skala ratunkowa wyszla ${skala}`);
+  assert.equal(fitsCastingFlask(zaDuzy, skala - 1e-6), true);
+  assert.equal(fitsCastingFlask(zaDuzy, 1), false);
 }
 
 // PIEC POZIOMOW OBROBKI, drozej za kazdy kolejny. Identyfikatory `raw`,

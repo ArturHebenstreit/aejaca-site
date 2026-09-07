@@ -92,7 +92,7 @@ import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import VectorPreview from "./VectorPreview.jsx";
 import { resolveTechAndParams, runCalc, CAST_DEFAULT_ALLOY } from "../../pricing/simpleQuote.js";
-import { CASTING_METALS, CASTING_ENVELOPE_MM, CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
+import { CASTING_METALS, CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import { getResin } from "../../data/resins.js";
@@ -219,14 +219,14 @@ const ALLOY_LBL = {
 // objetosc kruszcu: pierscionek "jak moneta" to w wiekszosci powietrze.
 // Mowimy to wprost, zamiast pokazac liczbe wzieta znikad.
 const CAST_HINT_NO_FILE = {
-  pl: `Odlew wyceniamy z objętości modelu, więc potrzebujemy pliku 3D. Bez niego przygotujemy wycenę indywidualną. Automat obejmuje modele mieszczące się w ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
-  en: `A casting is priced from the model's volume, so we need a 3D file. Without one we prepare an individual quote. Automatic pricing covers models fitting ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
-  de: `Ein Guss wird aus dem Modellvolumen berechnet, wir brauchen also eine 3D-Datei. Ohne sie erstellen wir ein individuelles Angebot. Die Automatik gilt bis ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
+  pl: `Odlew wyceniamy z objętości modelu, więc potrzebujemy pliku 3D. Bez niego przygotujemy wycenę indywidualną. Automat obejmuje modele mieszczące się w kolbie ${CASTING_ENVELOPE_LABEL}, czyli w kole tej średnicy i tej wysokości.`,
+  en: `A casting is priced from the model's volume, so we need a 3D file. Without one we prepare an individual quote. Automatic pricing covers models that fit the flask, ${CASTING_ENVELOPE_LABEL}: a circle of that diameter and that height.`,
+  de: `Ein Guss wird aus dem Modellvolumen berechnet, wir brauchen also eine 3D-Datei. Ohne sie erstellen wir ein individuelles Angebot. Die Automatik gilt für Modelle, die in die Küvette passen, ${CASTING_ENVELOPE_LABEL}: ein Kreis dieses Durchmessers und diese Höhe.`,
 };
 const CAST_HINT_FILE = {
-  pl: `Cena wynika z objętości Twojego modelu i bieżącego kursu kruszcu. Automat obejmuje modele mieszczące się w ${CASTING_ENVELOPE_MM.join(" × ")} mm; większe kierujemy do oceny indywidualnej.`,
-  en: `The price follows your model's volume and the current metal rate. Automatic pricing covers models fitting ${CASTING_ENVELOPE_MM.join(" × ")} mm; larger ones go to individual review.`,
-  de: `Der Preis folgt dem Volumen Ihres Modells und dem aktuellen Metallkurs. Die Automatik gilt bis ${CASTING_ENVELOPE_MM.join(" × ")} mm; groessere pruefen wir individuell.`,
+  pl: `Cena wynika z objętości Twojego modelu i bieżącego kursu kruszcu. Automat obejmuje modele mieszczące się w kolbie ${CASTING_ENVELOPE_LABEL}, czyli w kole tej średnicy i tej wysokości; większe kierujemy do oceny indywidualnej.`,
+  en: `The price follows your model's volume and the current metal rate. Automatic pricing covers models that fit the flask, ${CASTING_ENVELOPE_LABEL}: a circle of that diameter and that height; larger ones go to individual review.`,
+  de: `Der Preis folgt dem Volumen Ihres Modells und dem aktuellen Metallkurs. Die Automatik gilt für Modelle, die in die Küvette passen, ${CASTING_ENVELOPE_LABEL}: ein Kreis dieses Durchmessers und diese Höhe; groessere pruefen wir individuell.`,
 };
 
 const TECH_BADGE = {

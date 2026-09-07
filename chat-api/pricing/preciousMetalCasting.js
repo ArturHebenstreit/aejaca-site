@@ -38,17 +38,34 @@ const TOP_COVER_MM = 20;
 
 const USABLE_DIAMETER_MM = CASTING_FLASK_MM.diameter - 2 * FLASK_WALL_MM;
 
-// Prostokat wpisany w kolo ma przekatna rowna srednicy, wiec bok kwadratu to
-// srednica podzielona przez pierwiastek z dwoch. Zaokraglamy w dol, bo limit
-// ma byc obietnica, ktorej dotrzymamy, a nie wartoscia graniczna.
-export const CASTING_ENVELOPE_MM = [
-  Math.floor(USABLE_DIAMETER_MM / Math.SQRT2),
-  Math.floor(USABLE_DIAMETER_MM / Math.SQRT2),
-  CASTING_FLASK_MM.depth - SPRUE_BASE_MM - TOP_COVER_MM,
-];
+// KOLBA JEST WALCEM, WIEC LIMIT TEZ. Do 7 wrzesnia 2026 stal tu KWADRAT wpisany
+// w to kolo, czyli bok 63 / pierwiastek z dwoch, w zaokragleniu 44 mm. Kwadrat
+// czyta sie latwiej, bo daje trzy liczby, ale odrzuca wszystko, co jest plaskie
+// i szerokie: model 59 x 22 mm ma przekatna 63,0 mm, czyli miesci sie w kole co
+// do dziesiatej czesci milimetra, a regula kwadratu odsylala go do wyceny
+// recznej. Byly to miedzy innymi klucze odlane w warsztacie.
+//
+// Liczy sie wiec PRZEKATNA PODSTAWY wobec swiatla kolby, a nie kazda os osobno.
+export const CASTING_FOOTPRINT_MM = USABLE_DIAMETER_MM;
 
-/** Limit w postaci, w ktorej pokazujemy go klientowi. */
-export const CASTING_ENVELOPE_LABEL = CASTING_ENVELOPE_MM.join(" x ") + " mm";
+// WYSOKOSC: 62, a nie 60. Sama kolba daje 60 mm uzytecznych (100 minus 20 na
+// podstawe wlewowa z guzikiem, minus 20 masy nad korona). Dwa milimetry ponad to
+// bierza sie z pochylu, ktorym uklada sie model w kolbie: przy 30% cosinus
+// skraca pion na tyle, ze cienka rzecz dlugosci 62 mm miesci sie w 60 mm.
+//
+// UWAGA, i to jest granica tej obietnicy: zysk z pochylu jest prawdziwy dla
+// rzeczy CIENKICH. Model masywny pochylony o 30% zajmuje w pionie WIECEJ, nie
+// mniej, bo do cosinusa dlugosci dochodzi sinus wlasnej grubosci: kostka
+// 44 x 44 x 60 pochylona o 30% zajmuje 70 mm. Wlasciciel zna ten koszt i
+// przyjal go 7 wrzesnia 2026, po odlaniu kluczy 59 mm przy pochyle 10%.
+export const CASTING_TILT_BONUS_MM = 2;
+export const CASTING_HEIGHT_MM =
+  CASTING_FLASK_MM.depth - SPRUE_BASE_MM - TOP_COVER_MM + CASTING_TILT_BONUS_MM;
+
+// Limit w postaci, w ktorej pokazujemy go klientowi. Znak srednicy stoi tu po
+// cos: bez niego "63 x 62 mm" czyta sie jak prostokat, a to jest KOLO o srednicy
+// 63 mm i 62 mm wysokosci. Ten sam zapis stoi przy wymiarze kolby w karcie uslugi.
+export const CASTING_ENVELOPE_LABEL = `\u00d8${CASTING_FOOTPRINT_MM} x ${CASTING_HEIGHT_MM} mm`;
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -141,11 +158,27 @@ function sortedMillimetres(bbox) {
   return dims.every((v) => Number.isFinite(v) && v > 0) ? dims : null;
 }
 
-/** Największa jednolita skala, która po obrocie mieści model w kolbie. */
+/**
+ * Największa jednolita skala, która po obrocie mieści model w kolbie.
+ *
+ * Model kładziemy tak, żeby JEDNA oś stała pionowo, a dwie pozostałe utworzyły
+ * podstawę. Wolno nam wybrać, która to oś, więc sprawdzamy wszystkie trzy
+ * ustawienia i bierzemy najlepsze. Zwykle najlepiej postawić najdłuższą oś
+ * pionowo, ale nie zawsze: rzecz długa i cienka, dłuższa niż wysokość kolby,
+ * potrafi się zmieścić POŁOŻONA, po przekątnej podstawy.
+ */
 export function maxCastingScaleForBBox(bbox) {
   const dims = sortedMillimetres(bbox);
   if (!dims) return null;
-  return Math.min(...dims.map((dimension, index) => CASTING_ENVELOPE_MM[index] / dimension));
+
+  let najlepsza = 0;
+  for (let pion = 0; pion < 3; pion++) {
+    const podstawa = dims.filter((_, i) => i !== pion);
+    const przekatna = Math.hypot(podstawa[0], podstawa[1]);
+    const skala = Math.min(CASTING_HEIGHT_MM / dims[pion], CASTING_FOOTPRINT_MM / przekatna);
+    if (skala > najlepsza) najlepsza = skala;
+  }
+  return najlepsza;
 }
 
 export function fitsCastingFlask(bbox, scale = 1) {

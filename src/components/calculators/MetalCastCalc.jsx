@@ -35,7 +35,7 @@ import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
   CASTING_PLATINGS, castingPlatingAvailable, CASTING_ENGRAVINGS, castingEngravingAvailable,
   normalizeEngravingId,
-  CASTING_ENVELOPE_MM, maxCastingScaleForBBox, calculate,
+  CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox, calculate,
 } from "../../pricing/preciousMetalCasting.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
@@ -56,7 +56,7 @@ const L = {
     needModel: "Wgraj model, żeby zobaczyć kwotę. Cena odlewu wynika z policzonej objętości, a nie z rozmiaru wybranego z listy.",
     manualNote: "Ten wariant wyceniamy indywidualnie. Wzorzec fizyczny trzeba obejrzeć, przedmiot od pomysłu najpierw zaprojektować, a kruszec powierzony zważyć i sprawdzić.",
     massNote: (masa, zapas) => `Masa gotowego odlewu: ${masa} g. Do przetopu przygotowujemy ${zapas} g, bo część kruszcu zostaje w kanałach i na zgarze.`,
-    envelope: `Automatyczna wycena obejmuje modele mieszczące się po obrocie w ${CASTING_ENVELOPE_MM.join(" × ")} mm. Większe kierujemy do oceny indywidualnej.`,
+    envelope: `Automatyczna wycena obejmuje modele mieszczące się po obrocie w kolbie ${CASTING_ENVELOPE_LABEL}, czyli w kole tej średnicy i tej wysokości. Większe kierujemy do oceny indywidualnej.`,
   },
   en: {
     model: "3D model",
@@ -68,7 +68,7 @@ const L = {
     needModel: "Upload a model to see the amount. A casting is priced from measured volume, not from a size picked off a list.",
     manualNote: "This route is quoted individually. A physical pattern has to be inspected, an idea has to be designed first, and supplied metal has to be weighed and verified.",
     massNote: (masa, zapas) => `Finished casting mass: ${masa} g. We melt ${zapas} g, because some metal stays in the sprues and is lost to oxidation.`,
-    envelope: `Automatic pricing covers models that fit ${CASTING_ENVELOPE_MM.join(" × ")} mm after rotation. Larger ones go to individual review.`,
+    envelope: `Automatic pricing covers models that fit the flask after rotation, ${CASTING_ENVELOPE_LABEL}: a circle of that diameter and that height. Larger ones go to individual review.`,
   },
   de: {
     model: "3D-Modell",
@@ -80,7 +80,7 @@ const L = {
     needModel: "Laden Sie ein Modell hoch, um den Betrag zu sehen. Ein Guss wird aus dem gemessenen Volumen berechnet, nicht aus einer Größe aus einer Liste.",
     manualNote: "Diese Variante wird individuell kalkuliert. Ein physisches Modell muss geprüft, eine Idee zuerst konstruiert und beigestelltes Metall gewogen und untersucht werden.",
     massNote: (masa, zapas) => `Masse des fertigen Gusses: ${masa} g. Eingeschmolzen werden ${zapas} g, weil Metall in den Kanälen bleibt und beim Abbrand verloren geht.`,
-    envelope: `Die automatische Kalkulation gilt für Modelle, die nach Drehung in ${CASTING_ENVELOPE_MM.join(" × ")} mm passen. Größere gehen in die individuelle Prüfung.`,
+    envelope: `Die automatische Kalkulation gilt für Modelle, die nach Drehung in die Küvette passen, ${CASTING_ENVELOPE_LABEL}: ein Kreis dieses Durchmessers und diese Höhe. Größere gehen in die individuelle Prüfung.`,
   },
 };
 
@@ -244,7 +244,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-xs text-neutral-400 mb-6">Ag 800/925 · Au 9k/14k/18k/24k · {CASTING_ENVELOPE_MM.join(" × ")} mm</div>
+      <div className="text-center text-xs text-neutral-400 mb-6">Ag 800/925 · Au 9k/14k/18k/24k · {CASTING_ENVELOPE_LABEL}</div>
 
       <PolaUslugi
         service={USLUGA}

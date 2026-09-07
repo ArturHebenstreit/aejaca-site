@@ -183,6 +183,8 @@ AEJaCA Studio to warsztat jubilerski łączący parametryczne projektowanie CAD,
 - Maks. średnica modelu 60mm (margines 10mm od ścianek)
 - Maks. wysokość modelu z wlewem ok. 60mm (20mm masy nad koroną, 20mm na podstawę
   wlewową i guzik)
+- Limit w kalkulatorze: koło 63mm i 62mm wysokości, liczy się przekątna podstawy.
+  Wyprowadzenie i jego granice: `AEJaCA_Odlewnictwo_Procedury.md`, rozdz. 1.1
 - Kolba 30 x 50 mm, lita, blacha 0,4mm, pozostaje w warsztacie jako pozostałość po
   setupie grawitacyjnym. **Do odlewu próżniowego nie jest używana**
 

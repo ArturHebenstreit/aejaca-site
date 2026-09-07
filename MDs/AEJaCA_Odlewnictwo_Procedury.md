@@ -39,6 +39,25 @@
 
 > Kolba starsza (30 x 50 mm, lita, blacha 0,4 mm) pozostaje w warsztacie jako pozostałość po setupie grawitacyjnym. **Do odlewu próżniowego nie jest używana.**
 
+**Jak z tych wymiarów wychodzi limit w kalkulatorze [decyzja właściciela 2026-09-07]:**
+
+Kolba jest walcem, więc limit też. Światło to 83 mm minus 2 x 10 mm masy przy
+ściance, czyli **koło o średnicy 63 mm**, a liczy się **przekątna podstawy
+modelu**, nie każda oś z osobna. Model 59 x 22 mm ma przekątną 63,0 mm i mieści
+się; reguła kwadratu wpisanego w to koło (44 x 44 mm) odrzucała go, chociaż
+fizycznie wchodził. Rzecz długa i cienka mieści się też **położona**, po
+przekątnej podstawy.
+
+Wysokość to **62 mm**: 60 mm z samej kolby (100 minus 20 na podstawę wlewową
+z guzikiem, minus 20 masy nad koroną) plus 2 mm, które daje pochył przy układaniu
+modelu. **Te 2 mm są prawdziwe dla rzeczy cienkich.** Model masywny pochylony
+o 30% zajmuje w pionie WIĘCEJ, nie mniej, bo do cosinusa długości dochodzi sinus
+własnej grubości: kostka 44 x 44 x 60 mm pochylona o 30% zajmuje 70 mm. Przy
+takich modelach 60 mm jest granicą prawdziwą, a 62 mm optymistyczną.
+
+Podstawa pomiaru: klucze 59 mm odlane przy pochyle 10%, wyszły bez pęknięcia.
+Źródło liczb w kodzie: `src/pricing/preciousMetalCasting.js`.
+
 ### 1.2 Piec wypalający VEVOR KD-Z6652B
 
 | Parametr | Wartość |
