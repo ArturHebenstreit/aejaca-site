@@ -560,10 +560,25 @@
         </p>
       <% } %>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/send">
-          <button data-wyslij data-dymek="Wyślij ofertę na adres klienta razem z odnośnikiem do zapłaty" class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  <%= quote.totalGrosze ? '' : 'disabled' %>>
+      <%# JEZYK WYBIERA SIE PRZY WYSYLCE, a nie w formularzu danych wyzej.
+          Zapytanie po polsku bywa od Niemca, ktory nie znalazl innej drogi na
+          strone, i odwrotnie; wiadomo to zwykle dopiero po przeczytaniu tresci,
+          czyli w chwili odpisywania. Wybor zapisuje sie przy ofercie, wiec mail,
+          strona oferty i zaplata ida jednym jezykiem, a nie trzema. %>
+      <div class="flex flex-wrap items-end gap-3">
+        <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/send"
+              class="flex flex-wrap items-end gap-3">
+          <label class="block">
+            <span class="text-neutral-400 text-xs block mb-1">Język wysyłki</span>
+            <select name="lang" data-wyslij-jezyk
+                    class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+              <% [["pl", "polski"], ["en", "angielski"], ["de", "niemiecki"]].forEach(function (j) { %>
+                <option value="<%= j[0] %>" <%= quote.lang === j[0] ? "selected" : "" %>><%= j[1] %></option>
+              <% }); %>
+            </select>
+          </label>
+          <button data-wyslij data-dymek="Wyślij ofertę na adres klienta razem z odnośnikiem do zapłaty. Mail i strona oferty pójdą w wybranym języku" class="dymek px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  <%= (settled || !quote.totalGrosze) ? 'disabled' : '' %>>
             <%= wyslana ? 'Wyślij ponownie' : 'Wyślij ofertę' %>
           </button>
         </form>
@@ -571,8 +586,19 @@
             Do 2026-09-06 jego stan powstawal raz, przy rysowaniu strony, a kwoty
             wpisuje sie bez przeladowania. Skutek: kwoty stoja na ekranie, suma
             u gory sie zgadza, a przycisk dalej jest wygaszony i pisze "najpierw
-            wpisz kwoty pozycji". Zgloszenie wlasciciela, 2026-09-06. %>
-        <span data-wyslij-brak class="text-amber-300/80 text-xs" <%= quote.totalGrosze ? 'hidden' : '' %>>
+            wpisz kwoty pozycji". Zgloszenie wlasciciela, 2026-09-06.
+
+            DRUGI POWOD, DLA KTOREGO PRZYCISK MILCZY, NIE JEST BRAKIEM KWOT.
+            Oferta w calosci zlecona ma kwote rowna NULL tak samo jak oferta,
+            ktorej nikt nie wycenil, bo naglowek niesie od ADR-0026 kwote
+            RESZTY. Panel czytal wylacznie te liczbe i pisal "najpierw wpisz
+            kwoty" nad piecioma pozycjami po 49 zl. Zgloszenie wlasciciela
+            2026-09-07. Stad dwa napisy zamiast jednego: kazdy mowi, co sie
+            naprawde stalo. %>
+        <span data-wyslij-zlecona class="text-neutral-400 text-xs pb-2" <%= settled ? '' : 'hidden' %>>
+          Wszystkie pozycje z tej oferty są już zlecone, nie ma czego wysyłać.
+        </span>
+        <span data-wyslij-brak class="text-amber-300/80 text-xs pb-2" <%= (!settled && !quote.totalGrosze) ? '' : 'hidden' %>>
           Najpierw wpisz kwoty pozycji.
         </span>
       </div>
@@ -862,11 +888,22 @@
         opis.textContent = zdania.join(" ");
       }
 
+      // Oferta domknieta i oferta bez kwot wygladaja w tej liczbie tak samo,
+      // wiec o przycisku rozstrzygaja DWA pola, a napis pod nim mowi, ktore
+      // z nich zawinilo.
+      var zlecona = dane.settled === true;
       var wyslij = document.querySelector("[data-wyslij]");
       var brak = document.querySelector("[data-wyslij-brak]");
-      var mozna = Boolean(dane.quote.totalGrosze);
+      var domknieta = document.querySelector("[data-wyslij-zlecona]");
+      var mozna = Boolean(dane.quote.totalGrosze) && !zlecona;
       if (wyslij) wyslij.disabled = !mozna;
-      if (brak) brak.hidden = mozna;
+      if (brak) brak.hidden = zlecona || Boolean(dane.quote.totalGrosze);
+      if (domknieta) domknieta.hidden = !zlecona;
+      // Jezyk zmieniony w naglowku ma byc widoczny takze przy przycisku
+      // wysylki: dwa pola o tej samej rzeczy, ktore pokazuja rozne wartosci,
+      // sa gorsze niz jedno.
+      var jezyk = document.querySelector("[data-wyslij-jezyk]");
+      if (jezyk && dane.quote.lang) jezyk.value = dane.quote.lang;
     }
 
     function odswiezNaglowek(dane) {

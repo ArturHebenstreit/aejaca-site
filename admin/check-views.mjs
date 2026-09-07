@@ -127,6 +127,10 @@ const ZESTAWY = {
       { id: 4, calculator: null, title: "Polerowanie", qty: 1, unitGrosze: 3000, lineGrosze: 3000, description: null, fileName: null, params: { szlif: "lustro" }, kind: "option", groupKey: "klucz", selected: true },
     ],
     offerUrl: "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4&token=token-testowy",
+    // Oferta domknieta i oferta bez kwot maja te sama kwote (NULL), wiec widok
+    // dostaje osobne pole, po ktorym je rozroznia. Bez niego pisze "najpierw
+    // wpisz kwoty" nad pozycjami, ktore maja kwoty i sa juz zlecone.
+    settled: false, openCount: 4,
     // Zamowienia powstale z tej oferty. Widok buduje z nich numer i link do
     // wklejenia klientowi, wiec puste tez musi sie renderowac: oferta jeszcze
     // nieoplacona nie ma zadnego.

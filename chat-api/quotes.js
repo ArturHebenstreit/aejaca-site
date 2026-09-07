@@ -366,6 +366,21 @@ export function quoteOpenItems(quote) {
  * choc tez nie ma w niej zamowien. Rozstrzyga wiec jedno i drugie naraz:
  * cos zostalo wziete ORAZ nic nie zostalo.
  */
+/**
+ * Sciezka strony w danym jezyku. Polski stoi bez prefiksu, reszta pod swoim.
+ *
+ * Ta sama regula co `sciezkaJezyka` w `src/i18n/nav.jsx` i ta sama nazwa,
+ * bo to jest ta sama umowa o adresach (ADR-0023). Backend nie moze siegnac
+ * po tamta funkcje, wiec regula stoi tu RAZ i czytaja ja wszyscy, ktorzy
+ * skladaja adres do maila: link do oferty, link do zamowienia, regulamin.
+ * Adres sklejony bez niej wysyla Niemca na polska strone, a nic przy tym
+ * nie wyglada na zepsute.
+ */
+export function sciezkaJezyka(sciezka, lang) {
+  const jezyk = ["pl", "en", "de"].includes(lang) ? lang : "pl";
+  return jezyk === "pl" ? sciezka : `/${jezyk}${sciezka}`;
+}
+
 export function quoteSettled(quote) {
   const items = quote?.items || [];
   if (!items.length) return false;

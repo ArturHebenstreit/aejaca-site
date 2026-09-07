@@ -19,7 +19,7 @@ import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from "./pricing/shipping.js";
 // Termin oferty liczy TA SAMA funkcja, ktora liczy go na stronie oferty
 // i przy zamowieniu: dwie liczby na jedno pytanie sa gorsze niz brak jednej.
-import { selectedQuoteItems, terminGrupy, SAVED_QUOTE_SOURCE } from "./quotes.js";
+import { selectedQuoteItems, terminGrupy, sciezkaJezyka, SAVED_QUOTE_SOURCE } from "./quotes.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { dataISO } from "./daty.js";
@@ -620,9 +620,10 @@ function terminKlienta(order, l, lang) {
   return null;
 }
 
-/** Adres strony w jezyku maila. Polski stoi bez prefiksu, reszta pod swoim. */
+/** Adres strony w jezyku maila. Regula prefiksu stoi w `quotes.js`, jedna
+ *  dla maili i dla linku do oferty skladanego w trasie wysylki. */
 function adres(lang, sciezka) {
-  return lang === "pl" ? `${SELLER.site}${sciezka}` : `${SELLER.site}/${lang}${sciezka}`;
+  return `${SELLER.site}${sciezkaJezyka(sciezka, lang)}`;
 }
 
 /** Prywatny odnosnik do zlecenia. Bez zetonu strona i tak wpusci po numerze
