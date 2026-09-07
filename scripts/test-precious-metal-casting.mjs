@@ -45,13 +45,19 @@ assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.009");
 // KOLBA JEST JEDYNYM ZRODLEM ROZMIARU. Limit modelu ma sie z niej liczyc, a nie
 // stac obok niej wpisany z reki: przy poprzedniej wersji te dwie liczby zyly
 // osobno i rozjechaly sie po pierwszej zmianie sprzetu.
-assert.deepEqual(CASTING_FLASK_MM, { diameter: 80, depth: 90 });
+// RADIANCE3.5, kolba, ktora naprawde stoi w warsztacie: 83 x 100 mm.
+// Zrodlo: MDs/AEJaCA_Odlewnictwo_Procedury.md, rozdz. 1.1 (7 wrzesnia 2026).
+assert.deepEqual(CASTING_FLASK_MM, { diameter: 83, depth: 100 });
 const swiatlo = CASTING_FLASK_MM.diameter - 20;
+// 40 mm zapasu na wysokosci: 20 mm na podstawe wlewowa z guzikiem i 20 mm masy
+// nad korona. Dolna granica z dokumentu to 15 mm, ale bierzemy gorna, bo skutkiem
+// niedomiaru jest pekniecie formy po dwunastu godzinach wypalu.
 assert.deepEqual(CASTING_ENVELOPE_MM, [
   Math.floor(swiatlo / Math.SQRT2),
   Math.floor(swiatlo / Math.SQRT2),
-  CASTING_FLASK_MM.depth - 25,
+  CASTING_FLASK_MM.depth - 40,
 ]);
+assert.equal(CASTING_ENVELOPE_LABEL, "44 x 44 x 60 mm");
 // Kwadrat o tym boku musi zmiescic sie w swietle kolby, inaczej limit obiecuje
 // wiecej, niz kolba przyjmie.
 assert.ok(Math.hypot(CASTING_ENVELOPE_MM[0], CASTING_ENVELOPE_MM[1]) <= swiatlo);
@@ -59,8 +65,12 @@ assert.ok(CASTING_ENVELOPE_MM.every((v, i, a) => i === 0 || a[i - 1] <= v), "lim
 assert.equal(CASTING_ENVELOPE_LABEL, `${CASTING_ENVELOPE_MM.join(" x ")} mm`);
 
 assert.equal(fitsCastingFlask({ x: 2.0, y: 2.2, z: 3.0 }), true);
-assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }), false);
-assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }, 0.9), true);
+// Dwie osie ponad 44 mm. Wymiary sa w centymetrach, a silnik sortuje je rosnaco,
+// wiec najdluzsza os idzie na glebokosc kolby: model 46 x 45 x 30 mm odbija sie
+// dopiero na drugiej osi. Przy kolbie 80 x 90 nie miescil sie juz model 45 x 44,
+// bo swiatlo bylo o 3 mm wezsze.
+assert.equal(fitsCastingFlask({ x: 4.6, y: 4.5, z: 3.0 }), false);
+assert.equal(fitsCastingFlask({ x: 4.6, y: 4.5, z: 3.0 }, 0.9), true);
 
 // NAJWIEKSZA SKALA TO NAJCIASNIEJSZA OS PO OBROCIE, i nie wolno zakladac,
 // KTORA to os. Do 3 wrzesnia 2026 test porownywal wynik z `ENVELOPE[2] / 30`,

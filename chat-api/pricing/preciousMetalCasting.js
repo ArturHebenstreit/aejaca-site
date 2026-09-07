@@ -11,19 +11,30 @@ export const PRECIOUS_METAL_CASTING_BUILD = "1.009";
 // KOLBA ODLEWNICZA, jedyne zrodlo prawdy o rozmiarze w calym serwisie.
 // Wszystko ponizej i kazdy komunikat o limicie liczy sie z tych dwoch liczb,
 // zeby zmiana kolby nie wymagala szukania wpisanych z reki milimetrow.
-// Glebokosc 90, nie 80: wlasciciel doprecyzowal wymiar kolby 3 wrzesnia 2026,
-// po tym jak model 22 x 59 x 5 mm dostal komunikat o przekroczeniu limitu,
-// chociaz sie miesci. Przy 80 mm limit wysokosci wychodzil 55 mm i model o
-// 59 mm byl odrzucany na 93%.
-export const CASTING_FLASK_MM = { diameter: 80, depth: 90 };
+//
+// RADIANCE3.5, perforowana, stalowa: srednica wewnetrzna 83 mm, wysokosc 100 mm.
+// To sa wymiary kolby, ktora naprawde stoi w warsztacie. Do 7 wrzesnia 2026 stalo
+// tu 80 x 90 mm, czyli liczby doprecyzowane 3 wrzesnia z pamieci, zanim powstal
+// dokument procesu. Zrodlo: `MDs/AEJaCA_Odlewnictwo_Procedury.md`, rozdz. 1.1.
+export const CASTING_FLASK_MM = { diameter: 83, depth: 100 };
 
 // Model nie zajmuje calej kolby. Trzy zapasy, kazdy z innego powodu:
 // masa formierska musi utrzymac sciane miedzy modelem a blacha kolby, przy
 // dnie stoi stozek i kanal glowny, a nad najwyzszym punktem modelu musi zostac
 // warstwa masy, inaczej forma peka przy wypalaniu.
+//
+// ZAPASY TEZ POCHODZA Z DOKUMENTU PROCESU, a nie z zaokraglenia. Nad korona
+// ma zostac 15 do 20 mm masy i bierzemy gorna wartosc, bo ten zapas chroni przed
+// zawaleniem sciany pod proznia i pekaniem formy przy wypalaniu: skutkiem
+// niedomiaru jest stracona kolba po dwunastu godzinach wypalu, a nie gorsza
+// powierzchnia. Podstawa wlewowa z guzikiem to kolejne 20 mm.
+//
+// Wysokosc uzyteczna wychodzi z tego 60 mm, czyli o 5 mm MNIEJ niz obiecywal
+// serwis do 7 wrzesnia 2026 przy plytszej kolbie i mniejszych zapasach.
+// Limit ma byc obietnica, ktorej warsztat dotrzyma.
 const FLASK_WALL_MM = 10;
-const SPRUE_BASE_MM = 15;
-const TOP_COVER_MM = 10;
+const SPRUE_BASE_MM = 20;
+const TOP_COVER_MM = 20;
 
 const USABLE_DIAMETER_MM = CASTING_FLASK_MM.diameter - 2 * FLASK_WALL_MM;
 
