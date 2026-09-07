@@ -2196,15 +2196,19 @@ export async function sendOrderPaidEmails(pool, orderId) {
 // prawdziwe zamowienie.
 
 /**
- * Plakietka przy nazwie pozycji: "do wyboru", "dodatek", "zaznaczone".
+ * Plakietka przy nazwie pozycji: "do wyboru".
+ *
+ * MAIL MOWI, CO JEST DO WYBORU, A NIE CO JEST ZAZNACZONE (polecenie wlasciciela,
+ * 2026-09-07). Do tego dnia plakietka niosla takze stan, czyli "dodatek,
+ * zaznaczone", i probowala odtworzyc w mailu ekran, ktory klient i tak zaraz
+ * zobaczy. Zaznaczenie zmienia sie na stronie oferty jednym klikiem, wiec mail
+ * z zapisanym stanem starzeje sie w tej samej sekundzie.
  *
  * Klient pocztowy blokuje wlasne arkusze stylow, wiec kazda regula stoi wprost
  * przy elemencie. Tlo, a nie sama ramka: ramka w Outlooku bywa gubiona.
  */
-function plakietka(rodzaj, wybrany) {
-  const tlo = wybrany ? "#f3ead6" : "#f0f0f0";
-  const napis = wybrany ? "#7a5f22" : "#888";
-  return `<span style="display:inline-block;background:${tlo};color:${napis};font-size:11px;`
+function plakietka(rodzaj) {
+  return `<span style="display:inline-block;background:#f3ead6;color:#7a5f22;font-size:11px;`
     + `border-radius:4px;padding:1px 6px;margin-right:6px;white-space:nowrap">${esc(rodzaj)}</span>`;
 }
 
@@ -2245,9 +2249,7 @@ const QUOTE_T = {
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
     pick: "do wyboru",
-    addon: "dodatek",
-    chosen: "zaznaczone",
-    configNote: "Kwota dotyczy układu zaznaczonego wyżej. Wariant i dodatki zmienisz na stronie oferty, a kwota policzy się od nowa.",
+    configNote: "Kwota dotyczy układu, który proponujemy. Wybór zaznaczysz na stronie oferty, a kwota policzy się od nowa.",
     questions: "Pytania",
     bye: "Pozdrawiamy",
   },
@@ -2281,9 +2283,7 @@ const QUOTE_T = {
     metalNote:
       "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
     pick: "choice",
-    addon: "add-on",
-    chosen: "selected",
-    configNote: "The amount covers the configuration marked above. You can change the variant and the add-ons on the offer page and the amount follows.",
+    configNote: "The amount covers the arrangement we propose. You make the choice on the offer page and the amount follows it.",
     questions: "Questions",
     bye: "Best regards",
   },
@@ -2317,9 +2317,7 @@ const QUOTE_T = {
     metalNote:
       "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
     pick: "zur Auswahl",
-    addon: "Zusatz",
-    chosen: "ausgewählt",
-    configNote: "Der Betrag gilt für die oben markierte Zusammenstellung. Variante und Zusätze ändern Sie auf der Angebotsseite, der Betrag folgt.",
+    configNote: "Der Betrag gilt für die Zusammenstellung, die wir vorschlagen. Die Auswahl treffen Sie auf der Angebotsseite, der Betrag folgt ihr.",
     questions: "Fragen",
     bye: "Mit freundlichen Grüßen",
   },
@@ -2345,19 +2343,19 @@ export function buildQuoteMessage(quote, items, url) {
   // pokazuje to sam wiersz: wybrany normalnie, odrzucony szaro. Wersja tekstowa
   // zostaje przy nawiasach, bo tam nie ma czym pokolorowac.
   const rows = items.map((i) => {
-    const rodzaj = i.kind === "variant" ? l.pick : i.kind === "option" ? l.addon : null;
-    const wybrany = Boolean(rodzaj) && i.selected === true;
-    const stan = rodzaj && i.selected ? `, ${l.chosen}` : "";
+    // Wariant i dodatek dostaja te sama plakietke: dla czytajacego mail obie
+    // znacza to samo, czyli "to jest do wyboru na stronie". Roznica miedzy nimi
+    // ma znaczenie dopiero przy klikaniu, a klika sie na stronie.
+    const doWyboru = i.kind === "variant" || i.kind === "option";
     const ilosc = i.qty > 1 ? ` x ${i.qty}` : "";
     return {
-      label: `${rodzaj ? `[${rodzaj}${stan}] ` : ""}${i.title}${ilosc}`,
+      label: `${doWyboru ? `[${l.pick}] ` : ""}${i.title}${ilosc}`,
       // Plakietka zamiast nawiasow kwadratowych: `[do wyboru]` czytalo sie
       // jak znacznik z kodu, ktory zostal w tresci przez nieuwage.
-      // Plakietka niesie takze slowo "zaznaczone", a nie sam kolor: czytnik
-      // ekranu koloru nie przeczyta, a to od niego zalezy kwota.
-      html: `${rodzaj ? plakietka(`${rodzaj}${stan}`, wybrany) : ""}${esc(i.title)}${esc(ilosc)}`,
+      html: `${doWyboru ? plakietka(l.pick) : ""}${esc(i.title)}${esc(ilosc)}`,
       value: money(i.line_grosze ?? i.unit_grosze ?? 0),
-      przygaszony: Boolean(rodzaj) && i.selected === false,
+      // Nic nie przygaszamy: mail nie odtwarza juz stanu zaznaczenia.
+      przygaszony: false,
     };
   });
 

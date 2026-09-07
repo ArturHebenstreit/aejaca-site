@@ -45,7 +45,7 @@ import {
 } from "./products.js";
 import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
-  releaseOrderRedemptions, normalizeCode, randomCode, wystawKod, RODZAJE_KODOW,
+  releaseOrderRedemptions, reclaimRedemptions, normalizeCode, randomCode, wystawKod, RODZAJE_KODOW,
   DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import {
@@ -58,7 +58,7 @@ import { znanyPowod, zapisPowodu } from "./pricing/powodyRezygnacji.js";
 import { DROGI_ZAMKNIECIA, drogaZamkniecia, domyslnyZwrotGrosze } from "./drogiZamkniecia.js";
 import { dataISO, dzisISO } from "./daty.js";
 import {
-  itnAction, paymentStartProblem, publicPaymentState,
+  itnAction, paymentStartProblem, publicPaymentState, canRevivePayment, REVIVABLE_PROBLEMS,
 } from "./paymentState.js";
 import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
@@ -6157,6 +6157,100 @@ app.delete("/api/orders/:ref", express.json({ limit: "8kb" }), async (req, res) 
   res.json({ ok: true, orderRef: ref, deleted: true, overridden: force ? blockers : [], releasedCodes: oddaneKody });
 });
 
+/**
+ * WSKRZESZENIE ZAMOWIENIA, ZA KTORE NIGDY NIE ZAPLACONO.
+ *
+ * Klient nacisnal "Zaplac", trafil do Autopay i tam odpadl: zabraklo pieniedzy,
+ * zamknal kartę, poszedl po telefon. Nasza blokada zwolnila po kwadransie
+ * pozycje, rezerwacje towaru i kod rabatowy, bo tak ma dzialac (ADR-0044).
+ * Kiedy wraca, bierzemy to wszystko z powrotem, zamiast pokazywac mu ekran
+ * bez wyjscia. Decyzja wlasciciela z 2026-09-07.
+ *
+ * Wszystko dzieje sie w JEDNEJ transakcji, bo albo wraca komplet, albo nic:
+ * zamowienie na stanie "czeka na platnosc" bez rezerwacji towaru obiecywaloby
+ * rzecz, ktorej moze juz nie byc.
+ *
+ * @returns {Promise<null|{status:number,error:string,code:string}>} null przy
+ *          powodzeniu, inaczej gotowa odmowa dla klienta.
+ */
+async function wskrzesZamowienie(order) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Blokada wiersza i POWTORNE sprawdzenie stanu: miedzy odczytem a ta chwila
+    // mogla dojsc platnosc albo ktos mogl zamowienie zamknac.
+    const { rows: swieze } = await client.query(
+      `SELECT id, status, paid_at, cancelled_at, fulfilled_at, payment_method, discount_code, customer_email
+         FROM orders WHERE id = $1 FOR UPDATE`,
+      [order.id]
+    );
+    const teraz = swieze[0];
+    if (!teraz || !canRevivePayment(teraz)) {
+      await client.query("ROLLBACK");
+      return { status: 409, error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" };
+    }
+
+    // Towar z polki: rezerwacja wraca albo nie ma czego wskrzeszac. Sztuk moglo
+    // w miedzyczasie zabraknac i wtedy mowimy to wprost, zamiast przyjmowac
+    // zaplate za rzecz, ktorej nie wyslemy.
+    const { rows: produkty } = await client.query(
+      `SELECT product_slug, qty FROM order_items
+        WHERE order_id = $1 AND item_type = 'product' AND product_slug IS NOT NULL`,
+      [order.id]
+    );
+    for (const p of produkty) {
+      try {
+        await reserveProduct(client, {
+          slug: p.product_slug, qty: p.qty, orderId: order.id, paymentMethod: "autopay",
+        });
+      } catch (e) {
+        await client.query("ROLLBACK");
+        return {
+          status: 409,
+          error: e.code === "out_of_stock"
+            ? "Tej pozycji nie mamy juz na stanie, wiec nie mozemy przyjac za nia zaplaty"
+            : "Nie mozemy teraz wznowic tego zamowienia",
+          code: e.code || "revive_failed",
+        };
+      }
+    }
+
+    // Kod rabatowy zostaje przy kliencie do chwili zaplaty. Gdyby w miedzyczasie
+    // przestal obowiazywac, NIE placimy po cichu pelnej kwoty: klient ma
+    // zobaczyc, ze cos sie zmienilo, zanim wyda pieniadze.
+    if (teraz.discount_code) {
+      try {
+        await reclaimRedemptions(client, order.id, "autopay");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        return {
+          status: 409,
+          error: `Kod rabatowy ${teraz.discount_code} przestal obowiazywac, wiec nie mozemy wznowic tego zamowienia z rabatem. Zloz zamowienie jeszcze raz ze strony oferty.`,
+          code: e.code || "discount_gone",
+        };
+      }
+    }
+
+    await client.query(
+      `UPDATE orders SET status = 'awaiting_payment', expires_at = $2,
+              payment_status = NULL, payment_status_details = NULL
+        WHERE id = $1`,
+      [order.id, instantHoldUntil()]
+    );
+
+    await client.query("COMMIT");
+    console.log(`[zamowienia] ${order.order_ref} wskrzeszone do ponownej zaplaty`);
+    return null;
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    logBleduBazy(`[zamowienia] wskrzeszenie ${order.order_ref} nie powiodlo sie`, e);
+    return { status: 500, error: "Nie udalo sie wznowic platnosci", code: "server_error" };
+  } finally {
+    client.release();
+  }
+}
+
 /** Parametry startu transakcji, podpisane po stronie serwera */
 app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -6168,7 +6262,7 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
 
   const { rows } = await pool.query(
     `SELECT o.id, o.order_ref, o.access_token, o.status, o.total_grosze, o.customer_email,
-            o.expires_at, o.fulfilled_at, o.payment_method,
+            o.expires_at, o.fulfilled_at, o.paid_at, o.cancelled_at, o.payment_method, o.discount_code,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o WHERE o.order_ref = $1`,
     [ref]
@@ -6176,7 +6270,18 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   const order = rows[0];
   if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
   if (!secretMatches(token, order.access_token)) return res.status(403).json({ error: "Brak dostepu" });
-  const startProblem = paymentStartProblem(order);
+
+  // PORZUCONA PLATNOSC NIE ZAMYKA DROGI. Zamowienie, za ktore nigdy nie
+  // zaplacono, wskrzeszamy zamiast odmawiac (decyzja wlasciciela 2026-09-07).
+  // Szczegoly warunku: `canRevivePayment` w `paymentState.js`.
+  let startProblem = paymentStartProblem(order);
+  if (startProblem && REVIVABLE_PROBLEMS.includes(startProblem) && canRevivePayment(order)) {
+    const odmowa = await wskrzesZamowienie(order);
+    if (odmowa) return res.status(odmowa.status).json({ error: odmowa.error, code: odmowa.code });
+    order.status = "awaiting_payment";
+    startProblem = null;
+  }
+
   if (startProblem) {
     const errors = {
       already_paid: [409, "Zamowienie jest juz oplacone"],
