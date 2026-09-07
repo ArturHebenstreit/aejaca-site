@@ -22,6 +22,14 @@
 // DNI SA KALENDARZOWE, tak jak w ADR-0027. Dni robocze odpadly swiadomie:
 // kalendarz swiat to osobny problem.
 //
+// DZIEN ZAPLATY SIE NIE LICZY (decyzja wlasciciela, 2026-09-07). Liczymy
+// PELNE dni, zaczynajac od dnia nastepnego, a data terminu to DZIEN
+// GOTOWOSCI: paczka wychodzi tego dnia albo nazajutrz. Wplata 7 wrzesnia
+// o 18:45 przy trzech dniach znaczy 8, 9 i 10 wrzesnia. Bez tego zdania
+// klient i pracownia czytaja te sama date inaczej, a roznica to caly dzien
+// pracy. Rachunek robi `terminRealizacji` w `chat-api/productionQueue.js`,
+// tu stoi obietnica, ktora ten rachunek wypelnia.
+//
 // Polecenie wlasciciela (2026-09-03): kazdy produkt i kazda usluga na
 // zamowienie podaje szacowany czas, domyslnie 7-14 dni; przy odlewach
 // 7-14 dni; powloka galwaniczna dokłada 2 dni; termin ostateczny podajemy
@@ -109,19 +117,19 @@ const NAPISY = {
     // pod spodem. Termin ostateczny potwierdza pracownia po obejrzeniu
     // zlecenia, wiec obiecywanie konkretnej daty tutaj byloby obietnica bez
     // pokrycia.
-    zastrzezenie: "To czas typowy dla takiego zlecenia, liczony od zaksięgowania wpłaty. Termin ostateczny potwierdzamy po weryfikacji zamówienia przez pracownię i podajemy go w osobnej wiadomości.",
+    zastrzezenie: "To czas typowy dla takiego zlecenia. Liczymy pełne dni od dnia po zaksięgowaniu wpłaty: dzień wpłaty się nie liczy. Termin ostateczny potwierdzamy po weryfikacji zamówienia przez pracownię i podajemy go w osobnej wiadomości.",
     przez: (powody) => `W tym ${powody}.`,
   },
   en: {
     zakres: (min, max) => `${min}-${max} days`,
     typowy: "Estimated lead time",
-    zastrzezenie: "This is the typical time for an order like this, counted from the moment the payment clears. The final date is confirmed once the workshop has reviewed the order, and we send it in a separate message.",
+    zastrzezenie: "This is the typical time for an order like this. We count full days from the day after the payment clears: the day of payment does not count. The final date is confirmed once the workshop has reviewed the order, and we send it in a separate message.",
     przez: (powody) => `This includes ${powody}.`,
   },
   de: {
     zakres: (min, max) => `${min}-${max} Tage`,
     typowy: "Geschätzte Bearbeitungszeit",
-    zastrzezenie: "Das ist die übliche Zeit für einen solchen Auftrag, gerechnet ab dem Zahlungseingang. Den endgültigen Termin bestätigen wir nach der Prüfung durch die Werkstatt und senden ihn in einer separaten Nachricht.",
+    zastrzezenie: "Das ist die übliche Zeit für einen solchen Auftrag. Wir zählen volle Tage ab dem Tag nach dem Zahlungseingang: Der Zahltag zählt nicht mit. Den endgültigen Termin bestätigen wir nach der Prüfung durch die Werkstatt und senden ihn in einer separaten Nachricht.",
     przez: (powody) => `Darin enthalten: ${powody}.`,
   },
 };

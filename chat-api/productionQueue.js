@@ -288,12 +288,32 @@ export function ileDoUstalenia(pozycje) {
 export function zegarBiegnie(status) {
   return ETAPY_Z_ZEGAREM.includes(String(status));
 }
+/** Data kalendarzowa danej chwili w Polsce, a nie w UTC. */
+function dzienWPolsce(kiedy) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(kiedy);
+}
+
 /**
  * Termin realizacji: dzien, na ktory umowilismy sie z klientem.
  *
  * Liczymy w dniach KALENDARZOWYCH, nie roboczych (decyzja wlasciciela
  * z 2026-08-29). Wynik jest data, a nie liczba dni, bo liczba przeliczana
  * przy kazdym odczycie przesuwalaby termin razem z data odczytu.
+ *
+ * DZIEN ZAPLATY SIE NIE LICZY. Liczymy `dni` PELNYCH dni, zaczynajac od dnia
+ * nastepnego: wplata 7 wrzesnia o 18:45 przy terminie trzech dni znaczy 8, 9
+ * i 10 wrzesnia, a nie wieczor siodmego plus dwa dni. Stad data brana od
+ * KALENDARZA, a nie od chwili powiekszonej o `dni` razy dwadziescia cztery
+ * godziny: przy tamtym rachunku dlugosc dnia zalezala od godziny zaplaty.
+ *
+ * KALENDARZ JEST POLSKI, NIE UTC. Zaplata miedzy polnoca a druga w nocy
+ * czasu polskiego wypada w UTC jeszcze poprzedniego dnia, wiec termin
+ * wychodzil o CALY DZIEN krotszy: klient placacy o 00:30 dostawal ten sam
+ * dzien co ten, ktory zaplacil poprzedniego wieczorem. Nikt tego nie zglosil,
+ * bo data wygladala poprawnie; brakowalo dnia pracy, nie znaku na ekranie.
+ * Ta sama pomylka co przy `ValidityTime` dla Autopay.
  *
  * @param {Date|string} start chwila wejscia w etap z zegarem
  * @param {number|null} dni termin zamrozony na zamowieniu
@@ -304,7 +324,27 @@ export function terminRealizacji(start, dni) {
   if (!start || !Number.isFinite(d) || d <= 0) return null;
   const od = new Date(start);
   if (Number.isNaN(od.getTime())) return null;
-  return new Date(od.getTime() + d * 86400_000).toISOString().slice(0, 10);
+  // Poludnie UTC jako punkt zaczepienia: dodawanie dni do polnocy potrafi
+  // wpasc w zmiane czasu i cofnac sie o godzine, czyli o caly dzien daty.
+  const dzien = new Date(`${dzienWPolsce(od)}T12:00:00Z`);
+  return new Date(dzien.getTime() + d * 86400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Pierwszy dzien, ktory sie liczy do terminu: dzien PO starcie zegara.
+ *
+ * Istnieje po to, zeby dalo sie to klientowi powiedziec wprost, a nie zostawic
+ * do wyliczenia z dwoch dat. Zdanie "termin 3 dni, planowana finalizacja
+ * 10 wrzesnia" przy wplacie 7 wrzesnia wieczorem czyta sie na dwa sposoby
+ * i jeden z nich jest o dzien krotszy niz nasza obietnica. Decyzja
+ * wlasciciela z 2026-09-07: data terminu to DZIEN GOTOWOSCI, dzien wplaty
+ * sie nie liczy, a liczenie zaczyna sie nazajutrz.
+ *
+ * @param {Date|string} start chwila wejscia w etap z zegarem
+ * @returns {string|null} data w postaci RRRR-MM-DD
+ */
+export function pierwszyDzienPracy(start) {
+  return terminRealizacji(start, 1);
 }
 
 /**

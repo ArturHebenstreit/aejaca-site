@@ -20,6 +20,7 @@ import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from
 // Termin oferty liczy TA SAMA funkcja, ktora liczy go na stronie oferty
 // i przy zamowieniu: dwie liczby na jedno pytanie sa gorsze niz brak jednej.
 import { selectedQuoteItems, terminGrupy, sciezkaJezyka, SAVED_QUOTE_SOURCE } from "./quotes.js";
+import { pierwszyDzienPracy } from "./productionQueue.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { dataISO } from "./daty.js";
@@ -961,8 +962,13 @@ function internalText(order, items, attachments = []) {
       // "planowana wysylka", chociaz wysylka jest pozniej i ma wlasny stempel
       // `shipped_at`. Data po ludzku, bo `RRRR-MM-DD` w zdaniu do czlowieka
       // lamie regule z `PROJECT_RULES.md`.
+      // Pracownia widzi TE SAMA arytmetyke co klient, razem z pierwszym
+      // liczonym dniem. Bez niej zdanie "3 dni, finalizacja 10 wrzesnia" przy
+      // wplacie z 7 wrzesnia wieczorem wyglada, jakby dzien wplaty sie liczyl,
+      // czyli jakby na prace zostaly dwa dni zamiast trzech.
       : order.deadline_at
-      ? `TERMIN: ${order.lead_days} dni, planowana finalizacja ${dzien(order.deadline_at) || "?"}`
+      ? `TERMIN: ${order.lead_days} dni, liczone od ${dzien(pierwszyDzienPracy(order.queued_at)) || "?"}`
+        + ` (dzien wplaty sie nie liczy), gotowe ${dzien(order.deadline_at) || "?"}`
       : order.lead_days
       ? `TERMIN: ${order.lead_days} dni`
       : "TERMIN: nie ustalony przy pozycjach oferty",
@@ -1747,6 +1753,10 @@ const ETAP_T = {
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planowana finalizacja: ${data}.`,
+    // JAK LICZYMY DNI, powiedziane wprost przy dacie. Sama data pozwala
+    // czytac termin na dwa sposoby, a jeden z nich jest o dzien krotszy
+    // od naszej obietnicy. Decyzja wlasciciela 2026-09-07.
+    terminLiczenie: (ile, odDnia) => `${ile} liczone od ${odDnia}: dzień wpłaty się nie liczy, liczymy pełne dni od następnego.`,
     przesylka: (nr) => `Numer przesyłki: ${nr}.`,
     stany: {
       details: "wracamy do ustalania szczegółów Twojego zlecenia. Odezwiemy się z pytaniami, a czas realizacji w tym czasie nie biegnie.",
@@ -1789,6 +1799,7 @@ const ETAP_T = {
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Planned completion: ${data}.`,
+    terminLiczenie: (ile, odDnia) => `${ile} counted from ${odDnia}: the day of payment does not count, we count full days from the next one.`,
     przesylka: (nr) => `Tracking number: ${nr}.`,
     stany: {
       details: "we are going back to agreeing the details of your order. We will be in touch with questions, and the lead time does not run in the meantime.",
@@ -1827,6 +1838,7 @@ const ETAP_T = {
     stopka: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
 
     termin: (data) => `Geplante Fertigstellung: ${data}.`,
+    terminLiczenie: (ile, odDnia) => `${ile} ab ${odDnia} gerechnet: Der Zahltag zählt nicht mit, wir zählen volle Tage ab dem folgenden.`,
     przesylka: (nr) => `Sendungsnummer: ${nr}.`,
     stany: {
       details: "wir kehren zur Abstimmung der Details Ihres Auftrags zurück. Wir melden uns mit Fragen, die Lieferzeit läuft in dieser Zeit nicht.",
@@ -1984,6 +1996,13 @@ export function buildStatusUpdate(order) {
   // etapie "gotowe" praca jest skonczona, wiec "planowana finalizacja" w
   // przyszlosci przeczylaby zdaniu stojacemu wyzej w tym samym mailu.
   const zTerminem = order.deadline_at && ["queued", "in_production"].includes(order.status);
+  // Zdanie o liczeniu dni stoi przy dacie, nie w regulaminie. Powstaje tylko
+  // wtedy, gdy mamy obie liczby: bez terminu w dniach i bez chwili startu
+  // zegara nie ma czego tlumaczyc, a polowa zdania myli bardziej niz brak.
+  const pierwszyDzien = pierwszyDzienPracy(order.queued_at);
+  const liczenieTerminu = zTerminem && order.lead_days && pierwszyDzien
+    ? l.terminLiczenie(dniSlownie(order.lead_days, lang), dzien(pierwszyDzien))
+    : null;
   // Odnosniki te same co w potwierdzeniu, bez powtarzania odnosnika do
   // zlecenia: ten stoi wyzej jako przycisk i drugi raz byloby go za duzo.
   const t = T[lang] || T.pl;
@@ -1992,7 +2011,10 @@ export function buildStatusUpdate(order) {
   // Wersja tekstowa zostaje: czesc klientow pocztowych i czytniki ekranu biora
   // wlasnie ja, a mail bez niej ladu je czesciej w spamie.
   const linie = [l.hi, "", tresc.charAt(0).toUpperCase() + tresc.slice(1)];
-  if (zTerminem) linie.push("", l.termin(dzien(order.deadline_at)));
+  if (zTerminem) {
+    linie.push("", l.termin(dzien(order.deadline_at)));
+    if (liczenieTerminu) linie.push(liczenieTerminu);
+  }
   if (zPrzesylka) linie.push("", l.przesylka(order.tracking_number));
   if (kurier) {
     linie.push(`${l.przewoznikLabel(kurier.nazwa)}. ${l.sledzLabel}:`);
@@ -2018,6 +2040,7 @@ export function buildStatusUpdate(order) {
       <div style="margin-top:18px;background:#faf6ee;border-radius:8px;padding:14px 16px">
         <span style="font-size:12px;color:#8a7a5c">${l.terminLabel}</span>
         <div style="font-size:18px;font-weight:700;color:#7a5f22;margin-top:2px">${esc(dzien(order.deadline_at))}</div>
+        ${liczenieTerminu ? `<div style="margin-top:6px;font-size:12px;line-height:1.5;color:#8a7a5c">${esc(liczenieTerminu)}</div>` : ""}
       </div>
     ` : ""}
 

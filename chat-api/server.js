@@ -65,7 +65,7 @@ import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { ETAPY_PRACY, przejscie, znanyEtap, korekta, etapPoZaplacie, terminRealizacji,
-         dniDoTerminu, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM,
+         dniDoTerminu, pierwszyDzienPracy, ETAP_STARTU_ZEGARA, ETAPY_Z_ZEGAREM,
          ETAPY_PO_ZAPLACIE, ustaleniaDomkniete, ileDoUstalenia,
          znanyEtapPozycji, wolnoEtapPozycji, etapZamowieniaZPozycji } from "./productionQueue.js";
 import { progDoWyslania, szturchnacSzczegoly } from "./deadlineReminders.js";
@@ -6725,6 +6725,11 @@ app.get("/api/orders/:ref", async (req, res) => {
     leadDays: o.lead_days != null ? Number(o.lead_days) : null,
     deadlineAt: dataISO(o.deadline_at),
     daysLeft: dniDoTerminu(o.deadline_at),
+    // Pierwszy liczony dzien, czyli dzien PO starcie zegara. Idzie z serwera
+    // gotowy z tego samego powodu co `daysLeft`: strona nie liczy dat sama.
+    // Bez niego klient ma date konca i date wplaty, i sam ma zgadnac, czy
+    // dzien wplaty sie liczy. Decyzja wlasciciela 2026-09-07: nie liczy sie.
+    countFromAt: pierwszyDzienPracy(o.queued_at),
     requiresDetails: o.requires_details === true,
     detailsAt: o.details_at,
     // Chwila wejscia do kolejki. Klient widzi z niej moment, od ktorego liczy
