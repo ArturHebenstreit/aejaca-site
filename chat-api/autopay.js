@@ -103,10 +103,32 @@ export function buildStartTransaction({ orderId, amountGrosze, description, gate
   return { url: startUrl(), method: "POST", params };
 }
 
-/** ValidityTime w formacie YYYY-MM-DD HH:MM:SS, czas CET */
+/**
+ * ValidityTime w formacie YYYY-MM-DD HH:MM:SS, W CZASIE POLSKIM.
+ *
+ * Napis nie niesie strefy, wiec operator czyta go po swojemu, czyli jako czas
+ * polski. Do 7 wrzesnia 2026 stalo tu `toISOString()`, czyli UTC, i przez to
+ * kazdy wyslany termin lezal DWIE GODZINY WCZESNIEJ, niz mielismy na mysli.
+ *
+ * Przez rok nie robilo to roznicy, bo termin waznosci wynosil siedem dni:
+ * dwie godziny mniej z siedmiu dni to nadal siedem dni. Zauwazylismy dopiero
+ * wtedy, gdy okno skrocilo sie do kwadransa (ADR-0044): kwadrans przesuniety
+ * o dwie godziny wstecz lezy w calosci w przeszlosci, wiec Autopay wital
+ * klientke zdaniem "The time to complete the payment has passed" przy
+ * transakcji zalozonej przed sekunda.
+ *
+ * Liczymy przez `Intl` z nazwana strefa, a nie przez stale przesuniecie, bo
+ * Polska ma czas letni: latem jest to plus dwie godziny, zima plus jedna.
+ */
 export function formatValidityTime(date) {
-  const s = date.toISOString();
-  return `${s.slice(0, 10)} ${s.slice(11, 19)}`;
+  const czesci = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Warsaw",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const p = Object.fromEntries(czesci.map((c) => [c.type, c.value]));
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
 }
 
 /**

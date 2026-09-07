@@ -6199,12 +6199,22 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   // tyle trwa platnosc, a nie decyzja. Przy przelewie nie ruszamy niczego, bo
   // tam ten sam termin niesie takze waznosc kwoty w euro i rezerwacje towaru.
   const swiezyTermin = order.payment_method === "bank_transfer" ? null : instantHoldUntil();
-  const terminPlatnosci = swiezyTermin || order.expires_at;
 
-  const validity = new Date(Math.min(
-    terminPlatnosci ? new Date(terminPlatnosci).getTime() : Number.POSITIVE_INFINITY,
-    Date.now() + 30 * 86400_000
-  ));
+  // OKNO BRAMKI TO NIE JEST NASZA REZERWACJA. To sa dwie rozne obietnice
+  // i 7 wrzesnia 2026 zwiazanie ich ze soba wylozylo platnosc kartowa.
+  //
+  // Nasza rezerwacja mowi, jak dlugo trzymamy pozycje, i trwa kwadrans
+  // (ADR-0044). Okno bramki mowi, do kiedy operator przyjmie te transakcje,
+  // i musi wystarczyc CZLOWIEKOWI: kod BLIK, logowanie do banku, potwierdzenie
+  // w aplikacji. Kwadrans na to wystarcza tylko wtedy, gdy nic nie pojdzie
+  // wolniej niz zwykle, a klient, ktory wroci do otwartej strony po dwudziestu
+  // minutach, dostaje od operatora "czas na dokonanie platnosci minal".
+  //
+  // Zaplata, ktora dojdzie po naszym kwadransie, NIE ginie: potwierdzenie dla
+  // zamowienia poza stanem "czeka na platnosc" idzie do przegladu (`itnAction`),
+  // czyli na biurko czlowieka. To jest koszt nazwany juz w ADR-0044.
+  const OKNO_BRAMKI_MINUT = 60;
+  const validity = new Date(Date.now() + OKNO_BRAMKI_MINUT * 60_000);
   const start = buildStartTransaction({
     orderId: order.order_ref,
     amountGrosze: order.total_grosze,
