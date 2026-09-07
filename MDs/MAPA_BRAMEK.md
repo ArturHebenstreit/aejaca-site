@@ -5,7 +5,7 @@
 > z naglowka kazdego skryptu, kolejnosc z lancucha `build` w `package.json`.
 > Chcesz zmienic opis bramki, zmien komentarz na jej gorze.
 
-`npm run build` uruchamia **94** sprawdzianow, zanim cokolwiek
+`npm run build` uruchamia **96** sprawdzianow, zanim cokolwiek
 zbuduje. Kazdy powstal po konkretnej awarii i pilnuje, zeby ta sama awaria nie
 wrocila. Build zatrzymuje sie na pierwszym, ktory padnie, wiec kolejnosc ma
 znaczenie: najtansze i najczestsze stoja z przodu.
@@ -88,27 +88,29 @@ albo przepuszcza, albo zatrzymuje wdrozenie.
 | 71 | `scripts/test-wlasny-ruch.mjs` | WLASNY RUCH: WIDAC GO, DA SIE GO WYLACZYC, I NIKT NIE UDAJE, ZE WIE WIECEJ | Wlasciciel oglada swoj serwis czesciej niz ktokolwiek inny, wiec jego wejscia zawyzaja kazdy wykres. |
 | 72 | `scripts/test-zamkniecie-sprawy.mjs` | CZTERY DROGI WYJSCIA ZE SPRAWY, KAZDA Z INNA KWOTA | "Anulowane" bylo jednym slowem na cztery zdarzenia, ktore regulamin rozroznia: odstapienie konsumenta w 14 dni, nasze niedowiezienie, nasza odmowa i rezygnacja z rzeczy robionej na zamowienie. |
 | 73 | `scripts/test-przypomnienie-platnosci.mjs` | PRZYPOMNIENIE O NIEDOKONCZONEJ PLATNOSCI PRZELEWEM | Zamowienie kartowe trzymamy kwadrans (INSTANT_HOLD_MINUTES), wiec mail przy karcie dotarlby po zwolnieniu pozycji. |
-| 74 | `scripts/test-rezygnacja.mjs` | NIEUDANE SCIEZKI ZOSTAWIAJA SLAD | Wlasciciel zapytal 6 wrzesnia, czy zbieramy dane o nieudanych platnosciach i o rezygnacjach. |
-| 75 | `scripts/check-daty.mjs` | DATA Z BAZY NIE JEST NAPISEM | Sterownik bazy oddaje kolumne DATE i TIMESTAMPTZ jako OBIEKT Date. |
-| 76 | `scripts/test-daty-z-bazy.mjs` | DATA Z BAZY DOCHODZI DO KLIENTA JAKO DATA | Sterownik bazy oddaje kolumne DATE jako OBIEKT Date. |
-| 77 | `scripts/test-lead-z-maila.mjs` | MAIL STAJE SIE SPRAWA DOPIERO Z NASZEJ DECYZJI | Do 1 wrzesnia 2026 dzialaly tu dwa mechanizmy naraz i zaden nie robil tego, co trzeba. |
-| 78 | `scripts/test-lista-zgloszen.mjs` | LISTA ZGLOSZEN: LICZNIKI FILTRUJA, WIERSZ SIE ROZWIJA | Kafelki u gory strony byly ozdoba: mowily "Skontaktowano 36" i nic sie po nich nie dzialo. |
-| 79 | `scripts/test-quote-edit.mjs` | EDYCJA OFERTY: POZYCJE, KWOTY I UKLAD WYBORU | Wycena powstaje z zapytania przepisanego ze skrzynki albo z rozmowy, wiec literowka w adresie i zla ilosc sa tu norma. |
-| 80 | `scripts/test-offer-currency.mjs` | WALUTA OFERTY I ZAPLATY | Do tej pory walute rozstrzygal jezyk: pl znaczylo zlotowki, en i de euro. |
-| 81 | `scripts/test-ring-generator.mjs` | GENERATOR PIERSCIONKOW: prog akceptacji etapu pierwszego | Cztery rzeczy, ktore musza sie zgadzac, zanim powstanie jakikolwiek ekran:. |
-| 82 | `scripts/test-ring-pricing.mjs` | KREATOR PIERSCIONKOW: prog akceptacji etapu drugiego | Wycena ma jedna wlasciwosc, ktorej nie da sie sprawdzic okiem: czy liczby, od ktorych zalezy, w ogole do niej docieraja. |
-| 83 | `chat-api/rates.test.mjs` | KURSY KRUSZCOW: kontrola wieku | `currentMetalRates` bierze najnowsza niepusta wartosc, nie patrzac na jej wiek. |
-| 84 | `chat-api/kodyRabatowe.test.mjs` | KOD RABATOWY PAMIETA, W JAKIM JEZYKU GO WYSTAWILISMY | Przypomnienie o kodzie wychodzi czterdziesci dni po zapisie. |
-| 85 | `chat-api/zrodlaRuchu.test.mjs` | SKAD PRZYSZLA WIZYTA: SPRAWDZIAN KLASYFIKACJI | Kanal ruchu jest liczba, na ktorej opiera sie decyzja "gdzie pisac dalej". Zle przypisany kanal nie wyglada na blad: wyglada na to, ze Instagram nie dziala, a wyszukiwarka dowozi, albo odwrotnie. |
-| 86 | `chat-api/numerSprawy.test.mjs` | KAZDA SPRAWA MA NUMER, I TO JEDEN | Zgloszenie z formularza dostawalo numer od poczatku, ale mail przyslany wprost na skrzynke juz nie, a numeru nie bylo widac ani w panelu, ani w potwierdzeniu do klienta. |
-| 87 | `admin/analityka.test.mjs` | ANALITYKA: CZEGO PILNUJEMY W ZAPYTANIACH KOKPITU | Zapytania analityczne maja te wlasciwosc, ze BLAD W NICH JEST NIEWIDOCZNY. Zle policzona konwersja nie wywala strony, tylko pokazuje liczbe, ktora wyglada wiarygodnie, i na jej podstawie zapada decyzja. |
-| 88 | `scripts/test-chat-api.mjs` | TESTY BACKENDU IDA RAZEM Z BUILDEM STRONY | `chat-api` ma wlasny zestaw testow i wlasny `npm test`, ktory trzeba bylo pamietac, zeby uruchomic. |
-| 89 | `scripts/test-chat-api-boot.mjs` | CZY SERWER API W OGOLE WSTAJE | Awaria, ktora ten test zamyka, polozyla `chat-api` na produkcji i nie zauwazyl jej ani build, ani eslint, ani zaden z pozostalych piecdziesieciu skryptow. |
-| 90 | `scripts/derive-service-prices.mjs` | CENY "OD" NA KARTACH USLUG, WYPROWADZONE Z SILNIKA | Etykieta "od X PLN" byla wpisywana recznie i rozjechala sie z cennikiem: jedne uslugi obiecywaly cene, ktorej nie dalo sie kupic, inne odstraszaly progiem dwa razy wyzszym niz prawdziwy. |
-| 91 | `scripts/build-sitemap.mjs` | MAPA WITRYNY DLA TRZECH JEZYKOW | Od 27 sierpnia 2026 kazda strona stoi pod trzema adresami: polskim golym, angielskim pod `/en/` i niemieckim pod `/de/`. Mapa witryny musi wymienic wszystkie trzy i przy kazdym powiedziec, gdzie sa pozostale dwa, inaczej wyszukiwarka potraktuje je jak trzy osobne strony o tej samej tresci. |
-| 92 | `scripts/mapa-bramek.mjs` | SPIS BRAMEK BUILDU, PISANY PRZEZ BRAMKI | `npm run build` uruchamia kilkadziesiat sprawdzianow, zanim cokolwiek zbuduje. |
-| 93 | `scripts/copy-occt-wasm.mjs` | JADRO CAD DLA PRZEGLADARKI | occt-import-js sklada sie z modulu JS i pliku .wasm, ktory ten modul sciaga w czasie dzialania. |
-| 94 | `scripts/prerender.mjs` | PRERENDER: KAZDA TRASA, TRZY JEZYKI, HTML GOTOWY BEZ PRZEGLADARKI KLIENTA | Renderuje kazda strone serwisu do statycznego HTML, po polsku pod golym adresem, po angielsku pod `/en/`, po niemiecku pod `/de/`. Lista tras pochodzi z jednego zrodla (`src/routes.js`), tego samego, ktore rysuje serwis w przegladarce: wczesniej stala tu trzecia, recznie pisana kopia, pilnowana osobnym skryptem porownujacym, a teraz brak strony w prerenderze jest po prostu brakiem trasy w calym serwisie. |
+| 74 | `scripts/test-czas-autopay.mjs` | TERMIN WAZNOSCI WYSYLANY DO AUTOPAY | 7 wrzesnia 2026 klientka przeszla cala droge: mail z oferta, strona oferty, zamowienie, przycisk "Zaplac". Autopay powital ja zdaniem "The time to complete the payment has passed" przy transakcji zalozonej przed sekunda. |
+| 75 | `scripts/test-ponowna-platnosc.mjs` | PORZUCONA PLATNOSC NIE ZAMYKA DROGI | Klientka nacisnela "Zaplac", trafila do Autopay i tam odpadla. |
+| 76 | `scripts/test-rezygnacja.mjs` | NIEUDANE SCIEZKI ZOSTAWIAJA SLAD | Wlasciciel zapytal 6 wrzesnia, czy zbieramy dane o nieudanych platnosciach i o rezygnacjach. |
+| 77 | `scripts/check-daty.mjs` | DATA Z BAZY NIE JEST NAPISEM | Sterownik bazy oddaje kolumne DATE i TIMESTAMPTZ jako OBIEKT Date. |
+| 78 | `scripts/test-daty-z-bazy.mjs` | DATA Z BAZY DOCHODZI DO KLIENTA JAKO DATA | Sterownik bazy oddaje kolumne DATE jako OBIEKT Date. |
+| 79 | `scripts/test-lead-z-maila.mjs` | MAIL STAJE SIE SPRAWA DOPIERO Z NASZEJ DECYZJI | Do 1 wrzesnia 2026 dzialaly tu dwa mechanizmy naraz i zaden nie robil tego, co trzeba. |
+| 80 | `scripts/test-lista-zgloszen.mjs` | LISTA ZGLOSZEN: LICZNIKI FILTRUJA, WIERSZ SIE ROZWIJA | Kafelki u gory strony byly ozdoba: mowily "Skontaktowano 36" i nic sie po nich nie dzialo. |
+| 81 | `scripts/test-quote-edit.mjs` | EDYCJA OFERTY: POZYCJE, KWOTY I UKLAD WYBORU | Wycena powstaje z zapytania przepisanego ze skrzynki albo z rozmowy, wiec literowka w adresie i zla ilosc sa tu norma. |
+| 82 | `scripts/test-offer-currency.mjs` | WALUTA OFERTY I ZAPLATY | Do tej pory walute rozstrzygal jezyk: pl znaczylo zlotowki, en i de euro. |
+| 83 | `scripts/test-ring-generator.mjs` | GENERATOR PIERSCIONKOW: prog akceptacji etapu pierwszego | Cztery rzeczy, ktore musza sie zgadzac, zanim powstanie jakikolwiek ekran:. |
+| 84 | `scripts/test-ring-pricing.mjs` | KREATOR PIERSCIONKOW: prog akceptacji etapu drugiego | Wycena ma jedna wlasciwosc, ktorej nie da sie sprawdzic okiem: czy liczby, od ktorych zalezy, w ogole do niej docieraja. |
+| 85 | `chat-api/rates.test.mjs` | KURSY KRUSZCOW: kontrola wieku | `currentMetalRates` bierze najnowsza niepusta wartosc, nie patrzac na jej wiek. |
+| 86 | `chat-api/kodyRabatowe.test.mjs` | KOD RABATOWY PAMIETA, W JAKIM JEZYKU GO WYSTAWILISMY | Przypomnienie o kodzie wychodzi czterdziesci dni po zapisie. |
+| 87 | `chat-api/zrodlaRuchu.test.mjs` | SKAD PRZYSZLA WIZYTA: SPRAWDZIAN KLASYFIKACJI | Kanal ruchu jest liczba, na ktorej opiera sie decyzja "gdzie pisac dalej". Zle przypisany kanal nie wyglada na blad: wyglada na to, ze Instagram nie dziala, a wyszukiwarka dowozi, albo odwrotnie. |
+| 88 | `chat-api/numerSprawy.test.mjs` | KAZDA SPRAWA MA NUMER, I TO JEDEN | Zgloszenie z formularza dostawalo numer od poczatku, ale mail przyslany wprost na skrzynke juz nie, a numeru nie bylo widac ani w panelu, ani w potwierdzeniu do klienta. |
+| 89 | `admin/analityka.test.mjs` | ANALITYKA: CZEGO PILNUJEMY W ZAPYTANIACH KOKPITU | Zapytania analityczne maja te wlasciwosc, ze BLAD W NICH JEST NIEWIDOCZNY. Zle policzona konwersja nie wywala strony, tylko pokazuje liczbe, ktora wyglada wiarygodnie, i na jej podstawie zapada decyzja. |
+| 90 | `scripts/test-chat-api.mjs` | TESTY BACKENDU IDA RAZEM Z BUILDEM STRONY | `chat-api` ma wlasny zestaw testow i wlasny `npm test`, ktory trzeba bylo pamietac, zeby uruchomic. |
+| 91 | `scripts/test-chat-api-boot.mjs` | CZY SERWER API W OGOLE WSTAJE | Awaria, ktora ten test zamyka, polozyla `chat-api` na produkcji i nie zauwazyl jej ani build, ani eslint, ani zaden z pozostalych piecdziesieciu skryptow. |
+| 92 | `scripts/derive-service-prices.mjs` | CENY "OD" NA KARTACH USLUG, WYPROWADZONE Z SILNIKA | Etykieta "od X PLN" byla wpisywana recznie i rozjechala sie z cennikiem: jedne uslugi obiecywaly cene, ktorej nie dalo sie kupic, inne odstraszaly progiem dwa razy wyzszym niz prawdziwy. |
+| 93 | `scripts/build-sitemap.mjs` | MAPA WITRYNY DLA TRZECH JEZYKOW | Od 27 sierpnia 2026 kazda strona stoi pod trzema adresami: polskim golym, angielskim pod `/en/` i niemieckim pod `/de/`. Mapa witryny musi wymienic wszystkie trzy i przy kazdym powiedziec, gdzie sa pozostale dwa, inaczej wyszukiwarka potraktuje je jak trzy osobne strony o tej samej tresci. |
+| 94 | `scripts/mapa-bramek.mjs` | SPIS BRAMEK BUILDU, PISANY PRZEZ BRAMKI | `npm run build` uruchamia kilkadziesiat sprawdzianow, zanim cokolwiek zbuduje. |
+| 95 | `scripts/copy-occt-wasm.mjs` | JADRO CAD DLA PRZEGLADARKI | occt-import-js sklada sie z modulu JS i pliku .wasm, ktory ten modul sciaga w czasie dzialania. |
+| 96 | `scripts/prerender.mjs` | PRERENDER: KAZDA TRASA, TRZY JEZYKI, HTML GOTOWY BEZ PRZEGLADARKI KLIENTA | Renderuje kazda strone serwisu do statycznego HTML, po polsku pod golym adresem, po angielsku pod `/en/`, po niemiecku pod `/de/`. Lista tras pochodzi z jednego zrodla (`src/routes.js`), tego samego, ktore rysuje serwis w przegladarce: wczesniej stala tu trzecia, recznie pisana kopia, pilnowana osobnym skryptem porownujacym, a teraz brak strony w prerenderze jest po prostu brakiem trasy w calym serwisie. |
 
 
 

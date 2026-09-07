@@ -85,11 +85,39 @@ dokończ płatność albo zwolnij pozycje. Żadne z tych dwóch nie jest błęde
 Przy kwadransie mail dotarłby po zwolnieniu pozycji. Przy przelewie termin to
 trzy dni robocze i doba przed końcem przypomnienie ma sens.
 
+## Czego ta decyzja nie przewidziała, i co z tego wyszło
+
+Skrócenie okna z siedmiu dni do kwadransa **odsłoniło błąd, który leżał w kodzie
+od początku integracji z Autopay**. Termin ważności transakcji szedł do operatora
+jako napis bez strefy, a my wysyłaliśmy w nim czas UTC. Operator czyta taki napis
+jako czas polski, więc każdy termin lądował dwie godziny wcześniej, niż mieliśmy
+na myśli. Przy siedmiu dniach nikt tego nie zauważył: dwie godziny mniej z siedmiu
+dni to nadal siedem dni. Przy kwadransie cały termin leżał w przeszłości i klientka,
+która przeszła całą drogę od maila po przycisk „Zapłać", dostawała od Autopay
+zdanie „czas na dokonanie płatności minął" przy transakcji założonej przed sekundą.
+
+Druga rzecz była błędem samej decyzji: okno bramki liczyło się z NASZEJ rezerwacji.
+To są dwie różne obietnice. Rezerwacja mówi, jak długo trzymamy pozycje, a okno
+bramki, ile czasu ma człowiek na kod BLIK, zalogowanie się do banku i potwierdzenie
+w aplikacji. Kwadrans na to drugie jest za mało.
+
+**Poprawka z 7 września 2026:** termin idzie w czasie polskim, liczony przez
+nazwaną strefę, a nie przez stałe przesunięcie, bo Polska ma czas letni. Okno
+bramki to własna stała, 60 minut, liczona od chwili naciśnięcia „Zapłać"
+i niezależna od naszej rezerwacji. Rezerwacja zostaje przy kwadransie.
+
+Wniosek szerszy: **skrócenie jakiegokolwiek okna czasowego odsłania każdy błąd
+przesunięcia, który to okno dotąd ukrywało.** Zmieniając termin z dni na minuty,
+trzeba przejść wszystkie miejsca, w których ten termin wychodzi poza nasz kod.
+
 ## Czego pilnujemy
 
 - `scripts/test-offer-payment.mjs`, sekcje 12 i 13: długość blokady przy obu
   metodach oraz to, że pozycja zwalnia się zegarem, a płatność w przeglądzie
   i zapłacona pozycja nie.
+- `scripts/test-czas-autopay.mjs`: termin ważności idzie w czasie polskim, latem
+  i zimą, i nie może zostać odczytany przez operatora jako chwila z przeszłości.
+  Pilnuje też tego, żeby okno bramki nie zaglądało z powrotem do naszej rezerwacji.
 
 ## Koszt, nazwany wprost
 

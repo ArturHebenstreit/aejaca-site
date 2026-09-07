@@ -181,6 +181,55 @@ export async function reserveDiscount(client, { code, email, items, orderId, pay
   return { code: row.code, discountGrosze: discount };
 }
 
+/**
+ * ODZYSKANIE REZERWACJI KODU PRZY PONOWNEJ PROBIE ZAPLATY.
+ *
+ * Zasada wlasciciela z 2026-09-07: **kod rabatowy zostaje przy kliencie do
+ * chwili zaplaty**. Porzucenie platnosci w bramce nie jest uzyciem kodu, wiec
+ * nie moze go zabrac. Do tego dnia porzucona platnosc zwalniala rezerwacje
+ * i przy drugim podejsciu kod bywal juz nie do wziecia, chociaz klient nigdy
+ * za nic nie zaplacil.
+ *
+ * Odzyskujemy WLASNY, zwolniony wpis tego zamowienia, zamiast zakladac nowy:
+ * kwota rabatu ma zostac dokladnie ta, ktora klient widzial, a przeliczenie od
+ * nowa moglo by ja zmienic, gdyby regula kodu zmienila sie w miedzyczasie.
+ *
+ * Sprawdzamy przy tym, czy kod nadal wolno wziac: nieaktywny, wygasly albo
+ * wyczerpany przez kogos innego w miedzyczasie NIE wraca po cichu. Wtedy lecimy
+ * wyjatkiem, bo cicha zaplata pelnej kwoty byla by zmiana ceny bez pytania.
+ *
+ * @returns {Promise<{code: string, discountGrosze: number}|null>} null, gdy
+ *          zamowienie nie mialo kodu albo jego rezerwacja wcale nie zostala
+ *          zwolniona i nie ma czego odzyskiwac.
+ */
+export async function reclaimRedemptions(client, orderId, paymentMethod) {
+  const { rows } = await client.query(
+    `SELECT r.id, r.code_id, r.amount_grosze, c.code
+       FROM discount_redemptions r
+       JOIN discount_codes c ON c.id = r.code_id
+      WHERE r.order_id = $1 AND r.consumed_at IS NULL AND r.released_at IS NOT NULL
+      ORDER BY r.id DESC
+      LIMIT 1`,
+    [orderId]
+  );
+  const wpis = rows[0];
+  if (!wpis) return null;
+
+  const kod = await fetchCode(client, wpis.code, { lock: true });
+  // Prog kwotowy sprawdzilismy przy pierwszym zalozeniu zamowienia, a kwota
+  // pozycji sie nie zmienila, wiec tu pytamy juz tylko o samo okno waznosci.
+  checkWindow(kod, kod.min_order_grosze);
+  if (kod.max_uses !== null && (await usesTaken(client, kod.id)) >= kod.max_uses) {
+    throw new DiscountError("Ten kod zostal juz wykorzystany", "used_up");
+  }
+
+  await client.query(
+    `UPDATE discount_redemptions SET released_at = NULL, expires_at = $2 WHERE id = $1`,
+    [wpis.id, redemptionExpiry(paymentMethod)]
+  );
+  return { code: kod.code, discountGrosze: wpis.amount_grosze };
+}
+
 /** Zamiana rezerwacji na uzycie. Raz, przy potwierdzonej platnosci. */
 export async function consumeDiscount(pool, orderId) {
   const client = await pool.connect();
