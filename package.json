@@ -50,7 +50,9 @@
     "ux:bledy": "node .claude/skills/aejaca-ux/pomiar/bledy.mjs",
     "check:sql": "node scripts/check-parametry-sql.mjs",
     "check:kafelki": "node scripts/check-kafelki-jasnosc.mjs",
-    "ux:kafelki": "node .claude/skills/aejaca-ux/pomiar/kafelki.mjs"
+    "ux:kafelki": "node .claude/skills/aejaca-ux/pomiar/kafelki.mjs",
+    "proba:sql": "node scripts/proba-sql-na-zywej-bazie.mjs",
+    "proba:baza": "scripts/postgres-do-proby.sh"
   },
   "dependencies": {
     "fflate": "^0.8.3",
