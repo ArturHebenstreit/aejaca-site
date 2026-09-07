@@ -1,7 +1,7 @@
 # Mapa dokumentacji AEJaCA
 
 Ten indeks rozroznia aktualne zrodla prawdy od planow i audytow historycznych.
-Data przegladu indeksu: 2026-08-23.
+Data przegladu indeksu: 2026-09-07.
 
 ## Zasada uzycia
 
@@ -16,7 +16,8 @@ i nie jest dowodem, ze funkcja istnieje. Przy watpliwosci sprawdz kod i testy.
 | `AEJaCA_Brand_Reference.md` | Fakty o marce, ofercie, cenach, narzedziach i SEO | Artur | Przy zmianie publicznego faktu |
 | `AEJaCA_Autopay_Integration.md` | Niezmienniki integracji Autopay | Artur + implementator platnosci | Przy zmianie przeplywu lub dokumentacji operatora |
 | `AEJaCA_Geometria_Kreatora_Zasady.md` | Reguly geometrii i dziennik pomiarow | Implementator geometrii | Przy kazdej zmianie bryly |
-| `AEJaCA_Inwentarz_Sprzet_Procesy.md` | Sprzet, materialy i realne procesy | Artur | Po zmianie sprzetu lub procesu |
+| `AEJaCA_Inwentarz_Sprzet_Procesy.md` | Sprzet, materialy i realne procesy. Mowi, CO stoi w warsztacie | Artur | Po zmianie sprzetu lub procesu |
+| `AEJaCA_Odlewnictwo_Procedury.md` | Jak sie tym pracuje: masa formierska, krzywe wypalania, temperatury odlewu, wsad, studzenie. Czesc II o odlewach z zywicy jest w budowie | Artur | Po kazdym cyklu, ktory cos potwierdzil albo obalil |
 | `B2B_Architektura.md` | Zatwierdzona architektura oferty B2B | Artur | Po zmianie oferty B2B |
 | `MAPA_CEN.md` | Gdzie stoi ktora kwota, co jest kosztem, a co cena dla klienta, i co zrobic przed zmiana cennika | Implementator wycen | Po dolozeniu tabeli cenowej albo zmianie marzy |
 | `MAPA_BRAMEK.md` | Spis wszystkich sprawdzianow z `npm run build` razem z powodem, dla ktorego powstaly. **Generowany**: `npm run mapa:bramki` | nikt recznie | sam, przez bramke `mapa-bramek.mjs --check` |

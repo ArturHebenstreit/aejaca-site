@@ -6276,7 +6276,7 @@ async function placePaymentInReview(order, parsed, amountOk) {
     `UPDATE orders SET status = 'payment_review', paid_at = COALESCE(paid_at, NOW()),
        payment_status = 'SUCCESS', payment_status_details = $2, payment_remote_id = $3,
        payment_review_at = NOW(),
-       payment_review_reason = CASE WHEN $4 THEN 'unexpected_status:' || status ELSE 'amount_mismatch' END,
+       payment_review_reason = CASE WHEN $4::BOOLEAN THEN 'unexpected_status:' || status ELSE 'amount_mismatch' END,
        payment_review_previous_status = status
      WHERE id = $1 AND fulfilled_at IS NULL
        AND status <> 'payment_review' AND status <> ALL($5::text[])

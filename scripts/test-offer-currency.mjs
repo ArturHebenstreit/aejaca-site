@@ -102,7 +102,14 @@ console.log("\n3. Kwota w euro liczy sie raz, w jednym miejscu\n");
   ma(QUOTES, /eurCentsFromGrosze\(total, eurRate\)/, "zamowienie z oferty zamraza kwote w euro");
   ma(QUOTES, /eur_rate_locked_at/, "zamowienie z oferty zapisuje chwile zamrozenia kursu");
   // Rabat schodzi po zapisie zamowienia, wiec kwota w euro musi zejsc razem z nim.
-  ma(QUOTES, /amount_eur_cents = CASE WHEN amount_eur_cents IS NULL THEN NULL ELSE \$5 END/, "rabat schodzi takze z kwoty w euro");
+  //
+  // Rzutowanie parametru jest czescia tego twierdzenia, a nie ozdobnikiem.
+  // Do 7 wrzesnia 2026 ten sprawdzian przypinal zapis BEZ rzutowania i przez to
+  // pilnowal bledu: goly parametr w CASE, ktorego druga galaz to NULL, Postgres
+  // rozstrzyga jako `text` i zapis do kolumny liczbowej pada. Kazda zaplata
+  // z oferty Z KODEM RABATOWYM konczyla sie piecsetka.
+  ma(QUOTES, /amount_eur_cents = CASE WHEN amount_eur_cents IS NULL THEN NULL ELSE \$5::INTEGER END/,
+     "rabat schodzi takze z kwoty w euro, a parametr ma rozstrzygniety typ");
   ma(QUOTES, /przelew \? "awaiting_transfer" : "awaiting_payment"/, "zamowienie za przelew czeka na ksiegowanie, nie na bramke");
 }
 

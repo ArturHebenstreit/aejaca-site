@@ -28,7 +28,7 @@ import { ZONES, FREE_SHIPPING_FROM_GROSZE } from "../chat-api/pricing/shipping.j
 import { QUANTITY_TIERS } from "../chat-api/pricing/config.js";
 import { RODZAJE_KODOW } from "../chat-api/discounts.js";
 import { ENGRAVING_OPTIONS, ENGRAVING_FREE_ABOVE_PLN } from "../chat-api/pricing/jewelryConfig.js";
-import { CASTING_ENVELOPE_MM } from "../chat-api/pricing/preciousMetalCasting.js";
+import { CASTING_FOOTPRINT_MM, CASTING_HEIGHT_MM } from "../chat-api/pricing/preciousMetalCasting.js";
 
 const wiedza = readFileSync(new URL("../chat-api/context.js", import.meta.url), "utf8");
 
@@ -104,9 +104,11 @@ console.log("6. Cennik graweru i prog gratisu");
 
 console.log("7. Limit kolby odlewniczej");
 {
-  const [a, b, c] = CASTING_ENVELOPE_MM;
-  ok(wiedza.includes(`${a} x ${b} x ${c} mm`) || wiedza.includes(`${a} × ${b} × ${c} mm`),
-    `limit modelu ${a} x ${b} x ${c} mm`, CASTING_ENVELOPE_MM);
+  // Limit to KOLO i wysokosc, nie pudelko: asystent ma powtarzac te same dwie
+  // liczby, ktore liczy silnik, inaczej powie klientowi inny rozmiar niz kasa.
+  ok(wiedza.includes(`${CASTING_FOOTPRINT_MM} mm`) && wiedza.includes(`${CASTING_HEIGHT_MM} mm`),
+    `limit modelu: kolo ${CASTING_FOOTPRINT_MM} mm i wysokosc ${CASTING_HEIGHT_MM} mm`,
+    [CASTING_FOOTPRINT_MM, CASTING_HEIGHT_MM]);
 }
 
 console.log(bledy ? `\nBLEDY: ${bledy}` : "\nWiedza asystenta zgodna z kodem");
