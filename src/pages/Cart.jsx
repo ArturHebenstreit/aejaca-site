@@ -7,7 +7,7 @@
 // roznice zanim zaplaci.
 
 import { Link } from "../i18n/nav.jsx";
-import { Trash2, ShoppingCart, ArrowRight, AlertTriangle, Package, Download, Wrench } from "lucide-react";
+import { Trash2, ShoppingCart, ArrowRight, AlertTriangle, Package, Download, Wrench, Truck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -54,6 +54,7 @@ const UI = {
     freeLeft: "Brakuje {amount} do darmowej dostawy w Polsce.",
     freeReached: "Masz darmową dostawę w Polsce.",
     freeReachedWhy: "Kurier kosztuje zwykle {courier}, Paczkomat {locker}. Zamówienie przekracza {prog}, więc dostawę w Polsce dokładamy od siebie.",
+    freeBrowse: "Zobacz, co jeszcze mamy",
     checkout: "Przejdź do zamówienia",
     soon: "Finalizację zamówienia uruchamiamy w następnym kroku",
     remove: "Usuń",
@@ -88,6 +89,7 @@ const UI = {
     freeLeft: "{amount} more for free delivery within Poland.",
     freeReached: "Free delivery within Poland unlocked.",
     freeReachedWhy: "A courier normally costs {courier} and an InPost locker {locker}. Your order is over {prog}, so delivery within Poland is on us.",
+    freeBrowse: "See what else we have",
     checkout: "Proceed to order",
     soon: "Order completion arrives in the next step",
     remove: "Remove",
@@ -122,6 +124,7 @@ const UI = {
     freeLeft: "Noch {amount} bis zum kostenlosen Versand innerhalb Polens.",
     freeReached: "Kostenloser Versand innerhalb Polens erreicht.",
     freeReachedWhy: "Ein Kurier kostet normalerweise {courier}, eine InPost-Station {locker}. Ihre Bestellung liegt über {prog}, den Versand innerhalb Polens übernehmen wir.",
+    freeBrowse: "Sehen Sie, was wir sonst haben",
     checkout: "Zur Bestellung",
     soon: "Der Bestellabschluss folgt im nächsten Schritt",
     remove: "Entfernen",
@@ -141,6 +144,11 @@ export default function Cart() {
   const { items, subtotalGrosze, remove, setQty, update, hasVolatile, ready } = useCart();
   // Prog dotyczy wylacznie Polski, dlatego tekst mowi o Polsce wprost.
   const freeLeftGrosze = Math.max(0, FREE_SHIPPING_FROM_GROSZE - subtotalGrosze);
+  const freePct = Math.min(100, Math.round((subtotalGrosze / FREE_SHIPPING_FROM_GROSZE) * 100));
+  // Brakujaca kwota ma byc wytluszczona w srodku zdania, wiec zdanie rozcinamy
+  // na placeholderze zamiast podstawiac go przez replace: kazdy jezyk stawia
+  // kwote w innym miejscu ("Brakuje X do...", "X more for...", "Noch X bis...").
+  const [freeLeftPrzed, freeLeftPo] = (u.freeLeft || "").split("{amount}");
   // SZACOWANY CZAS REALIZACJI STOI PRZY KWOCIE, a nie w opisie produktu.
   // Wyrob na zamowienie nie lezy na polce i klient ma to wiedziec, zanim
   // przejdzie do kasy. Liczy jeden rdzen (`src/pricing/terminy.js`), ten sam,
@@ -356,7 +364,7 @@ export default function Cart() {
                 )}
 
                 {/* Koszt dostawy pokazujemy TU, a nie dopiero na kasie.
-                    Paczkomat to 15,90 zl, co przy malym zamowieniu bywa polowa
+                    Paczkomat to 16,49 zl, co przy malym zamowieniu bywa polowa
                     jego wartosci; niespodzianka na kasie jest najczestsza
                     przyczyna porzucenia koszyka. Prog darmowej dostawy istnial
                     od dawna, ale koszyk o nim milczal, czyli akurat tam, gdzie
@@ -367,34 +375,74 @@ export default function Cart() {
                     Po przekroczeniu progu pokazujemy jedno zdanie, ktore podaje
                     zwykly koszt i od razu mowi, czemu go nie ma: klient widzi,
                     ile dostal, zamiast sam godzic dwie sprzeczne linijki. */}
-                {freeLeftGrosze > 0 && (
-                  <p className="text-neutral-500 text-xs mb-2">
-                    {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
-                  </p>
-                )}
-                {freeLeftGrosze > 0 ? (
-                  <div className="mb-4">
-                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-1.5">
-                      <div
-                        className="h-full rounded-full bg-emerald-400/70 transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.round((subtotalGrosze / FREE_SHIPPING_FROM_GROSZE) * 100))}%` }}
-                      />
-                    </div>
-                    <p className="text-emerald-400 text-xs">
-                      {u.freeLeft.replace("{amount}", money(freeLeftGrosze))}
-                    </p>
+                {/* PROG MA WLASNA RAMKE, a nie linijke wewnatrz podsumowania.
+                    Zgloszenie wlasciciela 2026-09-07: "juz dziala, ale jest
+                    ledwo widoczny". Pasek mial poltora piksela i stal miedzy
+                    terminem realizacji a przyciskiem, czyli w miejscu, przez
+                    ktore wzrok przelatuje w drodze do "Przejdz do zamowienia".
+                    Wzmocnienie to trzy rzeczy naraz, bo osobno kazda gubi sie
+                    tak samo: wlasne obramowanie, skala z podpisanymi koncami
+                    (bez nich pasek nie mowi, ile zostalo do czego), i kwota
+                    wytluszczona w zdaniu.
+
+                    ZACHETA JEST ODNOSNIKIEM DO SKLEPU, A NIE PODPOWIEDZIA
+                    KONKRETNYCH RZECZY. Podpowiedz "dobierz te dwa drobiazgi,
+                    a domkniesz prog" wymaga asortymentu, ktory prog domyka;
+                    w bazie stoi jeden wyrob za 1290 zl, wiec taka podpowiedz
+                    bylaby obietnica bez pokrycia. Odsylamy wiec do sklepu
+                    i uslug, a kwote gainu klient czyta wprost z cennika
+                    dostawy stojacego obok. */}
+                <div
+                  className={`mb-4 rounded-xl border p-4 ${
+                    freeLeftGrosze > 0
+                      ? "border-white/10 bg-white/[0.03]"
+                      : "border-emerald-400/30 bg-emerald-400/10"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <Truck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                    {freeLeftGrosze > 0 ? (
+                      <p className="text-white text-sm leading-snug">
+                        {freeLeftPrzed}
+                        <strong className="font-bold text-emerald-400">{money(freeLeftGrosze)}</strong>
+                        {freeLeftPo}
+                      </p>
+                    ) : (
+                      <p className="text-emerald-400 text-sm font-semibold leading-snug">{u.freeReached}</p>
+                    )}
                   </div>
-                ) : (
-                  <div className="mb-4">
-                    <p className="text-emerald-400 text-xs font-medium">{u.freeReached}</p>
-                    <p className="text-neutral-400 text-xs mt-1">
+
+                  {freeLeftGrosze > 0 ? (
+                    <>
+                      <div className="h-2 rounded-full bg-white/10 overflow-hidden mt-3">
+                        <div
+                          className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+                          style={{ width: `${freePct}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-1.5 text-neutral-500 text-xs">
+                        <span>{money(0)}</span>
+                        <span>{money(FREE_SHIPPING_FROM_GROSZE)}</span>
+                      </div>
+                      <p className="text-neutral-400 text-xs mt-2.5 leading-relaxed">
+                        {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
+                      </p>
+                      <Link
+                        to="/shop/"
+                        className="inline-flex items-center gap-1 mt-2.5 text-emerald-400 text-xs font-medium hover:underline"
+                      >
+                        {u.freeBrowse} <ArrowRight className="w-3 h-3" aria-hidden="true" />
+                      </Link>
+                    </>
+                  ) : (
+                    <p className="text-neutral-300 text-xs mt-2 leading-relaxed">
                       {u.freeReachedWhy
                         .replace("{courier}", money(COURIER_GROSZE))
                         .replace("{locker}", money(LOCKER_GROSZE))
                         .replace("{prog}", money(FREE_SHIPPING_FROM_GROSZE))}
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
                 {blocked ? (
                   <>
                     <span
