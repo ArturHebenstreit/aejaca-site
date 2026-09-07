@@ -227,9 +227,23 @@ AEJaCA Studio to warsztat jubilerski łączący parametryczne projektowanie CAD,
 | Au 9K | - | - | x1,021 |
 | Au 18K | - | - | x1,018 |
 
-Krzywe wypalania, kalkulacja wsadu, procedura topienia srebra i studzenie:
-`AEJaCA_Odlewnictwo_Procedury.md`. Mnożniki skurczu żyją w kodzie
-(`src/data/castingAlloys.js`) i to on jest źródłem dla kalkulatora.
+**Krzywa wypalania NIE jest jedna. Zależy od materiału wzorca ORAZ od stopu**
+(decyzja procesowa z 2026-09, po wadliwym odlewie srebrnym na krzywej złota):
+
+| Wzorzec | Stop | Plateau (sloty 5-7) | Kolba (sloty 8-9) |
+|---|---|---|---|
+| PLA | Au 585 | 720°C | 550°C |
+| PLA | Ag 925 | 700°C | 480°C |
+| Żywica X-One V2 | Au 585 | 700°C | 550°C |
+| Żywica X-One V2 | Ag 925 | 690°C | 480°C |
+
+Powód rozdzielenia: spoiwo siarczanowe Omni-II zaczyna się rozkładać powyżej
+ok. **730°C** i wydziela SO2, na który srebro jest znacznie bardziej podatne niż
+złoto. Plateau 720°C jest bezpieczne dla złota i nie jest dla srebra.
+
+Pełne krzywe slot po slocie, kalkulacja wsadu, procedura topienia srebra
+i studzenie: `AEJaCA_Odlewnictwo_Procedury.md`, rozdz. 3-8. Mnożniki skurczu
+żyją w kodzie (`src/data/castingAlloys.js`) i to on jest źródłem dla kalkulatora.
 
 ### Możliwości
 - Pełny cykl odlewniczy lost-PLA i lost-resin do Au 585 i Ag 925

@@ -1,6 +1,6 @@
 # AEJaCA - Procedury odlewnicze: masa formierska, wypalanie, odlew
 
-*Wersja 1.0 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
+*Wersja 1.1 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
 
 > **Miejsce w repozytorium.** Ten dokument jest źródłem prawdy o procesie odlewniczym:
 > parametry sprzętu, masa formierska, krzywe wypalania, temperatury, wsad i studzenie.
@@ -186,9 +186,33 @@ Kolba z zaklejonymi perforacjami oddaje wilgoć wyłącznie czołem, czyli ok. 5
 
 ## 3. KRZYWE WYPALANIA
 
-### 3.1 Lost-PLA [POTWIERDZONE - działa]
+### 3.0 Zasada nadrzędna: krzywa zależy od DWÓCH zmiennych
 
-Kolba 83 x 100 mm, VEVOR KD-Z6652B.
+**Krzywa wypalania jest funkcją materiału wzorca ORAZ stopu odlewniczego. Nie wolno przenosić krzywej między nimi.**
+
+| Zmienna | Wpływa na |
+|---|---|
+| **Materiał wzorca** (PLA / żywica) | Slot 1 (dewax lub jego brak) oraz plateau (sloty 5-7) |
+| **Stop odlewniczy** (Ag / Au) | Sloty 8-9 (temperatura kolby) oraz górna granica plateau |
+
+Sloty 2-3 (odwodnienie gipsu) są wspólne dla wszystkich wariantów, bo zależą wyłącznie od masy formierskiej i gabarytu kolby.
+
+**Granica bezpieczeństwa masy gipsowej:** spoiwo siarczanowe Omni-II zaczyna się rozkładać powyżej ok. 730°C, wydzielając SO2. Srebro jest na ten gaz znacznie bardziej podatne niż złoto. Stąd plateau 720°C jest akceptowalne dla Au, ale nie dla Ag.
+
+**Macierz krzywych:**
+
+| Wzorzec | Stop | Krzywa | Status |
+|---|---|---|---|
+| PLA | Au 585 | **A** (3.1) | [POTWIERDZONE - działa] |
+| PLA | Ag 925 | **B** (3.2) | [DO WERYFIKACJI] |
+| Żywica X-One V2 | Au 585 | **C** (3.3) | [DO WERYFIKACJI] |
+| Żywica X-One V2 | Ag 925 | **D** (3.4) | [DO WERYFIKACJI] |
+
+---
+
+### 3.1 KRZYWA A: Lost-PLA + Au 585 [POTWIERDZONE - działa]
+
+Kolba 83 x 100 mm, VEVOR KD-Z6652B. **To jest krzywa referencyjna, z której wyprowadzono pozostałe.**
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -199,51 +223,99 @@ Kolba 83 x 100 mm, VEVOR KD-Z6652B.
 | 5 | 720°C | 60 min | Główne wypalanie (1/3) |
 | 6 | 720°C | 60 min | Główne wypalanie (2/3) |
 | 7 | 720°C | 60 min | Główne wypalanie (3/3) |
-| 8 | temp. odlewu | 60 min | Schładzanie do temp. odlewu |
-| 9 | temp. odlewu | 60 min | Utrzymanie, **okno na odlew** |
+| 8 | 550°C | 60 min | Schładzanie do temp. odlewu |
+| 9 | 550°C | 60 min | Utrzymanie, **okno na odlew** |
 
 **Zasady krzywej:**
 
 - Odwodnienie (sloty 1-3) to najważniejszy etap bezpieczeństwa. Wolne dochodzenie plus 2 h przy 220°C zapobiega pęknięciu formy od pary wodnej.
 - Wypalanie PLA (slot 4): 400°C przez godzinę, plus dopalanie podczas rampy 400 do 720°C w slocie 5.
 - Plateau 720°C (sloty 5-7): 3 h wystarcza przy jednym pierścionku bez wosku. Z woskiem wydłużyć do 4 h.
+- **Plateau 720°C jest tu uzasadnione:** PLA rozkłada się termicznie i zostawia popiół, który wymaga dopalenia w wysokiej temperaturze. Złoto jest znacznie mniej podatne na porowatość gazową niż srebro, więc bliskość granicy rozkładu spoiwa nie stanowi problemu.
 - Wszystkie 9 timerów musi mieć wartość różną od zera.
 
-### 3.2 Lost-resin BlueCast X-One V2 [DO WERYFIKACJI]
+---
 
-Identyczna z lost-PLA z **jedną zmianą w slocie 1**.
+### 3.2 KRZYWA B: Lost-PLA + Ag 925 [DO WERYFIKACJI]
+
+Zmiany względem krzywej A: **plateau obniżone, temperatura kolby obniżona.**
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
-| 1 | **170°C** | 60 min | **Wytopienie X-One (dewax) + odparowanie wilgoci** |
+| 1 | 150°C | 60 min | Rampa + odparowanie wilgoci |
+| 2 | 220°C | 60 min | Odwodnienie gipsu (1/2) |
+| 3 | 220°C | 60 min | Odwodnienie gipsu (2/2) |
+| 4 | 400°C | 60 min | Wypalanie PLA |
+| 5-7 | **700°C** | 3 x 60 min | Główne wypalanie |
+| 8-9 | **480°C** | 2 x 60 min | Schładzanie i okno odlewu |
+
+**Konflikt do rozstrzygnięcia empirycznie:** PLA potrzebuje wysokiej temperatury do dopalenia popiołu, a srebro jej nie znosi. 700°C to kompromis. Jeżeli w odlewie pojawią się wtrącenia z niedopalonego PLA, **wydłużyć plateau do 4 h zamiast podnosić temperaturę** (wtedy sloty 5-8 na 700°C, a okno odlewu skraca się do jednego slotu).
+
+Przy lost-PLA i srebrze rozważyć przejście na wzorzec żywiczny, który likwiduje ten konflikt.
+
+---
+
+### 3.3 KRZYWA C: Lost-resin X-One V2 + Au 585 [DO WERYFIKACJI]
+
+Zmiana względem krzywej A: **slot 1 podniesiony na dewax.**
+
+| Slot | Temp | Timer | Faza |
+|---|---|---|---|
+| 1 | **170°C** | 60 min | **Wytopienie X-One (dewax) + wilgoć powierzchniowa** |
 | 2 | 220°C | 60 min | Odwodnienie gipsu (1/2) |
 | 3 | 220°C | 60 min | Odwodnienie gipsu (2/2) |
 | 4 | 400°C | 60 min | Dopalanie pozostałości |
-| 5-7 | 720°C | 3 x 60 min | Główne wypalanie |
-| 8-9 | temp. odlewu | 2 x 60 min | Schładzanie i okno odlewu |
+| 5-7 | 700°C | 3 x 60 min | Główne wypalanie |
+| 8-9 | 550°C | 2 x 60 min | Schładzanie i okno odlewu |
+
+Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura nie jest potrzebna. BlueCast rekomenduje ostatni etap 700°C; materiał wypala się całkowicie już przy 650°C.
+
+---
+
+### 3.4 KRZYWA D: Lost-resin X-One V2 + Ag 925 [DO WERYFIKACJI]
+
+**Krzywa docelowa dla bieżących projektów srebrnych.**
+
+| Slot | Temp | Timer | Faza |
+|---|---|---|---|
+| 1 | **170°C** | 60 min | **Wytopienie X-One (dewax) + wilgoć powierzchniowa** |
+| 2 | 220°C | 60 min | Odwodnienie gipsu (1/2) |
+| 3 | 220°C | 60 min | Odwodnienie gipsu (2/2) |
+| 4 | 400°C | 60 min | Dopalanie pozostałości |
+| 5 | **690°C** | 60 min | Główne wypalanie (1/3) |
+| 6 | **690°C** | 60 min | Główne wypalanie (2/3) |
+| 7 | **690°C** | 60 min | Główne wypalanie (3/3) |
+| 8 | **480°C** | 60 min | Schładzanie do temp. odlewu |
+| 9 | **480°C** | 60 min | Utrzymanie, **okno na odlew** |
 
 **Uzasadnienie slotu 1:** X-One zawiera niskotopliwy polimer woskowy, który ma się wytopić i wypłynąć, nie tylko zmięknąć. To odpowiednik dewaxu, którego przy PLA nie ma. Przy 150°C część zostaje w formie i idzie do spalenia w slocie 4, zwiększając ilość popiołu.
 
-BlueCast rekomenduje ostatni etap 700°C; materiał wypala się całkowicie już przy 650°C. 720°C mieści się w zapasie.
+**Uzasadnienie plateau 690°C:** maksymalne oddalenie od granicy rozkładu spoiwa (730°C) przy zachowaniu marginesu nad temperaturą pełnego wypalenia X-One (650°C).
 
-### 3.3 Budżet czasu
+---
 
-| Składnik | Czas |
-|---|---|
-| Suma 9 timerów | 9 h 00 min |
-| Rampy grzania | ~2 h 00 min |
-| Schładzanie 720 do temp. odlewu (bierne) | ~1 h 00-1 h 10 min |
-| **Razem** | **~12 h** |
+### 3.5 Budżet czasu
+
+| Składnik | Krzywa A / C (kolba 550°C) | Krzywa B / D (kolba 480°C) |
+|---|---|---|
+| Suma 9 timerów | 9 h 00 min | 9 h 00 min |
+| Rampy grzania | ~2 h 00 min | ~2 h 00 min |
+| Schładzanie bierne | ~1 h 00-1 h 10 min | **~1 h 30 min** |
+| **Razem** | **~12 h** | **~12 h 40 min** |
+
+Schładzanie w krzywych B i D trwa dłużej, bo spadek 690 do 480°C jest większy niż 720 do 550°C, a piec chłodzi biernie.
 
 **Okno odlewu otwiera się w 10. godzinie i trwa 2 h.**
 
-| Start | Okno odlewu |
-|---|---|
-| 19:00 | 05:05 - 07:05 |
-| 21:00 | 07:05 - 09:05 |
-| **23:00** | **09:05 - 11:05** (zalecany, odlew po przespanej nocy) |
+| Start | Okno odlewu (A / C) | Okno odlewu (B / D) |
+|---|---|---|
+| 19:00 | 05:05 - 07:05 | 05:45 - 07:45 |
+| 21:00 | 07:05 - 09:05 | 07:45 - 09:45 |
+| **23:00** | **09:05 - 11:05** | **09:45 - 11:45** |
 
-Schładzanie jest najbardziej niepewną pozycją. Piec nie chłodzi aktywnie. Timer slotu 8 nie ruszy przed osiągnięciem temperatury, więc program sam się koryguje; przesuwa się tylko zegar.
+Start 23:00 zalecany: odlew po przespanej nocy.
+
+Schładzanie jest najbardziej niepewną pozycją. Piec nie chłodzi aktywnie. Timer slotu 8 nie ruszy przed osiągnięciem temperatury, więc program sam się koryguje; przesuwa się tylko zegar. Przyspieszenie: uchylić drzwiczki na 3-5 minut po zakończeniu slotu 7, nie na oścież (szok termiczny formy).
 
 ---
 
@@ -259,7 +331,21 @@ Schładzanie jest najbardziej niepewną pozycją. Piec nie chłodzi aktywnie. Ti
 
 Srebro jest bardziej płynne od złota. Zbyt gorąca kolba daje szorstką, przypaloną powierzchnię odlewu i reakcję z masą.
 
-> **Notatka z odlewu 2026-09:** wykonano odlew Ag 925 przy kolbie 550°C (krzywa ustawiona pod Au 585). Odlew wyszedł. Do oceny: chropowatość powierzchni względem odlewów przy 480°C.
+> ### Notatka z odlewu 2026-09 (klucze Ag 925) - WADLIWY
+>
+> **Co zrobiono:** odlew Ag 925 przy użyciu **krzywej A** (lost-PLA + Au 585) bez modyfikacji. Kolba 550°C, plateau 720°C x 3 h, metal ~1000°C.
+>
+> **Wynik:** odlew wypełnił geometrię w całości (brak niedolewów, brak pęknięć), ale wystąpiły dwie wady:
+> 1. **Porowatość gazowa rozłożona** - pory 0,3-0,8 mm rozrzucone wzdłuż kabłąka, częściowo podpowierzchniowe, otwierające się przy obróbce
+> 2. **Chropowata, piaskowa powierzchnia na całym odlewie** - jednolita ziarnista faktura, nie do usunięcia zwykłym szlifem
+>
+> **Diagnoza:** plateau 720°C przez 3 h leży tuż pod granicą rozkładu spoiwa siarczanowego Omni-II (~730°C). Uwolniony SO2 wszedł do ciekłego srebra i wrócił przy krzepnięciu jako porowatość; degradacja powierzchni wnęki dała piaskową fakturę. Efekt spotęgowany kolbą 550°C zamiast 480°C (wolniejsze krzepnięcie = więcej czasu na wydzielenie gazu, silniejsza reakcja metal-masa).
+>
+> **Przyczyna źródłowa:** zastosowanie krzywej zoptymalizowanej pod Au 585 do stopu Ag 925. Złoto jest znacznie mniej podatne na porowatość gazową, więc ta sama krzywa działa dla Au i zawodzi dla Ag.
+>
+> **Decyzja:** odlew na przetop (porowatość rozłożona, kabłąk to element nośny, naprawa lutem dałaby miejsce słabsze od reszty). Kolejny odlew wg **krzywej D**.
+>
+> **Wniosek procesowy:** stąd macierz krzywych w rozdz. 3.0. Nie przenosić krzywej między stopami.
 
 ### 4.2 Temperatura metalu
 
@@ -406,7 +492,9 @@ Dalej: myjka ultradźwiękowa na resztki w zakamarkach, potem obróbka wg `AEJaC
 - [ ] Kolba na cegle szamotowej, **wlotem do dołu**
 - [ ] Blacha ofiarna pod kolbą
 - [ ] Otwór wentylacyjny drożny
+- [ ] **Krzywa dobrana wg macierzy z rozdz. 3.0 (materiał wzorca + stop)**
 - [ ] Wszystkie 9 timerów ustawione (żaden nie może być 0)
+- [ ] Plateau: 720°C tylko dla Au; dla Ag maks. 700°C (PLA) lub 690°C (żywica)
 - [ ] Sloty 8-9 ustawione na temperaturę właściwą dla stopu (Ag 480, Au 550-600)
 
 ## 10. CHECKLISTA PRZED ODLEWEM
