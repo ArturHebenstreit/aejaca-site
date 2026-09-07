@@ -872,9 +872,19 @@ export async function convertQuoteToOrder(
       // Kwota w euro idzie za kwota w zlotowkach. Bez tego wiersza rabat
       // schodzilby z sumy PLN, a przelew opiewalby na cene sprzed rabatu:
       // klient przelalby za duzo i mielibysmy nadplate do zwrotu.
+      // TYP PARAMETRU W CASE PODAJEMY WPROST, tak samo jak przy INSERT wyzej.
+      //
+      // 7 wrzesnia 2026, dzien po naprawieniu tamtego INSERT, zaplata z oferty
+      // NADAL konczyla sie piecsetka, ale tylko przy kodzie rabatowym, bo ten
+      // zapis leci wylacznie wtedy. Przyczyna jest ta sama i to jest wlasnie
+      // powod, dla ktorego warto ja opisac dwa razy: w wyrazeniu CASE jedna
+      // galaz to NULL, czyli typ nieznany, a druga to goly parametr, ktory
+      // sterownik wysyla bez typu. Postgres nie ma z czego wyprowadzic typu
+      // calego wyrazenia i schodzi do `text`, a kolumna jest liczba calkowita.
+      // Rzutowanie w tym jednym miejscu rozstrzyga cale wyrazenie.
       await client.query(
         `UPDATE orders SET discount_code = $2, discount_grosze = $3, total_grosze = $4,
-                amount_eur_cents = CASE WHEN amount_eur_cents IS NULL THEN NULL ELSE $5 END
+                amount_eur_cents = CASE WHEN amount_eur_cents IS NULL THEN NULL ELSE $5::INTEGER END
           WHERE id = $1`,
         [orderId, discountCode, discountGrosze, doZaplaty, przelew ? eurCentsFromGrosze(doZaplaty, eurRate) : null]
       );
