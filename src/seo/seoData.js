@@ -198,7 +198,7 @@ export const SEO = {
     },
     en: {
       title: "sTuDiO Tools, Laser Parameters & Calculator, AEJaCA",
-      description: "Free tools for makers. Interactive laser parameter table for CO₂, Fiber, Diode, UV lasers. sTuDiO project estimator.",
+      description: "Free tools for makers: laser parameter wizard, FDM and MSLA print settings, 3D model checker, casting shrinkage compensation and the sTuDiO project estimator.",
       keywords: "laser parameters table, laser calculator, CO2 laser settings, fiber laser parameters, AEJaCA",
       ogAlt: "AEJaCA sTuDiO Tools, laser parameters and calculator",
     },

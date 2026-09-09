@@ -62,11 +62,11 @@ const SEO_META = {
   },
   en: {
     title: "FDM 3D Print Settings: PLA, PETG, ABS, PA-CF | AEJaCA",
-    description: "Find the right material, check print parameters and calculate filament usage. Free tool for 16 filaments.",
+    description: "Find the right material, check FDM print parameters and calculate filament usage for PLA, PETG, ABS, PA-CF and more. Free tool for 16 filaments, no sign-up.",
   },
   de: {
     title: "FDM-3D-Druckparameter: PLA, PETG, ABS, PA-CF | AEJaCA",
-    description: "Material auswählen, Druckparameter prüfen und Filamentverbrauch berechnen. Kostenloses Tool für 16 Filamente.",
+    description: "Material auswählen, FDM-Druckparameter prüfen und Filamentverbrauch für PLA, PETG, ABS und PA-CF berechnen. Kostenloses Tool für 16 Filamente, ohne Anmeldung.",
   },
 };
 
