@@ -62,7 +62,7 @@ const SEO_META = {
   },
   en: {
     title: "Laser Parameters: 88 Materials, 7 Laser Types | AEJaCA",
-    description: "Find laser parameters for CO₂, fiber, diode and more. Over 1000 material–laser combinations. Free tool, no sign-up.",
+    description: "Find laser parameters for CO₂, fiber, diode and more. Over 1000 material-laser combinations across 7 laser types and 88 materials. Free tool, no sign-up.",
   },
   de: {
     title: "Laserparameter: 88 Materialien, 7 Lasertypen | AEJaCA",

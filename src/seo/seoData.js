@@ -171,19 +171,19 @@ export const SEO = {
   toolsjewelry: {
     pl: {
       title: "Narzędzia jubilerskie, Kalkulatory AEJaCA | Biżuteria",
-      description: "Darmowe kalkulatory jubilerskie AEJaCA. Kalkulator blanku obrączki, wycena biżuterii na zamówienie. Bez rejestracji.",
+      description: "Darmowe kalkulatory jubilerskie AEJaCA: skład stopów, wartość złota, blank obrączki, konwerter rozmiarów, miarka do druku. Bez reklam, bez rejestracji.",
       keywords: "kalkulator jubilerski, kalkulator blanku obrączki, wycena biżuterii online, AEJaCA",
       ogAlt: "Narzędzia jubilerskie AEJaCA, kalkulatory online",
     },
     en: {
       title: "Jewelry Tools & Calculators, AEJaCA",
-      description: "Free AEJaCA jewelry calculators. Ring blank calculator, custom jewelry estimator. No registration required.",
+      description: "Free AEJaCA jewelry calculators: alloy composition, gold value, ring blank, ring size converter, printable ring sizer. No ads, no registration required.",
       keywords: "jewelry calculator, ring blank calculator, custom jewelry estimate, AEJaCA",
       ogAlt: "AEJaCA Jewelry Tools, online calculators",
     },
     de: {
       title: "Schmuck-Tools & Kalkulatoren, AEJaCA",
-      description: "Kostenlose AEJaCA-Schmuck-Kalkulatoren. Ring-Rohling-Rechner, Schmuck nach Maß kalkulieren. Keine Registrierung.",
+      description: "Kostenlose AEJaCA-Schmuck-Kalkulatoren: Legierungszusammensetzung, Goldwert, Ring-Rohling, Ringgrößen-Konverter, Ringmaßband. Ohne Werbung, ohne Anmeldung.",
       keywords: "Schmuckkalkulator, Ring-Rohling-Rechner, Schmuck kalkulieren, AEJaCA",
       ogAlt: "AEJaCA Schmuck-Tools, Online-Kalkulatoren",
     },
@@ -198,7 +198,7 @@ export const SEO = {
     },
     en: {
       title: "sTuDiO Tools, Laser Parameters & Calculator, AEJaCA",
-      description: "Free tools for makers. Interactive laser parameter table for CO₂, Fiber, Diode, UV lasers. sTuDiO project estimator.",
+      description: "Free tools for makers: laser parameter wizard, FDM and MSLA print settings, 3D model checker, casting shrinkage compensation and the sTuDiO project estimator.",
       keywords: "laser parameters table, laser calculator, CO2 laser settings, fiber laser parameters, AEJaCA",
       ogAlt: "AEJaCA sTuDiO Tools, laser parameters and calculator",
     },
@@ -279,7 +279,7 @@ export const SEO = {
   warranty: {
     pl: {
       title: "Gwarancja 24 miesiące, AEJaCA",
-      description: "Gwarancja AEJaCA: 24 miesiące na wady produkcyjne, bezpłatny serwis w pierwszym roku, reklamacja w 14 dni roboczych.",
+      description: "Gwarancja AEJaCA: 24 miesiące na wady produkcyjne, materiałowe i wykonawcze, bezpłatny serwis w pierwszym roku, reklamacja rozpatrywana w 14 dni roboczych.",
       keywords: "gwarancja biżuteria, reklamacja AEJaCA, serwis biżuterii, wady produkcyjne",
       ogAlt: "Gwarancja AEJaCA, 24 miesiące",
     },

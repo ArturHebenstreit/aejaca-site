@@ -14,8 +14,8 @@ export const meta = {
   },
   description: {
     pl: "Kompletny poradnik o odlewach z żywicy UV i dwukomponentowej. Zastosowania, materiały, ceny i czas realizacji w AEJaCA sTuDiO.",
-    en: "Complete guide to UV and 2K epoxy resin casting. Applications, materials, pricing, and turnaround at AEJaCA sTuDiO.",
-    de: "Kompletter Ratgeber zu UV- und 2K-Epoxidharzguss. Anwendungen, Materialien, Preise und Lieferzeit im AEJaCA sTuDiO.",
+    en: "Complete guide to UV and 2K epoxy resin casting: cure times, layer thickness, pigments, mica colors, maximum size, pricing, and turnaround at AEJaCA sTuDiO.",
+    de: "Kompletter Ratgeber zu UV- und 2K-Epoxidharzguss: Aushärtezeiten, Schichtdicke, Pigmente, maximale Größe, Preise und Lieferzeit im AEJaCA sTuDiO.",
   },
   keywords: {
     pl: "odlewy żywiczne, żywica epoksydowa, żywica UV, odlewy artystyczne, formy silikonowe, AEJaCA sTuDiO",

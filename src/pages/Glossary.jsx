@@ -25,7 +25,7 @@ const LABELS = {
   en: {
     tag: "Glossary",
     title: "Jewelry & fabrication glossary",
-    description: "Key terms from the world of jewelry, 3D printing, laser engraving, and resin casting, explained simply and concisely.",
+    description: "Over 30 key terms from the world of jewelry, 3D printing, laser engraving, and resin casting, explained simply and concisely, with links to related tools.",
     search: "Search terms…",
     all: "All",
     readArticle: "Read the article",

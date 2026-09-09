@@ -402,14 +402,22 @@ if (/<Suspense/.test(clientShell)) {
   const MAX_OPIS = 160;
   // Dolna granica opisu. Bing zglosil szesc stron z opisem "za krotkim", i mial
   // racje: strony uslug niosly jako opis jedno zdanie z kafelka, po 39 znakow.
-  // Opis krotszy od stu znakow wyszukiwarka zwykle wyrzuca i sklada wlasny
+  // Opis krotszy od tej granicy wyszukiwarka zwykle wyrzuca i sklada wlasny
   // urywek strony, czesto z menu, wiec wynik przestaje mowic o czym jest strona
   // i nikt tego nie widzi po naszej stronie.
+  //
+  // GRANICA TO 120, A NIE 150 Z ZALECENIA BINGA (decyzja wlasciciela,
+  // 2026-09-09). Bing zaleca w swoim panelu 150 do 160, ale zglosil wylacznie
+  // strony, ktore mialy 39 znakow, a nie te, ktore maja 130. Jego realny prog
+  // lezy wiec znacznie nizej niz porada w okienku. Podniesienie bramki do 150
+  // kazaloby przepisac 141 opisow w trzech jezykach za cos, czego nikt nie
+  // egzekwuje; 120 zdejmuje te naprawde cienkie i kosztuje dwadziescia zdan.
+  // 150 do 160 zostaje CELEM dla nowych stron, nie warunkiem buildu.
   //
   // Strony z `noindex` pomijamy, bo nie trafiaja do wynikow. Pomijamy tez karty
   // produktow: ich opisy stoja w bazie, a nie w repozytorium (`products.pull`),
   // wiec build nie ma czego poprawic i mowilby o tym przy kazdym uruchomieniu.
-  const MIN_OPIS = 100;
+  const MIN_OPIS = 120;
   const zaDlugie = [];
   const zaKrotkie = [];
   // Opis urwany w pol frazy. Dlugosc miesci sie w normie, wiec ani nasza

@@ -14,7 +14,7 @@ export const meta = {
     de: "Eheringe auf Bestellung - Metall, Profil & Preisguide",
   },
   description: {
-    pl: "Jak wybrać obrączki ślubne? Porównanie metali, profili i wykończeń. Ceny par od 690 zł. Kalkulator online w AEJaCA.",
+    pl: "Jak wybrać obrączki ślubne na zamówienie? Porównanie metali, profili i wykończeń. Ceny par od 690 zł, termin od 2 do 6 tygodni zależnie od metalu.",
     en: "How to choose wedding bands? Comparing metals, profiles, and finishes. Pair pricing from €160. Online calculator at AEJaCA.",
     de: "Wie wählt man Eheringe? Vergleich von Metallen, Profilen und Oberflächen. Paarpreise ab 160 €. Online-Kalkulator bei AEJaCA.",
   },

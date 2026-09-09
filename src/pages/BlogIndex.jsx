@@ -18,7 +18,7 @@ const LABELS = {
   en: {
     tag: "Blog",
     title: "Knowledge, tips & inspiration",
-    description: "Practical guides to custom jewelry, 3D printing, and laser engraving. Pricing, processes, materials - all in one place.",
+    description: "Practical guides to custom jewelry, 3D printing, laser engraving, and resin casting, covering pricing, processes and materials - all in one place.",
   },
   de: {
     tag: "Blog",

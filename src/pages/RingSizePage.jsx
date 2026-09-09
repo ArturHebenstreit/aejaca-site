@@ -59,15 +59,15 @@ const LABELS = {
 const SEO_META = {
   pl: {
     title: "Rozmiary pierścionków - Konwerter EU / US / UK / JP | AEJaCA",
-    description: "Kalkulator i konwerter rozmiarów pierścionków. Oblicz rozmiar EU ze sznurka lub średnicy. Przelicznik EU, US, UK, JP.",
+    description: "Kalkulator i konwerter rozmiarów pierścionków. Oblicz rozmiar EU ze sznurka lub średnicy, albo wybierz wartość z siatki. Przelicznik EU, US, UK, JP.",
   },
   en: {
     title: "Ring Size Converter - EU / US / UK / JP | AEJaCA",
-    description: "Ring size calculator and converter. Calculate EU size from string measurement or diameter. EU, US, UK, JP chart.",
+    description: "Ring size calculator and converter. Calculate EU size from string measurement or ring diameter, or pick a value from the size grid. EU, US, UK, JP chart.",
   },
   de: {
     title: "Ringgrößen-Konverter - EU / US / UK / JP | AEJaCA",
-    description: "Ringgrößen Rechner und Konverter. EU-Größe aus Fadenmaß oder Durchmesser berechnen. EU, US, UK, JP Tabelle.",
+    description: "Ringgrößen Rechner und Konverter für Schmuck. EU-Größe aus Fadenmaß, Ringdurchmesser oder per Auswahl aus dem Größenraster berechnen. EU, US, UK, JP Tabelle.",
   },
 };
 
