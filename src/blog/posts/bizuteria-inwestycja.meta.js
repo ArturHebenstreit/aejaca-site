@@ -12,7 +12,7 @@ export const meta = {
   },
   description: {
     pl: "Czy biżuteria ze złota i kamieni szlachetnych to dobra inwestycja? Porównanie wartości, ryzyka i praktycznych aspektów. Poradnik AEJaCA.",
-    en: "Is gold and gemstone jewelry a good investment? Comparing value, risk, and practical aspects. AEJaCA guide.",
+    en: "Is gold and gemstone jewelry a good investment? Comparing value, resale rates, and risk for certified stones versus mass-market pieces. AEJaCA guide.",
     de: "Ist Gold- und Edelsteinschmuck eine gute Investition? Vergleich von Wert, Risiko und praktischen Aspekten. AEJaCA-Ratgeber.",
   },
   keywords: {
