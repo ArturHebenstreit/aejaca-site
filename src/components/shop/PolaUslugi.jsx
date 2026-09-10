@@ -83,8 +83,14 @@ export function poprawkiWyboru(service, params, opcje = {}) {
     // grawerowania", wiec klient dostawalby zamowienie bez tego, za co
     // wczesniej zaplacil, i nikt by tego nie zobaczyl.
     const zastepczy = f.zamiennik?.(params[f.key]);
-    zmiany[f.key] = zastepczy && warianty.some((o) => o.id === zastepczy)
-      ? zastepczy : warianty[0].id;
+    if (zastepczy && warianty.some((o) => o.id === zastepczy)) { zmiany[f.key] = zastepczy; continue; }
+    // POLE BEZ WYBORU WSTEPNEGO NIE ZGADUJE TAKZE PRZY WYCOFANEJ WARTOSCI.
+    // Zloto 999 zniknelo z oferty odlewu 2026-09-10. Podstawienie pierwszej
+    // pozycji z listy zamienialoby zapisany koszyk ze zlotem na srebro, po
+    // cichu i przy zupelnie innej cenie. Czyscimy wiec pole: klient widzi
+    // kafelek bez wyboru i zdanie o tym, ze brakuje kruszcu, czyli dowiaduje
+    // sie, ze ma zdecydowac jeszcze raz.
+    zmiany[f.key] = f.bezWyboru ? undefined : warianty[0].id;
   }
   return Object.keys(zmiany).length ? zmiany : null;
 }
@@ -340,6 +346,24 @@ export default function PolaUslugi({
         const { f } = krok;
         const d = dodatki[f.key] || {};
         const warianty = wariantyPola(f, params);
+        // WARUNKI POKAZUJEMY PRZY WYBORZE, NIE W REGULAMINIE. Zgloszenie
+        // wlasciciela 2026-09-10: klient, ktory klika "gotowy wzorzec", ma od
+        // razu wiedziec, na co sie umawia, bo za chwile spakuje wosk i nada go
+        // poczta. Sekcja regulaminu opisuje to samo, ale czyta ja ten, kto juz
+        // szuka sporu, a nie ten, kto wlasnie decyduje.
+        //
+        // `warunki` jest funkcja stanu, a nie stalym napisem: dotyczy JEDNEGO
+        // wariantu pola, wiec przy pozostalych ma nie istniec, a nie stac
+        // szarym drukiem "dotyczy tylko wtedy, gdy".
+        const listaWarunkow = f.warunki?.(params);
+        const warunki = listaWarunkow ? (
+          <div className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] p-3.5">
+            <p className="text-amber-200 text-xs font-semibold mb-1.5">{t(listaWarunkow.tytul, lang)}</p>
+            <ul className="text-neutral-300 text-xs leading-relaxed space-y-1 list-disc pl-4">
+              {listaWarunkow.punkty.map((punkt, n) => <li key={n}>{t(punkt, lang)}</li>)}
+            </ul>
+          </div>
+        ) : null;
         const uwaga = f.uwaga ? <p className="text-neutral-400 text-xs leading-relaxed mt-2">{t(f.uwaga, lang)}</p> : null;
         const etykieta = d.etykieta ? t(d.etykieta, lang) : t(f.label, lang);
         // Licznik sztuk stoi TUZ POD progiem nakladu, bo to jedna decyzja
@@ -368,6 +392,7 @@ export default function PolaUslugi({
               {przed}
               {kontrolka}
               {uwaga}
+              {warunki}
               {po}
               {licznik}
             </CalcCard>
@@ -391,6 +416,7 @@ export default function PolaUslugi({
               </div>
             )}
             {uwaga && <div className="-mt-4 mb-6">{uwaga}</div>}
+            {warunki && <div className="-mt-2 mb-6">{warunki}</div>}
             {licznik}
           </Fragment>
         );
