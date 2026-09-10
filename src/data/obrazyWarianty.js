@@ -147,6 +147,7 @@ export const WARIANTY_OBRAZOW = {
   "/img/calc/resin_inclusions/none.webp": [256, 384, 512],
   "/img/calc/resin_inclusions/object.webp": [256, 384, 512],
   "/img/calc/resin_inclusions/pigment.webp": [256, 384, 512],
+  "/img/calc/resin_inclusions/text_print.webp": [256, 384, 512],
   "/img/calc/resin_molds/client.webp": [256, 384, 512],
   "/img/calc/resin_molds/existing.webp": [256, 384, 512],
   "/img/calc/resin_molds/new_l.webp": [256, 384, 512],

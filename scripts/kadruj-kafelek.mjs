@@ -17,16 +17,21 @@
 // Margines zostaje, bo przedmiot dociety do samej krawedzi wyglada na
 // wciety, a `MaterialCards` rysuje go w zaokraglonej ramce.
 //
-//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines]
+//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog]
 //
 // `margines` to ulamek dluzszego boku przedmiotu, domyslnie 0.12.
+// `prog` to jasnosc, od ktorej piksel liczy sie jako przedmiot, domyslnie 120.
+//
+// Skrypt WYPISUJE, jaki prostokat znalazl i jaki udzial kadru zajmuje przedmiot
+// przed cieciem i po. To nie jest ozdoba: zle wykrycie widac wlasnie po tym, ze
+// przedmiot zajmowal 99% kadru, chociaz na oko zajmuje polowe.
 
 import sharp from "sharp";
 import { existsSync } from "node:fs";
 
-const [, , wejscie, wyjscie, marginesArg] = process.argv;
+const [, , wejscie, wyjscie, marginesArg, progArg] = process.argv;
 if (!wejscie || !wyjscie) {
-  console.error("Uzycie: node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines]");
+  console.error("Uzycie: node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog]");
   process.exit(1);
 }
 if (!existsSync(wejscie)) {
@@ -35,6 +40,13 @@ if (!existsSync(wejscie)) {
 }
 
 const MARGINES = Number(marginesArg ?? 0.12);
+// PROG 120, NIE 40. Pierwsza wersja brala 40 i na obu zdjeciach z 10 wrzesnia
+// oddawala prawie caly kadr jako przedmiot: te tla nie sa plaska czernia, tylko
+// niosa kaluze swiatla za przedmiotem i jego odbicie na blacie. Jedno i drugie
+// przekracza 40, a nie przekracza 120. Sprawdzone przez przemiatanie progow:
+// przy 120 wynik jest STABILNY, czyli nie zmienia sie miedzy 120 a 150, wiec
+// nie jest przypadkowym trafieniem w zbocze gradientu.
+const PROG = Number(progArg ?? 120);
 const BOK = 512;
 
 const meta = await sharp(wejscie).metadata();
@@ -45,10 +57,9 @@ const meta = await sharp(wejscie).metadata();
  * `sharp.trim()` odpada, bo szuka JEDNOLITEJ ramki wokol kadru, a tlo tych
  * zdjec ma delikatny gradient i winiete: proba na `object.webp` oddala caly
  * obraz jako przedmiot. Czytamy wiec obraz w szarosciach i szukamy wierszy
- * i kolumn, w ktorych cokolwiek przekracza prog jasnosci. Odbicie na blacie
- * jest ciemniejsze niz przedmiot, wiec prog 40 je pomija, a przedmiot lapie.
+ * i kolumn, w ktorych cokolwiek przekracza prog jasnosci.
  */
-async function obszarPrzedmiotu(plik, prog = 40) {
+async function obszarPrzedmiotu(plik, prog = PROG) {
   const { data, info } = await sharp(plik).greyscale().raw().toBuffer({ resolveWithObject: true });
   let lewo = info.width, prawo = -1, gora = info.height, dol = -1;
   for (let y = 0; y < info.height; y += 1) {

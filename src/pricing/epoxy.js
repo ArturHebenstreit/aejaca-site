@@ -302,7 +302,7 @@ export const INCLUSIONS = [
   // Ten sam napis wydrukowany na drukarce zywicznej: efekt lzejszy i bardziej
   // jednorodny z reszta przedmiotu, bo material jest ten sam.
   { id: "text_print", label: { pl: "Napis drukowany w żywicy", en: "Text printed in resin", de: "Schrift in Harz gedruckt" },
-    cost: 12, timeH: 0.8,
+    cost: 12, timeH: 0.8, img: "/img/calc/resin_inclusions/text_print.webp",
     desc: { pl: "Lżejszy, jednorodny z bryłą", en: "Lighter, uniform with the block", de: "Leichter, einheitlich mit dem Block" } },
   { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },
     cost: 15, timeH: 1.5,  img: "/img/calc/resin_inclusions/led.webp" },

@@ -107,7 +107,20 @@ naraz i wszystkie cztery sa teraz zapisane w promptcie wprost:
 stokrotka i listkami paproci, chlodne swiatlo obrysowe, czarne tlo. Obecny plik to
 plaski krazek widziany z gory. Podmieniamy, chociaz nie bylo tego w planie.
 
+## Co juz stoi w repozytorium
+
+| Plik | Skad | Kadr |
+|---|---|---|
+| `resin_inclusions/text_print.webp` | pierwsze podejscie, przyjete | przedmiot z 64% kadru na 86% |
+| `resin_inclusions/object.webp` | podmiana starego plaskiego krazka | przedmiot z 70% kadru na 86% |
+
+Oba przyciete `scripts/kadruj-kafelek.mjs` z marginesem 0.08. Surowe pliki 2048 x 2048
+nie zostaja w repozytorium: kazdy wazyl 2 MB, a lezaly w `public/`, wiec szlyby do
+`dist/` i na produkcje, nie bedac nigdzie uzyte.
+
 ## Czego nadal brakuje
 
 `from_object`, `from_file`, `from_design` (trzy drogi powstania formy) oraz
-`text_plate` po poprawce promptu.
+`text_plate` po poprawce promptu. Do czasu ich dostarczenia kafelek
+„Napis na srebrnej blaszce" rysuje sie jako szesciokatny znak zastepczy,
+a trzy kafelki formy uzywaja zdjec po wycofanych wariantach rozmiarowych.
