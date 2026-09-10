@@ -20,7 +20,7 @@ import {
   QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
   SHAPE_COMPLEXITY, isChainType,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
-  ENGRAVING_FREE_ABOVE_PLN, normalizeEngravingId,
+  ENGRAVING_FREE_ABOVE_PLN, normalizeEngravingId, metaleDlaMetody, zamiennikDoOdlewu,
 } from "../pricing/jewelryConfig.js";
 import {
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
@@ -317,7 +317,14 @@ export const SERVICES = [
       { key: "typeId", label: L("Rodzaj", "Type", "Art"), widok: "kafelki",
         kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
         optionsFrom: (v) => JEWELRY_TYPES[v.lineId] || JEWELRY_TYPES.woman },
-      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: METALS,
+      // ZLOTA 999 NIE MA PRZY METODZIE "ODLEW" (decyzja wlasciciela 2026-09-10).
+      // Lista metali obsluguje takze robote reczna, gdzie 999 bywa uzasadnione,
+      // wiec wyklucza je METODA, a nie sama lista. `zamiennik` istnieje po to,
+      // zeby przelaczenie z reki na odlew nie zamienilo zapisanego zlota na
+      // srebro: `poprawkiWyboru` bierze pierwsza pozycje z listy, a pierwsza
+      // jest srebro, czyli zupelnie inny material i zupelnie inna cena.
+      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"),
+        optionsFrom: (v) => metaleDlaMetody(v.methodId), zamiennik: zamiennikDoOdlewu,
         widok: "kafelki", kolumny: "grid-cols-3 sm:grid-cols-4" },
       // Lancuch nie ma masywnosci ani metody wykonania: liczy go `calcChain`
       // ze splotu, dlugosci i szerokosci. Pytanie o nie bylo pytaniem bez

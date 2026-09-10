@@ -110,6 +110,29 @@ export const WEIGHTS = [
 ];
 
 // --- MANUFACTURING METHODS ---
+/**
+ * Kruszce dostepne przy DANEJ METODZIE wykonania.
+ *
+ * Zlota czystego sie nie odlewa (decyzja wlasciciela, 2026-09-10): jest za
+ * miekkie na wyrob uzytkowy i zachowuje sie przy zalewaniu inaczej niz stopy.
+ * Przy robocie recznej zostaje, bo tam bywa uzasadnione: wyklucza je metoda,
+ * a nie sama lista metali.
+ *
+ * Ta sama regula stoi po stronie odlewu jako `CASTING_METALS`
+ * (`preciousMetalCasting.js`), gdzie 999 nie ma juz wcale, bo tamta usluga
+ * jest wylacznie odlewem.
+ */
+export const NIE_DO_ODLEWU = ["gold_24k"];
+
+export function metaleDlaMetody(methodId) {
+  return methodId === "cast" ? METALS.filter((m) => !NIE_DO_ODLEWU.includes(m.id)) : METALS;
+}
+
+/** Najblizszy odlewalny kruszec dla proby, ktorej odlac sie nie da. */
+export function zamiennikDoOdlewu(metalId) {
+  return metalId === "gold_24k" ? "gold_18k" : null;
+}
+
 export const METHODS = [
   { id: "cast", label: { pl: "Odlew (lost wax / lost resin)", en: "Cast (lost wax / lost resin)", de: "Guss (Wachsausschmelz / Lost-Resin)" },
     desc: { pl: "Wzorce drukowane 16K, filigran i detal od 0,2 mm", en: "16K printed patterns, filigree and detail from 0.2 mm", de: "16K-gedruckte Modelle, Filigran und Details ab 0,2 mm" }, laborMul: 0.6, laborRate: 80, img: "/img/calc/methods/cast.webp" },

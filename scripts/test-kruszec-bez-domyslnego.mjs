@@ -23,6 +23,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getService } from "../src/data/orderCatalog.js";
 import { describeMissingCastingParams, missingCastingParams } from "../src/pricing/preciousMetalCasting.js";
+import { metaleDlaMetody, zamiennikDoOdlewu } from "../src/pricing/jewelryConfig.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -88,6 +89,29 @@ console.log("\n2b. Kruszec wycofany z oferty CZYSCI pole, a nie podstawia srebra
   sprawdz(CASTING_METALS.length === 5,
     `lista kruszcow ma ${CASTING_METALS.length} pozycji, a ma miec 5 (Ag 925, Ag 800, Au 9k, 14k, 18k)`,
     "lista kruszcow ma piec prob, ktore naprawde odlewamy");
+}
+
+console.log("\n2c. Kalkulator jubilerski tez nie odlewa zlota 999\n");
+{
+  // Ta sama regula, drugie drzwi. Kalkulator jubilerski ma wlasna liste metali,
+  // bo obsluguje takze robote reczna, gdzie 999 bywa uzasadnione. Wyklucza je
+  // wiec METODA, a nie lista: przy "cast" proba znika, przy "handmade" zostaje.
+  const doOdlewu = metaleDlaMetody("cast").map((m) => m.id);
+  const doReki = metaleDlaMetody("handmade").map((m) => m.id);
+  sprawdz(!doOdlewu.includes("gold_24k"),
+    "przy metodzie odlew nadal da sie wybrac zloto 999",
+    "przy metodzie odlew zlota 999 nie ma");
+  sprawdz(doReki.includes("gold_24k"),
+    "zloto 999 zniknelo takze z roboty recznej, a tam nie ma powodu go zabierac",
+    "przy robocie recznej zloto 999 zostaje");
+  // Przelaczenie z reki na odlew nie moze zamienic zlota na srebro: pierwsza
+  // pozycja listy to srebro, czyli inny material i inna cena.
+  sprawdz(zamiennikDoOdlewu("gold_24k") === "gold_18k",
+    "brak zamiennika, wiec zapisane zloto 999 spadnie na srebro przy przelaczeniu na odlew",
+    "zapisane zloto 999 schodzi na najblizsze odlewalne zloto, a nie na srebro");
+  sprawdz(zamiennikDoOdlewu("gold_14k") === null,
+    "zamiennik rusza proby, ktore sa w porzadku",
+    "zamiennik dotyka wylacznie proby wycofanej");
 }
 
 console.log("\n3. Kruszec zostaje obowiazkowy na kazdej sciezce\n");
