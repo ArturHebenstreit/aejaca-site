@@ -30,7 +30,7 @@ import {
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
 } from "../pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, areaOptionsForLens } from "../pricing/laserFiber.js";
-import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS } from "../pricing/epoxy.js";
+import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, zamiennikFormy } from "../pricing/epoxy.js";
 import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
@@ -164,6 +164,93 @@ const WARUNKI_WZORCA_POWIERZONEGO = {
   ],
 };
 
+// PROG TO RABAT, A NIE LICZBA SZTUK (decyzja wlasciciela 2026-09-10).
+// Ekran mial dwie kontrolki na jedna liczbe: suwak "Naklad" i licznik "Liczba
+// sztuk" tuz pod nim, przy czym `ServiceConfigurator` juz wtedy wyliczal jedno
+// z drugiego w obie strony (`tierForQty`, `qtyForTier`). Klient nie wiedzial,
+// ktora obowiazuje. Nazwa mowi teraz, co suwak naprawde robi: ustawia prog
+// rabatowy, a liczbe sztuk podaje sie ponizej.
+const ETYKIETA_RABATU = L("Rabat ilościowy", "Quantity discount", "Mengenrabatt");
+
+// ============================================================
+// WARUNKI PRZY ODLEWIE ZYWICZNYM
+// ============================================================
+// Ta sama zasada co przy wzorcu powierzonym do odlewu metalu (2026-09-10):
+// warunki stoja PRZY KAFELKU, w chwili wyboru, a nie w regulaminie. Klient,
+// ktory klika "nowa forma z Twojego przedmiotu", za chwile zapakuje ten
+// przedmiot i pojdzie na poczte. Regulamin przeczyta ten, kto juz szuka sporu.
+
+const WARUNKI_FORMY = {
+  client: {
+    tytul: L("Zanim wyślesz własną formę", "Before you send your own mold", "Bevor Sie Ihre eigene Form senden"),
+    punkty: [
+      L("Forma musi być silikonowa i znieść ciepło wydzielane przez epoksyd w trakcie utwardzania. Formy drukowane ze sztywnej żywicy pękają przy pierwszym odlewie.",
+        "The mold must be silicone and must withstand the heat epoxy gives off while curing. Molds printed in rigid resin crack on the first pour.",
+        "Die Form muss aus Silikon sein und die Wärme aushalten, die Epoxid beim Aushärten abgibt. Formen aus starrem Harz brechen beim ersten Guss."),
+      L("Wnętrze formy kopiuje się na każdy odlew. Rysy, ślady warstw i matowe miejsca zobaczysz na gotowym wyrobie, a my ich nie usuniemy szlifowaniem od zewnątrz.",
+        "The inside of the mold copies onto every cast. Scratches, layer lines and dull patches will show on the finished piece, and sanding the outside will not remove them.",
+        "Das Innere der Form überträgt sich auf jeden Guss. Kratzer, Schichtlinien und matte Stellen sind am fertigen Stück sichtbar und lassen sich durch Schleifen von außen nicht entfernen."),
+      L("Odsyłamy formę razem z zamówieniem. Zużycie powierzchni przy odlewaniu jest normalne i nie jest uszkodzeniem.",
+        "We return the mold with the order. Surface wear from casting is normal and is not damage.",
+        "Wir senden die Form mit dem Auftrag zurück. Oberflächenverschleiß durch das Gießen ist normal und kein Schaden."),
+    ],
+  },
+  from_object: {
+    tytul: L("Zanim wyślesz przedmiot na wzorzec", "Before you send an object to copy", "Bevor Sie ein Objekt als Muster senden"),
+    punkty: [
+      L("Przedmiot musi dać się wyjąć z zastygłego silikonu. Głębokie podcięcia i wąskie zaułki wymagają formy dzielonej, a czasem przesądzają, że tej drogi nie da się przejść. Ocenimy to po zdjęciach, zanim cokolwiek zamówisz.",
+        "The object has to come out of the cured silicone. Deep undercuts and narrow recesses call for a split mold, and sometimes rule this path out entirely. We assess that from photographs before you order anything.",
+        "Das Objekt muss sich aus dem ausgehärteten Silikon lösen lassen. Tiefe Hinterschnitte und enge Winkel erfordern eine geteilte Form und schließen diesen Weg mitunter ganz aus. Wir beurteilen das anhand von Fotos, bevor Sie etwas bestellen."),
+      L("Przedmiot ma kontakt z silikonem i separatorem. Na powierzchniach porowatych, malowanych, klejonych i lakierowanych może zostać ślad, więc rzeczy jedynych w swoim rodzaju nie kopiujemy bez osobnych ustaleń.",
+        "The object comes into contact with silicone and release agent. Porous, painted, glued and lacquered surfaces may be marked, so we do not copy one-of-a-kind items without a separate arrangement.",
+        "Das Objekt kommt mit Silikon und Trennmittel in Berührung. Poröse, lackierte, geklebte und bemalte Oberflächen können Spuren davontragen, deshalb kopieren wir Einzelstücke nicht ohne gesonderte Absprache."),
+      L("Wzorzec wraca do Ciebie razem z zamówieniem. Forma zostaje w pracowni; warunki powtórzenia tego samego wzoru ustalamy wtedy indywidualnie.",
+        "The pattern comes back to you with the order. The mold stays at the workshop; terms for repeating the same design are then agreed individually.",
+        "Das Muster kommt mit dem Auftrag zu Ihnen zurück. Die Form bleibt in der Werkstatt; Bedingungen für eine Wiederholung desselben Musters werden dann individuell vereinbart."),
+    ],
+  },
+  from_file: {
+    tytul: L("Czego potrzebujemy w pliku", "What we need in the file", "Was wir in der Datei brauchen"),
+    punkty: [
+      L("Model musi być zamknięty, bez dziur w siatce, i mieć kąty pozwalające wyjąć odlew z formy. Ściany cieńsze niż 1 mm zalewają się niepewnie.",
+        "The model must be watertight, with no holes in the mesh, and must have angles that let the cast leave the mold. Walls thinner than 1 mm fill unreliably.",
+        "Das Modell muss geschlossen sein, ohne Löcher im Netz, und Winkel aufweisen, die das Entformen erlauben. Wände unter 1 mm füllen sich unzuverlässig."),
+      L("Drukujemy z Twojego pliku wzorzec i polerujemy go do lustra. To nie jest kosmetyka: w silikonie poleruje się raz, a połysk kopiuje się potem na każdy odlew. Bez tego kroku przezroczysta żywica wychodzi mleczna.",
+        "We print a pattern from your file and polish it to a mirror. This is not cosmetic: you polish the silicone route once, and the gloss then copies onto every cast. Without that step clear resin comes out milky.",
+        "Wir drucken aus Ihrer Datei ein Muster und polieren es auf Hochglanz. Das ist keine Kosmetik: Beim Silikonweg poliert man einmal, und der Glanz überträgt sich danach auf jeden Guss. Ohne diesen Schritt wird klares Harz milchig."),
+    ],
+  },
+  from_design: {
+    tytul: L("Co obejmuje projekt", "What the design covers", "Was der Entwurf umfasst"),
+    punkty: [
+      L("W przygotowaniu formy mieszczą się trzy godziny projektowania 3D razem z uzgodnieniem szkicu. Kształt zatwierdzasz przed wydrukiem wzorca, bo po wylaniu silikonu zmiana oznacza formę od nowa.",
+        "Mold preparation covers three hours of 3D design including agreeing the sketch. You approve the shape before the pattern is printed, because once the silicone is poured a change means a new mold.",
+        "Die Formvorbereitung umfasst drei Stunden 3D-Entwurf einschließlich Abstimmung der Skizze. Sie geben die Form vor dem Druck des Musters frei, denn nach dem Gießen des Silikons bedeutet eine Änderung eine neue Form."),
+      L("Kształty rzeźbiarskie i modele z wieloma osadzeniami wychodzą poza te trzy godziny. Wtedy odzywamy się z wyceną projektu, zanim ruszymy.",
+        "Sculptural shapes and models with many seats go beyond those three hours. We then come back with a quote for the design before starting.",
+        "Skulpturale Formen und Modelle mit vielen Fassungen sprengen diese drei Stunden. Dann melden wir uns vor Beginn mit einer Kalkulation für den Entwurf."),
+    ],
+  },
+};
+
+// Prawda o sprzecie, powiedziana zanim klient zaplaci. Rozdz. 14
+// `MDs/AEJaCA_Odlewnictwo_Procedury.md`: komora DMJ-0001 sluzy WYLACZNIE do
+// odgazowania mieszanki, garnka cisnieniowego w pracowni nie ma. Przy zywicy
+// barwionej to bez znaczenia, przy przezroczystej klient zobaczy kazdy pecherzyk.
+const WARUNKI_PRZEZROCZYSTEJ = {
+  tytul: L("Przezroczysta żywica, jedno zastrzeżenie",
+           "Clear resin, one caveat",
+           "Klares Harz, ein Vorbehalt"),
+  punkty: [
+    L("Odgazowujemy mieszankę przed zalaniem i lejemy warstwami, ale nie mamy garnka ciśnieniowego, więc nie obiecujemy odlewu całkiem bez pęcherzyków. Przy zatopieniach z metalu i przy ostrych krawędziach pojedyncze pęcherzyki potrafią zostać.",
+      "We degas the mix before pouring and pour in layers, but we have no pressure pot, so we do not promise a cast entirely free of bubbles. Around metal inclusions and sharp edges the odd bubble can remain.",
+      "Wir entgasen die Mischung vor dem Guss und gießen in Schichten, doch wir haben keinen Drucktopf, versprechen also keinen völlig blasenfreien Guss. An Metalleinschlüssen und scharfen Kanten kann die eine oder andere Blase bleiben."),
+    L("Jeśli wynik ma być bez zarzutu, powiedz o tym w opisie zlecenia. Dobierzemy wtedy układ odlewu albo odradzimy przezroczystą żywicę, zamiast liczyć na szczęście.",
+      "If the result has to be flawless, say so in the order description. We will then choose the pouring layout, or advise against clear resin, rather than trusting to luck.",
+      "Soll das Ergebnis einwandfrei sein, schreiben Sie das in die Auftragsbeschreibung. Wir wählen dann den Gussaufbau oder raten von klarem Harz ab, statt auf Glück zu setzen."),
+  ],
+};
+
 export const SERVICES = [
   {
     id: "print_fdm",
@@ -197,7 +284,7 @@ export const SERVICES = [
         widok: "zdjecia", kolumny: "grid-cols-2 sm:grid-cols-4" },
       { key: "colorId", label: L("Liczba kolorów", "Colors", "Farben"), options: COLORS },
       { key: "precisionId", label: L("Precyzja", "Precision", "Präzision"), options: PRECISION },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
     ],
     // Wypelnienie startowe: "low". Katalog mial "medium", kalkulator "low",
     // wiec ta sama usluga zaczynala od dwoch roznych kwot, zaleznie od drzwi.
@@ -228,7 +315,7 @@ export const SERVICES = [
         optionsFrom: (v) => getAvailableResins(v.resinSegmentId, v.applicationId) },
       { key: "layerId", label: L("Wysokość warstwy", "Layer height", "Schichthöhe"), options: LAYER_HEIGHTS },
       { key: "sizeId", label: L("Rozmiar", "Size", "Größe"), options: MSLA_SIZES, hiddenWithFile: true },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
     ],
     defaults: { applicationId: "prototype", resinSegmentId: "standard", resinKey: "standard", layerId: "standard", sizeId: "S", quantityId: "proto" },
   },
@@ -248,7 +335,7 @@ export const SERVICES = [
         widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4" },
       { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: RENOVATION_METALS },
       { key: "services", label: L("Zakres usług", "Services", "Leistungen"), options: RENOVATION_SERVICES, multi: true },
-      { key: "qtyId", label: L("Nakład", "Batch size", "Auflage"), options: QTY_TIERS },
+      { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
     defaults: { jewTypeId: "ring_g", metalTypeId: "silver_g", services: ["clean"], qtyId: "1" },
   },
@@ -268,7 +355,7 @@ export const SERVICES = [
         widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4" },
       { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: REPAIR_METALS },
       { key: "repairId", label: L("Rodzaj naprawy", "Repair type", "Reparaturart"), options: REPAIR_SERVICES },
-      { key: "qtyId", label: L("Nakład", "Batch size", "Auflage"), options: QTY_TIERS },
+      { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
     defaults: { jewTypeId: "ring_g", metalTypeId: "silver_g", repairId: "resize", qtyId: "1" },
   },
@@ -333,7 +420,7 @@ export const SERVICES = [
           "We laser-engrave the polished surface after casting and finishing. You give us the text when adding to the cart. If you also order plating, the engraving goes on first, so it stays visible under the layer. " + UWAGA_PROGU_GRAWERU.en,
           "Wir gravieren mit dem Laser auf der polierten Oberfläche, nach Guss und Finish. Den Text geben Sie beim Hinzufügen zum Warenkorb an. Bei zusätzlicher Beschichtung gravieren wir zuerst, damit die Gravur unter der Schicht sichtbar bleibt. " + UWAGA_PROGU_GRAWERU.de
         ) },
-      { key: "qtyId", label: L("Nakład", "Batch size", "Auflage"), options: QTY_TIERS },
+      { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
     // Bez `metalId`: to jedyne pole tej uslugi, ktore klient ma wskazac sam.
     defaults: { variantId: "model_3d", materialSourceId: "aejaca", finishId: "clean", platingId: "none", engravingId: "none", qtyId: "1" },
@@ -380,7 +467,7 @@ export const SERVICES = [
       { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS,
         podpis: podpisGraweru, zamiennik: normalizeEngravingId, uwaga: UWAGA_PROGU_GRAWERU },
       { key: "complexityId", label: L("Złożoność kształtu", "Shape complexity", "Formkomplexität"), options: SHAPE_COMPLEXITY },
-      { key: "qtyId", label: L("Nakład", "Batch size", "Auflage"), options: QTY_TIERS },
+      { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
     defaults: { lineId: "woman", typeId: "ring", metalId: "silver", weightId: "standard", methodId: "cast", platingId: "none", engravingId: "none", complexityId: "simple", qtyId: "1", gemId: "none", stoneCount: 0, certId: "none" },
     fixed: { gemId: "none", stoneCount: 0, certId: "none" },
@@ -402,7 +489,7 @@ export const SERVICES = [
       { key: "areaId", label: L("Pole grawerowania", "Engraving area", "Gravurfläche"), options: ENGRAVE_AREAS },
       { key: "detailId", label: L("Szczegółowość", "Detail", "Detailgrad"), options: ENGRAVE_DETAIL,
         widok: "zdjecia", kolumny: "grid-cols-2 sm:grid-cols-4", wysokosc: 140 },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
     defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", podloze: "our_stock" },
@@ -423,7 +510,7 @@ export const SERVICES = [
       { key: "matId", label: L("Materiał", "Material", "Material"), options: CUT_MATERIALS },
       { key: "pathId", label: L("Długość ścieżki", "Path length", "Pfadlänge"), options: CUT_PATHS },
       { key: "complexId", label: L("Złożoność", "Complexity", "Komplexität"), options: CUT_COMPLEXITY },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
     defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", podloze: "our_stock" },
@@ -450,7 +537,7 @@ export const SERVICES = [
       // Obiektyw ogranicza pole znakowania. Zaleznosc siedzi w rdzeniu cenowym,
       // wiec sklep i kalkulator wyszarzaja te same warianty.
       { key: "areaId", label: L("Pole", "Area", "Fläche"), optionsFrom: (v) => areaOptionsForLens(v.lensId) },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
       { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
     // Obiektyw 150 mm jest STANDARDOWY (pole 150x150 mm, tak opisuje go rdzen
@@ -474,15 +561,22 @@ export const SERVICES = [
       // sie je po fakturze, nie po nazwie. Zdjecia stoja przy wariantach
       // w rdzeniu cenowym, wiec obie drogi pokazuja te same.
       { key: "resinId", label: L("Żywica", "Resin", "Harz"), options: RESINS,
-        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 170 },
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 170,
+        warunki: (v) => (v.resinId === "epoxy_clear" ? WARUNKI_PRZEZROCZYSTEJ : null) },
       { key: "volumeId", label: L("Objętość", "Volume", "Volumen"), options: VOLUMES },
-      { key: "moldId", label: L("Forma", "Mold", "Form"), options: MOLD_TYPES,
-        widok: "kafelki", kolumny: "grid-cols-3 sm:grid-cols-5" },
+      // FORMA PYTA O DROGE POWSTANIA, NIE O ROZMIAR (decyzja wlasciciela
+      // 2026-09-10). Rozmiar pytal o to samo co objetosc obok, tylko innymi
+      // slowami, wiec dalo sie zamowic odlew XS w formie duzej. Gabaryt liczy
+      // sie teraz z objetosci, a te trzy drogi roznia sie o cale godziny pracy.
+      { key: "moldId", label: L("Skąd bierzemy formę", "Where the mold comes from", "Woher die Form kommt"),
+        options: MOLD_TYPES, zamiennik: zamiennikFormy,
+        widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 168,
+        warunki: (v) => WARUNKI_FORMY[v.moldId] || null },
       { key: "inclusionId", label: L("Zatopienia", "Inclusions", "Einschlüsse"), options: INCLUSIONS,
         widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-4" },
       { key: "finishId", label: L("Wykończenie", "Finish", "Finish"), options: FINISH_OPTIONS,
         widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3" },
-      { key: "quantityId", label: L("Nakład", "Batch size", "Auflage"), options: QUANTITY_TIERS },
+      { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
     ],
     defaults: { resinId: "uv", volumeId: "S", moldId: "existing", inclusionId: "none", finishId: "sanded", quantityId: "proto" },
   },

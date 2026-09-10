@@ -152,7 +152,13 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
         tech: "epoxy", params: {
           resinId: finish === "prototype" ? "uv" : "epoxy_clear",
           volumeId: SIZE_MAP[size].epoxy,
-          moldId: quantity === "one" ? "existing" : "new_s",
+          // Wariant rozmiarowy `new_s` zniknal 2026-09-10; forma pyta teraz o droge
+        // powstania. UWAGA, ZALOZENIE ZOSTAJE NIETKNIETE: przy jednej sztuce
+        // prosta wycena nadal zaklada, ze cos pasujacego stoi u nas na polce,
+        // wiec nie liczy przygotowania. Przy wyrobie na zamowienie to zwykle
+        // nieprawda i cena wychodzi zanizona, ale zmiana tego zalozenia rusza
+        // KAZDA szybka wycene, wiec czeka na decyzje wlasciciela.
+        moldId: quantity === "one" ? "existing" : "from_object",
           inclusionId: "none",
           finishId: finish === "prototype" ? "raw" : finish === "premium" ? "coated" : "sanded",
           quantityId,
@@ -317,7 +323,13 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       tech, params: {
         resinId: finish === "prototype" ? "uv" : "epoxy_clear",
         volumeId: sizeId,
-        moldId: quantity === "one" ? "existing" : "new_s",
+        // Wariant rozmiarowy `new_s` zniknal 2026-09-10; forma pyta teraz o droge
+        // powstania. UWAGA, ZALOZENIE ZOSTAJE NIETKNIETE: przy jednej sztuce
+        // prosta wycena nadal zaklada, ze cos pasujacego stoi u nas na polce,
+        // wiec nie liczy przygotowania. Przy wyrobie na zamowienie to zwykle
+        // nieprawda i cena wychodzi zanizona, ale zmiana tego zalozenia rusza
+        // KAZDA szybka wycene, wiec czeka na decyzje wlasciciela.
+        moldId: quantity === "one" ? "existing" : "from_object",
         inclusionId: "none",
         finishId: finish === "prototype" ? "raw" : finish === "premium" ? "coated" : "sanded",
         quantityId,
