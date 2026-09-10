@@ -134,6 +134,36 @@ export const GROUPS = [
  * Uslugi wyceniane automatycznie, czyli takie, w ktorych klient placi od razu.
  * Wszystko, czego tu nie ma, idzie sciezka wyceny indywidualnej.
  */
+// WARUNKI PRZY WZORCU POWIERZONYM, pokazywane od razu po wybraniu kafelka.
+// Polecenie wlasciciela 2026-09-10. Te same rzeczy opisuje sekcja 8b
+// regulaminu, ale regulamin czyta ten, kto juz szuka sporu; ta lista trafia
+// do czlowieka, ktory za chwile spakuje wosk i pojdzie na poczte.
+//
+// Piec punktow, nie dziesiec. Lista, ktorej sie nie czyta, jest gorsza niz
+// jej brak, bo daje nam zludzenie, ze klient wiedzial.
+const WARUNKI_WZORCA_POWIERZONEGO = {
+  tytul: L("Zanim wyślesz wzorzec, warunki tej ścieżki",
+           "Before you send a pattern, the terms of this path",
+           "Bevor Sie ein Modell senden, die Bedingungen dieses Wegs"),
+  punkty: [
+    L("Podaj materiał wzorca, a przy wydruku nazwę i producenta żywicy. Profil wypalania dobieramy pod konkretny materiał, więc bez tej informacji nie przyjmiemy zlecenia.",
+      "State the pattern material, and for a print the name and manufacturer of the resin. We match the burnout profile to the specific material, so without it we cannot accept the order.",
+      "Geben Sie das Material des Modells an, bei einem Druck zusätzlich Name und Hersteller des Harzes. Das Ausbrennprofil richtet sich nach dem konkreten Material, ohne diese Angabe nehmen wir den Auftrag nicht an."),
+    L("Wzorzec ma dotrzeć wypłukany i w pełni doświetlony, bez żywicy w zagłębieniach. Niedoutwardzona żywica zostawia w masie popiół i psuje odlew.",
+      "The pattern must arrive washed and fully post-cured, with no resin left in recesses. Under-cured resin leaves ash in the investment and ruins the cast.",
+      "Das Modell muss gewaschen und vollständig nachgehärtet ankommen, ohne Harzreste in Vertiefungen. Unzureichend gehärtetes Harz hinterlässt Asche in der Einbettmasse und verdirbt den Guss."),
+    L("Wzorzec ulega zniszczeniu. Odlewamy metodą wytapianych modeli, więc wzorzec wypala się z formy i nie wraca, niezależnie od wyniku.",
+      "The pattern is destroyed. We cast by the lost-wax method, so the pattern is burned out of the mould and does not come back, whatever the outcome.",
+      "Das Modell wird zerstört. Wir gießen im Wachsausschmelzverfahren, das Modell wird also aus der Form ausgebrannt und kommt nicht zurück, unabhängig vom Ergebnis."),
+    L("Rozliczamy wykonaną próbę odlewniczą, a nie jej wynik, bo na jakość cudzego wydruku nie mamy wpływu. Gdy zawinimy my, czyli przy złym profilu wypalania, złej temperaturze albo uszkodzeniu wzorca u nas, powtarzamy odlew na własny koszt.",
+      "We charge for the casting attempt performed, not for its outcome, because the quality of someone else's print is outside our control. Where the fault is ours, a wrong burnout profile, a wrong temperature or damage to the pattern at our workshop, we repeat the cast at our own cost.",
+      "Wir rechnen den durchgeführten Gussversuch ab, nicht dessen Ergebnis, denn auf die Qualität eines fremden Drucks haben wir keinen Einfluss. Liegt der Fehler bei uns, also falsches Ausbrennprofil, falsche Temperatur oder Beschädigung des Modells in unserer Werkstatt, wiederholen wir den Guss auf eigene Kosten."),
+    L("Ta ścieżka zawsze idzie do wyceny indywidualnej: kwotę z automatu liczymy z objętości pliku, a fizycznego wzorca nie mierzymy. Pełne warunki w regulaminie, sekcja 8b.",
+      "This path always goes to an individual quote: an automatic amount is computed from the volume of a file, and we do not measure a physical pattern. Full terms in section 8b of the terms of service.",
+      "Dieser Weg führt stets zu einer individuellen Kalkulation: Ein automatischer Betrag entsteht aus dem Volumen einer Datei, ein physisches Modell messen wir nicht. Vollständige Bedingungen in Abschnitt 8b der AGB."),
+  ],
+};
+
 export const SERVICES = [
   {
     id: "print_fdm",
@@ -260,7 +290,11 @@ export const SERVICES = [
       // pokazuje dokladnie to, co wariant obiecuje. Zdjecia stoja przy polu,
       // a nie przy ekranie, bo oba ekrany pytaja o to samo.
       { key: "variantId", label: L("Co nam przekazujesz", "What you provide", "Was Sie liefern"),
-        options: CASTING_VARIANTS, widok: "zdjecia", obrazy: {
+        options: CASTING_VARIANTS, widok: "zdjecia",
+        // Warunki dotycza WYLACZNIE wzorca powierzonego, wiec pojawiaja sie
+        // dopiero po wybraniu tego kafelka, a nie stoja stale nad wszystkimi.
+        warunki: (v) => (v.variantId === "ready_pattern" ? WARUNKI_WZORCA_POWIERZONEGO : null),
+        obrazy: {
           ready_pattern: "/img/calc/3d_apps/casting.webp",
           model_3d: "/img/b2b/pillar_cad.webp",
           client_idea: "/img/shop/service/cad_project.webp",
