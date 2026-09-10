@@ -34,6 +34,7 @@
     "test:binding": "node scripts/test-binding-basis.mjs",
     "test:przypomnienie-platnosci": "node scripts/test-przypomnienie-platnosci.mjs",
     "test:podsumowanie": "node scripts/test-podsumowanie-dnia.mjs",
+    "test:forma-zywiczna": "node scripts/test-forma-zywiczna.mjs",
     "check:hydration": "node scripts/check-hydration.mjs",
     "build:hydracja": "vite build -c vite.config.hydracja.mjs && vite build -c vite.config.hydracja.mjs --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "img:hero": "node scripts/build-hero-images.mjs",

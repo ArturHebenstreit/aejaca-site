@@ -69,6 +69,23 @@ export function dodatkiTerminu(serviceId, params = {}) {
       },
     });
   }
+  // NOWA FORMA TO OSOBNY TYDZIEN, I TO JEST FIZYKA, NIE OSTROZNOSC.
+  // Zgloszenie wlasciciela 2026-09-10: karta odlewu zywicznego obiecywala
+  // 7 dni, a mail wyslany klientce mowil o dwoch do trzech tygodni. Prawdziwy
+  // jest mail. Silikon musi zwiazac, zanim cokolwiek do formy wlejemy, a bryle
+  // z zatopieniem leje sie warstwami, przy czym KAZDA warstwa utwardza sie
+  // dwie doby i tego nie da sie przyspieszyc. Przy naszej gotowej formie i
+  // przy formie klienta nie ma czego przygotowywac, wiec termin zostaje.
+  if (params.moldId && ["from_object", "from_file", "from_design"].includes(params.moldId)) {
+    dodatki.push({
+      dni: 7,
+      powod: {
+        pl: "przygotowanie nowej formy",
+        en: "preparing a new mold",
+        de: "Vorbereitung einer neuen Form",
+      },
+    });
+  }
   return dodatki;
 }
 

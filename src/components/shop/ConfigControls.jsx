@@ -56,6 +56,18 @@ export function TileGroup({ label, options, value, onChange, lang, accent = "blu
 }
 
 /** Suwak z opisanymi przystankami. Uzywany tam, gdzie wartosci sa uporzadkowane. */
+/**
+ * Nominalna szerokosc kciuka suwaka, w pikselach.
+ *
+ * Przegladarki rysuja kciuk wlasnym stylem i nie da sie go zmierzyc bez
+ * przejecia calego wygladu suwaka (`-webkit-appearance: none` gasi tez tor,
+ * kolor akcentu i obrys skupienia, czyli kaze narysowac wszystko od nowa,
+ * w dwoch motywach). Szesnascie pikseli to wartosc domyslna w Chrome i
+ * Firefoksie; ewentualny blad to kilka pikseli na skrajnych przystankach,
+ * wobec kilkudziesieciu, ktore dawala siatka rownych kolumn.
+ */
+const KCIUK_PX = 16;
+
 export function StepSlider({ label, options, value, onChange, lang, accent = "blue" }) {
   const index = Math.max(0, options.findIndex((o) => o.id === value));
   const current = options[index];
@@ -79,20 +91,37 @@ export function StepSlider({ label, options, value, onChange, lang, accent = "bl
         className={`w-full ${track}`}
         aria-label={label}
       />
-      {/* Przystanki w SIATCE o rownych kolumnach, nie w rzedzie `justify-between`.
-          Rzad nie ma jak sie zwezic, wiec dluzsza etykieta ("CUSTOM") robila
-          dokument szerszym od telefonu i cala strona przewijala sie w bok.
-          Kolumny `minmax(0, 1fr)` zwezaja sie i tekst zawija sie w miejscu. */}
-      <div
-        className="mt-1 grid gap-1"
-        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
-      >
+      {/* PRZYSTANKI MUSZA TRAFIAC W KCIUK, A NIE W ROWNE KOLUMNY.
+          Zgloszenie wlasciciela 2026-09-10, ze suwak nie trafia w opisy.
+
+          Kciuk suwaka nie jezdzi po calej szerokosci pola: jezdzi po torze
+          skroconym o wlasna szerokosc, bo w skrajnych polozeniach miesci sie
+          w calosci w srodku. Srodek i-tego przystanku lezy wiec na
+          `kciuk/2 + i * (szerokosc - kciuk) / (n - 1)`.
+
+          Do tej pory napisy staly w siatce rownych kolumn, czyli w srodkach
+          `(i + 0.5) * szerokosc / n`, przy czym pierwszy byl jeszcze dosuniety
+          do lewej, a ostatni do prawej. Przy pieciu przystankach na szerokosci
+          laptopa rozjazd wychodzil kilkadziesiat pikseli i klient widzial
+          kciuk miedzy dwoma opisami.
+
+          Teraz kazdy napis stoi WPROST NA SWOIM PRZYSTANKU: wciecie o polowe
+          kciuka daje tor, a `left` w procentach tego toru daje pozycje. Skrajne
+          napisy wystaja poza tor o polowe wlasnej szerokosci, dlatego szerokosc
+          jest przycieta do odstepu miedzy przystankami i do 5rem: reszta
+          miesci sie w marginesie kartki i nic nie przewija strony w bok. */}
+      <div className="relative mt-1 h-8" style={{ marginInline: `${KCIUK_PX / 2}px` }}>
         {options.map((o, i) => (
           <span
             key={String(o.id)}
-            className={`text-xs leading-tight break-words ${
-              i === 0 ? "text-left" : i === options.length - 1 ? "text-right" : "text-center"
-            } ${i === index ? "text-neutral-300" : "text-neutral-500"}`}
+            className={`absolute top-0 text-xs leading-tight text-center break-words ${
+              i === index ? "text-neutral-300" : "text-neutral-500"
+            }`}
+            style={{
+              left: `${(i / Math.max(1, options.length - 1)) * 100}%`,
+              transform: "translateX(-50%)",
+              width: `min(5rem, ${100 / Math.max(1, options.length - 1)}%)`,
+            }}
           >
             {o.tick ?? String(o.id).toUpperCase()}
           </span>
