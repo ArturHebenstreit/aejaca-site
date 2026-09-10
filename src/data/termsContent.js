@@ -19,10 +19,11 @@
 // brzmienie dotychczasowe. Data ponizej to wiec dzien ogloszenia plus siedem,
 // liczony od DEPLOYU, a nie od napisania zmiany.
 //
-// 2026-08-26 zaklada publikacje 19 sierpnia. Jesli scalenie do main nastapi
-// pozniej, te date trzeba przesunac, inaczej regulamin oglasza wejscie w zycie
+// 2026-09-18 zaklada publikacje 11 wrzesnia, czyli wdrozenie sekcji 8b
+// (odlew z wzorca powierzonego). JESLI SCALENIE DO MAIN NASTAPI POZNIEJ,
+// TE DATE TRZEBA PRZESUNAC, inaczej regulamin oglasza wejscie w zycie
 // wczesniej, niz zostal ogloszony. Nic sie przy tym nie wywala.
-export const TERMS_EFFECTIVE_DATE = "2026-08-26";
+export const TERMS_EFFECTIVE_DATE = "2026-09-18";
 
 export const TERMS = {
   pl: {
@@ -148,6 +149,21 @@ export const TERMS = {
           "Klient otrzymuje pliki w zakresie wskazanym w zamówieniu i może z nich korzystać bez ograniczeń, także zlecając wykonanie innemu podmiotowi.",
           "Jeżeli Klient w terminie 90 dni od opłacenia projektu zamówi u Sprzedawcy jego wykonanie, opłata projektowa zostaje zaliczona na poczet ceny wykonania. Zaliczenie następuje jednorazowo i nie obejmuje kosztów dostawy.",
           "Usługa jest wykonywana według specyfikacji Klienta, w związku z czym prawo odstąpienia nie przysługuje po rozpoczęciu wykonania, zgodnie z sekcją 11.",
+        ],
+      },
+      {
+        n: "8b",
+        title: "Odlew z wzorca powierzonego przez Klienta",
+        items: [
+          "Sprzedawca przyjmuje do odlania wzorce dostarczone przez Klienta: modele woskowe oraz wydruki z żywicy odlewniczej. Wariant ten jest dostępny w konfiguratorze usługi odlewu jako punkt startowy „gotowy wzorzec”.",
+          "Wzorzec powierzony podlega zawsze Wycenie indywidualnej. Serwis nie podaje dla niego kwoty automatycznej, ponieważ podstawą wyceny automatycznej jest objętość policzona z pliku, a wzorca fizycznego Serwis nie mierzy.",
+          "Klient przekazuje wraz z wzorcem informację o materiale, z którego został wykonany, a przy wydrukach także nazwę i producenta żywicy. Profil wypalania dobierany jest do konkretnego materiału, wobec czego brak tej informacji uniemożliwia przyjęcie zlecenia.",
+          "Wzorzec powinien być dostarczony wypłukany i w pełni doświetlony, bez pozostałości niezwiązanej żywicy w zagłębieniach oraz bez podpór, chyba że Klient wskaże, które elementy są podporami. Wymiary wzorca wraz z układem wlewowym mieszczą się w przestrzeni roboczej kolby wskazanej na karcie usługi.",
+          "Wzorzec ulega zniszczeniu w procesie. Odlewanie metodą wytapianych modeli polega na wypaleniu wzorca z formy, wobec czego wzorzec nie podlega zwrotowi, niezależnie od wyniku odlewu.",
+          "Sprzedawca może odmówić przyjęcia wzorca, którego nie da się bezpiecznie wypalić, w szczególności wykonanego z materiału nieznanego lub niedeklarowanego, zanieczyszczonego, przekraczającego przestrzeń roboczą kolby albo noszącego widoczne ślady niepełnego utwardzenia. Odmowa następuje przed rozpoczęciem prac.",
+          "Przedmiotem umowy jest wykonana próba odlewnicza, a nie jej wynik. Sprzedawca nie ma wpływu na jakość wydruku ani na stopień utwardzenia wzorca powierzonego, a żywica niedoutwardzona pozostawia w masie formierskiej popiół, który uniemożliwia uzyskanie poprawnego odlewu. Wykonana próba jest rozliczana niezależnie od jej wyniku.",
+          "Ustęp poprzedzający nie ma zastosowania, gdy przyczyna niepowodzenia leży po stronie Sprzedawcy. Za takie przyczyny uważa się w szczególności: dobór niewłaściwego profilu wypalania, niewłaściwą temperaturę kolby lub metalu, uszkodzenie wzorca w pracowni Sprzedawcy przed zaformowaniem oraz użycie stopu innego niż uzgodniony. W tych przypadkach Sprzedawca powtarza odlew na własny koszt, a gdy powtórzenie nie jest możliwe, zwraca otrzymaną kwotę.",
+          "Przesyłkę z wzorcem Klient nadaje na własne ryzyko. Sprzedawca potwierdza otrzymanie przesyłki i stan wzorca w chwili odbioru, a zastrzeżenia zgłasza przed rozpoczęciem prac.",
         ],
       },
       {
@@ -394,6 +410,21 @@ export const TERMS = {
         ],
       },
       {
+        n: "8b",
+        title: "Casting from a pattern supplied by the Customer",
+        items: [
+          "The Seller accepts patterns supplied by the Customer for casting: wax models and prints made from castable resin. This option is available in the casting service configurator as the starting point \u201cready pattern\u201d.",
+          "A supplied pattern is always subject to an individual Quote. The Service does not give an automatic amount for it, because an automatic quote is based on the volume computed from a file, and the Service does not measure a physical pattern.",
+          "Together with the pattern the Customer states the material it is made from, and for prints also the name and manufacturer of the resin. The burnout profile is matched to the specific material, so without this information the order cannot be accepted.",
+          "The pattern should arrive washed and fully post-cured, with no uncured resin left in recesses and with supports removed, unless the Customer indicates which elements are supports. The dimensions of the pattern together with the sprue fit within the working space of the flask stated on the service page.",
+          "The pattern is destroyed in the process. Lost-wax casting consists in burning the pattern out of the mould, so the pattern is not returned, whatever the outcome of the cast.",
+          "The Seller may refuse a pattern that cannot be burned out safely, in particular one made of an unknown or undeclared material, contaminated, exceeding the working space of the flask, or showing visible signs of incomplete curing. Refusal takes place before work begins.",
+          "The subject of the contract is the casting attempt performed, not its outcome. The Seller has no influence on the print quality or on the degree of curing of a supplied pattern, and under-cured resin leaves ash in the investment which prevents a sound cast. A performed attempt is charged regardless of its outcome.",
+          "The preceding paragraph does not apply where the cause of failure lies with the Seller. Such causes are in particular: selecting the wrong burnout profile, an incorrect flask or metal temperature, damage to the pattern at the Seller's workshop before investing, and the use of an alloy other than the one agreed. In these cases the Seller repeats the cast at its own cost and, where repetition is not possible, refunds the amount received.",
+          "The Customer sends the pattern at its own risk. The Seller confirms receipt of the parcel and the condition of the pattern on arrival, and raises any reservations before work begins.",
+        ],
+      },
+      {
         n: "9",
         title: "Delivery",
         items: [
@@ -634,6 +665,21 @@ export const TERMS = {
           "Der Kunde erhält die in der Bestellung genannten Dateien und darf sie uneingeschränkt nutzen, auch für eine Fertigung bei einem anderen Anbieter.",
           "Bestellt der Kunde innerhalb von 90 Tagen nach Bezahlung des Entwurfs dessen Fertigung beim Verkäufer, wird das Entwurfshonorar auf den Fertigungspreis angerechnet. Die Anrechnung erfolgt einmalig und umfasst keine Versandkosten.",
           "Die Leistung wird nach Kundenspezifikation erbracht, daher besteht nach Beginn der Ausführung kein Widerrufsrecht, gemäß Abschnitt 11.",
+        ],
+      },
+      {
+        n: "8b",
+        title: "Guss aus einem vom Kunden beigestellten Modell",
+        items: [
+          "Der Verkäufer nimmt vom Kunden beigestellte Modelle zum Guss an: Wachsmodelle sowie Drucke aus Gießharz. Diese Variante steht im Konfigurator der Gussleistung als Ausgangspunkt \u201efertiges Modell\u201c zur Verfügung.",
+          "Ein beigestelltes Modell unterliegt stets einer individuellen Kalkulation. Das Serviceportal nennt dafür keinen automatischen Betrag, denn Grundlage der automatischen Kalkulation ist das aus einer Datei berechnete Volumen, und ein physisches Modell misst das Portal nicht.",
+          "Zusammen mit dem Modell gibt der Kunde an, aus welchem Material es besteht, bei Drucken zusätzlich Name und Hersteller des Harzes. Das Ausbrennprofil wird auf das konkrete Material abgestimmt, ohne diese Angabe kann der Auftrag nicht angenommen werden.",
+          "Das Modell ist gewaschen und vollständig nachgehärtet zu übergeben, ohne Reste ungebundenen Harzes in Vertiefungen und ohne Stützen, es sei denn, der Kunde bezeichnet die Stützelemente. Die Abmessungen des Modells samt Gusskanal liegen innerhalb des auf der Leistungsseite angegebenen Arbeitsraums der Küvette.",
+          "Das Modell wird im Prozess zerstört. Beim Wachsausschmelzverfahren wird das Modell aus der Form ausgebrannt, das Modell wird daher unabhängig vom Ergebnis des Gusses nicht zurückgegeben.",
+          "Der Verkäufer kann ein Modell ablehnen, das sich nicht sicher ausbrennen lässt, insbesondere aus unbekanntem oder nicht angegebenem Material, verunreinigt, über den Arbeitsraum der Küvette hinausgehend oder mit sichtbaren Anzeichen unvollständiger Aushärtung. Die Ablehnung erfolgt vor Arbeitsbeginn.",
+          "Gegenstand des Vertrages ist der durchgeführte Gussversuch, nicht dessen Ergebnis. Der Verkäufer hat keinen Einfluss auf die Druckqualität oder den Aushärtungsgrad eines beigestellten Modells, und unzureichend gehärtetes Harz hinterlässt Asche in der Einbettmasse, die einen einwandfreien Guss verhindert. Ein durchgeführter Versuch wird unabhängig von seinem Ergebnis abgerechnet.",
+          "Der vorstehende Absatz gilt nicht, wenn die Ursache des Fehlschlags beim Verkäufer liegt. Als solche Ursachen gelten insbesondere: die Wahl eines falschen Ausbrennprofils, eine unzutreffende Küvetten- oder Metalltemperatur, eine Beschädigung des Modells in der Werkstatt des Verkäufers vor dem Einbetten sowie die Verwendung einer anderen als der vereinbarten Legierung. In diesen Fällen wiederholt der Verkäufer den Guss auf eigene Kosten und erstattet, sofern eine Wiederholung nicht möglich ist, den erhaltenen Betrag.",
+          "Der Kunde versendet das Modell auf eigenes Risiko. Der Verkäufer bestätigt den Eingang der Sendung und den Zustand des Modells bei Erhalt und meldet Beanstandungen vor Arbeitsbeginn.",
         ],
       },
       {

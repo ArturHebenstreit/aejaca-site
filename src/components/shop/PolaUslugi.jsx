@@ -83,8 +83,14 @@ export function poprawkiWyboru(service, params, opcje = {}) {
     // grawerowania", wiec klient dostawalby zamowienie bez tego, za co
     // wczesniej zaplacil, i nikt by tego nie zobaczyl.
     const zastepczy = f.zamiennik?.(params[f.key]);
-    zmiany[f.key] = zastepczy && warianty.some((o) => o.id === zastepczy)
-      ? zastepczy : warianty[0].id;
+    if (zastepczy && warianty.some((o) => o.id === zastepczy)) { zmiany[f.key] = zastepczy; continue; }
+    // POLE BEZ WYBORU WSTEPNEGO NIE ZGADUJE TAKZE PRZY WYCOFANEJ WARTOSCI.
+    // Zloto 999 zniknelo z oferty odlewu 2026-09-10. Podstawienie pierwszej
+    // pozycji z listy zamienialoby zapisany koszyk ze zlotem na srebro, po
+    // cichu i przy zupelnie innej cenie. Czyscimy wiec pole: klient widzi
+    // kafelek bez wyboru i zdanie o tym, ze brakuje kruszcu, czyli dowiaduje
+    // sie, ze ma zdecydowac jeszcze raz.
+    zmiany[f.key] = f.bezWyboru ? undefined : warianty[0].id;
   }
   return Object.keys(zmiany).length ? zmiany : null;
 }

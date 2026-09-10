@@ -246,7 +246,10 @@ i studzenie: `AEJaCA_Odlewnictwo_Procedury.md`, rozdz. 3-8. Mnożniki skurczu
 żyją w kodzie (`src/data/castingAlloys.js`) i to on jest źródłem dla kalkulatora.
 
 ### Możliwości
-- Pełny cykl odlewniczy lost-PLA i lost-resin do Au 585 i Ag 925
+- Pełny cykl odlewniczy lost-PLA i lost-resin, z wzorca własnego i powierzonego
+- Oferta prób: Ag 800 i 925, Au 9k, 14k i 18k (Au 999 zdjęte 2026-09-10, nie odlewamy).
+  **Udokumentowane krzywe wypalania mamy dla Au 585 i Ag 925** (tabela wyżej); pozostałe
+  próby idą przez wycenę indywidualną, dopóki nie mają własnego wiersza w tej tabeli
 - Vacuum casting: lepsze wypełnienie cienkich detali, mniejsza porowatość niż grawitacja
 - Degassing masy inwestycyjnej (eliminacja pęcherzyków)
 - Odlewy jubilerskie jednostkowe i małoseryjne

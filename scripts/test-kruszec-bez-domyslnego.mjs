@@ -69,6 +69,27 @@ console.log("\n2. Warstwa pol NIE dorabia wyboru, ktorego nikt nie zrobil\n");
     "wybor nieaktualny dalej jest prostowany, pusty zostaje pusty");
 }
 
+console.log("\n2b. Kruszec wycofany z oferty CZYSCI pole, a nie podstawia srebra\n");
+{
+  // Zloto 999 zniknelo z oferty 2026-09-10. Koszyk zapisany wczesniej niesie
+  // `gold_24k`. Podstawienie pierwszej pozycji z listy zamienialoby zapisane
+  // zloto na srebro, po cichu i przy zupelnie innej cenie; klient zobaczylby
+  // gotowa kwote i nie mial powodu jej kwestionowac.
+  const POLA = readFileSync(join(ROOT, "src/components/shop/PolaUslugi.jsx"), "utf8");
+  sprawdz(/zmiany\[f\.key\] = f\.bezWyboru \? undefined : warianty\[0\]\.id;/.test(POLA),
+    "wycofana wartosc w polu bez wyboru wstepnego dalej jest zastepowana pierwsza z listy",
+    "wycofana wartosc czysci pole, wiec klient wybiera kruszec jeszcze raz");
+
+  const { CASTING_METALS } = ODLEW.fields.find((f) => f.key === "metalId").options.length
+    ? { CASTING_METALS: ODLEW.fields.find((f) => f.key === "metalId").options } : {};
+  sprawdz(!CASTING_METALS.some((m) => m.id === "gold_24k"),
+    "zloto 999 nadal stoi na liscie kruszcow do odlewu",
+    "zlota 999 nie ma juz na liscie: nie odlewamy czystego zlota");
+  sprawdz(CASTING_METALS.length === 5,
+    `lista kruszcow ma ${CASTING_METALS.length} pozycji, a ma miec 5 (Ag 925, Ag 800, Au 9k, 14k, 18k)`,
+    "lista kruszcow ma piec prob, ktore naprawde odlewamy");
+}
+
 console.log("\n3. Kruszec zostaje obowiazkowy na kazdej sciezce\n");
 {
   // Wykonczenie nie zwalnia z podania proby, i powierzony kruszec tez nie.
@@ -86,6 +107,10 @@ console.log("\n3. Kruszec zostaje obowiazkowy na kazdej sciezce\n");
 
 console.log("\n4. Klient czyta, ze brakuje wlasnie kruszcu\n");
 {
+  // Spis prob w zdaniu liczy sie z listy, wiec nie moze wymieniac wycofanej.
+  sprawdz(!/24k/.test(describeMissingCastingParams({}, "pl") || ""),
+    "zdanie o brakach nadal wymienia probe 24k, ktorej nie oferujemy",
+    "zdanie o brakach wymienia tylko proby z oferty");
   for (const [lang, wzor] of [["pl", /kruszcu i próby/], ["en", /alloy and purity/], ["de", /Legierung und Feingehalt/]]) {
     const zdanie = describeMissingCastingParams({ ...ODLEW.defaults }, lang);
     sprawdz(wzor.test(zdanie || ""),

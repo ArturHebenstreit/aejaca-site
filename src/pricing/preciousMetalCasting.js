@@ -82,8 +82,13 @@ export const CASTING_METALS = [
   { id: "gold_9k", label: L("Złoto 9k (375)", "Gold 9k (375)", "Gold 9k (375)"), density: 11.20 },
   { id: "gold_14k", label: L("Złoto 14k (585)", "Gold 14k (585)", "Gold 14k (585)"), density: 13.07 },
   { id: "gold_18k", label: L("Złoto 18k (750)", "Gold 18k (750)", "Gold 18k (750)"), density: 15.58 },
-  { id: "gold_24k", label: L("Złoto 24k (999)", "Gold 24k (999)", "Gold 24k (999)"), density: 19.32 },
 ];
+
+// ZLOTA CZYSTEGO NIE ODLEWAMY (decyzja wlasciciela, 2026-09-10). Au 999 bylo
+// na liscie od poczatku i nikt go nie zamowil, bo w praktyce jubilerskiej sie
+// go nie odlewa: jest za miekkie na wyrob uzytkowy i zachowuje sie inaczej
+// przy zalewaniu niz stopy. Lista ma pokazywac to, co naprawde odlewamy,
+// a nie to, co da sie wpisac do tabeli gestosci.
 
 // PIEC POZIOMOW OBROBKI ODLEWU, kolejno coraz wiecej pracy rekodzielniczej.
 // Identyfikatory `raw`, `clean` i `polished` sa te same co przed rozszerzeniem
@@ -182,6 +187,26 @@ export function fitsCastingFlask(bbox, scale = 1) {
   return maxScale != null && Number.isFinite(Number(scale)) && Number(scale) > 0 && Number(scale) <= maxScale + 1e-9;
 }
 
+/**
+ * Proby wypisane w zdaniu o brakach, w postaci "Ag 800/925 albo Au 9k/14k/18k".
+ *
+ * Powstaje z `CASTING_METALS`, zeby zdanie nie moglo obiecac proby, ktorej nie
+ * ma na liscie, ani przemilczec tej, ktora doszla.
+ */
+const SPIS_PROB = (() => {
+  const proby = (przedrostek) => CASTING_METALS
+    .filter((m) => m.id.startsWith(przedrostek))
+    .map((m) => m.label.pl.replace(/^(Srebro|Złoto)\s*/, "").replace(/\s*\(.*\)$/, ""))
+    .join("/");
+  const ag = proby("silver");
+  const au = proby("gold");
+  return {
+    pl: `Ag ${ag} albo Au ${au}`,
+    en: `Ag ${ag} or Au ${au}`,
+    de: `Ag ${ag} oder Au ${au}`,
+  };
+})();
+
 // CZEGO BRAKUJE DO WYCENY. `calculate` oddaje samo `null`, wiec bez tej listy
 // klient dostawal jedno zdanie "Parametry sa niekompletne" i nie mial jak
 // zgadnac, ktore pole zostawil puste. Kolejnosc jest kolejnoscia pytan
@@ -192,7 +217,10 @@ const CASTING_REQUIRED = [
   { id: "materialSourceId", ma: (p) => CASTING_MATERIAL_SOURCES.some((v) => v.id === p.materialSourceId),
     label: L("pochodzenia kruszcu (nasz albo powierzony)", "the source of the metal (ours or supplied)", "die Herkunft des Metalls (unseres oder beigestellt)") },
   { id: "metalId", ma: (p) => CASTING_METALS.some((v) => v.id === p.metalId),
-    label: L("kruszcu i próby (Ag 800/925 albo Au 9k/14k/18k/24k)", "the alloy and purity (Ag 800/925 or Au 9k/14k/18k/24k)", "Legierung und Feingehalt (Ag 800/925 oder Au 9k/14k/18k/24k)") },
+    // Lista prob w zdaniu bierze sie z `CASTING_METALS`, a nie z przepisanej
+    // kopii: przepisana rozjechalaby sie przy pierwszej zmianie oferty i to
+    // po cichu, bo zdanie i tak wygladaloby poprawnie.
+    label: L(`kruszcu i próby (${SPIS_PROB.pl})`, `the alloy and purity (${SPIS_PROB.en})`, `Legierung und Feingehalt (${SPIS_PROB.de})`) },
   { id: "finishId", ma: (p) => CASTING_FINISHES.some((v) => v.id === p.finishId),
     label: L("zakresu wykończenia odlewu", "the finishing level", "den Umfang der Nachbearbeitung") },
   // Plik jest wymagany TYLKO na sciezce, ktora w ogole dostaje kwote z automatu.
