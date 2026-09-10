@@ -521,6 +521,46 @@ function paidAmount(order) {
     : money(order.total_grosze);
 }
 
+/**
+ * JEDEN MAIL, JEDNA WALUTA.
+ *
+ * Zgloszenie wlasciciela 2026-09-10: potwierdzenie zaplaty poszlo do klientki
+ * placacej w euro z pozycjami w zlotowkach (2128,42 PLN, 3227,49 PLN) i suma
+ * w euro (1375,42). Klient dostawal rachunek, ktorego nie da sie zsumowac
+ * w glowie, i nie wiedzial, ile go kosztuje pojedyncza rzecz w walucie,
+ * ktora zaplacil. Kwoty pozycji szly przez `money`, czyli na sztywno PLN,
+ * a suma przez `paidAmount`, ktory euro juz rozumial.
+ *
+ * PRZELICZAMY RATA PO RACIE, NIE KAZDA POZYCJE OSOBNO. Dzielenie kazdej
+ * pozycji przez kurs i zaokraglanie osobno daje sume rozna od tej, ktora
+ * klient naprawde zaplacil, o grosz albo dwa. Rachunek, ktory sie nie
+ * zgadza o dwa centy, jest gorszy niz rachunek w obcej walucie. Liczymy wiec
+ * narastajaco: kazda pozycja to roznica dwoch zaokraglonych sum czesciowych,
+ * dzieki czemu ostatnia pozycja domyka rachunek co do centa.
+ *
+ * Kurs bierzemy Z TEGO ZAMOWIENIA, a nie z dzisiejszej tabeli: klient
+ * zaplacil po kursie zamrozonym przy skladaniu zamowienia i taki ma widziec
+ * takze wtedy, gdy mail idzie tydzien pozniej.
+ */
+function walutaZamowienia(order) {
+  const wEuro = order.amount_eur_cents != null && order.total_grosze > 0;
+  if (!wEuro) return { kwota: (g) => money(g), suma: () => money(order.total_grosze) };
+
+  let zsumowaneGrosze = 0;
+  let wydaneCenty = 0;
+  const centyZa = (grosze) => {
+    zsumowaneGrosze += grosze || 0;
+    const doTejPory = Math.round((zsumowaneGrosze / order.total_grosze) * order.amount_eur_cents);
+    const centy = doTejPory - wydaneCenty;
+    wydaneCenty = doTejPory;
+    return centy;
+  };
+  return {
+    kwota: (g) => `${(centyZa(g) / 100).toFixed(2)} EUR`,
+    suma: () => `${(order.amount_eur_cents / 100).toFixed(2)} EUR`,
+  };
+}
+
 
 // ------------------------------------------------------------
 // Uwagi do modelu potwierdzone przy zamowieniu
@@ -704,6 +744,10 @@ function zdanieRoznicy(order, l) {
  */
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
+  // Kolejnosc wywolan MA ZNACZENIE: przelicznik liczy narastajaco, wiec
+  // pozycje musza isc w tej samej kolejnosci, w jakiej stoja w rachunku,
+  // a dostawa po nich. Inaczej ostatnia rata nie domknie sumy.
+  const kasa = walutaZamowienia(order);
   const rows = items
     .map((i) => {
       const ustalenia = ustaleniaPozycji(i, lang);
@@ -712,7 +756,7 @@ function customerHtml(order, items, lang) {
         ustalenia.length ? `<div style="margin-top:4px;font-size:12px;color:#777;line-height:1.5">${
           ustalenia.map((w) => `${esc(w.label)}: ${esc(w.value)}`).join("<br>")
         }</div>` : ""}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap;vertical-align:top">${money(i.line_grosze)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap;vertical-align:top">${kasa.kwota(i.line_grosze)}</td>
       </tr>`;
     })
     .join("");
@@ -735,11 +779,11 @@ function customerHtml(order, items, lang) {
     <table style="width:100%;border-collapse:collapse;font-size:14px">${rows}
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #eee">${l.delivery}: ${esc(deliveryName)}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${money(order.shipping_grosze)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${kasa.kwota(order.shipping_grosze)}</td>
       </tr>
       <tr>
         <td style="padding:12px 0;font-weight:700">${l.total}</td>
-        <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${paidAmount(order)}</td>
+        <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${kasa.suma()}</td>
       </tr>
     </table>
 
@@ -802,11 +846,14 @@ function customerHtml(order, items, lang) {
 
 function customerText(order, items, lang) {
   const l = T[lang] || T.pl;
+  // Wlasny przelicznik, bo liczy narastajaco i jest jednorazowy: wersja
+  // tekstowa i HTML rysuja ten sam rachunek, ale kazda od poczatku.
+  const kasa = walutaZamowienia(order);
   // Ustalenia takze tutaj. Wersja tekstowa jest tym, co zostaje przy wylaczonym
   // HTML i w czytniku ekranu, wiec nie moze byc krotsza od tej samej umowy
   // pokazanej obok.
   const lines = items.flatMap((i) => [
-    `- ${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}: ${money(i.line_grosze)}`,
+    `- ${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}: ${kasa.kwota(i.line_grosze)}`,
     ...ustaleniaPozycji(i, lang).map((w) => `    ${w.label}: ${w.value}`),
   ]);
   const wd = withdrawalParts(order, items, l);
@@ -823,8 +870,8 @@ function customerText(order, items, lang) {
     "",
     `${l.items}:`,
     ...lines,
-    `${l.delivery}: ${l.deliveryNames[order.delivery_method] || order.delivery_method || ""} ${money(order.shipping_grosze)}`,
-    `${l.total}: ${paidAmount(order)}`,
+    `${l.delivery}: ${l.deliveryNames[order.delivery_method] || order.delivery_method || ""} ${kasa.kwota(order.shipping_grosze)}`,
+    `${l.total}: ${kasa.suma()}`,
     // Ta sama tresc, co w wersji HTML: dwie rozne odpowiedzi na pytanie "kiedy"
     // w jednym mailu bylyby gorsze niz jedna, nawet gdyby obie byly prawdziwe.
     ...(terminKlienta(order, l, lang) ? ["", `${l.leadTitle}: ${terminKlienta(order, l, lang)}`] : []),
@@ -914,7 +961,17 @@ function parametryDoPokazania(item) {
   return linie.length ? `\n${linie.join("\n")}` : null;
 }
 
-function internalText(order, items, attachments = []) {
+/**
+ * Tresc powiadomienia dla pracowni.
+ *
+ * `naglowek` i `dopiski` istnieja po to, zeby zamowienie CZEKAJACE NA PRZELEW
+ * szlo tym samym kodem co zamowienie oplacone. Do 2026-09-10 powiadomienie
+ * o przelewie bylo osobnym, chudym napisem: kwota, klient, tytul przelewu.
+ * Bez pozycji i bez odnosnika do wgranego pliku, czyli bez tego, co w ogole
+ * pozwala zaczac prace. Druga kopia tej tresci rozjechalaby sie z ta przy
+ * pierwszej zmianie, a rozjazd bylby cichy.
+ */
+function internalText(order, items, attachments = [], { naglowek = null, dopiski = [] } = {}) {
   const lines = items.map(
     (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}${
       // Pozycja z oferty nie ma kalkulatora i nie ma czego o nim mowic.
@@ -947,8 +1004,9 @@ function internalText(order, items, attachments = []) {
     : [];
 
   return [
-    `NOWE OPLACONE ZAMOWIENIE ${order.order_ref}`,
+    naglowek || `NOWE OPLACONE ZAMOWIENIE ${order.order_ref}`,
     "",
+    ...dopiski,
     `Kwota: ${money(order.total_grosze)}`,
     `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email}>${order.customer_phone ? `, tel. ${order.customer_phone}` : ""}`,
     `Jezyk: ${order.lang}`,
@@ -1473,21 +1531,47 @@ export async function sendTransferInstructions(pool, orderId, tr) {
     const order = rows[0];
     if (!order) return false;
 
+    // POWIADOMIENIE O PRZELEWIE NIESIE TO SAMO, CO O ZAPLACIE. Zgloszenie
+    // wlasciciela 2026-09-10: przy zamowieniu przelewem dostawal kwote i tytul
+    // przelewu, a nie dostawal ani pozycji, ani odnosnika do wgranego pliku,
+    // wiec z samego maila nie dalo sie zobaczyc, co klient zamowil. Pozycje
+    // i zalaczniki czytamy tym samym zapytaniem co przy zaplacie.
+    const { rows: items } = await pool.query(
+      `SELECT oi.title, oi.qty, oi.unit_grosze, oi.line_grosze, oi.calculator, oi.params,
+              oi.file_name, oi.file_sha256, oi.file_url, oi.geometry, u.token AS upload_token,
+              oi.item_type
+         FROM order_items oi
+         LEFT JOIN uploads u ON u.id = oi.upload_id
+        WHERE oi.order_id = $1
+        ORDER BY oi.id`,
+      [orderId]
+    );
+    const { rows: attachments } = await pool.query(
+      `SELECT file_name, drive_url, file_sha256
+         FROM uploads
+        WHERE order_id = $1 AND geometry IS NULL
+        ORDER BY id`,
+      [orderId]
+    );
+
+    const doPracowni = internalText(order, items, attachments, {
+      naglowek: `ZAMOWIENIE ${order.order_ref} ZLOZONE, PLATNOSC PRZELEWEM, CZEKAMY NA WPLATE`,
+      dopiski: [
+        `Do zaplaty: ${tr.amountEur} EUR (${money(order.total_grosze)} po kursie ${order.eur_rate})`,
+        `Tytul przelewu: ${tr.reference}`,
+        `Rezerwacja i kwota wazne do: ${tr.dueAt ? dzien(new Date(tr.dueAt)) : "-"}`,
+        "Po zaksiegowaniu potwierdz wplate w panelu, wtedy pojda maile i pliki trafia do Zamowien.",
+        "",
+      ],
+    });
+
     const messages = [
       buildTransferMessage(order, tr),
       {
         to: INTERNAL_TO, from: FROM, replyTo: order.customer_email,
         subject: `[PRZELEW] ${order.order_ref}, ${tr.amountEur} EUR, czekamy na wplate`,
-        text: [
-          `ZAMOWIENIE ${order.order_ref} ZLOZONE, PLATNOSC PRZELEWEM`,
-          "",
-          `Kwota: ${tr.amountEur} EUR (${money(order.total_grosze)} po kursie ${order.eur_rate})`,
-          `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email}>`,
-          `Tytul przelewu: ${tr.reference}`,
-          `Kwota wazna do: ${tr.dueAt ? new Date(tr.dueAt).toISOString().slice(0, 10) : "-"}`,
-          "",
-          "Po zaksiegowaniu potwierdz wplate, wtedy pojda maile i pliki trafia do Zamowien.",
-        ].join("\n"),
+        text: doPracowni,
+        html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(doPracowni)}</pre>`,
       },
     ];
 
@@ -1599,22 +1683,51 @@ export async function sendLeadMail(messages) {
   return sendViaGmail(messages);
 }
 
+/**
+ * Wysylka przez Gmaila.
+ *
+ * ZGLOSZENIE WLASCICIELA 2026-09-10: zamowienie przelewem z 8 wrzesnia. Klient
+ * dostal swoje dane do przelewu tego samego dnia o 17:19, wlasciciel nie
+ * dostal nic i dowiedzial sie o zamowieniu od klienta po dwoch dniach.
+ *
+ * Pierwsza hipoteza, ze poczta do samego siebie nie dostaje etykiety
+ * `INBOX`, OKAZALA SIE FALSZYWA: powiadomienie `[ZAMOWIENIE]` z tego samego
+ * adresu na ten sam adres wladowalo sie do Odebranych normalnie. Zostaje
+ * przyczyna widoczna w kodzie: petla wysylala wiadomosci jedna po drugiej
+ * golym `await`, bez lapania bledu przy kazdej. Wiadomosc do klienta stoi
+ * pierwsza, wewnetrzna druga, wiec odmowa przy drugiej konczyla cala petle
+ * po wyslaniu tej pierwszej. Klient dostawal swoja, wlasciciel nie dostawal
+ * nic, a caly przebieg konczyl sie jednym wierszem w logu.
+ */
 async function sendViaGmail(messages) {
   // Import dynamiczny, zeby brak googleapis nie wywracal calego modulu
   // przy starcie serwera. Poczta ma byc dodatkiem, nie warunkiem dzialania.
   const { createGmailClient } = await import("./gmail.js");
   const gmail = createGmailClient();
   if (!gmail) return false;
+  // JEDEN ADRESAT, KTORY ODMOWI, NIE MOZE ZABRAC POZOSTALYCH. Petla z golym
+  // `await` przerywala sie na pierwszym bledzie, wiec odrzucenie wiadomosci
+  // wewnetrznej kasowalo takze te, ktore mialy pojsc po niej. Zbieramy bledy
+  // i zglaszamy je na koncu, po wyslaniu wszystkiego, co dalo sie wyslac.
+  const bledy = [];
   for (const m of messages) {
-    await gmail.users.messages.send({
-      userId: "me",
-      // `threadId` wpina wiadomosc w istniejaca rozmowe po NASZEJ stronie,
-      // naglowki `In-Reply-To` po stronie klienta. Potrzebne sa oba.
-      requestBody: { raw: buildRaw(m), ...(m.threadId ? { threadId: m.threadId } : {}) },
-    });
+    try {
+      const wyslana = await gmail.users.messages.send({
+        userId: "me",
+        // `threadId` wpina wiadomosc w istniejaca rozmowe po NASZEJ stronie,
+        // naglowki `In-Reply-To` po stronie klienta. Potrzebne sa oba.
+        requestBody: { raw: buildRaw(m), ...(m.threadId ? { threadId: m.threadId } : {}) },
+      });
+      if (!wyslana?.data?.id) console.error(`[mail] Gmail nie oddal identyfikatora wiadomosci do ${m.to}`);
+    } catch (e) {
+      bledy.push(`${m.to}: ${e.message}`);
+      console.error(`[mail] nie poszla wiadomosc do ${m.to}: ${e.message}`);
+    }
   }
+  if (bledy.length === messages.length) return false;
   return true;
 }
+
 
 async function sendViaWebhook(order, items) {
   const url = process.env.N8N_ORDER_WEBHOOK_URL;
