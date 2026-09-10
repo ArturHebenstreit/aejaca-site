@@ -21,7 +21,8 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MOLD_TYPES, MOLD_PREP, EPOXY_CONFIG, moldPrep, zamiennikFormy, calculate } from "../src/pricing/epoxy.js";
+import { MOLD_TYPES, MOLD_DESIGN, MOLD_PREP, EPOXY_CONFIG, INCLUSIONS, RESINS, FINISH_OPTIONS, moldPrep, zamiennikFormy, calculate } from "../src/pricing/epoxy.js";
+import { terminPozycji } from "../src/pricing/terminy.js";
 import { QUANTITY_TIERS } from "../src/pricing/config.js";
 import { getService } from "../src/data/orderCatalog.js";
 
@@ -96,7 +97,8 @@ console.log("\n3. Przygotowanie liczy sie z materialu i godzin, nie z okraglej k
   sprawdz(zPliku.godziny - p.godziny >= MOLD_PREP.HOURS_MASTER_POLISH * 0.99,
     "droga z wlasnym wzorcem nie dolicza polerowania wzorca",
     "droga z wlasnym wzorcem dolicza polerowanie wzorca do lustra");
-  const zProjektu = moldPrep(MOLD_TYPES.find((m) => m.id === "from_design"), 30);
+  const prosty = MOLD_DESIGN.find((d) => d.id === "simple").designH;
+  const zProjektu = moldPrep(MOLD_TYPES.find((m) => m.id === "from_design"), 30, prosty);
   sprawdz(zProjektu.projektH > 0 && zProjektu.total > zPliku.total,
     "projekt 3D nic nie kosztuje, chociaz to godziny pracy",
     `projekt 3D dolicza ${zProjektu.projektH} h i podnosi przygotowanie do ${zProjektu.total.toFixed(0)} zl`);
@@ -241,6 +243,93 @@ console.log("\n10. Przystanki suwaka trafiaja w kciuk, a nie w rowne kolumny\n")
   sprawdz(!/gridTemplateColumns: `repeat\(\$\{options\.length\}/.test(K),
     "siatka rownych kolumn nadal rysuje przystanki",
     "siatki rownych kolumn juz nie ma");
+}
+
+console.log("\n11. Sklep mowi to samo, co mail wyslany klientce\n");
+{
+  // 10 wrzesnia 2026 pracownia odpisala klientce, ktora chce zatopic w zywicy
+  // dwa druty medyczne po zlamanych palcach meza. Mail obiecal konkretne
+  // rzeczy, a klientka moze wejsc do sklepu i sprawdzic. Ten rozdzial pilnuje,
+  // zeby sklep nie mowil czegos innego niz to, co dostala na pismie.
+  //
+  // Brelok 40 x 25 x 9 mm to okolo 9 ml, czyli XS. Bryla prosta, z naszego
+  // projektu, z zatopieniem, polerowana do przejrzystosci.
+  const brelok = (o = {}) => calculate({ resinId: "epoxy_clear", volumeId: "XS", moldId: "from_design",
+    moldDesignId: "simple", inclusionId: "object", finishId: "sanded", quantityId: "proto", qty: 1, ...o }, "pl");
+
+  // "Orientacyjnie od 300 do 500 zlotych za pierwszy breloczek."
+  const pierwszy = brelok().unitGrosze / 100;
+  sprawdz(pierwszy >= 300 && pierwszy <= 500,
+    `sklep liczy ${pierwszy.toFixed(0)} zl za pierwszy brelok, a mail obiecal 300-500 zl`,
+    `sklep liczy ${pierwszy.toFixed(0)} zl za pierwszy brelok, czyli w widelkach z mailu`);
+
+  // "Drugi egzemplarz, wykonywany rownolegle, to dodatkowo jedna trzecia."
+  // Sklep ma byc NIE DROZSZY niz mail: rozjazd w druga strone jest tym,
+  // z czego bysmy sie tlumaczyli.
+  const dwa = brelok({ quantityId: "micro", qty: 2 }).unitGrosze * 2 / 100;
+  const drugi = dwa - pierwszy;
+  sprawdz(drugi > 0 && drugi <= pierwszy / 3 + 1,
+    `druga sztuka kosztuje ${drugi.toFixed(0)} zl, czyli wiecej niz jedna trzecia pierwszej (${(pierwszy / 3).toFixed(0)} zl) obiecana w mailu`,
+    `druga sztuka kosztuje ${drugi.toFixed(0)} zl, nie wiecej niz jedna trzecia obiecana w mailu`);
+
+  // "Dwa do trzech tygodni, liczac od otrzymania drucikow."
+  const zNowaForma = terminPozycji("epoxy", { moldId: "from_design" });
+  sprawdz(zNowaForma.min >= 14 && zNowaForma.max >= 21,
+    `przy nowej formie termin to ${zNowaForma.min}-${zNowaForma.max} dni, a mail obiecal dwa do trzech tygodni`,
+    `przy nowej formie termin to ${zNowaForma.min}-${zNowaForma.max} dni, zgodnie z mailem`);
+  const zGotowa = terminPozycji("epoxy", { moldId: "existing" });
+  sprawdz(zGotowa.max < zNowaForma.max,
+    "gotowa forma dostala ten sam wydluzony termin co nowa, chociaz nie ma czego przygotowywac",
+    `przy gotowej formie termin zostaje na ${zGotowa.min}-${zGotowa.max} dni`);
+
+  // "Grawer laserowy na malej srebrnej blaszce" albo "napis wydrukowany na
+  // naszej drukarce zywicznej". Oba maja byc do wybrania, a nie do opisania.
+  for (const sposob of ["text_plate", "text_print"]) {
+    const w = INCLUSIONS.find((i) => i.id === sposob);
+    sprawdz(w && w.cost != null && w.timeH > 0,
+      `sposobu na napis ${sposob} nie ma w sklepie albo nie ma ceny`,
+      `sposob na napis ${sposob} jest do wybrania i ma cene`);
+  }
+
+  // "Ksztalt decyduje o cenie" - to jest powod, dla ktorego mail podal widelki,
+  // a nie jedna kwote. Fasetowany krysztal musi kosztowac wiecej niz prostokat.
+  sprawdz(brelok({ moldDesignId: "faceted" }).unitGrosze > brelok().unitGrosze,
+    "fasetowany krysztal kosztuje tyle co prosta bryla, wiec widelki z mailu nie maja pokrycia",
+    "fasetowany krysztal kosztuje wiecej niz prosta bryla");
+  sprawdz(brelok({ moldDesignId: "sculpt" }).type === "custom",
+    "ksztalt rzezbiarski dostaje kwote z automatu, chociaz nie znamy jego godzin",
+    "ksztalt rzezbiarski idzie do wyceny recznej");
+}
+
+console.log("\n12. Nigdzie nie obiecujemy odlewu bez pecherzykow\n");
+{
+  // Rozdz. 14 `MDs/AEJaCA_Odlewnictwo_Procedury.md`: garnka cisnieniowego
+  // w pracowni nie ma. Karta uslugi obiecywala "bryle bez pecherzy", a mail
+  // do klientki mowil odwrotnie. Prawdziwy jest mail.
+  const KARTA = readFileSync(join(ROOT, "src/data/serviceCatalog.js"), "utf8");
+  // Szukamy CALYCH ZDAN, ktore obiecywaly brak pecherzy, a nie samego slowa:
+  // zdanie uczciwe tez zawiera slowo "pecherzyki", tylko z przeczeniem przed nim.
+  for (const obietnica of [
+    "odlewać większe bryły bez pęcherzy", "allows larger volumes without bubbles", "größere Volumen ohne Blasen",
+    "bryła bez pęcherzy", "no bubbles in the piece", "Stück ohne Blasen",
+    "żeby w bryle nie zostały pęcherze", "so no bubbles remain in the piece", "damit keine Blasen bleiben",
+  ]) {
+    sprawdz(!KARTA.includes(obietnica),
+      `karta uslugi nadal obiecuje "${obietnica}", a garnka cisnieniowego nie mamy`,
+      `karta uslugi nie obiecuje juz "${obietnica}"`);
+  }
+  // I odwrotnie: zastrzezenie ma na tej karcie BYC, w kazdym z trzech jezykow.
+  for (const [lang, zdanie] of [["pl", "nie mamy garnka ciśnieniowego"], ["en", "we have no pressure pot"], ["de", "keinen Drucktopf"]]) {
+    sprawdz(KARTA.includes(zdanie),
+      `w jezyku ${lang} karta uslugi nie mowi, ze garnka cisnieniowego nie mamy`,
+      `w jezyku ${lang} karta uslugi mowi wprost, ze garnka cisnieniowego nie mamy`);
+  }
+  // Zywica przezroczysta poleruje sie dluzej, bo widac przez nia kazda ryse.
+  const clear = RESINS.find((r) => r.id === "epoxy_clear");
+  const szlif = FINISH_OPTIONS.find((f) => f.id === "sanded");
+  sprawdz(clear.clear === true && szlif.timeClearH > szlif.timeH,
+    "polerowanie zywicy przezroczystej liczy sie tak samo jak barwionej",
+    `polerowanie przezroczystej to ${szlif.timeClearH} h wobec ${szlif.timeH} h przy barwionej`);
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nForma w odlewie zywicznym: wszystko sie zgadza\n");

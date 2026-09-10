@@ -30,7 +30,7 @@ import {
   ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PATHS, CUT_COMPLEXITY,
 } from "../pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, areaOptionsForLens } from "../pricing/laserFiber.js";
-import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, zamiennikFormy } from "../pricing/epoxy.js";
+import { RESINS, VOLUMES, MOLD_TYPES, MOLD_DESIGN, INCLUSIONS, FINISH_OPTIONS, zamiennikFormy } from "../pricing/epoxy.js";
 import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
 import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
@@ -237,6 +237,23 @@ const WARUNKI_FORMY = {
 // `MDs/AEJaCA_Odlewnictwo_Procedury.md`: komora DMJ-0001 sluzy WYLACZNIE do
 // odgazowania mieszanki, garnka cisnieniowego w pracowni nie ma. Przy zywicy
 // barwionej to bez znaczenia, przy przezroczystej klient zobaczy kazdy pecherzyk.
+const WARUNKI_PAMIATKI = {
+  tytul: L("Zatapiamy pamiątkę, więc dwie rzeczy wprost",
+           "We are embedding a keepsake, so two things plainly",
+           "Wir betten ein Andenken ein, daher zwei Dinge klar"),
+  punkty: [
+    L("Pamiątka jest do odzyskania. Gdyby zalanie wyszło źle, wycinamy ją z bryły: przepada wtedy żywica i praca, a nie pamiątka.",
+      "The keepsake can be recovered. If a pour goes wrong we cut it out of the block: what is lost is the resin and the work, not the keepsake.",
+      "Das Andenken lässt sich zurückgewinnen. Geht ein Guss schief, schneiden wir es aus dem Block: verloren sind dann Harz und Arbeit, nicht das Andenken."),
+    L("Kwiaty, liście i wszystko organiczne muszą być wysuszone przed zalaniem, inaczej z czasem zbrązowieją w żywicy. Suszenie trwa i wliczamy je w termin.",
+      "Flowers, leaves and anything organic must be dried before pouring, otherwise they brown inside the resin over time. Drying takes time and we count it into the lead time.",
+      "Blumen, Blätter und alles Organische müssen vor dem Guss getrocknet werden, sonst werden sie im Harz mit der Zeit braun. Das Trocknen dauert und wird in die Frist eingerechnet."),
+    L("Bryłę zalewamy warstwami, żeby ustawić zatopienie dokładnie tam, gdzie ma być. Każda warstwa utwardza się osobno, więc to jest powód, dla którego taki wyrób trwa tygodnie, a nie dni.",
+      "We pour the block in layers so the inclusion sits exactly where it should. Each layer cures separately, which is why such a piece takes weeks rather than days.",
+      "Wir gießen den Block in Schichten, damit der Einschluss genau dort sitzt, wo er soll. Jede Schicht härtet einzeln aus, deshalb dauert ein solches Stück Wochen und nicht Tage."),
+  ],
+};
+
 const WARUNKI_PRZEZROCZYSTEJ = {
   tytul: L("Przezroczysta żywica, jedno zastrzeżenie",
            "Clear resin, one caveat",
@@ -572,13 +589,20 @@ export const SERVICES = [
         options: MOLD_TYPES, zamiennik: zamiennikFormy,
         widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3", wysokosc: 168,
         warunki: (v) => WARUNKI_FORMY[v.moldId] || null },
+      // Ksztalt pytamy WYLACZNIE tam, gdzie sami go rysujemy. Przy formie
+      // z przedmiotu klienta albo z jego pliku ksztalt jest juz przesadzony,
+      // wiec pytanie o zlozonosc projektu byloby pytaniem o nic.
+      { key: "moldDesignId", label: L("Kształt bryły", "Shape of the block", "Form des Körpers"),
+        options: MOLD_DESIGN, ukryjGdy: (v) => v.moldId !== "from_design",
+        widok: "opisowe", kolumny: "grid-cols-1 sm:grid-cols-3" },
       { key: "inclusionId", label: L("Zatopienia", "Inclusions", "Einschlüsse"), options: INCLUSIONS,
-        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-4" },
+        widok: "kafelki", kolumny: "grid-cols-2 sm:grid-cols-4",
+        warunki: (v) => (["object", "text_plate", "text_print"].includes(v.inclusionId) ? WARUNKI_PAMIATKI : null) },
       { key: "finishId", label: L("Wykończenie", "Finish", "Finish"), options: FINISH_OPTIONS,
         widok: "zdjecia", kolumny: "grid-cols-1 sm:grid-cols-3" },
       { key: "quantityId", label: ETYKIETA_RABATU, options: QUANTITY_TIERS },
     ],
-    defaults: { resinId: "uv", volumeId: "S", moldId: "existing", inclusionId: "none", finishId: "sanded", quantityId: "proto" },
+    defaults: { resinId: "uv", volumeId: "S", moldId: "existing", moldDesignId: "simple", inclusionId: "none", finishId: "sanded", quantityId: "proto" },
   },
   {
     id: "cad_design",
