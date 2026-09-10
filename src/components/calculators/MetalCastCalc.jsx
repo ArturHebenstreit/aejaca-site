@@ -35,7 +35,7 @@ import {
   CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
   CASTING_PLATINGS, castingPlatingAvailable, CASTING_ENGRAVINGS, castingEngravingAvailable,
   normalizeEngravingId,
-  CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox, calculate,
+  CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox, calculate, describeMissingCastingParams,
 } from "../../pricing/preciousMetalCasting.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
@@ -187,7 +187,10 @@ export default function MetalCastCalc({ lang = "pl" }) {
     ...(castingEngravingAvailable(finishId) && engravingId && engravingId !== "none"
       ? [t(CASTING_ENGRAVINGS.find((v) => v.id === normalizeEngravingId(engravingId))?.label, lang)] : []),
     ...(file ? [file.name] : []),
-  ].join(" | ");
+    // Kruszec nie ma wyboru wstepnego, wiec do czasu wskazania go przez klienta
+    // ten segment jest pusty. Bez odsiania pustych podsumowanie mialoby dziure
+    // w rodzaju "Model 3D | Kruszec AEJaCA |  | Wykonczenie jubilerskie".
+  ].filter(Boolean).join(" | ");
 
   // Pole modelu nie jest pytaniem z katalogu, tylko narzedziem pomiaru, wiec
   // wchodzi jako wstawka miedzy kruszec a wykonczenie: klient najpierw mowi,
@@ -263,7 +266,8 @@ export default function MetalCastCalc({ lang = "pl" }) {
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze}
+          brakNote={describeMissingCastingParams({ ...stan, stlData: scaledStlData }, lang)} />
         {result?.finalMassG != null && (
           <p className="text-neutral-500 text-xs leading-relaxed mt-3">
             {l.massNote(result.finalMassG.toFixed(2), result.requiredMassG.toFixed(2))}

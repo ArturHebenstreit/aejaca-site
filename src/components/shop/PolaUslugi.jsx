@@ -68,6 +68,15 @@ export function poprawkiWyboru(service, params, opcje = {}) {
     const warianty = wariantyPola(f, params);
     if (!warianty?.length) continue;
     if (warianty.some((o) => o.id === params[f.key])) continue;
+    // PUSTE POLE TO NIE JEST WYBOR NIEAKTUALNY. Ta funkcja istnieje po to,
+    // zeby podmienic wybor, ktorego juz nie oferujemy, a nie po to, zeby
+    // wymyslic wybor, ktorego klient nigdy nie zrobil. Pole oznaczone
+    // `bezWyboru` zostaje puste tak dlugo, az czlowiek go dotknie: przy
+    // kruszcu odlewu (decyzja wlasciciela 2026-09-10) podstawienie pierwszej
+    // pozycji z listy znaczyloby ciche wybranie srebra za klienta, ktory
+    // chcial zlota, i to przy parametrze najdrozszym w calym zleceniu.
+    const pusty = params[f.key] == null || params[f.key] === "";
+    if (pusty && f.bezWyboru) continue;
     // WYBOR, KTOREGO JUZ NIE MA, MA SWOJEGO NASTEPCE, jesli pole go zna.
     // Bez tego kosz zapisany przed zmianą cennika cicho traci platny dodatek:
     // "Tekst + wzor" wypadl z listy graweru, a `warianty[0]` to "Brak
