@@ -262,7 +262,14 @@ export const SERVICES = [
           client_idea: "/img/shop/service/cad_project.webp",
         } },
       { key: "materialSourceId", label: L("Źródło kruszcu", "Metal source", "Metallquelle"), options: CASTING_MATERIAL_SOURCES },
-      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: CASTING_METALS },
+      // KRUSZEC NIE MA WYBORU WSTEPNEGO (decyzja wlasciciela 2026-09-10).
+      // Pole bylo obowiazkowe na liscie `CASTING_REQUIRED`, a jednoczesnie
+      // wypelnione z gory srebrem, wiec obowiazkowosc nic nie znaczyla: nikt
+      // nie byl zatrzymany, tylko dostawal podstawiony najtanszy wariant.
+      // Roznica miedzy Ag 925 a Au 24k to kilkadziesiat razy w cenie kruszcu,
+      // czyli najdrozsza decyzja calego zlecenia zgadywana za klienta.
+      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"),
+        options: CASTING_METALS, bezWyboru: true },
       // Lista poziomow zalezy od zrodla kruszcu: przy metalu AEJaCA nie wydajemy
       // odlewu z kanalami, bo ten metal wraca do przetopu (patrz komentarz przy
       // `castingFinishesFor`).
@@ -290,7 +297,8 @@ export const SERVICES = [
         ) },
       { key: "qtyId", label: L("Nakład", "Batch size", "Auflage"), options: QTY_TIERS },
     ],
-    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", platingId: "none", engravingId: "none", qtyId: "1" },
+    // Bez `metalId`: to jedyne pole tej uslugi, ktore klient ma wskazac sam.
+    defaults: { variantId: "model_3d", materialSourceId: "aejaca", finishId: "clean", platingId: "none", engravingId: "none", qtyId: "1" },
   },
   {
     id: "jewelry_plain",

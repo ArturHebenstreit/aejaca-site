@@ -250,12 +250,18 @@ export function ResultHeader({ lang, binding = false }) {
  *        wiazaca. Przedzial opisuje niepewnosc szacunku, wiec postawiony obok
  *        konkretnej kwoty tylko ja podwaza. Zostaje wtedy sama kalkulacja.
  */
-export function ResultDisplay({ result, lang = "pl", hideRange = false, binding = null }) {
+export function ResultDisplay({ result, lang = "pl", hideRange = false, binding = null, brakNote = null }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
   const showPLN = lang === "pl";
 
-  if (!result) return <div className="text-center text-neutral-400 py-4">{labels.selectAll}</div>;
+  // BRAK KWOTY MA POWIEDZIEC, CZEGO BRAKUJE. Zdanie "wybierz wszystkie opcje"
+  // jest prawdziwe i bezuzyteczne: klient patrzy na siedem pol i nie wie,
+  // ktore zostawil. Kalkulator, ktory umie to nazwac, podaje wlasne zdanie
+  // w `brakNote`; reszta zostaje przy ogolnym, bo ma komplet pol na jednym
+  // ekranie. Ta sama tresc idzie z serwera przy skladaniu zamowienia, wiec
+  // ekran i odmowa mowia to samo.
+  if (!result) return <div className="text-center text-neutral-400 py-4 px-4 text-sm leading-relaxed">{brakNote || labels.selectAll}</div>;
 
   if (result.type === "custom") {
     const ctaLabel = { pl: "Skontaktuj się", en: "Contact us", de: "Kontaktieren Sie uns" }[lang] || "Contact us";
