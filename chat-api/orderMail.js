@@ -21,6 +21,7 @@ import { zoneForCountry, przewoznicyZNazwy, sledzenieUrl, sledzenieDomena } from
 // i przy zamowieniu: dwie liczby na jedno pytanie sa gorsze niz brak jednej.
 import { selectedQuoteItems, terminGrupy, sciezkaJezyka, SAVED_QUOTE_SOURCE } from "./quotes.js";
 import { pierwszyDzienPracy } from "./productionQueue.js";
+import { zbierz as zbierzDzien, tresc as trescDnia } from "./podsumowanieDnia.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { koperta, stopkaText, odnosnikiText, dzien, dni as dniSlownie } from "./mailSzata.js";
 import { dataISO } from "./daty.js";
@@ -2253,6 +2254,39 @@ export async function sendPaymentReviewAlert(pool, orderId) {
 }
 
 /**
+ * Poranne podsumowanie dnia dla pracowni.
+ *
+ * Idzie NA NASZ adres, wiec nie ma tu ani jezyka klienta, ani szaty maili
+ * handlowych: to jest lista robocza, a nie korespondencja. Zwykly tekst
+ * czyta sie na telefonie tak samo dobrze jak tabela, a nie da sie go zepsuc
+ * przez klienta pocztowego, ktory wycina styl.
+ *
+ * NIGDY NIE RZUCA. Podsumowanie ma prawo nie dojsc, ale nie ma prawa
+ * przewrocic procesu, w ktorym stoi cron. Brak poczty zostaje w logu.
+ */
+export async function sendPodsumowanieDnia(pool, teraz = new Date()) {
+  try {
+    const dane = await zbierzDzien(pool, teraz);
+    const { subject, text } = trescDnia(dane, teraz);
+    const wiadomosc = {
+      to: INTERNAL_TO, from: FROM, replyTo: SELLER.email, subject,
+      text,
+      html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(text)}</pre>`,
+    };
+    if (await sendViaGmail([wiadomosc])) {
+      console.log(`[podsumowanie] wyslane: kolejka ${dane.kolejka.length}, bez wplaty ${dane.bezWplaty.length}, zapytania ${dane.zapytania.length}`);
+      return true;
+    }
+    console.error("[podsumowanie] Gmail nie przyjal wiadomosci");
+    return false;
+  } catch (e) {
+    console.error("[podsumowanie] nie powstalo:", e.message);
+    return false;
+  }
+}
+
+/**
+ * Wysyla oba maile. Zwraca true, gdy udalo sie ktorymkolwiek kanalem./**
  * Wysyla oba maile. Zwraca true, gdy udalo sie ktorymkolwiek kanalem.
  * Nigdy nie rzuca wyjatkiem: obsluga ITN musi sie zakonczyc potwierdzeniem
  * niezaleznie od tego, czy poczta zadziala.

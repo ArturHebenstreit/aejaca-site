@@ -50,6 +50,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
+  sendPodsumowanieDnia,
   sendTopUpRequest, sendOrderExpired, sendPaymentReminder, sendLeadMail,
   sendDeadlineReminder, sendDetailsNudge, sendStatusUpdate, buildProsbaOOcene,
   sendZamkniecieSprawy } from "./orderMail.js";
@@ -3425,6 +3426,23 @@ async function przypomnijOTerminach() {
     console.error("[ustalenia] przeglad nie powiodl sie:", e.message);
   }
 }
+// ------------------------------------------------------------
+// PORANNE PODSUMOWANIE DNIA
+// ------------------------------------------------------------
+// Polecenie wlasciciela 2026-09-10. Powiadomienia pojedyncze zawodza w sposob
+// niewykrywalny od srodka: brak maila nie rozni sie od braku zdarzenia.
+// Zamowienie przelewem z 8 wrzesnia stalo dwa dni, a wlasciciel dowiedzial sie
+// o nim od klienta, dzien przed wygasnieciem rezerwacji.
+//
+// Podsumowanie mowi, CO STOI W BAZIE, wiec zamyka te dziure niezaleznie od
+// tego, czy poszczegolne powiadomienia dotarly. Idzie CODZIENNIE, takze przy
+// pustej kolejce: mail "nic pilnego" znaczy "sprawdzone", brak maila znaczy
+// "zepsulo sie", i te dwie rzeczy musza wygladac inaczej.
+//
+// Kwadrans przed siodma, zeby lezalo w skrzynce, gdy wlasciciel do niej
+// zaglada, i zeby nie mieszalo sie z przypomnieniami o terminach z 7:00.
+if (pool) cron.schedule("45 6 * * *", () => sendPodsumowanieDnia(pool), { timezone: "Europe/Warsaw" });
+
 if (pool) cron.schedule("0 7 * * *", przypomnijOTerminach, { timezone: "Europe/Warsaw" });
 
 /**
