@@ -130,7 +130,7 @@ export const TERMS = {
         n: "8",
         title: "Realizacja zamówienia",
         items: [
-          "Termin realizacji wskazywany jest w Wycenie i liczony w dniach roboczych od dnia zaksięgowania płatności albo zaliczki.",
+          "Termin realizacji wskazywany jest w Wycenie i liczony w dniach kalendarzowych. Bieg terminu rozpoczyna się w dniu następującym po dniu zaksięgowania płatności albo zaliczki; dzień zaksięgowania nie jest wliczany do terminu. Wskazana data oznacza dzień zakończenia prac, po którym następuje wydanie wyrobu albo nadanie przesyłki.",
           "Sprzedawca prowadzi warsztat o ograniczonej przepustowości. Podawany termin uwzględnia bieżące obłożenie i stan materiałów. Jeżeli realizacja wymaga sprowadzenia materiału, Sprzedawca informuje o tym w Wycenie.",
           "O każdym zagrożeniu terminu Sprzedawca informuje niezwłocznie i wskazuje nowy termin. Jeżeli Klient go nie akceptuje, może odstąpić od umowy, a Sprzedawca zwraca wszystkie otrzymane kwoty w terminie 14 dni.",
           "Sprzedawca może wstrzymać realizację, jeżeli w toku prac ujawni się wada Pliku uniemożliwiająca wykonanie. Klient jest wówczas informowany i może przekazać poprawiony Plik, zlecić poprawę odpłatnie albo odstąpić od umowy za zwrotem wpłaconych kwot.",
