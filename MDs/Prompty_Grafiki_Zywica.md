@@ -31,10 +31,10 @@ Tam nic nie zasłania kadru, przedmiot ma stać centralnie.
 
 | Plik docelowy | Co ma pokazać | Prompt (EN) |
 |---|---|---|
-| `public/img/calc/resin_molds/from_object.webp` | Przedmiot KLIENTA w ramce, zalewany silikonem | A small heirloom object, a carved bone charm, resting face-up at the bottom of a 3D-printed rectangular casting frame, blue-grey liquid silicone being poured around it from a mixing cup, silicone surface glossy and level, the object still visible under the rising silicone, matte black bench, cool blue rim light from upper left, warm highlight on the object, black background, premium macro product photography, no text, no logo, no watermark |
-| `public/img/calc/resin_molds/from_file.webp` | Wydrukowany wzorzec, polerowany do lustra | A small 3D-printed master pattern in glossy black resin, an oval pendant shape with crisp edges, half of its surface already polished to a mirror and half still matte from sanding, fine abrasive pads and a polishing cloth beside it, matte black jeweler bench, cool blue rim light from upper left, sharp specular reflection on the polished half, black background, premium macro product photography, no text, no logo, no watermark |
-| `public/img/calc/resin_molds/from_design.webp` | Projekt 3D obok wydrukowanego z niego wzorca | A faceted crystal-shaped pendant rendered as a blue wireframe CAD model glowing on a dark screen in the background, softly out of focus, and in sharp focus in the foreground the same shape as a physical 3D-printed master pattern in dark grey resin standing on a matte black bench, cool blue rim light from upper left, black background, shallow depth of field, premium macro product photography, no text, no logo, no watermark |
-| `public/img/calc/resin_inclusions/text_plate.webp` | Srebrna blaszka z grawerem, zatopiona w bryle | A small rectangular polished silver plate with fine crisp laser-engraved lines catching the light, suspended inside a block of perfectly clear cured epoxy resin, the resin block standing upright on a matte black surface, light refracting through the clear edges, cool blue rim light from upper left with a warm highlight on the silver, black background, premium macro product photography, engraving must read as clean abstract fine lines and not as lettering, no text, no logo, no watermark |
+| `public/img/calc/resin_molds/from_object.webp` | Przedmiot KLIENTA w ramce, zalewany silikonem | A small carved wooden pendant charm with a simple leaf motif, resting face-up at the bottom of an open 3D-printed rectangular casting box, pale blue-grey moulding silicone pouring into the box in a smooth stream from above with the cup out of frame, the silicone half filling the box, its surface glossy and level, the charm still clearly visible under the rising silicone, the casting box large and filling most of the image and centered vertically, the lower part of the image plain dark background with no important detail, matte black bench, cool blue rim light from upper left, warm highlight on the charm, black background, premium macro product photography, no hands, no gloves, no people, no tools, no text, no logo, no watermark |
+| `public/img/calc/resin_molds/from_file.webp` | Wydrukowany wzorzec, w polowie wypolerowany do lustra | A small 3D-printed master pattern in dark grey resin, an oval pendant shape with crisp edges, standing upright, its left half mirror-polished with a sharp bright specular highlight and its right half matte with fine visible 3D-print layer lines, the boundary between the polished and the sanded half running clearly down the middle of the piece, the pattern large and filling most of the image and centered vertically, the lower part of the image plain dark background with no important detail, matte black jeweler bench, strong cool blue rim light from upper left separating the dark piece from the background, black background, premium macro product photography, no hands, no gloves, no people, no tools, no screen, no text, no logo, no watermark |
+| `public/img/calc/resin_molds/from_design.webp` | Projekt 3D obok wydrukowanej z niego bryly | A faceted crystal-shaped pendant as a physical 3D-printed master pattern in pale grey resin, sharp and in full focus in the foreground, standing upright on a matte black bench, and directly behind it a dark screen softly out of focus showing the same faceted shape as a glowing blue CAD wireframe, the wireframe being only thin glowing edges with no interface, the physical pattern large and filling most of the image and centered vertically, the lower part of the image plain dark background with no important detail, cool blue rim light from upper left, shallow depth of field, black background, premium macro product photography, no hands, no gloves, no people, no tools, no keyboard, no mouse, no interface, no menus, no toolbars, no buttons, no text, no logo, no watermark |
+| `public/img/calc/resin_inclusions/text_plate.webp` | Srebrna blaszka ze znakiem i napisem, zatopiona w bryle | A small rectangular plate of polished sterling silver 925, rhodium-white, cold neutral tone, laser-engraved with a small heart symbol above one short line of capital numerals reading exactly "2026", the engraving crisp, deeply cut, centered, correctly spelled, in a clean geometric sans-serif, the plate large in the frame and facing the camera almost straight on so the engraving is fully readable, suspended inside a small block of perfectly clear cured epoxy resin, the block filling most of the frame, standing upright on a matte black surface, light refracting through the clear edges, cool blue rim light from upper left, black background, premium macro product photography, sharp focus on the engraved mark and numerals, no hands, no gloves, no mold, no frame, no tools, the metal must read as cool silver and never as gold or brass, no other text anywhere in the image, no logo, no watermark |
 | `public/img/calc/resin_inclusions/text_print.webp` | Napis drukowany w żywicy, zatopiony w bryle | A thin translucent white 3D-printed resin plaque with a raised relief pattern, suspended inside a block of perfectly clear cured epoxy resin, the plaque almost the same material as the block so it reads as soft and integrated rather than as a foreign object, resin block upright on a matte black surface, cool blue rim light from upper left, black background, premium macro product photography, relief must read as clean abstract raised lines and not as lettering, no text, no logo, no watermark |
 
 ## Kiedy zdjęcie odrzucamy
@@ -86,3 +86,86 @@ node scripts/gemini-image.mjs "A thin translucent white 3D-printed resin plaque 
 Po wygenerowaniu wystarczy wrzucić pliki na gałąź albo przysłać je tutaj: przeskalowanie
 do 512 × 512, podpięcie w `epoxy.js`, `npm run img:cards` i sprawdzenie w przeglądarce
 jest po naszej stronie.
+
+## Poprawki po pierwszym podejsciu (10 września 2026)
+
+**`text_print`: przyjete, do przyciecia.** Bryla zajmowala 43% szerokosci kadru,
+a sama plytka z reliefem okolo 25%. Kafelek zatopienia rysuje sie na jakies 180 px,
+wiec relief schodzil do 45 px i znikal. Przycinamy `scripts/kadruj-kafelek.mjs`.
+
+**`text_plate`: napis MA byc widoczny (decyzja wlasciciela 2026-09-12).** Pierwsza
+wersja promptu celowo prosila o same kreski, bo generator psuje pismo. Wlasciciel
+chce jednak znak i napis wprost, wiec prompt idzie na najwieksza szanse powodzenia:
+krotki ciag, CYFRY zamiast liter (renderuja sie duzo pewniej), krój nazwany wprost,
+blaszka frontem do obiektywu, `correctly spelled` i zakaz jakiegokolwiek innego
+tekstu w kadrze. Napis „2026" mozna podmienic na inny KROTKI ciag, ale kazda litera
+i kazdy polski znak diakrytyczny obniza szanse. Spodziewamy sie kilku podejsc.
+
+**`text_plate`: pierwsze podejscie odrzucone.** Dalo cztery wady
+naraz i wszystkie cztery sa teraz zapisane w promptcie wprost:
+
+- blaszka wyszla **zlota**, a opcja nazywa sie „Napis na srebrnej blaszce",
+- kadr zdominowaly **dlonie w rekawiczkach**, ktorych prompt nie zamawial,
+- bryle wyjmowano z **drukowanej ramki**, czyli kafelek opowiadal historie robienia
+  formy, a nie zatopienia,
+- grawer wyszedl jako **kanciasty zygzak**, ktory czyta sie jak rysa albo kod
+  kreskowy, a nie jak celowy wzor.
+
+**`object.webp`: nieplanowana, ale lepsza od tego, co mamy.** Bryla z zatopiona
+stokrotka i listkami paproci, chlodne swiatlo obrysowe, czarne tlo. Obecny plik to
+plaski krazek widziany z gory. Podmieniamy, chociaz nie bylo tego w planie.
+
+## Co juz stoi w repozytorium
+
+| Plik | Skad | Kadr |
+|---|---|---|
+| `resin_inclusions/text_print.webp` | pierwsze podejscie, przyjete | przedmiot z 64% kadru na 86% |
+| `resin_inclusions/object.webp` | podmiana starego plaskiego krazka | przedmiot z 70% kadru na 86% |
+
+Oba przyciete `scripts/kadruj-kafelek.mjs` z marginesem 0.08. Surowe pliki 2048 x 2048
+nie zostaja w repozytorium: kazdy wazyl 2 MB, a lezaly w `public/`, wiec szlyby do
+`dist/` i na produkcje, nie bedac nigdzie uzyte.
+
+## Czego nauczyly nas pierwsze generacje (i co z tego wynika dla trzech kafelkow formy)
+
+- **Generator dokłada dlonie z siebie.** Prompt na `text_plate` nie prosil o ludzi,
+  a dostal dwie rece w rekawiczkach na pol kadru. Kazdy kolejny prompt niesie wiec
+  `no hands, no gloves, no people` wprost.
+- **Luzny kadr zabija szczegol.** Przy 217 px przedmiot zajmujacy 40% kadru traci to,
+  co mial pokazac. Stad `filling most of the image` w kazdym promptcie.
+- **Trzy kafelki formy rysuje `HeroCards`, nie `MaterialCards`.** Kwadrat jest
+  przycinany do pasa poziomego ze SRODKA, wiec gora i dol odpadaja, a na to, co
+  zostanie, wchodzi czarny gradient z podpisem. Dlatego `centered vertically` oraz
+  `the lower part of the image plain dark background with no important detail`.
+
+## Komplet zamkniety 12 wrzesnia 2026
+
+Wszystkie szesc kafelkow ma wlasne zdjecie. Zadne nie jest juz zapozyczone
+z innego wariantu, zaden nie rysuje sie jako znak zastepczy.
+
+**Napis „2026" wyszedl poprawnie za pierwszym podejsciem**, razem z serduszkiem
+nad nim, a generator dolozyl od siebie cechę „925" w rogu blaszki. Nie bylo jej
+w promptcie (`no other text anywhere`), ale jest prawdziwa, bo srebro 925 to
+dokladnie to, z czego takie blaszki robimy, i przy wielkosci kafelka i tak jej
+nie widac. Zostaje.
+
+**Trzy kafelki formy dostaly kadr 16:9, a nie kwadrat.** Pierwsza proba poszla
+kwadratem i przegladarka pokazala, dlaczego to bylo zle: `HeroCards` rysuje
+obraz w polu 315 x 168 i przycina go SAM, biorac srodkowy pasek, wiec owalny
+wzorzec z kafelka „z Twojego pliku 3D" zostal przeciety na pol i po historii
+„polowa lustro, polowa mat" nie zostalo sladu. `scripts/kadruj-kafelek.mjs`
+ma od tego osobny tryb `pas`.
+
+**Dwa kafelki wymagaly jeszcze przesuniecia kadru w pionie.** Wykrycie po
+jasnosci nie wie, co na zdjeciu jest tematem, a co tlem akcji. Przy
+`from_object` strumien silikonu siegal gornej krawedzi, wiec srodek wykrytego
+prostokata wypadl wysoko, a drewniany listek, czyli caly sens tego kafelka,
+schowal sie pod podpisem. Stad argument `przesuniecie`: `0.26` przy
+`from_object` i `-0.06` przy `from_file`. Pelne polecenia sa ponizej.
+
+```bash
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_object.webp 0.08 120 pas 0.26
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_file.webp   0.08 120 pas -0.06
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_design.webp 0.08 120 pas
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_inclusions/text_plate.webp 0.08
+```

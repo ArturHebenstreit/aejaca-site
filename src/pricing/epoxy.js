@@ -154,10 +154,12 @@ export const VOLUMES = [
  * silikon trzeba wylac od nowa. Przy naszej formie i przy formie klienta nie
  * ma czego dzielic, wiec nie ma tam tego pola.
  *
- * ZDJECIA SA TYMCZASOWE. Pliki `new_s/new_m/new_l.webp` powstaly dla starych,
- * rozmiarowych wariantow i pokazuja po prostu formy silikonowe, wiec pasuja
- * tresciowo, ale nie pokazuja tego, czym te trzy drogi sie roznia. Do wymiany
- * na wlasne zdjecia: przedmiot klienta w ramce, wydruk wzorca, widok modelu 3D.
+ * ZDJECIE KAZDEJ DROGI POKAZUJE TO, CZYM SIE ROZNI, a nie po prostu forme
+ * silikonowa: przedmiot klienta zalewany silikonem w drukowanej ramce, wzorzec
+ * w polowie wypolerowany do lustra i w polowie matowy po szlifie, oraz model
+ * CAD swiecacy za wydrukowana z niego bryla. Bez tego trzy kafelki wygladalyby
+ * tak samo, a dziela je w wycenie setki zlotych. Prompty i powody kazdej
+ * poprawki: `MDs/Prompty_Grafiki_Zywica.md`.
  */
 export const MOLD_TYPES = [
   { id: "existing", label: { pl: "Nasza gotowa forma", en: "Our existing mold", de: "Unsere vorhandene Form" },
@@ -169,15 +171,15 @@ export const MOLD_TYPES = [
   { id: "from_object", label: { pl: "Nowa forma z Twojego przedmiotu", en: "New mold from your object", de: "Neue Form von Ihrem Objekt" },
     desc: { pl: "Przysyłasz wzorzec, my odlewamy silikon", en: "You send the pattern, we cast the silicone", de: "Sie senden das Muster, wir gießen das Silikon" },
     prep: { master: false, design: false }, pourLife: 40,
-    img: "/img/calc/resin_molds/new_s.webp" },
+    img: "/img/calc/resin_molds/from_object.webp" },
   { id: "from_file", label: { pl: "Nowa forma z Twojego pliku 3D", en: "New mold from your 3D file", de: "Neue Form aus Ihrer 3D-Datei" },
     desc: { pl: "Drukujemy i polerujemy wzorzec", en: "We print and polish the pattern", de: "Wir drucken und polieren das Muster" },
     prep: { master: true, design: false }, pourLife: 40,
-    img: "/img/calc/resin_molds/new_m.webp" },
+    img: "/img/calc/resin_molds/from_file.webp" },
   { id: "from_design", label: { pl: "Nowa forma z naszego projektu", en: "New mold from our design", de: "Neue Form nach unserem Entwurf" },
     desc: { pl: "Projekt 3D, wzorzec i forma u nas", en: "3D design, pattern and mold by us", de: "3D-Entwurf, Muster und Form bei uns" },
     prep: { master: true, design: true }, pourLife: 40,
-    img: "/img/calc/resin_molds/new_l.webp" },
+    img: "/img/calc/resin_molds/from_design.webp" },
   { id: "custom", label: { pl: "Forma niestandardowa", en: "Custom mold", de: "Individuelle Form" }, custom: true },
 ];
 
@@ -297,12 +299,12 @@ export const INCLUSIONS = [
   // Grawer laserem na srebrnej blaszce: napis czytelny przez zywice, o
   // szlachetnym charakterze, i nie do starcia, bo lezy w srodku bryly.
   { id: "text_plate", label: { pl: "Napis na srebrnej blaszce", en: "Text on a silver plate", de: "Schrift auf Silberplättchen" },
-    cost: 35, timeH: 1.0,
+    cost: 35, timeH: 1.0, img: "/img/calc/resin_inclusions/text_plate.webp",
     desc: { pl: "Grawer laserem, zatopiony w bryle", en: "Laser engraved, embedded in the block", de: "Lasergraviert, im Block eingebettet" } },
   // Ten sam napis wydrukowany na drukarce zywicznej: efekt lzejszy i bardziej
   // jednorodny z reszta przedmiotu, bo material jest ten sam.
   { id: "text_print", label: { pl: "Napis drukowany w żywicy", en: "Text printed in resin", de: "Schrift in Harz gedruckt" },
-    cost: 12, timeH: 0.8,
+    cost: 12, timeH: 0.8, img: "/img/calc/resin_inclusions/text_print.webp",
     desc: { pl: "Lżejszy, jednorodny z bryłą", en: "Lighter, uniform with the block", de: "Leichter, einheitlich mit dem Block" } },
   { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },
     cost: 15, timeH: 1.5,  img: "/img/calc/resin_inclusions/led.webp" },
