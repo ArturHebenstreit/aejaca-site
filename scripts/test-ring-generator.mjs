@@ -1736,7 +1736,13 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     const stone = stoneSolid(w, p.stone.cut, p.stone.size);
     const gR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
     const h = buildHalo(w, p, stone, gR);
-    const wieniec = h.metal.subtract(h.seats);
+    // Sonda stoi na osi +X, a wieniec od sprawdzianu 50 zaczyna sie na osi -Y,
+    // wiec obracamy go tak, zeby pierwszy kamien stanal pod sonda.
+    const c0 = h.stones[0].boundingBox();
+    const kat0 = Math.atan2((c0.min[1] + c0.max[1]) / 2, (c0.min[0] + c0.max[0]) / 2) * 180 / Math.PI;
+    const wieniec0 = h.metal.subtract(h.seats);
+    const wieniec = wieniec0.rotate([0, 0, -kat0]);
+    wieniec0.delete?.();
     const haloGirdleH = 0.03 * d;
     const zKamienia = stone.girdleH * 0.5 - Math.max(0.12, d * 0.11);
     const gora = zKamienia + haloGirdleH;             // rondysta kamienia halo
@@ -2844,12 +2850,12 @@ console.log("\n46. Stop, numer buildu i ergonomia maja jawny kontrakt");
     bad("srebro, biale zloto oraz zolte 9K, 14K i 18K nadal nie maja osobnych wygladow");
   }
 
-  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.003["']/.test(ui)
+  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.004["']/.test(ui)
       && /Build\s*\{RING_CONFIGURATOR_BUILD\}/.test(ui)
-      && /WORKER_VERSION\s*=\s*35/.test(worker)) {
-    ok("stopka pokazuje build 1.003, a geometria ma wersje 35");
+      && /WORKER_VERSION\s*=\s*36/.test(worker)) {
+    ok("stopka pokazuje build 1.004, a geometria ma wersje 36");
   } else {
-    bad("brakuje widocznego buildu 1.003 lub zgodnej wersji geometrii 35");
+    bad("brakuje widocznego buildu 1.004 lub zgodnej wersji geometrii 36");
   }
 
   if (/min-h-\[44px\]/.test(ui) && /aria-label=\{t\.configNav\}/.test(ui)
@@ -2898,12 +2904,16 @@ console.log("\n45. Platkowe halo ma zewnetrzna kieszen, a markiza nie ma poprzec
   const gR = Math.max(...outlineFor("round", 6).map(([x, y]) => Math.hypot(x, y)));
   const h = buildHalo(w, p, centralny, gR);
   const pustyWieniec = h.metal.subtract(h.seats);
+  // Sonda idzie wzdluz promienia PIERWSZEGO kamienia, gdziekolwiek on stoi:
+  // od sprawdzianu 50 wieniec zaczyna sie na osi -Y, nie na +X.
   const bb = h.stones[0].boundingBox();
-  const cx = (bb.min[0] + bb.max[0]) / 2;
+  const cx = (bb.min[0] + bb.max[0]) / 2, cy = (bb.min[1] + bb.max[1]) / 2;
+  const rc = Math.hypot(cx, cy) || 1;
+  const ux = cx / rc, uy = cy / rc;
   const d = p.halo.size;
   const z = 0;
-  const zewnProbe = w.Manifold.sphere(0.06, 20).translate([cx + d / 2 + 0.10, 0, z]);
-  const wewnProbe = w.Manifold.sphere(0.06, 20).translate([cx - d / 2 - 0.10, 0, z]);
+  const zewnProbe = w.Manifold.sphere(0.06, 20).translate([cx + ux * (d / 2 + 0.10), cy + uy * (d / 2 + 0.10), z]);
+  const wewnProbe = w.Manifold.sphere(0.06, 20).translate([cx - ux * (d / 2 + 0.10), cy - uy * (d / 2 + 0.10), z]);
   const zewn = pustyWieniec.intersect(zewnProbe);
   const wewn = pustyWieniec.intersect(wewnProbe);
   const zewnFill = zewn.volume() / zewnProbe.volume();
@@ -3052,6 +3062,41 @@ console.log("\n49. Build 1.003: halo, trylogia i nowe rodziny ramion");
     zwolnij(r);
   }
   zwolnij(base);
+}
+
+// ------------------------------------------------------------
+console.log("\n50. Wieniec halo ma lustrzane odbicie po obu osiach");
+// ------------------------------------------------------------
+// Liczba kamieni wienca wynika z obwodu, wiec bywala nieparzysta, a probkowanie
+// ruszalo z pierwszego punktu obrysu. Zmierzone przed poprawka na presecie
+// Diana: 19 kamieni, 5,48 % objetosci metalu bez odbicia lewo-prawo, przy
+// 0,00 % przod-tyl. Z gory wieniec czytal sie jako przekrzywiony. Pomiar:
+// bryla przecieta ze swoim lustrem; to, co nie ma odbicia, wychodzi jako
+// ubytek objetosci. Prog 0,5 % przepuszcza dyskretyzacje obrotu szyny.
+{
+  const asymetria = (m, os) => {
+    const lustro = m.mirror(os);
+    const wspolne = m.intersect(lustro);
+    const u = (1 - wspolne.volume() / m.volume()) * 100;
+    lustro.delete?.(); wspolne.delete?.();
+    return u;
+  };
+  const UKLADY = [
+    ["diana", applyPreset(RING_PRESETS.find((x) => x.id === "diana"), DEFAULTS)],
+    ["halo 1,5 mm", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.5 } }],
+    ["halo 1,1 mm owal", { stone: { cut: "oval", size: 7 }, setting: "prong4", halo: { on: true, size: 1.1 } }],
+    ["halo prostokat", { stone: { cut: "octagon", size: 6.5 }, setting: "bezel", halo: { on: true, size: 1.3, shape: "rectangle" } }],
+    ["halo szesciokat", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, shape: "hexagon" } }],
+  ];
+  for (const [nazwa, cfg] of UKLADY) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64, mode: "casting" });
+    const ile = r.stoneVolumesMm3.haloCount || 0;
+    const x = asymetria(r.metal, [1, 0, 0]), z = asymetria(r.metal, [0, 0, 1]);
+    if (ile % 2 !== 0) bad(`${nazwa}: wieniec ma nieparzysta liczbe kamieni (${ile})`);
+    else if (x > 0.5 || z > 0.5) bad(`${nazwa}: asymetria lewo-prawo ${x.toFixed(2)} %, przod-tyl ${z.toFixed(2)} %`);
+    else ok(`${nazwa.padEnd(17)} ${ile} kamieni, asymetria ${x.toFixed(2)} % / ${z.toFixed(2)} %`);
+    zwolnij(r);
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

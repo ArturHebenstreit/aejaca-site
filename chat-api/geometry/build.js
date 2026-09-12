@@ -2373,6 +2373,26 @@ function buildBandStones(w, p) {
 }
 
 /**
+ * Dlugosc luku obrysu do miejsca, w ktorym przecina on os -Y.
+ *
+ * Wszystkie prowadnice halo sa symetryczne wzgledem osi Y, wiec ten punkt
+ * zawsze istnieje i zawsze lezy na osi symetrii. Gdyby go nie bylo, zostaje
+ * poczatek obrysu, czyli zachowanie sprzed poprawki.
+ */
+function arcAtMinusY(pts, lengths) {
+  let acc = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    if (a[0] * b[0] <= 0 && !(a[0] === 0 && b[0] === 0)) {
+      const f = a[0] === b[0] ? 0 : a[0] / (a[0] - b[0]);
+      if (a[1] + (b[1] - a[1]) * f < 0) return acc + lengths[i] * f;
+    }
+    acc += lengths[i];
+  }
+  return 0;
+}
+
+/**
  * Halo: wieniec drobnych kamieni WOKOL korony.
  *
  * Buduje sie go w ukladzie korony, czyli rondysta kamienia centralnego na
@@ -2437,10 +2457,24 @@ export function buildHalo(w, p, stone, girdleR) {
       const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
       lengths.push(len); perimeter += len;
     }
-    const n = Math.max(8, Math.floor(perimeter / (d * 1.06)));
+    // PARZYSTA LICZBA KAMIENI, PROBKOWANIE OD OSI SYMETRII.
+    //
+    // Wieniec liczony od pierwszego punktu obrysu z dowolna liczba kamieni
+    // mial kamien na jednej osi i przerwe naprzeciw. Zmierzone na presecie
+    // Diana: 19 kamieni, 5,5 % objetosci metalu bez lustrzanego odbicia
+    // lewo-prawo, przy zerowej asymetrii przod-tyl. Z gory wieniec czytal
+    // sie jako przekrzywiony, choc kazdy kamyk z osobna stal poprawnie.
+    //
+    // Dwa warunki daja odbicie po obu osiach: liczba parzysta (kamien na
+    // osi ma brata dokladnie naprzeciw) i start probkowania w punkcie
+    // lezacym NA osi, czyli tam, gdzie obrys przecina os -Y. Serce ma tylko
+    // jedna os i ten sam start mu wystarcza.
+    let n = Math.floor(perimeter / (d * 1.06));
+    n = Math.max(8, n - (n % 2));
+    const s0 = arcAtMinusY(pts, lengths);
     const samples = [];
     for (let k = 0; k < n; k++) {
-      let target = (k / n) * perimeter, i = 0;
+      let target = (s0 + (k / n) * perimeter) % perimeter, i = 0;
       while (target > lengths[i] && i < lengths.length - 1) {
         target -= lengths[i]; i++;
       }

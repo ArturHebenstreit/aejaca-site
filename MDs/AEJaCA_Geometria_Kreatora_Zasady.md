@@ -192,6 +192,9 @@ Dlatego `tubeAlong` trzyma sumę stożków jako zapas i sprawdza wynik, zamiast 
 
 - Liczba kamieni **nie jest parametrem**. Wynika z obwodu przez średnicę, tak jak
   liczy jubiler. Oddanie tego klientowi kończy się dziurą albo zachodzeniem.
+- Liczba jest **parzysta**, a próbkowanie rusza z punktu, w którym obrys przecina
+  oś -Y. Inaczej kamień na jednej osi ma naprzeciw przerwę i wieniec z góry
+  wygląda na przekrzywiony (Diana: 19 kamieni, 5,5 % asymetrii). Sprawdzian 50.
 - Halo **nie jest płytą**. Każdy kamień ma osobną krótką tulejkę gniazda;
   sąsiednie tulejki zachodzą bokami i tworzą samonośny, ażurowy wieniec.
 - Tulejki zachodzą nieznacznie na koronę, aby całość była jedną bryłą, ale nie
@@ -282,6 +285,57 @@ dodając nową bryłę:
 
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
+
+## 2026-09-12 - audyt bryl promieniem: parzysty wieniec, czyste pliki, lista cienkich scianek
+
+**Co zmierzono.** Osobny harness (nie wchodzi do repozytorium, opis w handoffie
+TASK-026) zbudowal 25 presetow w trybie odlewniczym i policzyl to, czego
+sprawdziany 1-49 nie licza: grubosc scianki PROMIENIEM z kazdego trojkata do
+pierwszego wyjscia z bryly (tak licza slicery), symetrie lustrzana bryly,
+najmniejsza odleglosc kamienia i metalu od osi palca, kolizje par kamieni,
+zamkniecie i objetosc pliku STL, liczbe trojkatow o zerowym polu.
+
+**Co bylo dobrze.** Srednica wewnetrzna trafiona co do 0,01 mm na kazdym
+presecie, zaden kamien ani metal nie wchodzi w otwor na palec, zadna para
+kamieni nie zachodzi na siebie, kazdy kamien siada i nie wypada, STL zamkniety
+i o tej samej objetosci co bryla, jedna czesc na model, obraczki i sygnety bez
+ani jednej scianki ponizej 1,1 mm.
+
+**Co bylo zle i zostalo poprawione.**
+
+- Wieniec halo mial dowolna liczbe kamieni i ruszal z pierwszego punktu obrysu.
+  Diana: 19 kamieni, 5,48 % objetosci bez odbicia lewo-prawo. Teraz liczba
+  jest parzysta, a probkowanie zaczyna sie tam, gdzie obrys przecina os -Y.
+  Sprawdzian 50, prog 0,5 %.
+- Pliki STL i 3MF nosily trojkaty o zerowym polu i zdublowane wierzcholki
+  (Diana 1724, eternity 1176), bo jadro zostawia po cieciach pary punktow
+  blizej siebie niz rozdzielczosc pliku. Walidator slicera zglasza to jako
+  blad siatki. `siatkaDoZapisu` w `chat-api/ringExport.js` lepi punkty w
+  granicy 0,1 mikrometra i wyrzuca zerowe trojkaty; test `ringExport.test.mjs`
+  z kontrola negatywna.
+
+**Co zmierzono i CZEKA na decyzje wlasciciela** (liczby z presetow, tryb
+odlewniczy, srebro):
+
+- Dolna obrecz kosza centralnego: 0,28 mm wysokosci na 0,36 mm szerokosci
+  (`outlineRail` w `buildCrown`). Oprawka boczna: 0,26 na 0,32-0,40 mm.
+- Tulejki halo: scianka 0,21 mm (platkowe) i 0,08 mm (wspolne krapy) miedzy
+  wlotem gniazda a zewnetrzem tulejki; platek zewnetrzny 0,15 mm. Przy halo
+  1,15 mm (bypassFlower) 28 mm2 scianek ponizej 0,3 mm.
+- Eternity: srodki gniazd co 1,12 srednicy, wiec miedzy wlotami sasiadow
+  zostaje 0,12 mm przy kamieniu 1,8 mm i 0,04 mm przy 1,2 mm.
+- Kuleczki pave na ramionach: podstawa 0,30-0,40 mm, czubek 0,20-0,27 mm.
+- Stozek gniazda centralnego wychodzi bokami przez ramiona galerii i zostawia
+  tam ostre kliny (pave 15,7 mm2, kaseta 12,1 mm2 powierzchni z klinem
+  cienszym niz 0,3 mm).
+
+**Czego sie dowiedzielismy.** Plaster 2D (`slice` + `offset`) klamie na
+stycznych przekrojach zaokraglonego profilu: na soliterze zglaszal 3,4 mm3
+cech ponizej 0,3 mm, ktorych nie ma. Promien z trojkata do pierwszego wyjscia
+z bryly nie ma tej wady, a rownoleglosc lica wyjscia do promienia rozdziela
+sciane (dwa rownolegle lica) od klina (ostra krawedz). Obie liczby sa
+potrzebne: sciana 0,2 mm to brak metalu, klin to krawedz, ktorej odlew nie
+wypelni, i leczy sie je inaczej.
 
 ## 2026-08-24 - ciagla szyna pod korona i krapa z jednej powloki
 
