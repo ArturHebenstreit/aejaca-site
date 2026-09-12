@@ -138,9 +138,20 @@ nie zostaja w repozytorium: kazdy wazyl 2 MB, a lezaly w `public/`, wiec szlyby 
   zostanie, wchodzi czarny gradient z podpisem. Dlatego `centered vertically` oraz
   `the lower part of the image plain dark background with no important detail`.
 
-## Czego nadal brakuje
+## Komplet zamkniety 12 wrzesnia 2026
 
-`from_object`, `from_file`, `from_design` (trzy drogi powstania formy) oraz
-`text_plate` po poprawce promptu. Do czasu ich dostarczenia kafelek
-„Napis na srebrnej blaszce" rysuje sie jako szesciokatny znak zastepczy,
-a trzy kafelki formy uzywaja zdjec po wycofanych wariantach rozmiarowych.
+Wszystkie szesc kafelkow ma wlasne zdjecie. Zadne nie jest juz zapozyczone
+z innego wariantu, zaden nie rysuje sie jako znak zastepczy.
+
+**Napis „2026" wyszedl poprawnie za pierwszym podejsciem**, razem z serduszkiem
+nad nim, a generator dolozyl od siebie cechę „925" w rogu blaszki. Nie bylo jej
+w promptcie (`no other text anywhere`), ale jest prawdziwa, bo srebro 925 to
+dokladnie to, z czego takie blaszki robimy, i przy wielkosci kafelka i tak jej
+nie widac. Zostaje.
+
+**Trzy kafelki formy dostaly kadr 16:9, a nie kwadrat.** Pierwsza proba poszla
+kwadratem i przegladarka pokazala, dlaczego to bylo zle: `HeroCards` rysuje
+obraz w polu 315 x 168 i przycina go SAM, biorac srodkowy pasek, wiec owalny
+wzorzec z kafelka „z Twojego pliku 3D" zostal przeciety na pol i po historii
+„polowa lustro, polowa mat" nie zostalo sladu. `scripts/kadruj-kafelek.mjs`
+ma od tego osobny tryb `pas`.

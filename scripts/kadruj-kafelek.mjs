@@ -17,7 +17,14 @@
 // Margines zostaje, bo przedmiot dociety do samej krawedzi wyglada na
 // wciety, a `MaterialCards` rysuje go w zaokraglonej ramce.
 //
-//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog]
+//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog] [ksztalt]
+//
+// `ksztalt` to `kwadrat` (domyslnie) albo `pas`. Kwadrat jest dla kafelkow
+// rysowanych przez `MaterialCards`, ktore pokazuja caly obraz. `pas` jest dla
+// `HeroCards`, ktore rysuja obraz w polu 315 x 168 i przycinaja go SAME, biorac
+// srodkowy pasek. Kwadrat oddany takiemu kafelkowi traci gore i dol: owalny
+// wzorzec z kafelka "z Twojego pliku 3D" zostal przez to przeciety na pol i po
+// historii "polowa lustro, polowa mat" nie zostalo sladu. `pas` oddaje 16:9.
 //
 // `margines` to ulamek dluzszego boku przedmiotu, domyslnie 0.12.
 // `prog` to jasnosc, od ktorej piksel liczy sie jako przedmiot, domyslnie 120.
@@ -29,9 +36,9 @@
 import sharp from "sharp";
 import { existsSync } from "node:fs";
 
-const [, , wejscie, wyjscie, marginesArg, progArg] = process.argv;
+const [, , wejscie, wyjscie, marginesArg, progArg, ksztaltArg] = process.argv;
 if (!wejscie || !wyjscie) {
-  console.error("Uzycie: node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog]");
+  console.error("Uzycie: node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog] [kwadrat|pas]");
   process.exit(1);
 }
 if (!existsSync(wejscie)) {
@@ -47,7 +54,10 @@ const MARGINES = Number(marginesArg ?? 0.12);
 // przy 120 wynik jest STABILNY, czyli nie zmienia sie miedzy 120 a 150, wiec
 // nie jest przypadkowym trafieniem w zbocze gradientu.
 const PROG = Number(progArg ?? 120);
+const PAS = String(ksztaltArg ?? "kwadrat") === "pas";
 const BOK = 512;
+const PAS_SZER = 768;
+const PAS_WYS = 432;
 
 const meta = await sharp(wejscie).metadata();
 
@@ -82,26 +92,36 @@ if (!obszar) {
 }
 const { lewo, gora, szer, wys } = obszar;
 
-// Kwadrat opisany na przedmiocie, wysrodkowany na nim, powiekszony o margines.
-const bok = Math.round(Math.max(szer, wys) * (1 + 2 * MARGINES));
+// Prostokat opisany na przedmiocie, wysrodkowany na nim, powiekszony o margines.
+// Przy kwadracie bok bierze sie z dluzszej krawedzi przedmiotu. Przy pasie
+// wiazaca jest WYSOKOSC, a szerokosc dolicza sie do 16:9: przegladarka przytnie
+// potem boki, a nie gore, wiec to wysokosc decyduje, czy przedmiot przezyje.
+const zadanaWys = Math.round((PAS ? wys : Math.max(szer, wys)) * (1 + 2 * MARGINES));
+const zadanaSzer = PAS ? Math.round((zadanaWys * PAS_SZER) / PAS_WYS) : zadanaWys;
+// Przyciecie do granic obrazu: przedmiot stojacy przy krawedzi nie moze wypchnac
+// kadru poza plik, bo `extract` konczy sie wtedy bledem. Skalujemy OBA wymiary
+// tym samym czynnikiem, zeby proporcja nie uciekla, gdy zadany kadr jest
+// szerszy albo wyzszy niz caly obraz.
+const skala = Math.min(1, meta.width / zadanaSzer, meta.height / zadanaWys);
+const kadrSzer = Math.floor(zadanaSzer * skala);
+const kadrWys = Math.floor(zadanaWys * skala);
 const srodekX = lewo + szer / 2;
 const srodekY = gora + wys / 2;
-// Przyciecie do granic obrazu: przedmiot stojacy przy krawedzi nie moze
-// wypchnac kadru poza plik, bo `extract` konczy sie wtedy bledem.
-const maks = Math.min(bok, meta.width, meta.height);
-const x = Math.round(Math.min(Math.max(0, srodekX - maks / 2), meta.width - maks));
-const y = Math.round(Math.min(Math.max(0, srodekY - maks / 2), meta.height - maks));
+const x = Math.round(Math.min(Math.max(0, srodekX - kadrSzer / 2), meta.width - kadrSzer));
+const y = Math.round(Math.min(Math.max(0, srodekY - kadrWys / 2), meta.height - kadrWys));
 
 await sharp(wejscie)
-  .extract({ left: x, top: y, width: maks, height: maks })
-  .resize(BOK, BOK, { fit: "cover" })
+  .extract({ left: x, top: y, width: kadrSzer, height: kadrWys })
+  .resize(PAS ? PAS_SZER : BOK, PAS ? PAS_WYS : BOK, { fit: "cover" })
   .webp({ quality: 82 })
   .toFile(wyjscie);
 
-const udzialPrzed = Math.round((Math.max(szer, wys) / Math.max(meta.width, meta.height)) * 100);
-const udzialPo = Math.round((Math.max(szer, wys) / maks) * 100);
+// Udzial mierzymy po WYSOKOSCI przy pasie i po dluzszym boku przy kwadracie,
+// bo to ten wymiar decyduje, czy przedmiot przezyje przyciecie w przegladarce.
+const udzialPrzed = Math.round(((PAS ? wys : Math.max(szer, wys)) / (PAS ? meta.height : Math.max(meta.width, meta.height))) * 100);
+const udzialPo = Math.round(((PAS ? wys : Math.max(szer, wys)) / kadrWys) * 100);
 console.log(`${wejscie} ${meta.width}x${meta.height}`);
 console.log(`  przedmiot: ${szer}x${wys} w punkcie ${lewo},${gora}`);
-console.log(`  kadr: ${maks}x${maks} w punkcie ${x},${y}`);
+console.log(`  kadr: ${kadrSzer}x${kadrWys} w punkcie ${x},${y}`);
 console.log(`  przedmiot zajmowal ${udzialPrzed}% kadru, zajmuje ${udzialPo}%`);
-console.log(`  zapisano ${wyjscie} jako ${BOK}x${BOK} webp`);
+console.log(`  zapisano ${wyjscie} jako ${PAS ? `${PAS_SZER}x${PAS_WYS}` : `${BOK}x${BOK}`} webp`);
