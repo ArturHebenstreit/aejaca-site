@@ -2465,10 +2465,22 @@ function buildBandStones(w, p) {
         // krapa stala 0,02-0,06 mm od wlotu; przy mostku 0,45 mm miedzy
         // wlotami (minimum dla srebra) czubek konczyl sie przed rondysta
         // i sprawdzian 32 mierzyl zerowy chwyt przy kamieniu 1,3 mm.
-        const pochyl = zam
-          ? Math.max(26, Math.asin(Math.min(0.85,
-            (polOdstepu - (d / 2 - 0.08)) / (dlug + SINK_B))) / DEG)
-          : 26;
+        // Czubek ma stanac 0,08 mm za rondysta swojego kamienia i 0,10 mm nad
+        // jego rondysta. Krapa stoi obok kamienia takze w osi (`off`), wiec
+        // po obwodzie musi dojsc az tam, gdzie kolo o promieniu `d/2 - 0,08`
+        // przecina jej plaszczyzne, a promieniowo zejsc do poziomu kamienia,
+        // ktory lezy ponizej stopy. Z tych dwoch odleglosci wychodzi i kat,
+        // i dlugosc polowki; sam kat przy stalej dlugosci trzymal czubek
+        // 0,27 mm nad korona i sprawdzian 32 mierzyl zerowy chwyt.
+        // Cel: 0,05 mm w glab rondysty i 0,35 mm nad nia. Czubek na poziomie
+        // rondysty (proba z 0,10 mm) mijal podniesiony kamien, bo pol
+        // milimetra pod jego rondysta pawilon ma juz tylko 0,2 mm promienia,
+        // a krapa stoi 0,37 mm obok osi kamienia.
+        const dtCel = Math.sqrt(Math.max(0.01, (d / 2 - 0.05) ** 2 - off * off));
+        const zasieg = Math.max(0.05, polOdstepu - dtCel);
+        const wznios = Math.max(0.05, (ro2 + 0.35) - rad);
+        const pochyl = zam ? Math.atan2(zasieg, wznios) / DEG : 26;
+        const dlugCalk = zam ? Math.hypot(zasieg, wznios) : dlug + SINK_B;
         const kierunki = zam ? [-pochyl, pochyl] : [0];
         for (const s of [-1, 1]) {
           const stopa = [os[0] * rad, os[1] * rad, s * off];
@@ -2476,12 +2488,12 @@ function buildBandStones(w, p) {
             const azym = ab / DEG + kat;
             const osK = [Math.cos(azym * DEG), Math.sin(azym * DEG), 0];
             addM(zlacz(
-              Manifold.cylinder(dlug + SINK_B, zam ? kula * 0.8 : kula, rGora, 20, false)
+              Manifold.cylinder(dlugCalk, zam ? kula * 0.8 : kula, rGora, 20, false)
                 .rotate([0, 90, azym])
                 .translate(stopa),
               Manifold.sphere(rGora, 16).translate([
-                stopa[0] + osK[0] * (dlug + SINK_B),
-                stopa[1] + osK[1] * (dlug + SINK_B),
+                stopa[0] + osK[0] * dlugCalk,
+                stopa[1] + osK[1] * dlugCalk,
                 stopa[2],
               ]),
             ));
@@ -2512,7 +2524,15 @@ function punktLuku(pts, lengths, s) {
   }
   const a = pts[i], b = pts[(i + 1) % pts.length];
   const f = lengths[i] > 0 ? target / lengths[i] : 0;
-  return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f };
+  // Normalna z KRAWEDZI prowadnicy, nie z sasiadow: przy kamyku na skraju
+  // grupy sasiad po drugiej stronie przerwy na krape przekrzywial normalna,
+  // a z nia plaszczyzne ciecia platka, i zostawal wiorek 0,004 mm3.
+  const ex = b[0] - a[0], ey = b[1] - a[1];
+  const el = Math.hypot(ex, ey) || 1;
+  let nx = ey / el, ny = -ex / el;
+  const x = a[0] + ex * f, y = a[1] + ey * f;
+  if (nx * x + ny * y < 0) { nx = -nx; ny = -ny; }
+  return { x, y, nx, ny };
 }
 
 /** Dlugosc luku obrysu do punktu, w ktorym przecina go polprosta pod katem `kat`. */
@@ -2729,6 +2749,7 @@ export function buildHalo(w, p, stone, girdleR) {
       }
     }
     for (let i = 0; i < samples.length; i++) {
+      if (samples[i].nx !== undefined) continue;
       const prev = samples[(i - 1 + samples.length) % samples.length];
       const next = samples[(i + 1) % samples.length];
       const tx0 = next.x - prev.x, ty0 = next.y - prev.y;
@@ -2850,7 +2871,10 @@ export function buildHalo(w, p, stone, girdleR) {
       const sciana = Manifold.cylinder(wallH, wallR, wallR, 32, false)
         .translate([x, y, petalTop - wallH]);
       // Polprzestrzen lokalnego +X po obrocie wskazuje na zewnatrz wienca.
-      const polowa = Manifold.cube([wallR * 2.2, wallR * 4, wallH * 2], true)
+      // Plaszczyzna ciecia DOKLADNIE przez os kamyka. Przesunieta o 0,1 wallR
+      // do srodka zostawiala przy kazdej przerwie na krape wiorek 0,004 mm3
+      // odciety od reszty platka (sprawdzian 30 liczyl go jako zakucie).
+      const polowa = Manifold.cube([wallR * 2, wallR * 4, wallH * 2], true)
         .translate([wallR, 0, petalTop - wallH / 2])
         .rotate([0, 0, a / DEG])
         .translate([x, y, 0]);

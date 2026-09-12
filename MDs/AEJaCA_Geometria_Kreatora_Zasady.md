@@ -361,10 +361,13 @@ sciana 0,45 mm i drut 0,5 mm; kliny pod koszem zamyka kolnierz.** Wdrozone:
   w dol na loze) i szerszy wlot scinal gorne 0,05 mm loza: kamien tracil
   podciecie i chwyt spadal z 0,73 do 0,001 %. Regula "ciac obok lica"
   dotyczy tez skladania samego narzedzia, i kierunek zachodzenia ma znaczenie.
-- Zakucia w stanie gotowym poszly za nowymi wymiarami: polowki krap eternity
-  pochylaja sie pod katem LICZONYM tak, by czubek siegnal 0,08 mm za
-  rondyste (stale 26 stopni nie siegalo przy mostku 0,45 mm), zakuta kuleczka
-  pave ma 0,8 promienia i zachodzi na kamien o stale 0,12 mm.
+- Zakucia w stanie gotowym poszly za nowymi wymiarami: polowka krapy eternity
+  ma kat i dlugosc LICZONE z polozenia kamienia (czubek 0,05 mm w glab
+  rondysty i 0,35 mm nad nia; krapa stoi tez obok kamienia w osi, wiec cel
+  liczy sie z kola rondysty w jej plaszczyznie), bo stale 26 stopni nie
+  siegalo przy mostku 0,45 mm, a czubek na poziomie rondysty mijal waski
+  pawilon; zakuta kuleczka pave ma 0,8 promienia i zachodzi na kamien
+  o stale 0,12 mm.
 
 Po zmianach (25 presetow, jedna bryla kazdy, sciany cienszcze niz 0,3 mm):
 zero na 16 presetach; czubki kuleczek 0,27 mm (pave, diana, bypassPave,

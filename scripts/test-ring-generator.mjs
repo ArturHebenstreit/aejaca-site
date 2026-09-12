@@ -1792,11 +1792,18 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     // warstwe zerowej grubosci, ktora zlepia wszystkie kulki w jedna bryle
     // i pomiar przestaje cokolwiek znaczyc. Wpadlem w to przy pisaniu tego testu.
     const nad = Manifold.cube([60, 60, 12], true).translate([0, 0, gora + 0.06 + 6]);
-    const wewnetrznaStrefa = Manifold.cylinder(20, rW, rW, 96, true);
+    // Wspolne krapy maja druga kuleczke pary NA ZEWNATRZ prowadnicy; strefa
+    // musi ja objac w calosci, inaczej liczy sie tylko jej wiorek w walcu.
+    const rStrefy = p.halo.setting === "shared" ? rW + 0.6 : rW;
+    const wewnetrznaStrefa = Manifold.cylinder(20, rStrefy, rStrefy, 96, true);
     const ponad = wieniec.intersect(nad);
     const zakucia = ponad.intersect(wewnetrznaStrefa);
     const realne = zakucia.decompose().filter((c) => c.volume() > 0.002);
-    const oczekiwane = p.halo.setting === "shared" ? 2 * h.count : h.count;
+    // Kuleczki stoja tylko MIEDZY sasiadami z grupy; w przerwie na krape nie
+    // ma zadnej (od 2026-09-12 wieniec omija krapy), wiec jest ich o tyle
+    // mniej, ile krap.
+    const przerwy = prongAngles(CUTS[p.stone.cut], p.setting).length;
+    const oczekiwane = (p.halo.setting === "shared" ? 2 : 1) * (h.count - przerwy);
     if (realne.length !== oczekiwane) {
       bad(`halo d=${d}: ${realne.length} zakuc zamiast ${oczekiwane}`);
     } else {
