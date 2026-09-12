@@ -39,6 +39,8 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 
 | TASK-024 | Opis procesu dla klienta: etapy po zaplacie na stronie platnosci, FAQ o terminie i ustaleniach, odnosniki do dokumentow przy przycisku zaplaty, wiedza o procesie dla asystenta | Claude Code | `claude/serwis-development-skills-3vuba9` | `src/pages/Payments.jsx`, `src/pages/Checkout.jsx`, `src/pages/Offer.jsx`, `chat-api/context.js`, `public/llms.txt` | review | brak ADR, zmiana tresci |
 
+| TASK-025 | Audyt kreatora pierscionkow w przegladarce: strona z powrotem pod adresem do testow, cena wiazaca bez kursow z bazy, komunikat przy watku, ktory nie wstal | Claude Code | `claude/serwis-development-skills-3vuba9` | `src/routes.js`, `src/main.jsx`, `src/entry-server.jsx`, `scripts/build-sitemap.mjs`, `chat-api/server.js` (trasa ceny kreatora), `chat-api/priceRing.test.mjs`, `chat-api/package.json`, `src/components/calculators/RingConfigurator.jsx`, handoff | review | `MDs/handoffs/TASK-025-audyt-kreatora-pierscionkow.md` |
+
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
 ## Kolejka integracji

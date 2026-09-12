@@ -364,7 +364,9 @@ export default function RingConfigurator({ lang = "pl" }) {
       setError({ kind: "workerFailed" });
       console.error("[kreator] watek geometrii:", powod);
     };
-    w.onerror = (e) => { awaria(e?.message || e); e?.preventDefault?.(); };
+    // Zdarzenie bledu LADOWANIA pliku watku nie ma `message` ani `filename`;
+    // zostaje sam typ. Bez tego log pokazywal doslownie "Event".
+    w.onerror = (e) => { awaria(e?.message || `${e?.type || "error"} ${e?.filename || ""}`.trim()); e?.preventDefault?.(); };
     w.onmessageerror = () => awaria("nieczytelna wiadomosc");
     w.onmessage = (e) => {
       // Odpowiedz starsza niz ostatnie zapytanie jest juz nieaktualna:
