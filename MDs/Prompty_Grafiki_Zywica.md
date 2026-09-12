@@ -31,7 +31,7 @@ Tam nic nie zasłania kadru, przedmiot ma stać centralnie.
 
 | Plik docelowy | Co ma pokazać | Prompt (EN) |
 |---|---|---|
-| `public/img/calc/resin_molds/from_object.webp` | Przedmiot KLIENTA w ramce, zalewany silikonem | A small heirloom object, a carved bone charm, resting face-up at the bottom of a 3D-printed rectangular casting frame, blue-grey liquid silicone being poured around it from a mixing cup, silicone surface glossy and level, the object still visible under the rising silicone, matte black bench, cool blue rim light from upper left, warm highlight on the object, black background, premium macro product photography, no text, no logo, no watermark |
+| `public/img/calc/resin_molds/from_object.webp` | Przedmiot KLIENTA w ramce, zalewany silikonem | A small carved wooden pendant charm with a simple leaf motif, resting face-up at the bottom of an open 3D-printed rectangular casting box, pale blue-grey moulding silicone pouring into the box in a smooth stream from above with the cup out of frame, the silicone half filling the box, its surface glossy and level, the charm still clearly visible under the rising silicone, the casting box large and filling most of the image and centered vertically, the lower part of the image plain dark background with no important detail, matte black bench, cool blue rim light from upper left, warm highlight on the charm, black background, premium macro product photography, no hands, no gloves, no people, no tools, no text, no logo, no watermark |
 | `public/img/calc/resin_molds/from_file.webp` | Wydrukowany wzorzec, polerowany do lustra | A small 3D-printed master pattern in glossy black resin, an oval pendant shape with crisp edges, half of its surface already polished to a mirror and half still matte from sanding, fine abrasive pads and a polishing cloth beside it, matte black jeweler bench, cool blue rim light from upper left, sharp specular reflection on the polished half, black background, premium macro product photography, no text, no logo, no watermark |
 | `public/img/calc/resin_molds/from_design.webp` | Projekt 3D obok wydrukowanego z niego wzorca | A faceted crystal-shaped pendant rendered as a blue wireframe CAD model glowing on a dark screen in the background, softly out of focus, and in sharp focus in the foreground the same shape as a physical 3D-printed master pattern in dark grey resin standing on a matte black bench, cool blue rim light from upper left, black background, shallow depth of field, premium macro product photography, no text, no logo, no watermark |
 | `public/img/calc/resin_inclusions/text_plate.webp` | Srebrna blaszka ze znakiem i napisem, zatopiona w bryle | A small rectangular plate of polished sterling silver 925, rhodium-white, cold neutral tone, laser-engraved with a small heart symbol above one short line of capital numerals reading exactly "2026", the engraving crisp, deeply cut, centered, correctly spelled, in a clean geometric sans-serif, the plate large in the frame and facing the camera almost straight on so the engraving is fully readable, suspended inside a small block of perfectly clear cured epoxy resin, the block filling most of the frame, standing upright on a matte black surface, light refracting through the clear edges, cool blue rim light from upper left, black background, premium macro product photography, sharp focus on the engraved mark and numerals, no hands, no gloves, no mold, no frame, no tools, the metal must read as cool silver and never as gold or brass, no other text anywhere in the image, no logo, no watermark |
@@ -125,6 +125,18 @@ plaski krazek widziany z gory. Podmieniamy, chociaz nie bylo tego w planie.
 Oba przyciete `scripts/kadruj-kafelek.mjs` z marginesem 0.08. Surowe pliki 2048 x 2048
 nie zostaja w repozytorium: kazdy wazyl 2 MB, a lezaly w `public/`, wiec szlyby do
 `dist/` i na produkcje, nie bedac nigdzie uzyte.
+
+## Czego nauczyly nas pierwsze generacje (i co z tego wynika dla trzech kafelkow formy)
+
+- **Generator dokłada dlonie z siebie.** Prompt na `text_plate` nie prosil o ludzi,
+  a dostal dwie rece w rekawiczkach na pol kadru. Kazdy kolejny prompt niesie wiec
+  `no hands, no gloves, no people` wprost.
+- **Luzny kadr zabija szczegol.** Przy 217 px przedmiot zajmujacy 40% kadru traci to,
+  co mial pokazac. Stad `filling most of the image` w kazdym promptcie.
+- **Trzy kafelki formy rysuje `HeroCards`, nie `MaterialCards`.** Kwadrat jest
+  przycinany do pasa poziomego ze SRODKA, wiec gora i dol odpadaja, a na to, co
+  zostanie, wchodzi czarny gradient z podpisem. Dlatego `centered vertically` oraz
+  `the lower part of the image plain dark background with no important detail`.
 
 ## Czego nadal brakuje
 
