@@ -68,6 +68,9 @@ const L = {
     buttonNeedsSprue: "Stopka wymaga kanału, bo to on ją łączy z odlewem.",
     innerSprues: "Kanały wewnętrzne", innerNeedsSprue: "Kanały wewnętrzne wpinają się w kanał główny, więc bez niego nie mają do czego dojść.",
     building: "Liczę bryłę…", dragHint: "Przeciągnij, żeby obrócić",
+    workerFailed: "Nie udało się uruchomić silnika geometrii. Odśwież stronę; jeśli to nie pomoże, napisz do nas.",
+    workerSlow: "Silnik geometrii nie odpowiada. Odśwież stronę; jeśli to nie pomoże, napisz do nas.",
+    wasmFailed: "Nie udało się pobrać silnika geometrii. Sprawdź połączenie i odśwież stronę.",
     sideReduced: "Rozmiar kamieni bocznych zmniejszono do wykonalnego maksimum",
     bandReduced: "Rozmiar kamieni obrączki zmniejszono do wykonalnego maksimum",
     fitBlocked: "Ta szerokość szyny nie mieści nawet najmniejszego dostępnego kamienia. Przywrócono ostatni poprawny projekt.",
@@ -115,6 +118,9 @@ const L = {
     buttonNeedsSprue: "The button needs a sprue, which is what joins it to the casting.",
     innerSprues: "Inner channels", innerNeedsSprue: "Inner channels join the main sprue, so without it they lead nowhere.",
     building: "Building the solid…", dragHint: "Drag to rotate",
+    workerFailed: "The geometry engine failed to start. Reload the page; if that does not help, write to us.",
+    workerSlow: "The geometry engine is not responding. Reload the page; if that does not help, write to us.",
+    wasmFailed: "The geometry engine could not be downloaded. Check your connection and reload the page.",
     sideReduced: "Side stone size was reduced to the manufacturable maximum",
     bandReduced: "Band stone size was reduced to the manufacturable maximum",
     fitBlocked: "This shank width cannot hold even the smallest available stone. The last valid design was restored.",
@@ -162,6 +168,9 @@ const L = {
     buttonNeedsSprue: "Der Knopf braucht einen Kanal, der ihn mit dem Guss verbindet.",
     innerSprues: "Innere Kanäle", innerNeedsSprue: "Innere Kanäle münden in den Hauptkanal, ohne ihn führen sie ins Leere.",
     building: "Körper wird berechnet…", dragHint: "Zum Drehen ziehen",
+    workerFailed: "Die Geometrie-Engine konnte nicht gestartet werden. Laden Sie die Seite neu; hilft das nicht, schreiben Sie uns.",
+    workerSlow: "Die Geometrie-Engine antwortet nicht. Laden Sie die Seite neu; hilft das nicht, schreiben Sie uns.",
+    wasmFailed: "Die Geometrie-Engine konnte nicht geladen werden. Prüfen Sie die Verbindung und laden Sie die Seite neu.",
     sideReduced: "Die Seitensteine wurden auf das herstellbare Maximum verkleinert",
     bandReduced: "Die Ringsteine wurden auf das herstellbare Maximum verkleinert",
     fitBlocked: "Diese Ringschienenbreite fasst nicht einmal den kleinsten verfügbaren Stein. Der letzte gültige Entwurf wurde wiederhergestellt.",
@@ -272,6 +281,28 @@ function Slider({ label, value, min, max, step, unit, lang, decimals = 1, onChan
 
 const sameParams = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+/**
+ * Blad z watku roboczego przetlumaczony na zdanie dla klienta.
+ *
+ * Generator rzuca po polsku i te komunikaty przepuszczamy bez zmian (zle
+ * zakucie do szlifu, niewykonalny wymiar). Jadro WebAssembly rzuca natomiast
+ * po swojemu: "Aborted(NetworkError ...). Build with -sASSERTIONS for more
+ * info." Klient nie ma z tym nic zrobic, a wyglada to jak zepsuta strona.
+ */
+// Blad w stanie to albo ZDANIE z generatora (po polsku, do pokazania jak
+// jest), albo RODZAJ awarii `{ kind }`, ktory tlumaczymy dopiero przy
+// rysowaniu. Dzieki temu obsluga zdarzen watku, podpinana raz przy
+// montowaniu, nie musi znac slownika, a po zmianie jezyka komunikat i tak
+// wychodzi w jezyku, ktory klient wlasnie ustawil.
+function czytelnyBlad(msg) {
+  const tekst = String(msg || "");
+  if (/Aborted\(|WebAssembly|\.wasm|NetworkError|Failed to fetch/i.test(tekst)) return { kind: "wasmFailed" };
+  return tekst || { kind: "workerFailed" };
+}
+
+/** Ile czekamy na PIERWSZA odpowiedz watku, zanim uznamy, ze nie wstal. */
+const STRAZNIK_MS = 30000;
+
 // ------------------------------------------------------------
 export default function RingConfigurator({ lang = "pl" }) {
   const t = L[lang] || L.pl;
@@ -290,6 +321,7 @@ export default function RingConfigurator({ lang = "pl" }) {
   const workerRef = useRef(null);
   const seqRef = useRef(0);
   const lastValidParamsRef = useRef(DEFAULTS);
+  const straznikRef = useRef(0);
 
   // Reczna zmiana czegokolwiek odznacza wzor: od tego momentu to juz nie jest
   // "soliter klasyczny", tylko projekt klienta, i podswietlony kafelek
@@ -320,12 +352,27 @@ export default function RingConfigurator({ lang = "pl" }) {
   useEffect(() => {
     const w = new Worker(new URL("../../workers/ringGenerator.worker.js", import.meta.url), { type: "module" });
     workerRef.current = w;
+    // WATEK, KTORY NIE WSTAL, MUSI TO POWIEDZIEC. Do 12 wrzesnia 2026 byl tu
+    // tylko `onmessage`. Gdy plik watku nie dal sie pobrac (blokada CSP, stara
+    // kopia w cache brzegowym, 404), przegladarka zglaszala to WYLACZNIE przez
+    // `onerror`, ktorego nikt nie sluchal: ekran zostawal na "Licze bryle..."
+    // w nieskonczonosc, bez komunikatu i bez wpisu w konsoli. Potwierdzone
+    // w audycie przez zablokowanie pliku watku w przegladarce.
+    const awaria = (powod) => {
+      clearTimeout(straznikRef.current);
+      setBusy(false);
+      setError({ kind: "workerFailed" });
+      console.error("[kreator] watek geometrii:", powod);
+    };
+    w.onerror = (e) => { awaria(e?.message || e); e?.preventDefault?.(); };
+    w.onmessageerror = () => awaria("nieczytelna wiadomosc");
     w.onmessage = (e) => {
       // Odpowiedz starsza niz ostatnie zapytanie jest juz nieaktualna:
       // suwak zdazyl wyslac kolejne, a jej narysowanie cofneloby podglad.
       if (e.data.seq !== seqRef.current) return;
+      clearTimeout(straznikRef.current);
       setBusy(false);
-      if (!e.data.ok) { setError(e.data.error); return; }
+      if (!e.data.ok) { setError(czytelnyBlad(e.data.error)); return; }
       setError(null);
       setWorkerVersion(e.data.workerVersion);
       setMesh({ metal: e.data.metal, stones: e.data.stones,
@@ -346,7 +393,7 @@ export default function RingConfigurator({ lang = "pl" }) {
         stones: e.data.stoneCount,
       });
     };
-    return () => { w.terminate(); workerRef.current = null; };
+    return () => { clearTimeout(straznikRef.current); w.terminate(); workerRef.current = null; };
   }, []);
 
   useEffect(() => {
@@ -400,6 +447,16 @@ export default function RingConfigurator({ lang = "pl" }) {
     // liczyloby kilkanascie bryl, z ktorych zobaczylibysmy tylko ostatnia.
     const id = setTimeout(() => {
       w.postMessage({ seq, params: p });
+      // Straznik: watek, ktory sie zawiesil albo nigdy nie wczytal jadra, nie
+      // odpowie ani `onmessage`, ani `onerror`. Bez tego zegara nie ma zadnej
+      // drogi wyjscia z "Licze bryle...". Odpowiedz kasuje go w `onmessage`.
+      clearTimeout(straznikRef.current);
+      straznikRef.current = setTimeout(() => {
+        if (seqRef.current !== seq) return;
+        setBusy(false);
+        setError({ kind: "workerSlow" });
+        console.error("[kreator] watek geometrii nie odpowiedzial przez", STRAZNIK_MS, "ms");
+      }, STRAZNIK_MS);
     }, 90);
     return () => clearTimeout(id);
   }, [p]);
@@ -849,7 +906,7 @@ export default function RingConfigurator({ lang = "pl" }) {
             </div>
             {error ? (
               <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-rose-400">
-                {error}
+                {typeof error === "string" ? error : t[error.kind]}
               </div>
             ) : null}
           </div>
