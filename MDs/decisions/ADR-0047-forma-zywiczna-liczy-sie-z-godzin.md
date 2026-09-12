@@ -88,7 +88,34 @@ zmienila sie.
 
 Podniosla sie natomiast cena kazdego odlewu z zatopieniem i z polerowaniem
 przezroczystej zywicy, bo tam czas byl zanizony trzykrotnie. To dotyka takze
-zlecen, ktore z forma nie maja nic wspolnego.
+zlecen, ktore z forma nie maja nic wspolnego: odlew S z gotowej formy,
+z zatopionym przedmiotem i polerowaniem, poszedl z okolo 64 zl na 146 zl.
+
+**Sprawdzone wobec rynku 12 wrzesnia 2026, decyzja wlasciciela: zostaje 146 zl.**
+Zglosilem obawe, ze to moze byc poza rynkiem, i obawa okazala sie nietrafiona.
+Rynek dzieli sie na dwa, a porownywalem do niewlasciwego:
+
+| segment | przyklad | cena |
+|---|---|---|
+| gotowiec seryjny | brelok z suszonym kwiatem, Allegro | 32 zl |
+| rekodzielo bez personalizacji | Eporfina | 79 zl |
+| **pamiatka z materialu klienta** | Damar, naszyjnik z sierscia | **189 zl** |
+| **pamiatka z materialu klienta** | Caldesia, zawieszka S 1 x 1 cm | **299 zl** |
+| pamiatka z materialu klienta | Caldesia, zawieszka M, plus 100 zl za prochy | 349 zl |
+| konserwacja bukietu | KraftoweStudio, Banksja, bryla 15 x 15 x 5 cm | 700-800 zl |
+
+Nasze 146 zl stoi PONIZEJ najblizszych porownywalnych, a roznica jest wieksza,
+niz wyglada: Caldesia w cenie 299 zl daje srebro i lancuszek, my sama zywice
+z polerowaniem. Nasz odlew z gotowej formy bez zatopien (27 zl) trafia z kolei
+w segment gotowca seryjnego, czyli tam, gdzie powinien.
+
+Zastrzezenie do tych liczb: proxy srodowiska zdalnego blokuje domeny tych
+sklepow, wiec pochodza z podsumowan wyszukiwarki, a nie ze stron otwartych
+bezposrednio. To rzad wielkosci, nie cennik przepisany co do zlotowki.
+
+Ryzyko, ktore zostaje, nie jest cenowe, tylko komunikacyjne: klient, ktory nie
+zrozumie, ze jego rzecz jest robiona pojedynczo, porowna 146 zl do 32 zl
+z Allegro.
 
 Koszyki zapisane przed zmiana nios warianty `new_s`, `new_m`, `new_l`.
 Podstawienie pierwszej pozycji z listy zamienialoby zamowienie na nowa forme
