@@ -78,15 +78,19 @@ export const TRASY = [
   { sciezka: "toolstudio/laser-parameters/", komponent: "LaserParametersPage" },
   { sciezka: "toolstudio/shrinkage/", komponent: "ShrinkagePage" },
   { sciezka: "toolsjewelry/ring-blank/", komponent: "RingBlankPage" },
-  // KREATOR PIERSCIONKA JEST POZA TRASAMI (decyzja wlasciciela, 2026-09-04).
-  // Strona byla `noindex` i nie prowadzil do niej zaden odnosnik, a mimo to
-  // prerender rysowal ja w trzech jezykach. Strona, ktorej nikt nie widzi
-  // i ktorej nikt nie odwiedza, kosztuje trzy strony w buildzie i zostaje
-  // w kodzie jako rzecz "prawie gotowa". Komponenty zostaja w repozytorium
-  // (`src/pages/RingConfiguratorPage.jsx`, `src/components/calculators/RingConfigurator.jsx`,
-  // rdzen cenowy `src/pricing/ringConfigurator.js` razem z bramka
-  // `scripts/test-ring-pricing.mjs`), wiec wpisanie tu jednej linii wraca
-  // z nia na strone.
+  // KREATOR PIERSCIONKA STOI POD ADRESEM DO TESTOW, NIE DLA KLIENTOW (decyzja
+  // wlasciciela, 2026-09-12). Strona jest `noindex`, nie prowadzi do niej
+  // zaden odnosnik, nie ma jej w mapie witryny ani w `llms.txt`; adres zna
+  // ten, komu go podamy. Miedzy 4 a 12 wrzesnia byla wylaczona calkiem, a
+  // komentarz obiecywal, ze "wpisanie tu jednej linii wraca z nia na strone".
+  // To bylo nieprawda i kosztowalo audyt: strona musi byc zarejestrowana
+  // w TRZECH miejscach, inaczej adres daje pusty ekran:
+  //   1. ta linia,
+  //   2. `src/main.jsx` (mapa stron ladowanych leniwie w przegladarce),
+  //   3. `src/entry-server.jsx` (mapa stron dla prerenderu).
+  // Sam kreator montuje sie dopiero po stronie klienta, wiec prerender
+  // rysuje tylko powloke strony.
+  { sciezka: "toolsjewelry/kreator/", komponent: "RingConfiguratorPage" },
   { sciezka: "privacy/", komponent: "Privacy" },
   { sciezka: "reviews/", komponent: "Reviews" },
   { sciezka: "b2b/", komponent: "B2B" },

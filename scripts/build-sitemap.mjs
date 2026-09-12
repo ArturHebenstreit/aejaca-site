@@ -44,6 +44,11 @@ const POZA_MAPA = new Set([
   "/order/status/",
   "/oferta/",
   "/quote/",
+  // Kreator pierscionkow: adres testowy, `noindex`, bez odnosnikow (decyzja
+  // wlasciciela 2026-09-12). Wypadl z tej listy razem z trasa 4 wrzesnia,
+  // a komentarz wyzej dalej o nim mowil; z trasa z powrotem mapa wciagnelaby
+  // strone, ktorej sama strona zabrania indeksowac.
+  "/toolsjewelry/kreator/",
 ]);
 
 const adresy = [

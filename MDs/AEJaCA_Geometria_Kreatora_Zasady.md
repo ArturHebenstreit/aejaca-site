@@ -192,6 +192,9 @@ Dlatego `tubeAlong` trzyma sumę stożków jako zapas i sprawdza wynik, zamiast 
 
 - Liczba kamieni **nie jest parametrem**. Wynika z obwodu przez średnicę, tak jak
   liczy jubiler. Oddanie tego klientowi kończy się dziurą albo zachodzeniem.
+- Liczba jest **parzysta**, a próbkowanie rusza z punktu, w którym obrys przecina
+  oś -Y. Inaczej kamień na jednej osi ma naprzeciw przerwę i wieniec z góry
+  wygląda na przekrzywiony (Diana: 19 kamieni, 5,5 % asymetrii). Sprawdzian 50.
 - Halo **nie jest płytą**. Każdy kamień ma osobną krótką tulejkę gniazda;
   sąsiednie tulejki zachodzą bokami i tworzą samonośny, ażurowy wieniec.
 - Tulejki zachodzą nieznacznie na koronę, aby całość była jedną bryłą, ale nie
@@ -282,6 +285,104 @@ dodając nową bryłę:
 
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
+
+## 2026-09-12 - audyt bryl promieniem: parzysty wieniec, czyste pliki, lista cienkich scianek
+
+**Co zmierzono.** Osobny harness (nie wchodzi do repozytorium, opis w handoffie
+TASK-026) zbudowal 25 presetow w trybie odlewniczym i policzyl to, czego
+sprawdziany 1-49 nie licza: grubosc scianki PROMIENIEM z kazdego trojkata do
+pierwszego wyjscia z bryly (tak licza slicery), symetrie lustrzana bryly,
+najmniejsza odleglosc kamienia i metalu od osi palca, kolizje par kamieni,
+zamkniecie i objetosc pliku STL, liczbe trojkatow o zerowym polu.
+
+**Co bylo dobrze.** Srednica wewnetrzna trafiona co do 0,01 mm na kazdym
+presecie, zaden kamien ani metal nie wchodzi w otwor na palec, zadna para
+kamieni nie zachodzi na siebie, kazdy kamien siada i nie wypada, STL zamkniety
+i o tej samej objetosci co bryla, jedna czesc na model, obraczki i sygnety bez
+ani jednej scianki ponizej 1,1 mm.
+
+**Co bylo zle i zostalo poprawione.**
+
+- Wieniec halo mial dowolna liczbe kamieni i ruszal z pierwszego punktu obrysu.
+  Diana: 19 kamieni, 5,48 % objetosci bez odbicia lewo-prawo. Teraz liczba
+  jest parzysta, a probkowanie zaczyna sie tam, gdzie obrys przecina os -Y.
+  Sprawdzian 50, prog 0,5 %.
+- Pliki STL i 3MF nosily trojkaty o zerowym polu i zdublowane wierzcholki
+  (Diana 1724, eternity 1176), bo jadro zostawia po cieciach pary punktow
+  blizej siebie niz rozdzielczosc pliku. Walidator slicera zglasza to jako
+  blad siatki. `siatkaDoZapisu` w `chat-api/ringExport.js` lepi punkty w
+  granicy 0,1 mikrometra i wyrzuca zerowe trojkaty; test `ringExport.test.mjs`
+  z kontrola negatywna.
+
+**Decyzja wlasciciela (2026-09-12, formularz): minimum dla srebra 925,
+sciana 0,45 mm i drut 0,5 mm; kliny pod koszem zamyka kolnierz.** Wdrozone:
+
+- Dolna obrecz kosza centralnego i obrecz oprawki bocznej: drut 0,5 x 0,5 mm
+  (bylo 0,36 x 0,28 i 0,32 x 0,26).
+- Tulejki i platki halo: scianka 0,45 mm liczona od WLOTU gniazda (bylo 0,21
+  i 0,08 mm, bo liczona od obrysu kamienia).
+- Kamyki wienca omijaja krapy: w kazdym luku miedzy krapami stoja w grupie
+  o jubilerskim rozstawie, wysrodkowanej w luku, a od nogi krapy dzieli je
+  wlot plus promien nogi plus 0,10 mm (`buildHalo`). Wczesniej frez gniazda
+  scinal noge do 0,06 mm. Rozstaw w grupie to `max(1,06 d, d + 0,30)`: przy
+  1,06 d wloty sasiadow (d + 0,10) przecinaly sie i zostawal klin 0,02 mm;
+  teraz miedzy wlotami jest 0,20 mm zebra. Gdy miedzy dwiema krapami nie
+  miesci sie ani jeden kamyk, generator rzuca czytelny blad zamiast po cichu
+  wracac do wienca ciaglego; preset bypassFlower przeszedl z szesciu krap na
+  cztery z tego powodu. Odstep wienca od rondysty zostaje 0,18 mm.
+- Wieniec trzyma sie sam i trzyma sie glowicy: pod tulejkami biegnie drut
+  0,5 mm po prowadnicy (luki rozdzielone przerwami na krapy rozpadaly sie na
+  osiem czesci), a pod kazda krapa idzie mostek 0,5 mm od tego drutu do zebra
+  kosza (owalna Diana wisiala jako osobna bryla, bo zebra kosza stoja pod
+  krapami, a tam nie ma juz tulejek). Kuleczki wienca stoja tylko miedzy
+  sasiadami z grupy, nie w przerwie na krape, i sa odsuniete tak, zeby czubek
+  wgryzal sie w oba wloty o 0,10 mm: stopa mijajaca wlot o 0,04 mm dawala
+  czubek muskajacy walec wlotu i wiorek 0,002 mm.
+- Kolnierz pod koszem (`buildCollar`): scianka 0,45 mm PROSTOPADLE do stozka
+  frezu, od dna kosza do 0,42 jego wysokosci; ramiona galerii koncza sie na
+  kolnierzu. Kamien o plaskim spodzie (kaboszon, rozeta) ma kolnierz do loza
+  i dno 0,45 mm pod koncem frezu, czyli pelna kasete z oknem 38 procent, bo
+  jego stozek jest prawie poziomy i kazdy plaski wierzch dawal klin 14 stopni.
+- Kolnierz wokol gniazda wpuszczonego w szyne (`buildSideStones`): polokragla
+  szyna opada ku bokom i przy kamieniu 1,5 mm w szynie 2,4 mm zostawialo to
+  0,19 mm metalu obok gniazda. Ramie z pave ma teraz plaski wierzch i pionowe
+  boki jak pas pave u jubilera. Preset pave: szyna 2,5 mm, zeby kolnierz byl
+  z nia rowno.
+- Mostek miedzy wlotami sasiednich gniazd: 0,45 mm na ramionach
+  (`sideStoneLayout`) i na obraczce (`buildBandStones`; bylo 0,12 mm przy
+  1,8 mm i 0,04 mm przy 1,2 mm). Kuleczki pave: promien 0,325 mm, czyli polowa
+  mostka plus 0,10 mm wgryzienia w kazdy wlot; przy promieniu rownym polowie
+  mostka wlot tylko muskal podstawe i zostawala skorka 0,19 mm. Czubek 0,8
+  promienia (bylo 0,68), bo promien mierzony z boku stozka schodzil pod 0,25.
+- Bryly frezu zachodza na siebie o 0,05 mm, zawsze wezsza w szersza (loze
+  w gore na wlot, stozek w gore na loze). Stykajac sie dokladnie licem
+  zostawialy blone zerowej grubosci, ktora w kolnierzu kaboszonu zamknela
+  stozek w pecherz (-21,7 mm3). Pierwsza proba szla w druga strone (wlot
+  w dol na loze) i szerszy wlot scinal gorne 0,05 mm loza: kamien tracil
+  podciecie i chwyt spadal z 0,73 do 0,001 %. Regula "ciac obok lica"
+  dotyczy tez skladania samego narzedzia, i kierunek zachodzenia ma znaczenie.
+- Zakucia w stanie gotowym poszly za nowymi wymiarami: polowka krapy eternity
+  ma kat i dlugosc LICZONE z polozenia kamienia (czubek 0,05 mm w glab
+  rondysty i 0,35 mm nad nia; krapa stoi tez obok kamienia w osi, wiec cel
+  liczy sie z kola rondysty w jej plaszczyznie), bo stale 26 stopni nie
+  siegalo przy mostku 0,45 mm, a czubek na poziomie rondysty mijal waski
+  pawilon; zakuta kuleczka pave ma 0,8 promienia i zachodzi na kamien
+  o stale 0,12 mm.
+
+Po zmianach (25 presetow, jedna bryla kazdy, sciany cienszcze niz 0,3 mm):
+zero na 16 presetach; czubki kuleczek 0,27 mm (pave, diana, bypassPave,
+botanicalVine), rant kasety 0,27 mm (kaboszon, celowo, do dogiecia), zebra
+0,19-0,20 mm miedzy wlotami gniazd halo (halo, diana, bypassFlower), szpic
+tarczy sygnetu w ksztalcie serca (klin 0,004 mm, nie ruszany). Sprawdzian 51
+mierzy to promieniem na 12 presetach z progiem 0,25 mm, a 0,17 mm dla halo.
+
+**Czego sie dowiedzielismy.** Plaster 2D (`slice` + `offset`) klamie na
+stycznych przekrojach zaokraglonego profilu: na soliterze zglaszal 3,4 mm3
+cech ponizej 0,3 mm, ktorych nie ma. Promien z trojkata do pierwszego wyjscia
+z bryly nie ma tej wady, a rownoleglosc lica wyjscia do promienia rozdziela
+sciane (dwa rownolegle lica) od klina (ostra krawedz). Obie liczby sa
+potrzebne: sciana 0,2 mm to brak metalu, klin to krawedz, ktorej odlew nie
+wypelni, i leczy sie je inaczej.
 
 ## 2026-08-24 - ciagla szyna pod korona i krapa z jednej powloki
 

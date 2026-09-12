@@ -65,7 +65,9 @@ export const RING_PRESETS = [
             en: "Stones along the shoulders lead the eye to the centre stone.",
             de: "Steine an den Schultern führen den Blick zum Hauptstein." },
     params: {
-      kind: "ring", profile: "round", taper: "none", width: 2.4, thickness: 1.6,
+      // Szyna 2,5 mm: kolnierz wokol gniazda 1,5 mm (wlot plus 0,45 mm z kazdej
+      // strony) jest wtedy rowno z jej bokiem, przy 2,4 wystawalby o 0,05 mm.
+      kind: "ring", profile: "round", taper: "none", width: 2.5, thickness: 1.6,
       stone: { cut: "round", size: 6.0 }, setting: "prong4", prongDia: 0.85,
       side: { count: 4, size: 1.5, setting: "pave" },
     },
@@ -227,7 +229,9 @@ export const RING_PRESETS = [
             de: "Geschwungene Arme umfassen eine kleine Steinrosette wie Blütenstiele." },
     params: {
       kind: "ring", profile: "round", taper: "tapered", width: 2.0, thickness: 1.55,
-      stone: { cut: "round", size: 3.2 }, setting: "prong6", prongDia: 0.75,
+      // Cztery krapy, nie szesc: kamyki wienca omijaja nogi krap, a miedzy
+      // szescioma krapami na kamieniu 3,2 mm nie miesci sie ani jeden kamyk.
+      stone: { cut: "round", size: 3.2 }, setting: "prong4", prongDia: 0.75,
       halo: { on: true, size: 1.15, shape: "round", setting: "shared" },
       bypass: { style: "flower", sweep: 0.9, separation: 1.2 }, side: { count: 0 },
     },
