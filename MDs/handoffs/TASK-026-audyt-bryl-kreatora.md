@@ -81,26 +81,37 @@ duplikatem), w lancuchu `npm test`.
 `WORKER_VERSION` 36, `RING_CONFIGURATOR_BUILD` 1.004, `npm run sync:pricing`
 wykonane, mirror `chat-api/geometry` zgodny.
 
-## Co zmierzono i CZEKA na decyzje wlasciciela
+## Decyzja wlasciciela i trzecia grupa poprawek
 
-Wszystkie liczby ze srebra, tryb odlewniczy, presety domyslne. "Sciana" to dwa
-rownolegle lica, "klin" to ostra krawedz.
+Formularz 2026-09-12: **minimum dla srebra 925, sciana 0,45 mm i drut 0,5 mm;
+kliny pod koszem zamyka kolnierz.** Zmierzone przed (mm2 scian cienszych niz
+0,3 mm, tryb odlewniczy) i po:
 
-| Miejsce | Zmierzone | Gdzie w kodzie |
-|---|---|---|
-| Dolna obrecz kosza centralnego | 0,28 mm wysokosci, 0,36 mm szerokosci; 6-9 mm2 scian ponizej 0,3 mm na kazdym pierscionku z korona | `buildCrown`, `outlineRail(... max(0.17, rP*0.40), max(0.28, rP*0.56))` |
-| Oprawka kamienia bocznego | 0,26 mm wysokosci, 0,32-0,40 mm szerokosci | `buildSideStones`, `outlineRail(... max(0.16, rL*0.58), max(0.26, rL*0.82))` |
-| Tulejka halo, platkowa | scianka 0,21 mm miedzy wlotem a zewnetrzem; platek 0,15 mm | `buildHalo`, `seatR = d/2 + max(0.26, d*0.16)`, `wallR = d/2 + max(0.20, d*0.12)` wobec wlotu `d/2 + 0.05` |
-| Tulejka halo, wspolne krapy | scianka 0,08 mm; bypassFlower 28 mm2 scian ponizej 0,3 mm | `seatR = d/2 + max(0.13, d*0.07)` |
-| Eternity | srodki gniazd co 1,12 d, wiec miedzy wlotami 0,12 mm przy 1,8 mm i 0,04 mm przy 1,2 mm; 35 mm2 klinow | `buildBandStones`, `krok = 2*asin(0.56 d / rMid)` |
-| Kuleczki pave na ramionach | podstawa 0,30-0,40 mm, czubek 0,20-0,27 mm | `buildSideStones`, `kula = min(0.20, max(0.15, size*0.105))`, `rGora = kula*0.68` |
-| Stozek gniazda centralnego | wychodzi bokami przez ramiona galerii, zostawia kliny: pave 15,7 mm2, kaseta 12,1 mm2, emerald 7,9 mm2 | `buildRing`, `seatCutter` z `maxDepthSrodka = standoff + min(0.32, thickness*0.22)` |
-| Kaseta kaboszonu | rant u gory 0,28 mm, wnetrze pod lozem 76 mm2 ponizej 0,5 mm | `buildCrown`, galaz `bezel` |
-| Sygnet serce | szpic tarczy jako klin 0,004 mm | `signetOutline("heart")` |
+| Miejsce | Przed | Po | Co zrobiono |
+|---|---|---|---|
+| Dolna obrecz kosza | 0,28 x 0,36 mm, 6-9 mm2 na kazdym pierscionku z korona | 0 | drut 0,5 x 0,5 mm (`buildCrown`, `outlineRail`) |
+| Oprawka boczna | 0,26 x 0,32 mm | 0 | drut 0,5 x 0,5 mm (`buildSideStones`) |
+| Tulejki halo | 0,21 mm (platkowe), 0,08 mm (wspolne krapy); halo 25,7, bypassFlower 27,8 | 0 (zebra 0,19-0,20 mm miedzy wlotami sasiadow, celowo) | scianka 0,45 mm od wlotu; kamyki w grupach miedzy krapami, rozstaw `max(1,06 d, d + 0,30)`, przerwa na krape wlot + promien nogi + 0,10; drut 0,5 mm pod tulejkami i mostki 0,5 mm pod krapami do zeber kosza; kuleczki odsuniete od czubka (wgryzienie 0,10 mm); blad zamiast cichego powrotu, gdy kamyk nie miesci sie miedzy krapami (bypassFlower: cztery krapy) |
+| Stozek gniazda przez ramiona galerii | kliny 12-16 mm2 | kliny 6-11 mm2, sciany 0 | `buildCollar`: scianka 0,45 mm prostopadle do stozka, ramiona galerii koncza sie na kolnierzu |
+| Kaboszon | rant 0,28, dno 0,04 mm klin | rant 0,27 (celowo), reszta 0 | kolnierz do loza z dnem 0,45 mm pod frezem; bryly frezu zachodza o 0,05 mm wezsza w szersza, bo blona na styku zamykala pecherz -21,7 mm3 |
+| Zakucia w stanie gotowym | krapy eternity 1,3 mm nie siegaly rondysty, kuleczki pave 0,325 przykrywaly 0,73 % kamienia | chwyt 0,15-5 % | pochylenie polowek liczone do 0,08 mm za rondysta; zakuta kuleczka 0,8 promienia z zachodzeniem 0,12 mm; prog pokrycia dla pave 1,10 jak przy halo (kolnierz obejmuje korone do zanurzenia) |
+| Szynka obok gniazda w szynie (pave, diana, bypassPave) | 0,19 mm | 0 | kolnierz wokol wlotu, ramie z pave ma plaski wierzch; preset pave szyna 2,5 mm |
+| Mostek miedzy gniazdami | 0,26 mm ramiona, 0,04-0,12 mm eternity | 0,45 mm | `sideStoneLayout`, `buildBandStones` |
+| Kuleczki pave | podstawa 0,30-0,40 mm, czubek 0,20-0,27 | podstawa 0,65, czubek 0,52 mm | wgryzienie 0,10 mm w kazdy wlot, inaczej skorka 0,19 mm |
+| Szpic tarczy sygnetu serce | klin 0,004 mm, 1,7 mm2 | bez zmian | zostawiony, ostrze do dopilowania; nie jest w sprawdzianie 51 |
 
-Progi warsztatowe do wyboru: srebro 925 odlewa sie pewnie od 0,5 mm scianki
-i 0,6 mm drutu; zloto od 0,3-0,4 mm. Zmiana ktoregokolwiek z powyzszych
-wymiarow jest widoczna na wyrobie, wiec nie zostala zrobiona bez decyzji.
+Masa presetow po zmianach rosnie o 3-12 % (soliter 1,29 -> 1,37 g, halo
+1,55 -> 1,74 g, diana 2,21 -> 2,44 g); cena idzie za masa. Wieniec halo ma
+teraz w presecie halo 12 kamykow zamiast 16 (po trzy w kazdym luku miedzy
+krapami), Diana 12 zamiast 19, bypassFlower 8. Kazdy z 25 presetow jest jedna
+bryla w trybie odlewniczym i gotowym, takze z ukladem wlewowym.
+
+Sprawdzian 51 (`test-ring-generator.mjs`) mierzy grubosc promieniem na 12
+presetach i wymaga mniej niz 0,3 mm2 scian cienszych niz 0,25 mm (0,17 mm
+dla halo, gdzie zebro 0,20 mm miedzy wlotami jest krawedzia miedzy dwoma
+otworami, nie wolna sciana); przed poprawkami dawal 6-28 mm2. Sprawdziany
+30, 43 i 45 dostaly sondy zgodne z nowa geometria (kamien pod sonda, prog
+pokrycia, sonda w wylocie zamiast w kolnierzu).
 
 ## Jak odtworzyc pomiar
 
@@ -115,9 +126,9 @@ wymiarow jest widoczna na wyrobie, wiec nie zostala zrobiona bez decyzji.
 
 ## Pliki
 
-- `src/geometry/ring/build.js`, `chat-api/geometry/build.js` (mirror)
+- `src/geometry/ring/build.js`, `src/geometry/ring/params.js`, `src/data/ringPresets.js`, mirror `chat-api/geometry/`
 - `src/workers/ringGenerator.worker.js`
 - `src/components/calculators/RingConfigurator.jsx` (numer buildu)
 - `chat-api/ringExport.js`, `chat-api/ringExport.test.mjs`, `chat-api/package.json`
-- `scripts/test-ring-generator.mjs` (sekcja 46 i 50)
+- `scripts/test-ring-generator.mjs` (sekcje 30, 45, 46, 50, 51)
 - `MDs/AEJaCA_Geometria_Kreatora_Zasady.md` (dziennik, regula halo)

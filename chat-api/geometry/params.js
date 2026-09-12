@@ -638,7 +638,10 @@ export function sideStoneLayout(p, size = p.side?.size || DEFAULTS.side.size) {
   const sideHalfAxial = Math.max(...sidePts.map(([, y]) => Math.abs(y)));
   const gap = clamp(num(p.side?.gap, DEFAULTS.side.gap), LIMITS.sideGap);
   const spread = clamp(num(p.side?.spread, DEFAULTS.side.spread), LIMITS.sideSpread);
-  const clearance = Math.max(0.12, size * 0.12);
+  // Miedzy WLOTAMI sasiednich gniazd (`size + 0,10`) zostaje 0,45 mm metalu,
+  // tyle, ile potrzebuje kuleczka o podstawie 0,5 mm. Bylo 0,12 na obrys,
+  // czyli 0,26 mm miedzy wlotami przy kamieniu 1,5 mm.
+  const clearance = Math.max(0.275, size * 0.12);
   const step = Math.asin(Math.min(0.45, (sideHalfTangent + clearance) / rMid)) * 2
     + spread / rMid;
   // Galeria jest szersza od samej rondysty przy koronie. Pierwszy kamien
@@ -698,6 +701,9 @@ export function localStoneFitLimits(input = {}) {
   const side = sideRaised
     ? { feasible: true, min: sideMin, max: sideHardMax, localWidth: p.width }
     : (() => {
+        // Szynke 0,45 mm obok gniazda daje kolnierz wokol wlotu (`build.js`,
+        // `buildSideStones`); ta regula pilnuje tylko, zeby kolnierz nie
+        // wychodzil poza szyne o wiecej niz 0,05 mm na strone.
         const result = fittedMax(sideMin, sideHardMax, (size) =>
           2 * sideStoneLayout(p, size).sideHalfAxial
             <= sideStoneLocalWidth(p, size) - 2 * SEAT.minRail + 1e-9);

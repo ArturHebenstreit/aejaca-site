@@ -1476,7 +1476,12 @@ console.log("\n25. Wylot gniazda jest OTWOREM, a nie dziurką po szpilce");
       const dl = Math.hypot(sr[0], sr[1]) || 1;
       const os = nr < ileHalo ? [0, -1] : [-sr[0] / dl, -sr[1] / dl];
       const promien = Math.max(0.12, (b.max[0] - b.min[0]) * 0.18);
-      const sonda = w.Manifold.cylinder(2.5, promien, promien, 12, false)
+      // 1,8 mm pod srodkiem kamienia, nie 2,5: dluzsza sonda siegala ramion
+      // galerii 2,1 mm pod kamykami halo na osi szyny i liczyla je jako
+      // zaslepione gniazdo, choc pod tulejka bylo 1,3 mm powietrza. Przy 16
+      // kamykach miescilo sie to w 15 procentach, przy 12 (od 2026-09-12
+      // wieniec omija krapy) juz nie.
+      const sonda = w.Manifold.cylinder(1.8, promien, promien, 12, false)
         .rotate([0, 90, 0])
         .rotate([0, 0, Math.atan2(os[1], os[0]) / (Math.PI / 180)])
         .translate(sr);
@@ -2742,7 +2747,11 @@ console.log("\n43. Zakucie drobnicy trzyma, ale nie przykrywa kamieni");
       innerDia: 17.2, width: 2.4, thickness: 1.6,
       stone: { cut: "round", size: 6 }, setting: "prong4",
       side: { count: 4, size: 1.5, setting: "pave" },
-    }, 0.46],
+      // 1,10 jak przy halo: od 2026-09-12 gniazdo w szynie ma kolnierz do
+      // szczytu szyny, wiec metal obejmuje korone do glebokosci zanurzenia
+      // tak samo jak tulejka halo. Bylo 0,46 przy polokraglej szynie, ktora
+      // obejmowala kamien tylko na osi.
+    }, 1.10],
     ["halo platkowe", {
       innerDia: 17.2, stone: { cut: "round", size: 6 }, setting: "prong4",
       halo: { on: true, size: 1.5, setting: "scallop" },
@@ -2932,8 +2941,11 @@ console.log("\n45. Platkowe halo ma zewnetrzna kieszen, a markiza nie ma poprzec
   });
   const sm = stoneSolid(w, "marquise", 8);
   const cm = buildCrown(w, pm, sm);
-  const sonda = w.Manifold.cube([0.08, 3.2, 0.12], true)
-    .translate([0, 1.8, -cm.basketH + 0.10]);
+  // Sonda lezy w WYLOCIE gniazda (16 procent obrysu markizy, czyli okolo
+  // 1,5 mm wzdluz kamienia). Dalej od osi stoi od 2026-09-12 kolnierz pod
+  // koszem, ktory jest podstawa korony, a nie poprzeczka.
+  const sonda = w.Manifold.cube([0.08, 1.2, 0.12], true)
+    .translate([0, 0, -cm.basketH + 0.10]);
   const pret = cm.solid.intersect(sonda);
   if (pret.volume() > 0.006) bad(`markiza ma poprzeczny pret pod kamieniem (${pret.volume().toFixed(4)} mm3)`);
   else ok(`markiza bez zbednej poprzeczki (${pret.volume().toFixed(4)} mm3 w sondzie)`);
@@ -3095,6 +3107,110 @@ console.log("\n50. Wieniec halo ma lustrzane odbicie po obu osiach");
     if (ile % 2 !== 0) bad(`${nazwa}: wieniec ma nieparzysta liczbe kamieni (${ile})`);
     else if (x > 0.5 || z > 0.5) bad(`${nazwa}: asymetria lewo-prawo ${x.toFixed(2)} %, przod-tyl ${z.toFixed(2)} %`);
     else ok(`${nazwa.padEnd(17)} ${ile} kamieni, asymetria ${x.toFixed(2)} % / ${z.toFixed(2)} %`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n51. Zadna scianka odlewu nie jest cienksza niz minimum dla srebra");
+// ------------------------------------------------------------
+// Grubosc mierzona tak, jak licza ja slicery: z kazdego trojkata promien do
+// srodka bryly, wzdluz odwroconej normalnej, do pierwszego WYJSCIA z bryly.
+// Plaster 2D (`slice` + `offset`) klamie na stycznych przekrojach zaokraglonego
+// profilu i na soliterze zglaszal 3,4 mm3 cech, ktorych nie ma. Promien nie.
+//
+// Liczymy tylko SCIANY, czyli miejsca, w ktorych lico wyjscia jest rownolegle
+// do promienia (cos > 0,82). Ostre krawedzie (stozek gniazda wychodzacy przez
+// ramie, czubek kuleczki) tez daja mala odleglosc, ale to klin, a nie brak
+// metalu, i jest go zawsze troche na kazdej bryle.
+//
+// Kontrola negatywna, zmierzona 2026-09-12 przed poprawkami (mm2 scian
+// cienszych niz 0,25 mm): soliter 6,0 (obrecz kosza 0,28 mm), halo 25,7
+// (tulejki 0,21 i 0,08 mm), diana 28,7, bypassFlower 27,8, pave 11,3
+// (szynki 0,19 mm obok gniazd), eternity 9,2. Po poprawkach: 0,0 wszedzie
+// poza czubkami kuleczek, ktore sa klinem.
+{
+  const grubosc = (m, prog = 0.25, maxLen = 1.0) => {
+    const mesh = m.getMesh();
+    const v = mesh.vertProperties, np = mesh.numProp, t = mesh.triVerts, n = mesh.numTri;
+    const P = (i) => [v[i * np], v[i * np + 1], v[i * np + 2]];
+    const tris = new Array(n);
+    const cell = 1.0;
+    const grid = new Map();
+    const key = (x, y, z) => `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
+    for (let i = 0; i < n; i++) {
+      const a = P(t[i * 3]), b = P(t[i * 3 + 1]), c = P(t[i * 3 + 2]);
+      const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      const nx = e1[1] * e2[2] - e1[2] * e2[1], ny = e1[2] * e2[0] - e1[0] * e2[2], nz = e1[0] * e2[1] - e1[1] * e2[0];
+      const L = Math.hypot(nx, ny, nz) || 1e-12;
+      tris[i] = { a, e1, e2, n: [nx / L, ny / L, nz / L], area: L / 2,
+        c: [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3] };
+      const xs = [a[0], b[0], c[0]], ys = [a[1], b[1], c[1]], zs = [a[2], b[2], c[2]];
+      for (let x = Math.floor(Math.min(...xs) / cell); x <= Math.floor(Math.max(...xs) / cell); x++)
+        for (let y = Math.floor(Math.min(...ys) / cell); y <= Math.floor(Math.max(...ys) / cell); y++)
+          for (let z = Math.floor(Math.min(...zs) / cell); z <= Math.floor(Math.max(...zs) / cell); z++) {
+            const k = `${x},${y},${z}`;
+            if (!grid.has(k)) grid.set(k, []);
+            grid.get(k).push(i);
+          }
+    }
+    const trafienie = (o, d, tr) => {
+      const { a, e1, e2 } = tr;
+      const px = d[1] * e2[2] - d[2] * e2[1], py = d[2] * e2[0] - d[0] * e2[2], pz = d[0] * e2[1] - d[1] * e2[0];
+      const det = e1[0] * px + e1[1] * py + e1[2] * pz;
+      if (Math.abs(det) < 1e-12) return null;
+      const inv = 1 / det;
+      const tx = o[0] - a[0], ty = o[1] - a[1], tz = o[2] - a[2];
+      const u = (tx * px + ty * py + tz * pz) * inv;
+      if (u < -1e-6 || u > 1 + 1e-6) return null;
+      const qx = ty * e1[2] - tz * e1[1], qy = tz * e1[0] - tx * e1[2], qz = tx * e1[1] - ty * e1[0];
+      const w = (d[0] * qx + d[1] * qy + d[2] * qz) * inv;
+      if (w < -1e-6 || u + w > 1 + 1e-6) return null;
+      const dist = (e2[0] * qx + e2[1] * qy + e2[2] * qz) * inv;
+      return dist > 1e-4 ? dist : null;
+    };
+    let scianaArea = 0, najciensza = Infinity, gdzie = null;
+    for (let i = 0; i < n; i++) {
+      const tr = tris[i];
+      const o = tr.c, d = [-tr.n[0], -tr.n[1], -tr.n[2]];
+      const seen = new Set();
+      let best = Infinity, par = 0;
+      for (let s = 0; s <= maxLen + cell; s += cell * 0.5) {
+        const lista = grid.get(key(o[0] + d[0] * s, o[1] + d[1] * s, o[2] + d[2] * s));
+        if (!lista) continue;
+        for (const j of lista) {
+          if (j === i || seen.has(j)) continue;
+          seen.add(j);
+          const tj = tris[j];
+          const zgodnosc = tj.n[0] * d[0] + tj.n[1] * d[1] + tj.n[2] * d[2];
+          if (zgodnosc <= 0) continue;
+          const dist = trafienie(o, d, tj);
+          if (dist != null && dist < best) { best = dist; par = zgodnosc; }
+        }
+      }
+      if (best < prog && par >= 0.82) {
+        scianaArea += tr.area;
+        if (best < najciensza) { najciensza = best; gdzie = o.map((x) => x.toFixed(1)).join(", "); }
+      }
+    }
+    return { scianaArea, najciensza, gdzie };
+  };
+  // Prog 0,25 mm. Wyjatek: wieniec halo, gdzie miedzy wlotami sasiednich
+  // gniazd zostaje z rozstawu 0,20 mm zebra opartego na masie tulejki (rozstaw
+  // `d + 0,30` w `buildHalo`); to nie jest wolna sciana, tylko krawedz miedzy
+  // dwoma otworami, jak w kazdym pave. Tam prog 0,17 mm.
+  const PRESETY = [["solitaire", 0.25], ["pave", 0.25], ["bezel", 0.25], ["halo", 0.17],
+    ["diana", 0.17], ["trilogy", 0.25], ["eternity", 0.25], ["bypassFlower", 0.17],
+    ["botanicalVine", 0.25], ["emerald", 0.25], ["cabochon", 0.25], ["halfEternity", 0.25]];
+  for (const [id, prog] of PRESETY) {
+    const preset = RING_PRESETS.find((x) => x.id === id);
+    const r = await buildRing(applyPreset(preset, DEFAULTS), { segments: 96, mode: "casting" });
+    const g = grubosc(r.metal, prog);
+    if (g.scianaArea > 0.3) {
+      bad(`${id}: ${g.scianaArea.toFixed(2)} mm2 scianek cienszych niz ${prog} mm, najciensza ${g.najciensza.toFixed(3)} mm przy (${g.gdzie})`);
+    } else {
+      ok(`${id.padEnd(14)} scianki ponizej ${prog} mm: ${g.scianaArea.toFixed(2)} mm2`);
+    }
     zwolnij(r);
   }
 }

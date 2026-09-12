@@ -314,20 +314,64 @@ ani jednej scianki ponizej 1,1 mm.
   granicy 0,1 mikrometra i wyrzuca zerowe trojkaty; test `ringExport.test.mjs`
   z kontrola negatywna.
 
-**Co zmierzono i CZEKA na decyzje wlasciciela** (liczby z presetow, tryb
-odlewniczy, srebro):
+**Decyzja wlasciciela (2026-09-12, formularz): minimum dla srebra 925,
+sciana 0,45 mm i drut 0,5 mm; kliny pod koszem zamyka kolnierz.** Wdrozone:
 
-- Dolna obrecz kosza centralnego: 0,28 mm wysokosci na 0,36 mm szerokosci
-  (`outlineRail` w `buildCrown`). Oprawka boczna: 0,26 na 0,32-0,40 mm.
-- Tulejki halo: scianka 0,21 mm (platkowe) i 0,08 mm (wspolne krapy) miedzy
-  wlotem gniazda a zewnetrzem tulejki; platek zewnetrzny 0,15 mm. Przy halo
-  1,15 mm (bypassFlower) 28 mm2 scianek ponizej 0,3 mm.
-- Eternity: srodki gniazd co 1,12 srednicy, wiec miedzy wlotami sasiadow
-  zostaje 0,12 mm przy kamieniu 1,8 mm i 0,04 mm przy 1,2 mm.
-- Kuleczki pave na ramionach: podstawa 0,30-0,40 mm, czubek 0,20-0,27 mm.
-- Stozek gniazda centralnego wychodzi bokami przez ramiona galerii i zostawia
-  tam ostre kliny (pave 15,7 mm2, kaseta 12,1 mm2 powierzchni z klinem
-  cienszym niz 0,3 mm).
+- Dolna obrecz kosza centralnego i obrecz oprawki bocznej: drut 0,5 x 0,5 mm
+  (bylo 0,36 x 0,28 i 0,32 x 0,26).
+- Tulejki i platki halo: scianka 0,45 mm liczona od WLOTU gniazda (bylo 0,21
+  i 0,08 mm, bo liczona od obrysu kamienia).
+- Kamyki wienca omijaja krapy: w kazdym luku miedzy krapami stoja w grupie
+  o jubilerskim rozstawie, wysrodkowanej w luku, a od nogi krapy dzieli je
+  wlot plus promien nogi plus 0,10 mm (`buildHalo`). Wczesniej frez gniazda
+  scinal noge do 0,06 mm. Rozstaw w grupie to `max(1,06 d, d + 0,30)`: przy
+  1,06 d wloty sasiadow (d + 0,10) przecinaly sie i zostawal klin 0,02 mm;
+  teraz miedzy wlotami jest 0,20 mm zebra. Gdy miedzy dwiema krapami nie
+  miesci sie ani jeden kamyk, generator rzuca czytelny blad zamiast po cichu
+  wracac do wienca ciaglego; preset bypassFlower przeszedl z szesciu krap na
+  cztery z tego powodu. Odstep wienca od rondysty zostaje 0,18 mm.
+- Wieniec trzyma sie sam i trzyma sie glowicy: pod tulejkami biegnie drut
+  0,5 mm po prowadnicy (luki rozdzielone przerwami na krapy rozpadaly sie na
+  osiem czesci), a pod kazda krapa idzie mostek 0,5 mm od tego drutu do zebra
+  kosza (owalna Diana wisiala jako osobna bryla, bo zebra kosza stoja pod
+  krapami, a tam nie ma juz tulejek). Kuleczki wienca stoja tylko miedzy
+  sasiadami z grupy, nie w przerwie na krape, i sa odsuniete tak, zeby czubek
+  wgryzal sie w oba wloty o 0,10 mm: stopa mijajaca wlot o 0,04 mm dawala
+  czubek muskajacy walec wlotu i wiorek 0,002 mm.
+- Kolnierz pod koszem (`buildCollar`): scianka 0,45 mm PROSTOPADLE do stozka
+  frezu, od dna kosza do 0,42 jego wysokosci; ramiona galerii koncza sie na
+  kolnierzu. Kamien o plaskim spodzie (kaboszon, rozeta) ma kolnierz do loza
+  i dno 0,45 mm pod koncem frezu, czyli pelna kasete z oknem 38 procent, bo
+  jego stozek jest prawie poziomy i kazdy plaski wierzch dawal klin 14 stopni.
+- Kolnierz wokol gniazda wpuszczonego w szyne (`buildSideStones`): polokragla
+  szyna opada ku bokom i przy kamieniu 1,5 mm w szynie 2,4 mm zostawialo to
+  0,19 mm metalu obok gniazda. Ramie z pave ma teraz plaski wierzch i pionowe
+  boki jak pas pave u jubilera. Preset pave: szyna 2,5 mm, zeby kolnierz byl
+  z nia rowno.
+- Mostek miedzy wlotami sasiednich gniazd: 0,45 mm na ramionach
+  (`sideStoneLayout`) i na obraczce (`buildBandStones`; bylo 0,12 mm przy
+  1,8 mm i 0,04 mm przy 1,2 mm). Kuleczki pave: promien 0,325 mm, czyli polowa
+  mostka plus 0,10 mm wgryzienia w kazdy wlot; przy promieniu rownym polowie
+  mostka wlot tylko muskal podstawe i zostawala skorka 0,19 mm. Czubek 0,8
+  promienia (bylo 0,68), bo promien mierzony z boku stozka schodzil pod 0,25.
+- Bryly frezu zachodza na siebie o 0,05 mm, zawsze wezsza w szersza (loze
+  w gore na wlot, stozek w gore na loze). Stykajac sie dokladnie licem
+  zostawialy blone zerowej grubosci, ktora w kolnierzu kaboszonu zamknela
+  stozek w pecherz (-21,7 mm3). Pierwsza proba szla w druga strone (wlot
+  w dol na loze) i szerszy wlot scinal gorne 0,05 mm loza: kamien tracil
+  podciecie i chwyt spadal z 0,73 do 0,001 %. Regula "ciac obok lica"
+  dotyczy tez skladania samego narzedzia, i kierunek zachodzenia ma znaczenie.
+- Zakucia w stanie gotowym poszly za nowymi wymiarami: polowki krap eternity
+  pochylaja sie pod katem LICZONYM tak, by czubek siegnal 0,08 mm za
+  rondyste (stale 26 stopni nie siegalo przy mostku 0,45 mm), zakuta kuleczka
+  pave ma 0,8 promienia i zachodzi na kamien o stale 0,12 mm.
+
+Po zmianach (25 presetow, jedna bryla kazdy, sciany cienszcze niz 0,3 mm):
+zero na 16 presetach; czubki kuleczek 0,27 mm (pave, diana, bypassPave,
+botanicalVine), rant kasety 0,27 mm (kaboszon, celowo, do dogiecia), zebra
+0,19-0,20 mm miedzy wlotami gniazd halo (halo, diana, bypassFlower), szpic
+tarczy sygnetu w ksztalcie serca (klin 0,004 mm, nie ruszany). Sprawdzian 51
+mierzy to promieniem na 12 presetach z progiem 0,25 mm, a 0,17 mm dla halo.
 
 **Czego sie dowiedzielismy.** Plaster 2D (`slice` + `offset`) klamie na
 stycznych przekrojach zaokraglonego profilu: na soliterze zglaszal 3,4 mm3

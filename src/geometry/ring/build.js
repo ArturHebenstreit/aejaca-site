@@ -459,12 +459,82 @@ export function stoneSolid(w, cutId, sizeMm) {
  * a powyzej przelot, zeby przez kamien szlo swiatlo i zeby dalo sie go
  * wypchnac od spodu przy przekladaniu.
  */
+/**
+ * Kolnierz pod koszem: scianka o stalej grubosci wokol stozka frezu.
+ *
+ * Stozek gniazda centralnego jest szerszy od szyny, wiec pod koszem wychodzil
+ * bokami przez ramiona galerii i zostawial tam kliny cienszy niz 0,3 mm:
+ * pave 15,7 mm2, kaseta 12,1 mm2 (audyt 2026-09-12). Kolnierz idzie dokladnie
+ * za frezem (`seatProfile.skala`), odsuniety o `wall` liczone PROSTOPADLE do
+ * powierzchni stozka: odsuniecie w plaszczyznie XY jest wieksze o odwrotnosc
+ * cosinusa kata stozka, inaczej scianka 0,45 mm w rzucie mialaby 0,27 mm
+ * w metalu. Miedzy `z0` a `z1` bierzemy otoczke wypukla dwoch plastrow:
+ * promien frezu jest wypukly wzgledem z (prosty przelot, potem stozek),
+ * wiec cieciwa lezy na zewnatrz i scianka nigdzie nie schodzi ponizej `wall`.
+ * Decyzja wlasciciela 2026-09-12: pelniejsza podstawa korony zamiast klinow.
+ */
+function buildCollar(w, cutId, profil, z0, z1, wall) {
+  const { Manifold, CrossSection } = w;
+  const pts = outlineFor(cutId, profil.shrunk);
+  const rMax = Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
+  const nachylenie = (rMax * (1 - profil.wylot)) / Math.max(0.05, profil.stozekH);
+  // Przy stozku plaskim (kaboszon: 3,4 mm promienia na 0,54 mm wysokosci)
+  // odwrotnosc cosinusa rosnie do czterech i kolnierz wychodzil na 5 mm
+  // promienia. Ponizej 45 stopni od pionu grubosc scianki daje juz dno
+  // kolnierza, nie jego bok, wiec odsuniecie w XY zatrzymuje sie na pierwiastku z dwoch.
+  const odsuniecie = wall * Math.min(Math.SQRT2, Math.hypot(1, nachylenie));
+  const plaster = (z) => {
+    const cs = CrossSection.ofPolygons([ccw(scalePts(pts, profil.skala(z)))]);
+    const szerszy = cs.offset(odsuniecie, "Round", 2, 16);
+    cs.delete?.();
+    const bryla = Manifold.extrude(szerszy, 0.02).translate([0, 0, z]);
+    szerszy.delete?.();
+    return bryla;
+  };
+  const dol = plaster(z0), gora = plaster(z1 - 0.02);
+  const otoczka = Manifold.hull([dol, gora]);
+  dol.delete?.(); gora.delete?.();
+  return otoczka;
+}
+
+/**
+ * Wymiary frezu gniazda w osi Z (rondysta na zerze): loze, stozek i przelot.
+ *
+ * Wydzielone z `seatCutter`, bo kolnierz pod koszem musi isc DOKLADNIE za
+ * stozkiem frezu: scianka kolnierza ma miec stala grubosc, a to znaczy, ze
+ * jego obrys na kazdej wysokosci jest obrysem stozka plus scianka. Druga
+ * kopia tych wzorow rozjechalaby sie przy pierwszej poprawce.
+ */
+function seatProfile(cutId, sizeMm, wylot = SEAT.throughWidth, slepe = false, maxDepth = null) {
+  const pr = PROPORTIONS[CUTS[cutId].profile];
+  const shrunk = Math.max(0.4, sizeMm - 2 * SEAT.undercut);
+  const pavH = pr.pav * sizeMm;
+  const glebokosc = pavH > 0.05
+    ? pavH
+    : (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
+  let stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - wylot));
+  if (slepe && maxDepth != null) {
+    stozekH = Math.min(stozekH, Math.max(0.10, maxDepth - SEAT.ledge - 0.08));
+  }
+  const przelotH = slepe
+    ? Math.max(0.08, (maxDepth ?? (glebokosc + SEAT.ledge + 0.15)) - SEAT.ledge - stozekH)
+    : sizeMm * 2;
+  /** Ulamek obrysu `shrunk`, jaki frez ma na wysokosci `z` (z <= 0). */
+  const skala = (z) => {
+    if (z >= -SEAT.ledge) return 1;
+    const t = (-SEAT.ledge - z) / stozekH;
+    return t >= 1 ? wylot : 1 - (1 - wylot) * t;
+  };
+  return { shrunk, glebokosc, stozekH, przelotH, wylot, skala,
+    dno: -SEAT.ledge - stozekH - przelotH + 0.01 };
+}
+
 function seatCutter(
   w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWidth,
   slepe = false, maxDepth = null,
 ) {
   const { Manifold, CrossSection } = w;
-  const pr = PROPORTIONS[CUTS[cutId].profile];
+  const profil = seatProfile(cutId, sizeMm, wylot, slepe, maxDepth);
 
   // 1. WLOT, czyli droga kamienia z gory do gniazda.
   //
@@ -520,7 +590,7 @@ function seatCutter(
   // 2. LOZE. Srednica gniazda jest MNIEJSZA od kamienia o podciecie, wiec
   //    rondysta siada na jego krawedzi. Gniazdo w wymiar kamienia to kamien
   //    przelatujacy na wylot.
-  const shrunk = Math.max(0.4, sizeMm - 2 * SEAT.undercut);
+  const { shrunk } = profil;
   const pts = outlineFor(cutId, shrunk);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
@@ -529,17 +599,21 @@ function seatCutter(
   // sie w gniezdzie. Frez jubilerski wycina wlasnie taka scianke.
   // Wysokosc zero dalaby bryle pusta, a `add` z pusta bryla zwraca pustke,
   // wiec cale gniazdo znika bez sladu.
+  // Loze ZACHODZI 0,05 mm w gore na wlot, a stozek 0,05 mm w gore na loze.
+  // Trzy bryly frezu stykajace sie dokladnie licem zostawialy w sumie blone
+  // zerowej grubosci w plaszczyznie styku; dopoki plaszczyzna lezala w
+  // powietrzu, nikt jej nie widzial, ale kolnierz pod kaboszonem siega do
+  // loza i blona zamykala stozek w pecherz o objetosci -21,7 mm3 (zmierzone).
+  // Zachodzenie idzie zawsze bryla WEZSZA w szersza, wiec ksztalt gniazda
+  // sie nie zmienia. Wlot w dol na loze byl bledem w druga strone: szerszy
+  // wlot scinal gorne 0,05 mm loza i kamien tracil podciecie (chwyt 0,001 %).
   const ledge = SEAT.ledge > 0.001
-    ? Manifold.extrude(cs, SEAT.ledge).translate([0, 0, -SEAT.ledge])
+    ? Manifold.extrude(cs, SEAT.ledge + 0.05).translate([0, 0, -SEAT.ledge])
     : null;
 
   // 3. STOZEK pod scianka, zwezajacy sie zgodnie z pawilonem. Otwor prosty na
   //    calej glebokosci nie daje kamieniowi oparcia i zabiera metal z galerii,
   //    a stozek robi jedno i drugie na raz.
-  const pavH = pr.pav * sizeMm;
-  const glebokosc = pavH > 0.05
-    ? pavH
-    : (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
   // STOZEK MUSI ZWEZAC SIE SZYBCIEJ NIZ PAWILON KAMIENIA, inaczej kamien
   // w nim zjezdza.
   //
@@ -553,20 +627,21 @@ function seatCutter(
   // Wysokosc liczymy wiec z tego, ile stozek ma do przebycia w POPRZEK,
   // a nie z ulamka glebokosci: schodzi do wylotu na 0,9 tej drogi, czyli
   // zawsze stromiej niz kamien.
-  let stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - wylot));
   // W slepym gniezdzie ograniczenie dotyczy CALEGO frezu, nie tylko jego
   // prostego konca. Przy waskim wylocie sam stozek potrafil byc dluzszy od
   // kosza i mimo skrocenia wiertla nadal wchodzil w podwyzszenie oraz szyne.
-  if (slepe && maxDepth != null) {
-    stozekH = Math.min(stozekH, Math.max(0.10, maxDepth - SEAT.ledge - 0.08));
-  }
+  // Liczby: `seatProfile`.
+  const { stozekH } = profil;
   // GLEBOKOSC i SZEROKOSC to dwie rozne rzeczy, mimo ze przez chwile opisywala
   // je jedna liczba: stozek zajmuje piec szostych GLEBOKOSCI, a otwor pod nim
   // ma polowe SZEROKOSCI gniazda. Wspolna wartosc dawala kamykowi 1,4 mm wylot
   // o srednicy 0,23 mm, czyli gniazdo, ktore z gory wyglada na zaslepione.
   const dolPts = scalePts(pts, wylot);
   const dolCs = CrossSection.ofPolygons([ccw(dolPts)]);
-  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / wylot, 1 / wylot])
+  // Stozek o 0,05 mm wyzszy: jego wierzch siedzi w lozu, a przy dnie loza
+  // jest o ulamek wezszy od sciany loza, wiec kamien dostaje tam plaska
+  // polke szerokosci kilku setnych zamiast samej krawedzi.
+  const stozek = Manifold.extrude(dolCs, stozekH + 0.05, 0, 0, [1 / wylot, 1 / wylot])
     .translate([0, 0, -SEAT.ledge - stozekH]);
 
   // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
@@ -589,9 +664,7 @@ function seatCutter(
   //
   // Kosz ma juz okna po bokach, wiec swiatlo wchodzi tam, gdzie ma wchodzic.
   // Gniazdo konczy sie wiec 0,15 mm pod koleta i szyna zostaje cala.
-  const dlugoscPrzelotu = slepe
-    ? Math.max(0.08, (maxDepth ?? (glebokosc + SEAT.ledge + 0.15)) - SEAT.ledge - stozekH)
-    : sizeMm * 2;
+  const dlugoscPrzelotu = profil.przelotH;
   const przelot = Manifold.extrude(dolCs, dlugoscPrzelotu)
     .translate([0, 0, -SEAT.ledge - stozekH - dlugoscPrzelotu + 0.01]);
 
@@ -1121,10 +1194,14 @@ export function buildCrown(w, p, stone) {
   // gwiazda. Obrecz spina nogi krap, a srodek i boki zostaja otwarte.
   const reinforced = p.basketStyle === "reinforced";
   const dolnaSkala = reinforced ? 0.64 : 0.55;
+  // Obrecz jest drutem: najmniej 0,5 mm w obu kierunkach (minimum dla
+  // srebra 925, decyzja wlasciciela 2026-09-12). Wczesniejsze 0,36 x 0,28 mm
+  // zmierzone promieniem dawalo 6-9 mm2 scianki ponizej 0,3 mm na kazdym
+  // pierscionku z korona.
   add(outlineRail(
     w, pts, dolnaSkala, -basketH + 0.04,
-    Math.max(reinforced ? 0.24 : 0.17, rP * (reinforced ? 0.56 : 0.40)),
-    Math.max(reinforced ? 0.38 : 0.28, rP * (reinforced ? 0.78 : 0.56)),
+    Math.max(reinforced ? 0.30 : 0.25, rP * (reinforced ? 0.56 : 0.40)),
+    Math.max(reinforced ? 0.55 : 0.50, rP * (reinforced ? 0.78 : 0.56)),
   ));
 
   // Wariant wzmocniony zachowuje swiatlo pod kamieniem, ale dostaje drugi
@@ -1501,6 +1578,27 @@ function buildSideStones(w, p, basketH = 0) {
       const maxDepthKosza = podniesienie > 0
         ? podniesienie + podGaleria + Math.min(0.20, p.thickness * 0.14)
         : null;
+      if (podniesienie === 0) {
+        // KOLNIERZ WOKOL GNIAZDA WPUSZCZONEGO W SZYNE.
+        //
+        // Polokragla szyna opada ku bokom, wiec na wysokosci rondysty jest
+        // wezsza od swojej nominalnej szerokosci: przy szynie 2,4 mm i kamieniu
+        // 1,5 mm zmierzone promieniem 0,19 mm metalu obok gniazda, mimo ze
+        // z nominalu wychodzilo 0,4. Kolnierz o obrysie wlotu plus 0,45 mm
+        // (minimum dla srebra 925) siega od dna stozka do szczytu szyny, wiec
+        // ramie z pave dostaje plaski wierzch i pionowe boki, jak pas pave
+        // u jubilera. Regula dopasowania w `params.js` pilnuje, zeby kolnierz
+        // nie wychodzil poza nominalna szerokosc szyny.
+        const profilBoku = seatProfile(szlifBoku, size, wylotKosza, false);
+        const csWlotu = CrossSection.ofPolygons([ccw(outlineFor(szlifBoku, size + 0.10))]);
+        const csKolnierza = csWlotu.offset(0.45, "Round", 2, 16);
+        csWlotu.delete?.();
+        const z0 = Math.max(p.innerDia / 2 - rKam + 0.30, -(SEAT.ledge + profilBoku.stozekH + 0.15));
+        const z1 = zanurzenie;
+        const kolnierzBoku = Manifold.extrude(csKolnierza, z1 - z0).translate([0, 0, z0]);
+        csKolnierza.delete?.();
+        addM(naMiejsce(kolnierzBoku));
+      }
       addS(naMiejsce(seatCutter(
         w, szlifBoku, size, zakute(p), wylotKosza,
         podniesienie > 0, maxDepthKosza,
@@ -1545,10 +1643,11 @@ function buildSideStones(w, p, basketH = 0) {
         // odlewniczo podstawe, ale skaluje sie wolniej od kamienia.
         const rL = Math.min(0.34, Math.max(0.24, size * 0.085));
         const mocna = p.basketStyle === "reinforced";
+        // Obrecz oprawki tez jest drutem 0,5 mm (bylo 0,26 x 0,32 mm).
         let oprawka = outlineRail(
           w, ptsBoku, mocna ? 0.64 : 0.54, -gleboko + 0.04,
-          Math.max(mocna ? 0.22 : 0.16, rL * (mocna ? 0.74 : 0.58)),
-          Math.max(mocna ? 0.34 : 0.26, rL * (mocna ? 1.0 : 0.82)),
+          Math.max(mocna ? 0.30 : 0.25, rL * (mocna ? 0.74 : 0.58)),
+          Math.max(mocna ? 0.55 : 0.50, rL * (mocna ? 1.0 : 0.82)),
         );
         if (mocna) {
           oprawka = zlacz(oprawka, outlineRail(
@@ -1598,7 +1697,12 @@ function buildSideStones(w, p, basketH = 0) {
       const ri0 = p.innerDia / 2;
       const SINK = 0.22;
       const at = (tang, axial) => {
-        const rad = ri0 + (shankRadiusAt(p, axial / kk.w) - ri0) * kk.t - SINK;
+        // Kolnierz gniazda wyrownuje ramie do szczytu szyny, wiec kuleczka
+        // stoi na tym szczycie, a nie na opadajacym boku profilu.
+        const rad = Math.max(
+          ri0 + (shankRadiusAt(p, axial / kk.w) - ri0) * kk.t,
+          rKam + zanurzenie,
+        ) - SINK;
         return [
           Math.cos(a) * rad - Math.sin(a) * tang,
           Math.sin(a) * rad + Math.cos(a) * tang,
@@ -1616,7 +1720,12 @@ function buildSideStones(w, p, basketH = 0) {
       // `kula` jest PROMIENIEM. Dawne `size * 0.2` dawalo krapie 0,6 mm
       // srednicy przy kamieniu 1,5 mm. Typowa kuleczka pave ma 0,3-0,4 mm
       // srednicy, dlatego promien jest ograniczony do 0,15-0,20 mm.
-      const kula = Math.min(0.20, Math.max(0.15, size * 0.105));
+      // Podstawa kuleczki to drut: najmniej 0,5 mm srednicy. Bylo 0,15-0,20
+      // promienia, czyli 0,3-0,4 mm u podstawy i 0,2-0,27 mm na czubku.
+      // Kuleczka stoi w polowie mostka miedzy wlotami sasiadow (0,45 mm) i ma
+      // WGRYZAC sie w oba wloty o 0,10 mm: przy promieniu rownym polowie mostka
+      // wlot tylko musnal jej podstawe i zostawala skorka 0,19 mm.
+      const kula = Math.max(0.225 + 0.10, Math.min(0.40, size * 0.105));
 
       if (setting === "pave") {
         // Kuleczka pave musi STERCZEC W GORE, czyli wzdluz promienia
@@ -1633,13 +1742,17 @@ function buildSideStones(w, p, basketH = 0) {
         for (const deg of [45, 135, 225, 315]) {
           // Punkt zakucia idzie za rzeczywistym obrysem, a potem obraca sie
           // razem z kamieniem. Gruszka nie dostaje juz okraglego ukladu kulek.
-          const rr = radiusAt(ptsZakucia, deg) + kula * (zam ? 0.12 : 0.34);
+          // Zakuta kuleczka zachodzi na kamien o 0,14 mm niezaleznie od
+          // swojego promienia. Ulamek promienia (0,12 kula) przy kuleczce
+          // 0,325 mm przykrywal 0,73 % kamienia wobec progu 0,46 %.
+          const kulaZak = zam ? kula * 0.8 : kula;
+          const rr = radiusAt(ptsZakucia, deg) + (zam ? kulaZak - 0.12 : kula * 0.34);
           const local = [Math.cos(deg * DEG) * rr, Math.sin(deg * DEG) * rr];
           const phi = orientacja * DEG;
           const tang = local[0] * Math.cos(phi) - local[1] * Math.sin(phi);
           const axial = local[0] * Math.sin(phi) + local[1] * Math.cos(phi);
           const stopa = at(tang, axial);
-          const rGora = kula * 0.68;
+          const rGora = kulaZak * 0.80;   // czubek 0,52 mm: promien mierzony z boku stozka nie schodzi pod 0,25
           const os = [Math.cos(a), Math.sin(a), 0];
           const przesun = zam ? Math.min(kula * 0.40, size * 0.04) : 0;
           const rrGora = rr - przesun;
@@ -1657,7 +1770,7 @@ function buildSideStones(w, p, basketH = 0) {
             (stopa[1] + szczyt[1]) / 2,
             (stopa[2] + szczyt[2]) / 2,
           ];
-          addM(tubeAlong(w, [stopa, srodek, szczyt], [kula, kula * 0.82, rGora]));
+          addM(tubeAlong(w, [stopa, srodek, szczyt], [kulaZak, kulaZak * 0.82, rGora]));
         }
       }
       void tilt;
@@ -2242,7 +2355,11 @@ function buildBandStones(w, p) {
 
   // Kamienie siadaja na promieniu szyny, a rozstaw liczymy po srodkowej.
   const rMid = promien(0.5) * 0.985;
-  const krok = Math.asin(Math.min(0.5, (d * 0.56) / rMid)) * 2;
+  // Miedzy wlotami sasiednich gniazd (`d + 0,10`) ma zostac 0,45 mm metalu.
+  // Sam rozstaw 1,12 d zostawial 0,12 mm przy kamieniu 1,8 mm i 0,04 mm
+  // przy 1,2 mm, czyli krapy nie mialy z czego wyrosnac.
+  const rozstaw = Math.max(d * 1.12, d + 0.10 + 0.45);
+  const krok = Math.asin(Math.min(0.5, (rozstaw / 2) / rMid)) * 2;
   const pelny = p.band.coverage === "full";
   const n = Math.max(3, Math.floor((pelny ? Math.PI * 2 : Math.PI) / krok));
 
@@ -2338,8 +2455,16 @@ function buildBandStones(w, p) {
         // Stan otwarty zostaje prosty i pelnej dlugosci, bo to z niego
         // te polowki dopiero powstana.
         const zam = zakute(p);
-        const pochyl = 26;
         const dlug = zam ? wysokosc * 0.72 : wysokosc;
+        // Pochylenie LICZONE, nie stale: polowka ma siegnac czubkiem 0,08 mm
+        // za rondyste swojego kamienia. Stale 26 stopni wystarczalo, gdy
+        // krapa stala 0,02-0,06 mm od wlotu; przy mostku 0,45 mm miedzy
+        // wlotami (minimum dla srebra) czubek konczyl sie przed rondysta
+        // i sprawdzian 32 mierzyl zerowy chwyt przy kamieniu 1,3 mm.
+        const pochyl = zam
+          ? Math.max(26, Math.asin(Math.min(0.85,
+            (polOdstepu - (d / 2 - 0.08)) / (dlug + SINK_B))) / DEG)
+          : 26;
         const kierunki = zam ? [-pochyl, pochyl] : [0];
         for (const s of [-1, 1]) {
           const stopa = [os[0] * rad, os[1] * rad, s * off];
@@ -2375,6 +2500,36 @@ function buildBandStones(w, p) {
  * zawsze istnieje i zawsze lezy na osi symetrii. Gdyby go nie bylo, zostaje
  * poczatek obrysu, czyli zachowanie sprzed poprawki.
  */
+/** Punkt obrysu w odleglosci `s` po luku od pierwszego wierzcholka. */
+function punktLuku(pts, lengths, s) {
+  let target = s, i = 0;
+  while (target > lengths[i] && i < lengths.length - 1) {
+    target -= lengths[i]; i++;
+  }
+  const a = pts[i], b = pts[(i + 1) % pts.length];
+  const f = lengths[i] > 0 ? target / lengths[i] : 0;
+  return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f };
+}
+
+/** Dlugosc luku obrysu do punktu, w ktorym przecina go polprosta pod katem `kat`. */
+function arcAtAngle(pts, lengths, kat) {
+  const dx = Math.cos(kat), dy = Math.sin(kat);
+  let acc = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    // przeciecie polprostej t*(dx,dy) z odcinkiem a + f*(b - a)
+    const ex = b[0] - a[0], ey = b[1] - a[1];
+    const det = dx * ey - dy * ex;
+    if (Math.abs(det) > 1e-12) {
+      const t = (a[0] * ey - a[1] * ex) / det;
+      const f = (a[0] * dy - a[1] * dx) / det;
+      if (t > 0 && f >= 0 && f < 1) return acc + lengths[i] * f;
+    }
+    acc += lengths[i];
+  }
+  return null;
+}
+
 function arcAtMinusY(pts, lengths) {
   let acc = 0;
   for (let i = 0; i < pts.length; i++) {
@@ -2465,18 +2620,109 @@ export function buildHalo(w, p, stone, girdleR) {
     // osi ma brata dokladnie naprzeciw) i start probkowania w punkcie
     // lezacym NA osi, czyli tam, gdzie obrys przecina os -Y. Serce ma tylko
     // jedna os i ten sam start mu wystarcza.
-    let n = Math.floor(perimeter / (d * 1.06));
-    n = Math.max(8, n - (n % 2));
-    const s0 = arcAtMinusY(pts, lengths);
-    const samples = [];
-    for (let k = 0; k < n; k++) {
-      let target = (s0 + (k / n) * perimeter) % perimeter, i = 0;
-      while (target > lengths[i] && i < lengths.length - 1) {
-        target -= lengths[i]; i++;
+    //
+    // KAMIENIE WIENCA OMIJAJA KRAPY. Noga krapy przechodzi przez wieniec na
+    // promieniu, na ktorym siedza gniazda halo. Gdy kamyk trafial w kat
+    // krapy, frez jego gniazda wycinal noge do skorki: zmierzone 0,007 mm
+    // scianki w czterech miejscach presetu halo (16 kamieni, krapy co 90
+    // stopni). Jubiler stawia krapy MIEDZY kamieniami wienca, wiec spośród
+    // parzystych liczb kamieni i dwoch faz (od osi, pol kroku od osi)
+    // wybieramy te, przy ktorej najblizszy kamyk jest najdalej od krapy;
+    // obie fazy zachowuja odbicie po obu osiach przy parzystej liczbie.
+    const probkuj = (n, faza) => {
+      const s0 = arcAtMinusY(pts, lengths) + faza * (perimeter / n);
+      const out = [];
+      for (let k = 0; k < n; k++) {
+        let target = (s0 + (k / n) * perimeter) % perimeter, i = 0;
+        while (target > lengths[i] && i < lengths.length - 1) {
+          target -= lengths[i]; i++;
+        }
+        const a = pts[i], b = pts[(i + 1) % pts.length];
+        const f = lengths[i] > 0 ? target / lengths[i] : 0;
+        out.push({ x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f });
       }
-      const a = pts[i], b = pts[(i + 1) % pts.length];
-      const f = lengths[i] > 0 ? target / lengths[i] : 0;
-      samples.push({ x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f });
+      return out;
+    };
+    const krapy = prongAngles(CUTS[p.stone.cut] || {}, p.setting)
+      .map((deg) => ((deg % 360) + 360) % 360);
+    const luzKrapy = (lista) => {
+      if (!krapy.length) return Infinity;
+      let najblizej = Infinity;
+      for (const { x, y } of lista) {
+        const a = ((Math.atan2(y, x) / DEG) % 360 + 360) % 360;
+        for (const k of krapy) {
+          const dd = Math.abs(((a - k) % 360 + 540) % 360 - 180);
+          najblizej = Math.min(najblizej, dd);
+        }
+      }
+      return najblizej;
+    };
+    // NOGA KRAPY MA WOLNE MIEJSCE W WIENCU.
+    //
+    // Samo ustawienie kamykow "miedzy krapami" nie wystarczylo: noga krapy
+    // i wlot gniazda zachodza na siebie takze promieniowo, wiec przy 16
+    // kamieniach i krapach co 90 stopni frez dwoch sasiadow scinal noge do
+    // 0,06 mm. Jubiler robi w wiencu przerwe na krape: w kazdym luku miedzy
+    // krapami kamyki stoja rowno, a od nogi krapy dzieli je wlot plus promien
+    // nogi plus 0,10 mm. Przerwa jest symetryczna w kazdym luku, wiec wieniec
+    // zachowuje odbicie po obu osiach.
+    const promienKrapy = (p.prongDia || 0.9) / 2;
+    const odstepOdKrapy = d / 2 + 0.05 + promienKrapy + 0.10;
+    const lukiKrap = krapy.map((deg) => arcAtAngle(pts, lengths, deg * DEG))
+      .filter((v) => v != null).sort((a, b) => a - b);
+    let samplesKrapy = null;
+    if (lukiKrap.length >= 2) {
+      const lista = [];
+      for (let k = 0; k < lukiKrap.length; k++) {
+        const sa = lukiKrap[k];
+        const sb = k + 1 < lukiKrap.length ? lukiKrap[k + 1] : lukiKrap[0] + perimeter;
+        const uzyteczny = sb - sa - 2 * odstepOdKrapy;
+        if (uzyteczny < d) {
+          // Miedzy dwiema krapami nie miesci sie ani jeden kamyk. Ciche
+          // pominiecie krap wracalo do wienca ciaglego i frez scinal nogi
+          // (bypassFlower: szesc krap na kamieniu 3,2 mm, scianka 0,06 mm).
+          throw new Error(
+            "Wieniec halo nie miesci sie miedzy krapami: zmniejsz liczbe krap, "
+            + "powieksz kamien centralny albo zmniejsz kamyki wienca.",
+          );
+        }
+        // Epsilon: cztery rowne luki dawaly raz 3, raz 4 kamyki przez blad
+        // zaokraglenia i wieniec wychodzil nieparzysty (13 zamiast 12).
+        const ile = Math.floor(uzyteczny / Math.max(d * 1.06, d + 0.30) + 1e-6) + 1;
+        // Rozstaw w grupie zostaje jubilerski (1,06 d), a cala grupa stoi
+        // posrodku luku: caly zapas idzie w przerwy przy krapach. Rowne
+        // rozciagniecie grupy na luk rozsuwalo kamyki do 1,16 d i wspolne
+        // kuleczki nie siegaly juz rondysty (sprawdzian 43: chwyt 0,001 %).
+        // Rozstaw 1,06 d daje przy kamyku 1,3 mm srodki co 1,38 mm, a wloty
+        // (d + 0,10) maja 1,40 mm: walce wlotow sasiadow przecinaly sie i
+        // miedzy nimi zostawal klin 0,02 mm (zmierzone promieniem, cztery
+        // miejsca na presecie halo). Miedzy wlotami zostaje 0,20 mm.
+        const rozstaw = Math.max(d * 1.06, d + 0.30);
+        const start = sa + odstepOdKrapy + (uzyteczny - (ile - 1) * rozstaw) / 2;
+        for (let j = 0; j < ile; j++) {
+          const s = start + j * rozstaw;
+          lista.push(punktLuku(pts, lengths, ((s % perimeter) + perimeter) % perimeter));
+        }
+      }
+      samplesKrapy = lista;
+    }
+    const surowe = Math.floor(perimeter / (d * 1.06));
+    const kandydaci = [surowe, surowe - 1, surowe - 2, surowe + 1]
+      .map((n) => n - (n % 2))
+      .filter((n, i, arr) => n >= 8 && arr.indexOf(n) === i)
+      // gniazda nie moga na siebie zachodzic (wlot `d + 0,10`), a przerwy
+      // nie moga byc widoczne golym okiem
+      .filter((n) => perimeter / n >= Math.max(d * 1.06, d + 0.30) - 1e-9 && perimeter / n <= d * 1.28);
+    let samples = samplesKrapy, najlepszy = -Infinity;
+    for (const n of (samplesKrapy ? [] : kandydaci.length ? kandydaci : [Math.max(8, surowe - (surowe % 2))])) {
+      for (const faza of [0, 0.5]) {
+        const lista = probkuj(n, faza);
+        // Kat liczony w stopniach; pol kroku wienca to zwykle 8-12 stopni,
+        // wiec wynik powyzej tego jest juz "miedzy kamieniami".
+        const luz = Math.min(luzKrapy(lista), 180 / n);
+        const ocena = luz - (n === surowe - (surowe % 2) ? 0 : 0.01) - faza * 0.001;
+        if (ocena > najlepszy) { najlepszy = ocena; samples = lista; }
+      }
     }
     for (let i = 0; i < samples.length; i++) {
       const prev = samples[(i - 1 + samples.length) % samples.length];
@@ -2522,9 +2768,11 @@ export function buildHalo(w, p, stone, girdleR) {
   // Niskie tulejki musza zachodzic na sasiednie tulejki rowniez PO wycieciu
   // gniazd. Ten zapas lezy pod rondysta, wiec spina wieniec bez zaslaniania
   // korony kamienia.
-  const seatR = d / 2 + (haloSetting === "scallop"
-    ? Math.max(0.26, d * 0.16)
-    : Math.max(0.13, d * 0.07));
+  // Scianka tulejki liczy sie od WLOTU gniazda (`d / 2 + 0,05`), nie od
+  // obrysu kamienia, i ma 0,45 mm: minimum dla srebra 925. Bylo 0,21 mm
+  // (platkowe) i 0,08 mm (wspolne krapy), zmierzone promieniem; przy halo
+  // 1,15 mm dawalo to 28 mm2 scianki ponizej 0,3 mm.
+  const seatR = d / 2 + 0.05 + 0.45;
   const haloGirdleTop = zK + wzorKam.girdleH;
   const baseTop = haloGirdleTop - Math.max(0.02, d * 0.015);
   const petalTop = haloGirdleTop + (zakute(p)
@@ -2541,6 +2789,45 @@ export function buildHalo(w, p, stone, girdleR) {
     w, "round", d, haloSetting === "scallop" ? zakute(p) : false,
     SEAT.throughWidth, true, seatH + 0.02,
   );
+  // DRUT POD WIENCEM. Przerwa na krape rozdziela tulejki: sasiednie luki nie
+  // dotykaja sie bokami i wieniec rozpadal sie na tyle kawalkow, ile krap
+  // (sprawdzian 42: osiem czesci). Pierscien 0,5 mm (minimum drutu dla
+  // srebra) prowadzony po tej samej prowadnicy, na dole tulejek, spina luki
+  // przez przerwy; noga krapy przechodzi przez niego i sie z nim zrasta.
+  {
+    const prowadnica = guide.map(({ x, y }) => [x, y]);
+    const drut = outlineRail(w, prowadnica, 1.0, baseTop - seatH, 0.25, 0.5);
+    metal = metal ? zlacz(metal, drut) : drut;
+  }
+
+  // MOSTKI POD KRAPAMI. Kosz centralny jest azurowy: pod rondysta ma tylko
+  // zebra na katach krap. Skoro kamyki wienca omijaja krapy, tulejki nie
+  // dotykaja juz zeber i wieniec Diany (owal, 12 kamykow) wisial jako osobna
+  // bryla. Pod kazda krapa idzie wiec drut 0,5 mm od pierscienia wienca do
+  // zebra kosza, w przerwie na krape, gdzie nie ma zadnego gniazda. Tak samo
+  // jubiler mocuje halo do glowicy: mostkami pod krapami, nie plyta.
+  {
+    const krapyHalo = prongAngles(CUTS[p.stone.cut] || {}, p.setting);
+    const ptsSrodka = outlineFor(p.stone.cut, p.stone.size);
+    const zMostka = baseTop - seatH + 0.25;
+    for (const deg of krapyHalo) {
+      const kat = deg * DEG;
+      const zewn = guide.reduce((best, g) => {
+        const r = Math.hypot(g.x, g.y);
+        const roznica = Math.abs(((Math.atan2(g.y, g.x) - kat + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+        return roznica < best.roznica ? { roznica, r } : best;
+      }, { roznica: Infinity, r: 0 }).r;
+      const rWewn = radiusAt(ptsSrodka, deg) * 0.6;
+      const dlugosc = zewn - rWewn;
+      if (!(dlugosc > 0.3)) continue;
+      const mostek = Manifold.cylinder(dlugosc, 0.25, 0.25, 20, false)
+        .rotate([0, 90, 0])
+        .translate([rWewn, 0, zMostka])
+        .rotate([0, 0, deg]);
+      metal = zlacz(metal, mostek);
+    }
+  }
+
   for (let i = 0; i < n; i++) {
     const { x, y, nx, ny } = guide[i];
     const a = Math.atan2(ny, nx);
@@ -2554,7 +2841,7 @@ export function buildHalo(w, p, stone, girdleR) {
     metal = metal ? zlacz(metal, tulejka) : tulejka;
 
     if (haloSetting === "scallop") {
-      const wallR = d / 2 + Math.max(0.20, d * 0.12);
+      const wallR = d / 2 + 0.05 + 0.45;   // ta sama scianka co tulejka
       const wallH = petalTop - baseTop + Math.max(0.08, d * 0.05);
       const sciana = Manifold.cylinder(wallH, wallR, wallR, 32, false)
         .translate([x, y, petalTop - wallH]);
@@ -2596,7 +2883,7 @@ export function buildHalo(w, p, stone, girdleR) {
   // usterka, ktora poprawilismy juz przy pave na szynie, tylko w wiencu
   // zostala. Zakucie jest slupkiem: stoi ponad plyta, zweza sie ku gorze
   // i przy zakuwaniu KLANIA SIE nad kamien, bo ma czym.
-  const kulaH = Math.max(0.20, Math.min(0.25, d * 0.115));
+  const kulaH = Math.max(0.25, Math.min(0.28, d * 0.115));   // drut 0,5 mm
   const zam = zakute(p);
   const zSzczytu = zK + wzorKam.girdleH
     + wzorKam.crownH * (zam ? 0.58 : 1.08)
@@ -2608,6 +2895,9 @@ export function buildHalo(w, p, stone, girdleR) {
   const strony = haloSetting === "scallop" ? [-1] : [-1, 1];
   for (let i = 0; i < n; i++) {
     const a = guide[i], next = guide[(i + 1) % n];
+    // Przez przerwe na krape kuleczki nie ma: stalaby posrodku, nie dotykajac
+    // zadnej tulejki (sprawdzian 42: cztery luzne kuleczki po 0,11 mm3).
+    if (Math.hypot(next.x - a.x, next.y - a.y) > Math.max(d * 1.06, d + 0.30) * 1.2) continue;
     const bx = (a.x + next.x) / 2, by = (a.y + next.y) / 2;
     let nx = a.nx + next.nx, ny = a.ny + next.ny;
     const nl = Math.hypot(nx, ny) || 1;
@@ -2630,13 +2920,24 @@ export function buildHalo(w, p, stone, girdleR) {
       // 1,15 promienia jeszcze sie zlewaly (przy kamyku 1,8 mm z pary
       // zostawal jeden walek), wiec podloga jest 1,6.
       const polKroku = Math.hypot(next.x - a.x, next.y - a.y) / 2;
-      const wlot = d / 2 + 0.05 + 0.04;            // wlot gniazda plus margines
-      const minOdsun = Math.sqrt(Math.max(0, wlot * wlot - polKroku * polKroku));
-      const odsun = Math.max(minOdsun, kulaH * 1.6);
+      // Odsuniecie liczymy od CZUBKA, nie od stopy. Stopa odsunieta tak, zeby
+      // minac wlot obu sasiadow o 0,04 mm, dawala czubek (0,72 kulaH) muskajacy
+      // wlot na 0,04 mm: walec wlotu scinal slupek pod bardzo ostrym katem i
+      // zostawal wiorek 0,002 mm (zmierzone promieniem na presecie halo).
+      // Czubek ma wgryzac sie w oba wloty o 0,10 mm, stopa moze wchodzic w
+      // wlot glebiej, bo i tak jest szersza. Podloga 1,15 kulaH trzyma dwie
+      // kuleczki pary (wspolne krapy) osobno.
+      const wlot = d / 2 + 0.05;
+      const celCzubka = wlot - 0.10 + kulaH * 0.72;
+      const odsun = Math.max(kulaH * 1.15,
+        Math.sqrt(Math.max(0, celCzubka * celCzubka - polKroku * polKroku)));
       const stopaX = bx + nx * s * odsun, stopaY = by + ny * s * odsun;
       // Zakuty slupek pochyla sie nad kamien, ale nie tak daleko, zeby zejsc
       // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
-      const odsunCzubka = zam ? Math.max(odsun - d * 0.14, kulaH * 1.15) : odsun;
+      // Podloga to promien czubka (0,72 kulaH), nie 1,15 kulaH: przy kuleczce
+      // 0,25 mm wyzsza podloga trzymala czubek 0,11 mm od linii wienca i
+      // zakucie nie siegalo korony (sprawdzian 43: chwyt 0,001 %).
+      const odsunCzubka = zam ? Math.max(odsun - d * 0.14, kulaH * 0.75) : odsun;
       const szczytX = bx + nx * s * odsunCzubka, szczytY = by + ny * s * odsunCzubka;
       const cupTop = haloSetting === "scallop" ? petalTop : baseTop;
       const zStopy = haloSetting === "scallop"
@@ -2942,6 +3243,45 @@ export async function buildRing(input, opts = {}) {
       ? 0.18
       : basketH > 0 ? basketH - 0.35 : 0;
 
+    // Liczby frezu centralnego, wspolne dla kolnierza pod koszem i dla
+    // samego wyciecia nizej. Uzasadnienie przy wycieciu.
+    const profilKamienia = PROPORTIONS[CUTS[p.stone.cut].profile];
+    const plaskiSpod = profilKamienia.pav < 0.05;
+    const wylotSrodka = plaskiSpod
+      ? 0.38
+      : Math.max(0.16, Math.min(
+        SEAT.throughWidth,
+        (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
+      ));
+    const maxDepthSrodka = standoff + Math.min(0.32, p.thickness * 0.22);
+    const profilFrezu = p.setting !== "drilled"
+      ? seatProfile(p.stone.cut, p.stone.size, wylotSrodka, true, maxDepthSrodka)
+      : null;
+    // Kolnierz siega od dna kosza do okolo 0,42 jego wysokosci; wyzej kosz
+    // zostaje azurowy, a ramiona galerii koncza sie na kolnierzu, zeby frez
+    // nie mial czego grazowac. Scianka 0,45 mm: minimum dla srebra 925.
+    // Dno kolnierza: przy brylancie kieszen konczy sie 0,32 mm w szynie, wiec
+    // metal pod nia daje sama szyna. Przy plaskim spodzie stozek jest szeroki
+    // takze u dolu (38 procent obrysu, czyli 2,6 mm przy kamieniu 7 mm) i
+    // wychodzi poza szerokosc szyny: tam dno musi dac sam kolnierz, 0,45 mm
+    // pod koncem frezu.
+    const zKolnierzDol = plaskiSpod && profilFrezu
+      ? Math.min(-basketH + 0.04, profilFrezu.dno - 0.45)
+      : -basketH + 0.04;
+    // Kamien o plaskim spodzie (kaboszon, rozeta) ma stozek gniazda prawie
+    // poziomy (3,4 mm promienia na 0,54 mm wysokosci). Taki stozek wychodzacy
+    // przez plaski wierzch kolnierza zostawia klin 14 stopni, czyli ostrze
+    // 0,04 mm na calym obwodzie. Kolnierz siega wtedy do loza, gdzie frez
+    // jest juz pionowy: kaseta kaboszonu dostaje pelne dno z oknem 38 procent,
+    // tak jak kaseta u jubilera.
+    // 0,12 mm nad poczatkiem loza, nie 0,02: dolne lico gornego plastra
+    // otoczki lezalo dokladnie w plaszczyznie gory stozka frezu i boolean
+    // zostawial tam blone zerowej grubosci, ktora zamykala kieszen w pecherz
+    // (zmierzone: czesc o objetosci -21,7 mm3). Ciac obok lica, nigdy po nim.
+    const zKolnierzGora = plaskiSpod
+      ? -SEAT.ledge + 0.12
+      : zKolnierzDol + Math.max(0.6, basketH * 0.42);
+
     // KOLEJNOSC KAMIENI NA LISCIE JEST CZESCIA UMOWY z reszta programu:
     // centralny, potem wieniec, potem boczne. Podglad rysuje po niej materialy,
     // wiec wieniec wlozony przed kamieniem centralnym daje szafirowy soliter
@@ -2983,7 +3323,20 @@ export async function buildRing(input, opts = {}) {
         // Wysokosc kosza, a NIE kosz plus podniesienie: kosz jest juz
         // przesuniety o `standoff`, wiec zsumowanie obu podnosilo luk
         // dwukrotnie i zamiast wtopic sie w szyne siadal na niej guzkami.
-        metal = zlacz(metal, buildGallery(w, p, basketH));
+        let galeria = buildGallery(w, p, basketH);
+        if (profilFrezu) {
+          // Ramiona galerii koncza sie na gorze kolnierza tam, gdzie
+          // wchodza w obrys frezu. Bez tego ich wierzcholki przy koronie
+          // lezaly w calosci w stozku i zostawala z nich sama skorka.
+          const kolnierz = buildCollar(w, p.stone.cut, profilFrezu, zKolnierzDol, zKolnierzGora, 0.45);
+          const kb = kolnierz.boundingBox();
+          const przycinak = w.Manifold.cube(
+            [kb.max[0] - kb.min[0], kb.max[1] - kb.min[1], p.stone.size * 3], false,
+          ).translate([kb.min[0], kb.min[1], zKolnierzGora]);
+          galeria = odejmij(galeria, place(podnies(obrocKamien(przycinak, p.stone.rotation), standoff)));
+          metal = zlacz(metal, place(podnies(obrocKamien(kolnierz, p.stone.rotation), standoff)));
+        }
+        metal = zlacz(metal, galeria);
       }
     }
 
@@ -3004,23 +3357,15 @@ export async function buildRing(input, opts = {}) {
       // jawnie przerwana. Gniazdo centralne jest teraz kieszenia: wlot, loze
       // i stozek pozostaja otwarte, lecz koniec frezu zatrzymuje sie w gornej
       // czesci szyny. Pod nim biegnie ciagly most metalu na calej szerokosci.
-      const profilKamienia = PROPORTIONS[CUTS[p.stone.cut].profile];
-      const plaskiSpod = profilKamienia.pav < 0.05;
       // Kaboszon i rozeta o plaskim spodzie potrzebuja czytelnego okna pod
       // kamieniem. Wylot 38 procent obrysu usuwa szara tarcze, ale jest na tyle
       // waski, aby nie zamienic powierzchni od strony palca w szeroka szczeline.
-      const wylotSrodka = plaskiSpod
-        ? 0.38
-        : Math.max(0.16, Math.min(
-          SEAT.throughWidth,
-          (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
-        ));
       // Początek frezu lezy na rondyscie, podniesionej o `standoff` nad
       // szyna. Schodzimy przez kosz i najwyzej 0,32 mm w powierzchnie szyny.
       // To daje czytelna kieszen pod kamieniem, ale przy najcienszej
       // dopuszczalnej szynie nadal zostawia co najmniej 0,78 mm ciaglego
-      // metalu od strony palca.
-      const maxDepthSrodka = standoff + Math.min(0.32, p.thickness * 0.22);
+      // metalu od strony palca. Liczby (`wylotSrodka`, `maxDepthSrodka`)
+      // policzone wyzej, razem z kolnierzem.
       metal = odejmij(metal, place(podnies(
         obrocKamien(
           seatCutter(
