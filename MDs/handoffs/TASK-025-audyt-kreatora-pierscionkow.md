@@ -93,7 +93,7 @@ wina lezala w warstwach, ktorych one nie dotykaja. Odtworzone trzy:
 | Telefon 390 px | przewijanie w bok | brak |
 | Lustro geometrii | `sync-pricing --check` i `diff` | tylko naglowek generatora i sciezki importow |
 | Bramki builda przed `vite build` | 98 sprawdzianow | pass |
-| Pelny build | `npm run build` | uzupelnione nizej |
+| Pelny build | `npm run build` | pass, 222 stron prerenderu, 0 bledow, kod wyjscia 0 |
 | Testy chat-api | `npm test` w `chat-api/` | pass, 14 zestawow |
 
 Zastrzezenie do pomiaru czasu: pierwsze dwa przebiegi audytu padly na
