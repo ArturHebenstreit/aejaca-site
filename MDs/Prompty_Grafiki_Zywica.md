@@ -155,3 +155,17 @@ obraz w polu 315 x 168 i przycina go SAM, biorac srodkowy pasek, wiec owalny
 wzorzec z kafelka „z Twojego pliku 3D" zostal przeciety na pol i po historii
 „polowa lustro, polowa mat" nie zostalo sladu. `scripts/kadruj-kafelek.mjs`
 ma od tego osobny tryb `pas`.
+
+**Dwa kafelki wymagaly jeszcze przesuniecia kadru w pionie.** Wykrycie po
+jasnosci nie wie, co na zdjeciu jest tematem, a co tlem akcji. Przy
+`from_object` strumien silikonu siegal gornej krawedzi, wiec srodek wykrytego
+prostokata wypadl wysoko, a drewniany listek, czyli caly sens tego kafelka,
+schowal sie pod podpisem. Stad argument `przesuniecie`: `0.26` przy
+`from_object` i `-0.06` przy `from_file`. Pelne polecenia sa ponizej.
+
+```bash
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_object.webp 0.08 120 pas 0.26
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_file.webp   0.08 120 pas -0.06
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_molds/from_design.webp 0.08 120 pas
+node scripts/kadruj-kafelek.mjs <zrodlo> public/img/calc/resin_inclusions/text_plate.webp 0.08
+```

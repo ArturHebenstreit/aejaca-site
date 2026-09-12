@@ -17,7 +17,14 @@
 // Margines zostaje, bo przedmiot dociety do samej krawedzi wyglada na
 // wciety, a `MaterialCards` rysuje go w zaokraglonej ramce.
 //
-//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog] [ksztalt]
+//   node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog] [ksztalt] [przesuniecie]
+//
+// `przesuniecie` przesuwa kadr w pionie o ulamek jego wysokosci, dodatnie w dol.
+// Potrzebne tam, gdzie wykryty prostokat obejmuje cos, co NIE JEST sensem
+// zdjecia: przy kafelku "z Twojego przedmiotu" strumien silikonu siegal gornej
+// krawedzi, wiec srodek wypadl wysoko, a drewniany listek, czyli caly sens tego
+// kafelka, schowal sie pod podpisem. Wykrycie po jasnosci nie wie, co jest
+// tematem, a co tlem akcji, i nie ma jak sie tego domyslic.
 //
 // `ksztalt` to `kwadrat` (domyslnie) albo `pas`. Kwadrat jest dla kafelkow
 // rysowanych przez `MaterialCards`, ktore pokazuja caly obraz. `pas` jest dla
@@ -36,7 +43,7 @@
 import sharp from "sharp";
 import { existsSync } from "node:fs";
 
-const [, , wejscie, wyjscie, marginesArg, progArg, ksztaltArg] = process.argv;
+const [, , wejscie, wyjscie, marginesArg, progArg, ksztaltArg, przesuniecieArg] = process.argv;
 if (!wejscie || !wyjscie) {
   console.error("Uzycie: node scripts/kadruj-kafelek.mjs <wejscie> <wyjscie> [margines] [prog] [kwadrat|pas]");
   process.exit(1);
@@ -55,6 +62,7 @@ const MARGINES = Number(marginesArg ?? 0.12);
 // nie jest przypadkowym trafieniem w zbocze gradientu.
 const PROG = Number(progArg ?? 120);
 const PAS = String(ksztaltArg ?? "kwadrat") === "pas";
+const PRZESUNIECIE = Number(przesuniecieArg ?? 0);
 const BOK = 512;
 const PAS_SZER = 768;
 const PAS_WYS = 432;
@@ -108,7 +116,7 @@ const kadrWys = Math.floor(zadanaWys * skala);
 const srodekX = lewo + szer / 2;
 const srodekY = gora + wys / 2;
 const x = Math.round(Math.min(Math.max(0, srodekX - kadrSzer / 2), meta.width - kadrSzer));
-const y = Math.round(Math.min(Math.max(0, srodekY - kadrWys / 2), meta.height - kadrWys));
+const y = Math.round(Math.min(Math.max(0, srodekY - kadrWys / 2 + PRZESUNIECIE * kadrWys), meta.height - kadrWys));
 
 await sharp(wejscie)
   .extract({ left: x, top: y, width: kadrSzer, height: kadrWys })
