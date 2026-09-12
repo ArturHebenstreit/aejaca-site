@@ -34,7 +34,7 @@ Tam nic nie zasłania kadru, przedmiot ma stać centralnie.
 | `public/img/calc/resin_molds/from_object.webp` | Przedmiot KLIENTA w ramce, zalewany silikonem | A small heirloom object, a carved bone charm, resting face-up at the bottom of a 3D-printed rectangular casting frame, blue-grey liquid silicone being poured around it from a mixing cup, silicone surface glossy and level, the object still visible under the rising silicone, matte black bench, cool blue rim light from upper left, warm highlight on the object, black background, premium macro product photography, no text, no logo, no watermark |
 | `public/img/calc/resin_molds/from_file.webp` | Wydrukowany wzorzec, polerowany do lustra | A small 3D-printed master pattern in glossy black resin, an oval pendant shape with crisp edges, half of its surface already polished to a mirror and half still matte from sanding, fine abrasive pads and a polishing cloth beside it, matte black jeweler bench, cool blue rim light from upper left, sharp specular reflection on the polished half, black background, premium macro product photography, no text, no logo, no watermark |
 | `public/img/calc/resin_molds/from_design.webp` | Projekt 3D obok wydrukowanego z niego wzorca | A faceted crystal-shaped pendant rendered as a blue wireframe CAD model glowing on a dark screen in the background, softly out of focus, and in sharp focus in the foreground the same shape as a physical 3D-printed master pattern in dark grey resin standing on a matte black bench, cool blue rim light from upper left, black background, shallow depth of field, premium macro product photography, no text, no logo, no watermark |
-| `public/img/calc/resin_inclusions/text_plate.webp` | Srebrna blaszka z grawerem, zatopiona w bryle | A small rectangular plate of polished sterling silver, cool white metal with a bright mirror surface, engraved with fine evenly spaced flowing lines, suspended inside a small block of perfectly clear cured epoxy resin, the block filling most of the frame, standing upright on a matte black surface, light refracting through the clear edges, cool blue rim light from upper left, black background, premium macro product photography, no hands, no gloves, no mold, no frame, no tools, the metal must read as cool silver and never as gold or brass, engraving must read as clean deliberate fine lines and not as lettering and not as random scratches, no text, no logo, no watermark |
+| `public/img/calc/resin_inclusions/text_plate.webp` | Srebrna blaszka ze znakiem i napisem, zatopiona w bryle | A small rectangular plate of polished sterling silver 925, rhodium-white, cold neutral tone, laser-engraved with a small heart symbol above one short line of capital numerals reading exactly "2026", the engraving crisp, deeply cut, centered, correctly spelled, in a clean geometric sans-serif, the plate large in the frame and facing the camera almost straight on so the engraving is fully readable, suspended inside a small block of perfectly clear cured epoxy resin, the block filling most of the frame, standing upright on a matte black surface, light refracting through the clear edges, cool blue rim light from upper left, black background, premium macro product photography, sharp focus on the engraved mark and numerals, no hands, no gloves, no mold, no frame, no tools, the metal must read as cool silver and never as gold or brass, no other text anywhere in the image, no logo, no watermark |
 | `public/img/calc/resin_inclusions/text_print.webp` | Napis drukowany w żywicy, zatopiony w bryle | A thin translucent white 3D-printed resin plaque with a raised relief pattern, suspended inside a block of perfectly clear cured epoxy resin, the plaque almost the same material as the block so it reads as soft and integrated rather than as a foreign object, resin block upright on a matte black surface, cool blue rim light from upper left, black background, premium macro product photography, relief must read as clean abstract raised lines and not as lettering, no text, no logo, no watermark |
 
 ## Kiedy zdjęcie odrzucamy
@@ -93,7 +93,15 @@ jest po naszej stronie.
 a sama plytka z reliefem okolo 25%. Kafelek zatopienia rysuje sie na jakies 180 px,
 wiec relief schodzil do 45 px i znikal. Przycinamy `scripts/kadruj-kafelek.mjs`.
 
-**`text_plate`: odrzucone, prompt poprawiony.** Pierwsze podejscie dalo cztery wady
+**`text_plate`: napis MA byc widoczny (decyzja wlasciciela 2026-09-12).** Pierwsza
+wersja promptu celowo prosila o same kreski, bo generator psuje pismo. Wlasciciel
+chce jednak znak i napis wprost, wiec prompt idzie na najwieksza szanse powodzenia:
+krotki ciag, CYFRY zamiast liter (renderuja sie duzo pewniej), krój nazwany wprost,
+blaszka frontem do obiektywu, `correctly spelled` i zakaz jakiegokolwiek innego
+tekstu w kadrze. Napis „2026" mozna podmienic na inny KROTKI ciag, ale kazda litera
+i kazdy polski znak diakrytyczny obniza szanse. Spodziewamy sie kilku podejsc.
+
+**`text_plate`: pierwsze podejscie odrzucone.** Dalo cztery wady
 naraz i wszystkie cztery sa teraz zapisane w promptcie wprost:
 
 - blaszka wyszla **zlota**, a opcja nazywa sie „Napis na srebrnej blaszce",
