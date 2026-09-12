@@ -1654,8 +1654,15 @@ app.post("/api/price/ring", express.json({ limit: "256kb" }), async (req, res) =
 
   try {
     const geometry = await ringGeometryFromParams(params);
+    // KURSY MOGA NIE PRZYJSC i to nie jest przypadek brzegowy: `currentMetalRates`
+    // oddaje `null` bez bazy, przy padnietym zapytaniu i przy pustej tabeli
+    // kursow. Ta trasa czytala `rates.pln_per_eur` bez sprawdzenia i kazdy
+    // z tych trzech przypadkow konczyl sie 500 "Wycena chwilowo niedostepna",
+    // chociaz rdzen wyceny liczy z kursow zapasowych bez zadnego problemu.
+    // Sasiednia trasa `/api/price` ma ten warunek od poczatku; tu go zabraklo.
+    // Znalezione w audycie kreatora 2026-09-12.
     const rates = await currentMetalRates();
-    const gemstones = await currentGemstones(rates.pln_per_eur);
+    const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
 
     const items = {};
     // Lista wyjsc pochodzi z rdzenia wyceny, wiec wlaczenie STEP-a w jednym
