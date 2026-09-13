@@ -467,6 +467,31 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   };
 }
 
+/**
+ * POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ, przy skladaniu zamowienia.
+ *
+ * Decyzja wlasciciela z 2026-09-13: gdy bramka odlewnicza ostrzegla, a klient
+ * mimo to zamowil, powtorka nieudanego odlewu idzie na jego koszt. Gdy bramka
+ * nie zglosila nic, powtorka jest po naszej stronie. Zeby ten podzial mial
+ * jakakolwiek moc, musimy umiec udowodnic, ktore ostrzezenia klient widzial
+ * i przyjal, wiec zapis nie moze pochodzic z przegladarki.
+ *
+ * `item.odlewZPliku.ostrzezenia` przychodzi z `priceItem(...)`, czyli jest
+ * juz policzone NA GEOMETRII Z BAZY, tej samej, z ktorej powstala kwota
+ * wiazaca zamowienia. Gdy lista nie jest pusta, zamowienie wymaga
+ * `params.odlewPokwitowanie === true` z pozycji: bez tego nie wiadomo, czy
+ * klient w ogole widzial uwagi, czy tylko nacisnal przycisk.
+ *
+ * @param {object} item wynik `priceItem(...)` dla tej pozycji
+ * @param {object} rawParams parametry pozycji, takie, jakie przyslala przegladarka
+ * @returns {{ ok: boolean, ostrzezenia: Array<{id: string, tekst: string}> }}
+ */
+export function castingAcknowledgement(item, rawParams) {
+  const ostrzezenia = item?.odlewZPliku?.ostrzezenia || [];
+  if (!ostrzezenia.length) return { ok: true, ostrzezenia: [] };
+  return { ok: rawParams?.odlewPokwitowanie === true, ostrzezenia };
+}
+
 /** Obrot zaksiegowany w biezacym kwartale, w groszach */
 export async function quarterRevenueGrosze(pool) {
   if (!pool) return 0;

@@ -14,6 +14,13 @@ import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SIDE_CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, HALO_SHAPES, BOTANICAL_STYLES, BYPASS_STYLES, CATHEDRAL_OPENINGS, CATHEDRAL_ORNAMENTS, DEFAULTS, LIMITS, localStoneFitLimits } from "../../geometry/ring/params.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, appearanceFor } from "../../data/castingAlloys.js";
+
+// STOPY, KTORE OFERUJE KREATOR. Lista jest tu WPROST, a nie brana z calej
+// tabeli stopow: tabela opisuje wszystko, co odlewamy, i rosnie z powodow,
+// ktore nie maja nic wspolnego z kreatorem. Gdy 13 wrzesnia 2026 doszlo do niej
+// srebro 800 na potrzeby przyjmowania plikow klienta, kreator dostalby nowy
+// kafelek kruszcu bez niczyjej decyzji.
+const STOPY_KREATORA = ["ag925", "au9k", "au585", "au750"];
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
 import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
@@ -547,7 +554,7 @@ export default function RingConfigurator({ lang = "pl" }) {
           <span id="config-metal" className="block scroll-mt-32" />
           <Group label={t.alloy}>
             <Seg value={p.alloy} onChange={(id) => set({ alloy: id })}
-              options={Object.entries(CASTING_ALLOYS).map(([id, a]) => ({ id, label: a.label[lang] || a.label.pl }))} />
+              options={STOPY_KREATORA.map((id) => ({ id, label: CASTING_ALLOYS[id].label[lang] || CASTING_ALLOYS[id].label.pl }))} />
           </Group>
 
           {/* Srebro ma jeden kolor, wiec przelacznik z jednym przyciskiem

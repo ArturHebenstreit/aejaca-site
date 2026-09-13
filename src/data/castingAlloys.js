@@ -26,6 +26,16 @@
 // dziesiatych w zaleznosci od receptury. Biale zloto na palladzie jest
 // ciezsze od niklowego, wiec przy zmianie dostawcy warto to sprawdzic.
 export const CASTING_ALLOYS = {
+  // SREBRO 800 ma wlasny wspolczynnik od 13 wrzesnia 2026 (decyzja wlasciciela).
+  // Do tego dnia pozyczalo wartosc od proby 925 i bylo to opisane jako
+  // przyblizenie. 1,017 pochodzi z literatury odlewniczej, a nie z pomiaru
+  // naszego odlewu: stop ubozszy w srebro kurczy sie odrobine mocniej.
+  // Roznica wobec proby 925 to 0,017 mm na obraczce 17 mm, czyli osmiokrotnie
+  // mniej niz tolerancja 0,2 mm z regulaminu. Wlasny pomiar probki zamknalby
+  // sprawe i zastapilby te liczbe.
+  ag800: { shrink: 1.017,  density: 10.20, metal: "silver", purity: 0.800,
+           colors: ["white"],
+           label: { pl: "Srebro 800", en: "Silver 800", de: "Silber 800" } },
   ag925: { shrink: 1.016,  density: 10.36, metal: "silver", purity: 0.925,
            colors: ["white"],
            label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" } },

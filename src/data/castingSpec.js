@@ -171,14 +171,12 @@ export const WYMAGANIA_PLIKU = {
 // siedzi w danych wejsciowych, a nie w glowie osoby, ktora to wola.
 
 // Kruszce z `CASTING_METALS` wobec stopow z `castingAlloys.js`. Dwie listy
-// istnieja, bo wycena zna srebro 800, a tabela skurczu nie.
+// istnieja, bo wycena nazywa kruszce po swojemu (`silver`, `gold_14k`), a
+// tabela skurczu po probie (`ag925`, `au585`). Przemianowanie ktorejkolwiek
+// uniewaznilo by zapisane zamowienia, wiec zostaje mapa.
 export const KRUSZEC_NA_STOP = {
   silver: "ag925",
-  // Srebro 800 nie ma wlasnego wiersza w tabeli skurczu. Bierzemy wspolczynnik
-  // srebra 925: roznica miedzy tymi stopami to okolo jednej dziesiatej procenta,
-  // czyli 0,017 mm na obraczce 17 mm, przy tolerancji 0,2 mm, ktora obiecujemy.
-  // Wpisanie zmyslonej liczby do tabeli skurczu byloby gorsze niz ta zamiana.
-  silver_800: "ag925",
+  silver_800: "ag800",
   gold_9k: "au9k",
   gold_14k: "au585",
   gold_18k: "au750",

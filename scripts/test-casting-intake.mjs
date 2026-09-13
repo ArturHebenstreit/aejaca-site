@@ -81,9 +81,10 @@ sekcja("1. Skurcz: jedna tabela, zero podwojnej kompensacji");
 test("skurcz bierze sie z castingAlloys, nie z drugiej kopii", () => {
   assert.equal(skurczKruszcu("gold_14k"), CASTING_ALLOYS.au585.shrink);
   assert.equal(skurczKruszcu("silver"), CASTING_ALLOYS.ag925.shrink);
-  // Srebro 800 nie ma wiersza w tabeli skurczu i celowo bierze wspolczynnik
-  // srebra 925 zamiast zmyslonej liczby.
-  assert.equal(skurczKruszcu("silver_800"), CASTING_ALLOYS.ag925.shrink);
+  // Srebro 800 ma wlasny wiersz od 13 wrzesnia 2026 i NIE moze juz pokazywac
+  // wartosci proby 925: stop ubozszy w srebro kurczy sie mocniej.
+  assert.equal(skurczKruszcu("silver_800"), CASTING_ALLOYS.ag800.shrink);
+  assert.ok(CASTING_ALLOYS.ag800.shrink > CASTING_ALLOYS.ag925.shrink);
 });
 
 test("plik w wymiarach gotowych: mnozymy pelnym skurczem", () => {
