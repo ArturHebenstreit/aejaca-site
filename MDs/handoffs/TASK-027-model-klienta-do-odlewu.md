@@ -4,7 +4,7 @@ status: review
 author: Claude Code
 branch: claude/serwis-development-skills-3vuba9
 base_commit: f4826ad
-last_commit: 4456aa1
+last_commit: 90f081f
 updated: 2026-09-13
 ---
 
@@ -55,6 +55,12 @@ bez nowej strony uslugi i bez zmian w cenniku.
 | `scripts/test-casting-intake.mjs` | 33 sprawdziany, w lancuchu `npm run build` |
 | `src/components/calculators/CalcToCart.jsx` | `onOdpowiedz`: ustalenia bramki i kod bledu wychodza z zapytania o cene |
 | `src/components/calculators/MetalCastCalc.jsx`, `src/components/shop/ServiceConfigurator.jsx` | blok przeliczenia, ostrzezenia, odmowa w tonie rozowym |
+| `chat-api/orders.js` (`castingAcknowledgement`), `chat-api/server.js` | pokwitowanie ostrzezen: serwer zapisuje wlasna liste, odmawia bez pokwitowania |
+| `src/data/termsContent.js` | sekcja 13, dwa ustepy o odlewie z modelu klienta, w trzech jezykach |
+| `src/pages/OdlewZPliku.jsx`, `src/data/odlewZPliku.js`, `src/data/faq/odlewZPliku.js` | strona `/uslugi/odlew-z-pliku/`, tresc i siedem pytan |
+| `src/routes.js`, `src/main.jsx`, `src/entry-server.jsx`, `src/seo/seoData.js`, `src/data/faq/index.js`, `src/pages/Faq.jsx`, `src/components/Footer.jsx`, `src/i18n/*` | rejestracja strony, SEO, spis pytan, stopka |
+| `public/_redirects` | `/uslugi/` przestaje byc twardym 404 |
+| `public/llms.txt`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md` | synchronizacja konfiguracji po nowej stronie |
 
 ## Jak to dziala
 
@@ -97,10 +103,6 @@ przy 33 tysiacach.
 
 ## Czego NIE zrobiono
 
-- **Strona `/uslugi/odlew-z-pliku/`** w trzech jezykach z FAQ i danymi
-  strukturalnymi. Poza zakresem tego przejscia z decyzji wlasciciela: tresc
-  sprzedaje te usluge i ma powstac z jego akceptacja. Instrukcja krok po kroku
-  jest gotowa i lezy w opisie zadania.
 - **Skladniki ceny** (material, odlew dzielony przez liczbe wyrobow w kolbie,
   obrobka, cechowanie) oraz ostrzezenie o kursie starszym niz 7 dni. Cennik
   jest wrazliwy i wlasciciel odlozyl to swiadomie.
@@ -138,6 +140,20 @@ Pelne uzasadnienia: ADR-0048, rozdzial "Cztery rozstrzygniecia".
    pochodzi z pomiaru naszej probki. Pomiar zamknalby sprawe.
 4. **Nastepna w kolejce byla strona uslugi**, przed skladnikami ceny i przed
    przeliczeniem w mailu.
+
+## Tresc czekajaca na przeczytanie przez wlasciciela
+
+Strona `/uslugi/odlew-z-pliku/` jest zbudowana i przechodzi build, ale jej tekst
+sprzedaje najdrozsza usluge w serwisie i nie byl akceptowany. Cztery miejsca,
+ktore warto przeczytac najpierw:
+
+1. Odpowiedzialnosc za nieudany odlew (pytanie `co-gdy-odlew-nie-wyjdzie`).
+   Tresc zgadza sie z ustepem dopisanym do sekcji 13 regulaminu, wiec oba
+   moga isc razem, ale to jest zdanie o pieniadzach.
+2. Cechowanie: strona mowi "po ustaleniu", FAQ dla B2B mowi "domyslnie tak".
+3. Tolerancja 0,2 mm podana wprost klientowi detalicznemu.
+4. Tabela metali pokazuje gestosc podstawowa, nie osobna dla bialego zlota,
+   z dopiskiem, ze wycena liczy to osobno.
 
 ## Nadal do rozstrzygniecia
 
