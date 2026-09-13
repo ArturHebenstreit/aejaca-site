@@ -259,6 +259,15 @@
 /de/glossary/stopy-jubilerskie/               /de/glossary/#stopy-jubilerskie         301
 /de/glossary/stopy-jubilerskie                /de/glossary/#stopy-jubilerskie         301
 
+# KATALOG NADRZEDNY, KTOREGO NIE MA. Strona uslugi stoi pod
+# /uslugi/odlew-z-pliku/, a samo /uslugi/ nie jest zadna strona i bez tych
+# trzech linii daje twarde 404 kazdemu, kto obetnie adres w pasku. Jest to
+# ruch, ktory ludzie robia odruchowo, wiec odsylamy ich tam, gdzie ta usluga
+# naprawde mieszka, zamiast zostawiac na stronie bledu.
+/uslugi/                                      /studio/                                301
+/en/uslugi/                                   /en/studio/                             301
+/de/uslugi/                                   /de/studio/                             301
+
 # No SPA catch-all. Every route is prerendered to its own index.html, so
 # Cloudflare Pages resolves real pages as static assets and falls through to
 # dist/404.html (with a real HTTP 404) for everything else. A catch-all here
