@@ -531,6 +531,30 @@ export const SEO = {
     },
   },
 
+  // --- Strona uslugi: odlew z pliku klienta ---
+  // Tytul zaczyna sie od frazy, a nie od marki: nikt nie szuka "AEJaCA odlew".
+  // Opis wymienia to, po co klient tu przychodzi, czyli twarde liczby modelu.
+  odlewZPliku: {
+    pl: {
+      title: "Odlew z pliku 3D, wymagania modelu do odlewu | AEJaCA",
+      description: "Odlew srebra i złota z Twojego modelu 3D. Minimalne grubości ścianek, skurcz stopów, wymagania pliku i to, czego nie musisz przygotować przed wysłaniem.",
+      keywords: "odlew z pliku 3d, odlew ze srebra z modelu 3d, odlew złota z pliku stl, minimalna grubość ścianki odlew, skurcz odlewniczy srebra, model do odlewu wymagania, AEJaCA",
+      ogAlt: "Odlew biżuterii z pliku klienta, pracownia AEJaCA",
+    },
+    en: {
+      title: "Casting From Your 3D File, Model Requirements | AEJaCA",
+      description: "Silver and gold casting from your own 3D model. Minimum wall thicknesses, alloy shrinkage, file requirements and what you do not need to prepare yourself.",
+      keywords: "casting from 3d file, silver casting from stl, gold casting from 3d model, minimum wall thickness casting, casting shrinkage silver, jewelry casting requirements, AEJaCA",
+      ogAlt: "Jewelry casting from a customer file, AEJaCA workshop",
+    },
+    de: {
+      title: "Guss aus Ihrer 3D-Datei, Modellanforderungen | AEJaCA",
+      description: "Silber- und Goldguss aus Ihrem eigenen 3D-Modell. Mindestwandstärken, Schwund der Legierungen, Dateianforderungen und was Sie nicht vorbereiten müssen.",
+      keywords: "guss aus 3d datei, silberguss aus stl, goldguss aus 3d modell, mindestwandstärke guss, gussschwindung silber, schmuckguss anforderungen, AEJaCA",
+      ogAlt: "Schmuckguss aus einer Kundendatei, Werkstatt AEJaCA",
+    },
+  },
+
   b2b: {
     pl: {
       title: "Produkcja jubilerska B2B, CAD, wzorce 16K, odlew | AEJaCA",

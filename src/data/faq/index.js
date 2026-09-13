@@ -20,6 +20,7 @@ import marka from "./marka.js";
 import bizuteria from "./bizuteria.js";
 import studio from "./studio.js";
 import b2b from "./b2b.js";
+import odlewZPliku from "./odlewZPliku.js";
 import wysylka from "./wysylka.js";
 import miarka from "./miarka.js";
 import drukowalnosc from "./drukowalnosc.js";
@@ -42,7 +43,7 @@ export const FAQ_TEMATY = [
   { id: "b2b", label: { pl: "Współpraca B2B", en: "B2B", de: "B2B" } },
 ];
 
-const ZBIORY = [marka, bizuteria, studio, sklep, termin, wysylka, miarka, drukowalnosc, wycenaMetalu, skurcz, zywice, b2b];
+const ZBIORY = [marka, bizuteria, studio, odlewZPliku, sklep, termin, wysylka, miarka, drukowalnosc, wycenaMetalu, skurcz, zywice, b2b];
 
 /** Wszystkie pytania, poukladane wedlug kolejnosci tematow. */
 export const FAQ = FAQ_TEMATY.flatMap((t) => ZBIORY.flat().filter((f) => f.temat === t.id));

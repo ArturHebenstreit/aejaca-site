@@ -57,6 +57,7 @@ const ResinSettingsPage = strona(() => import("./pages/ResinSettingsPage.jsx"));
 const Reviews = strona(() => import("./pages/Reviews.jsx"));
 const B2B = strona(() => import("./pages/B2B.jsx"));
 const LocalPrint3D = strona(() => import("./pages/LocalPrint3D.jsx"));
+const OdlewZPliku = strona(() => import("./pages/OdlewZPliku.jsx"));
 const NotFound = strona(() => import("./pages/NotFound.jsx"));
 
 // ============================================================
@@ -103,7 +104,7 @@ const KOMPONENTY = {
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
   LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
-  Privacy, Reviews, B2B, LocalPrint3D, NotFound,
+  Privacy, Reviews, B2B, LocalPrint3D, OdlewZPliku, NotFound,
 };
 
 function galazJezyka(lang) {

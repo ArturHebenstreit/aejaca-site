@@ -96,6 +96,9 @@ export const TRASY = [
   { sciezka: "b2b/", komponent: "B2B" },
   { sciezka: "druk-3d-piaseczno/", komponent: "LocalPrint3D", wlasciwosci: { city: "piaseczno" } },
   { sciezka: "druk-3d-warszawa/", komponent: "LocalPrint3D", wlasciwosci: { city: "warszawa" } },
+  // Strona uslugi: wymagania modelu do odlewu, PRZED kreatorem. Do 13 wrzesnia
+  // 2026 klient poznawal je dopiero po wgraniu pliku (ADR-0048, punkt D).
+  { sciezka: "uslugi/odlew-z-pliku/", komponent: "OdlewZPliku" },
 ];
 
 /** Trasy bez parametrow, w postaci sciezek zaczynajacych sie ukosnikiem.
