@@ -240,6 +240,7 @@ Available in BOTH studio modes. In the quick quote it is the "Srebro / zloto (od
 5-6. Finishing level and alloy, both already asked elsewhere in the flow, feed the same allowance and shrinkage math as the four questions above.
 **Server-side file gate, on the uploaded geometry:** the model must be watertight (a closed solid) and a SINGLE solid; interpenetrating bodies leave an undefined interior, so the customer runs a boolean union or orders the repair from AEJaCA. Either failing blocks the order rather than being silently accepted. Wall thickness is measured by ray casting: under 0.45 mm the casting will not fill and the order is blocked; from 0.45 to 1.0 mm AEJaCA casts it but does not promise full reproduction. When the mesh is too dense to measure automatically, the thickness check is skipped and AEJaCA says so, checking it by hand before casting instead. For a ring/band or bangle, the hole actually measured in the file is compared with the size the customer declared, adjusted for the chosen allowance and shrinkage: a gap over 0.2 mm blocks the order rather than being silently corrected, because opening a hole eats into the shank and is not a fix made without asking first.
 **When a customer asks "why won't you accept my file":** never guess the cause. Ask which of the six answers above they gave and what the file actually is (a closed solid? one body? which alloy did they scale for?) before naming a reason. The concrete blockers are: the file is not watertight, it holds more than one solid, the thinnest wall is under 0.45 mm, or the measured hole disagrees with the declared size by more than 0.2 mm.
+**When a customer asks how to prepare a model for casting, what the file needs, or why their file does not pass:** point them at https://www.aejaca.com/uslugi/odlew-z-pliku/ ("Odlew z pliku"). That page carries the wall-thickness table, the alloy shrinkage/density table and the flask envelope in one place, so it answers the question with the same numbers the configurator uses, rather than a paraphrase from memory.
 
 **Shared quantity tiers (all studio):** 1 (Proto) · 2–10 (Micro, −5%) · 11–20 (Small, −10%) · 21–50 (Medium, −15%) · 51–100 (Large, custom) · 100+ (custom quote)
 **Output:** per-piece price PLN/EUR + order total + production time + full cost breakdown
@@ -776,6 +777,7 @@ Examples of questions requiring inline calculation:
 - B2B white-label process: https://www.aejaca.com/b2b/#white-label
 - B2B inquiry form: https://www.aejaca.com/b2b/#formularz
 - **Shrinkage Compensation Calculator** (castable pattern sizing for Au/Ag casting): https://www.aejaca.com/toolstudio/shrinkage/
+- **Casting From Your File** ("Odlew z pliku", model requirements before the casting configurator: wall thickness, alloy shrinkage/density, flask envelope, file formats, hole tolerance): https://www.aejaca.com/uslugi/odlew-z-pliku/
 - Blog (all articles): https://www.aejaca.com/blog/
 - **Zamow online / Order wizard (kup i zaplac od razu)**: https://www.aejaca.com/order/
 - Contact / order form: https://www.aejaca.com/contact/

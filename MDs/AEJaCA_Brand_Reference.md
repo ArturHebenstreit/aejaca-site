@@ -281,7 +281,8 @@ Wysyłka: 24-48h
 - pole modelu przyjmuje kliknięcie i przeciągnięcie każdego formatu mierzonego automatycznie: STL, OBJ, 3MF, STEP i STP;
 - nagłówek karty pokazuje bieżącą cenę konfiguracji, a cenę „od” jedynie jako mniejszy punkt odniesienia;
 - wzorzec fizyczny, pomysł klienta i metal powierzony zawsze wymagają potwierdzenia pracowni;
-- materiał powierzony: typowy ubytek 5-8% dla czystego, jednorodnego stopu oraz 10-15% dla materiału mieszanego lub niepewnego. Materiał platerowany lub wypełniany może zostać odrzucony.
+- materiał powierzony: typowy ubytek 5-8% dla czystego, jednorodnego stopu oraz 10-15% dla materiału mieszanego lub niepewnego. Materiał platerowany lub wypełniany może zostać odrzucony;
+- strona `/uslugi/odlew-z-pliku/` (sekcja 8, metadane stron) opisuje przed wgraniem, czego wariant 2 wymaga od modelu: tabela minimalnych grubości, tabela skurczu i gęstości stopów, gabaryt kolby, formaty pliku i próg rozbieżności otworu. Liczby na tej stronie i w bramce serwerowej (sekcja 6.4c) pochodzą z tych samych modułów (`castingSpec.js`, `castingAlloys.js`, `preciousMetalCasting.js`), więc się nie rozjeżdżają.
 
 ### Filar 4: Usługi dodatkowe
 | Usługa | PLN netto |
@@ -1037,6 +1038,14 @@ zamknięta? jedna bryła? dla jakiego stopu skalował), zanim nazwiemy powód.
 Konkretne blokady: plik nieszczelny, więcej niż jedna bryła, najcieńsza ścianka
 poniżej 0,45 mm, otwór rozbieżny z deklaracją o więcej niż 0,2 mm.
 
+**Strona `/uslugi/odlew-z-pliku/`, od 2026-09-13.** Do tej pory klient poznawał
+te sześć pytań i próg wagi dopiero w kreatorze, po wgraniu pliku. Strona
+przesuwa tę wiedzę PRZED modelowanie: tabela minimalnych grubości (ta sama
+`MIN_GRUBOSC_MM`), tabela skurczu i gęstości stopów (`CASTING_ALLOYS`), gabaryt
+kolby (`CASTING_ENVELOPE_LABEL`), formaty i jednostki pliku oraz próg
+rozbieżności otworu (`PROG_ROZBIEZNOSCI_OTWORU_MM`). Treść: `src/data/odlewZPliku.js`,
+FAQ: `src/data/faq/odlewZPliku.js`, komponent: `src/pages/OdlewZPliku.jsx`.
+
 ### 6.5 Kalkulator Kompensacji Skurczu (ShrinkageCalc)
 
 **Czynniki skurczu per stop:**
@@ -1505,6 +1514,11 @@ tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 - PL: "Produkcja jubilerska B2B, CAD, wzorce 16K, odlew | AEJaCA"
 - EN: "B2B Jewelry Production, CAD, 16K Patterns, Casting | AEJaCA"
 - DE: "B2B-Schmuckproduktion, CAD, 16K-Modelle, Guss | AEJaCA"
+
+**Odlew z pliku (/uslugi/odlew-z-pliku/), od 2026-09-13**
+- PL: "Odlew z pliku 3D, wymagania modelu do odlewu | AEJaCA"
+- EN: "Casting From Your 3D File, Model Requirements | AEJaCA"
+- DE: "Guss aus Ihrer 3D-Datei, Modellanforderungen | AEJaCA"
 
 **O nas (/about/)**
 - PL: "O AEJaCA, Rzemiosło i technologia od 2023 roku"
