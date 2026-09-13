@@ -50,6 +50,15 @@ const STAN_WYCENY_PL = {
 /** Ile pozycji jednej sekcji wypisujemy, zanim przejdziemy na sam licznik. */
 const LIMIT_SEKCJI = 15;
 
+/** Wiek w godzinach, slownie. Dla zapytan z ostatniej doby dzien to za grube sito. */
+function odIleGodzin(godzin) {
+  if (!Number.isFinite(godzin)) return "przed chwila";
+  if (godzin < 1) return "przed chwila";
+  if (godzin === 1) return "godzine temu";
+  if (godzin < 24) return `${godzin} godzin temu`;
+  return godzin < 48 ? "wczoraj" : "dawniej";
+}
+
 /** Data po ludzku, w ksztalcie uzywanym w calym serwisie. */
 function dzien(wartosc) {
   if (!wartosc) return "-";
@@ -128,7 +137,7 @@ export function tresc(dane, teraz = new Date()) {
     `W kolejce: ${kolejka.length}${poTerminie.length ? `, z tego PO TERMINIE: ${poTerminie.length}` : ""}`,
     `Czeka na wplate: ${bezWplaty.length}${rezerwacjaKonczySie.length ? `, z tego rezerwacja konczy sie dzis albo jutro: ${rezerwacjaKonczySie.length}` : ""}`,
     `Platnosci do recznej weryfikacji: ${doWeryfikacji.length}`,
-    `Zapytania bez odpowiedzi: ${zapytania.length}`,
+    `Zapytania bez odpowiedzi: ${zapytania.length}` + (zapytania.some((z) => z.powiadomienieNieDoszlo) ? `, z tego BEZ POWIADOMIENIA: ${zapytania.filter((z) => z.powiadomienieNieDoszlo).length}` : ""),
     `Wyceny do domkniecia: ${wyceny.length}`,
   ];
 
@@ -177,6 +186,25 @@ export function tresc(dane, teraz = new Date()) {
       linie.push(`    ${klient(z)}, ${kwota(z)}${z.pozycje ? `, pozycji: ${z.pozycje}` : ""}`);
     }
     if (kolejka.length > LIMIT_SEKCJI) linie.push(`  ... i ${kolejka.length - LIMIT_SEKCJI} wiecej`);
+  }
+
+  // --- Zapytania z ostatniej doby ----------------------------------------
+  //
+  // WLASNA SEKCJA, PRZED LISTA OGOLNA, i bez obcinania. Lista ponizej idzie od
+  // najstarszych i konczy sie po pietnastu pozycjach: przy 27 zapytaniach bez
+  // odpowiedzi wszystko, co przyszlo wczoraj, wypadalo poza raport. Dokladnie
+  // to sie stalo 10 wrzesnia 2026 z zapytaniem o odlew 50 zawieszek, ktore
+  // przelezalo trzy dni niezauwazone, bo i mail nie doszedl, i raport go nie
+  // pokazal. Nowe zapytanie ma byc widoczne zawsze, bo to ono wymaga
+  // odpowiedzi dzisiaj.
+  const swieze = zapytania.filter((z) => z.wiekGodzin != null && z.wiekGodzin < 48);
+  if (swieze.length) {
+    linie.push("", "== NOWE ZAPYTANIA, OSTATNIE 48 GODZIN ==");
+    for (const z of swieze) {
+      const alarm = z.powiadomienieNieDoszlo ? "  [POWIADOMIENIE NIE DOSZLO]" : "";
+      linie.push(`- ${z.ref || `zgloszenie #${z.id}`}, ${ZRODLO_PL[z.zrodlo] || z.zrodlo || "nieznane zrodlo"}, ${odIleGodzin(z.wiekGodzin)}${alarm}`);
+      linie.push(`    ${klient(z)}${z.opis ? `\n    ${String(z.opis).replace(/\s+/g, " ").slice(0, 160)}` : ""}`);
+    }
   }
 
   // --- Zapytania bez odpowiedzi ------------------------------------------
@@ -244,7 +272,8 @@ export async function zbierz(pool, teraz = new Date()) {
   // Ta sama definicja co na liscie zgloszen w panelu, zeby dwie liczby
   // w dwoch miejscach nie mowily czegos innego o tym samym.
   const { rows: zapytaniaRows } = await pool.query(
-    `SELECT id, quote_ref, source, email, description, params, created_at
+    `SELECT id, quote_ref, source, email, description, params, created_at,
+            notified_at, notify_error
        FROM leads
       WHERE contacted_at IS NULL
       ORDER BY created_at ASC
@@ -283,6 +312,13 @@ export async function zbierz(pool, teraz = new Date()) {
     zapytania: zapytaniaRows.map((r) => ({
       id: r.id, ref: r.quote_ref, zrodlo: r.source, email: r.email,
       opis: r.description || r.params, wiekDni: wiekWDniach(r.created_at, teraz),
+      // GODZINY, NIE DNI. Zapytanie z wczorajszego wieczora ma wiek zero dni
+      // i po samym wieku nie da sie go odroznic od tego sprzed godziny.
+      wiekGodzin: Math.max(0, Math.floor((teraz - new Date(r.created_at)) / 3600000)),
+      // `notified_at` puste znaczy, ze powiadomienie do pracowni nie doszlo.
+      // Kolumna jest nowa, wiec starsze wiersze maja tu null i nie udajemy,
+      // ze wiemy o nich cokolwiek: liczy sie tylko jawny blad.
+      powiadomienieNieDoszlo: Boolean(r.notify_error),
     })),
     wyceny: wycenyRows.map((r) => ({
       ref: r.quote_ref, stan: r.status, klient: r.customer_name, email: r.customer_email,
