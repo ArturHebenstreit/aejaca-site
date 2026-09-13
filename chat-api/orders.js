@@ -10,6 +10,7 @@ import crypto from "node:crypto";
 
 import { parseScale, volumeFactor } from "./pricing/dimScale.js";
 import { parseMeshAsync, MeshError, SUPPORTED_EXTENSIONS, extensionOf } from "./pricing/mesh.js";
+import { analyzeTopology, analyzeThickness, analyzeSolids, analyzeAxialHole } from "./pricing/printability.js";
 import * as print3d from "./pricing/print3d.js";
 import * as jewelry from "./pricing/jewelry.js";
 import * as laserCo2 from "./pricing/laserCo2.js";
@@ -18,6 +19,7 @@ import * as epoxy from "./pricing/epoxy.js";
 import * as cadDesign from "./pricing/cadDesign.js";
 import * as ringConfigurator from "./pricing/ringConfigurator.js";
 import * as preciousMetalCasting from "./pricing/preciousMetalCasting.js";
+import { sprawdzModelDoOdlewu } from "./pricing/castingIntake.js";
 import { geometryFromDeclared } from "./pricing/bindingBasis.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
@@ -166,8 +168,68 @@ export async function geometryFromFile(buffer, fileName = "") {
     surfaceAreaCm2: parsed.surfaceAreaCm2,
     triangleCount: parsed.triangleCount,
     sha256: crypto.createHash("sha256").update(buffer).digest("hex"),
+    ...jakoscSiatki(parsed.triangles),
     // Trojkatow nie zwracamy, bo to megabajty danych, ktorych zamowienie nie potrzebuje.
   };
+}
+
+// Powyzej tylu trojkatow pomiary promieniami sa pomijane. Wgranie pliku ma
+// trwac sekunde, a nie piec: przy takiej gestosci siatki wycena i tak idzie
+// przez rozmowe. Pominiecie jest JAWNE (`thicknessSkipped`), zeby bramka
+// odlewnicza powiedziala "nie sprawdzilismy", a nie "jest w porzadku".
+const LIMIT_TROJKATOW_POMIARU = 250000;
+
+/**
+ * Jakosc siatki, liczona raz przy wgrywaniu.
+ *
+ * Dlaczego TUTAJ, a nie przy wycenie: bajty pliku sa w calosci tylko w tym
+ * jednym momencie. Zaraz potem ida webhookiem na Dysk, a w bazie zostaje sam
+ * wiersz z geometria. Wycena liczy sie pozniej z tego wiersza, wiec cokolwiek
+ * ma byc zmierzone z trojkatow, musi byc zmierzone teraz.
+ *
+ * Odlew z pliku klienta potrzebuje tych czterech liczb (szczelnosc, liczba
+ * bryl, najciensza scianka, srednica otworu), a druk korzysta z nich przy
+ * okazji. Bramka drukowalnosci w przegladarce liczy to samo tym samym kodem,
+ * wiec obie strony moga sie tylko zgadzac.
+ */
+function jakoscSiatki(triangles) {
+  if (!Array.isArray(triangles) || !triangles.length) return {};
+  const topo = analyzeTopology(triangles);
+  const bryly = analyzeSolids(triangles);
+  const out = {
+    watertight: topo.isWatertight,
+    boundaryEdges: topo.boundaryEdges,
+    nonManifoldEdges: topo.nonManifoldEdges,
+    reversedFaces: topo.reversedFaces,
+    degenerateFaces: topo.degenerate,
+    solids: bryly.solids,
+    largestSolidShare: Number(bryly.largestShare.toFixed(4)),
+  };
+
+  if (triangles.length > LIMIT_TROJKATOW_POMIARU) {
+    out.thicknessSkipped = true;
+    return out;
+  }
+
+  const grubosc = analyzeThickness(triangles, { samples: 1000 });
+  if (grubosc) {
+    // `p1` zamiast `min`: pojedynczy szpic na styku dwoch scianek daje odczyt
+    // bliski zeru, ktory nie mowi nic o modelu. Progi odlewnicze sa ustawione
+    // wobec percentyla i tak samo liczy je narzedzie drukowalnosci.
+    out.thinnestMm = Number(grubosc.p1.toFixed(3));
+    out.thicknessMinMm = Number(grubosc.min.toFixed(3));
+    out.thicknessMedianMm = Number(grubosc.median.toFixed(3));
+  }
+
+  const otwor = analyzeAxialHole(triangles);
+  if (otwor) {
+    out.hole = {
+      axis: otwor.axis,
+      diameterMm: Number(otwor.diameterMm.toFixed(3)),
+      ovality: Number(otwor.ovality.toFixed(3)),
+    };
+  }
+  return out;
 }
 
 /**
@@ -211,12 +273,26 @@ function scaleGeometry(geometry, scale) {
   // wiec blad kilku procent nie rusza kwoty tak jak objetosc.
   const f = volumeFactor(sc);
   const powierzchnia = (Number(sc.x) * Number(sc.y) + Number(sc.y) * Number(sc.z) + Number(sc.x) * Number(sc.z)) / 3;
-  return {
+  // GRUBOSC I OTWOR TEZ SIE SKALUJA, i to jest wazniejsze, niz wyglada: model
+  // przepuszczony przez bramke odlewnicza w skali 1,0 mogl byc zmniejszony
+  // suwakiem do 0,6 i wtedy scianka 0,8 mm robi sie 0,48 mm. Bez tej poprawki
+  // bramka patrzylaby na liczby sprzed skalowania i przepuscila odlew, ktory
+  // sie nie wypelni. Przy osiach rozjechanych bierzemy NAJMNIEJSZA skale, bo
+  // scianka lezy w nieznanej nam osi i tylko taki wybor nie klamie w dol.
+  const najmniejsza = Math.min(Number(sc.x), Number(sc.y), Number(sc.z));
+  const out = {
     ...geometry,
     volumeCm3: geometry.volumeCm3 * f,
     bbox: { x: geometry.bbox.x * sc.x, y: geometry.bbox.y * sc.y, z: geometry.bbox.z * sc.z },
     surfaceAreaCm2: geometry.surfaceAreaCm2 * powierzchnia,
   };
+  for (const klucz of ["thinnestMm", "thicknessMinMm", "thicknessMedianMm"]) {
+    if (Number.isFinite(geometry[klucz])) out[klucz] = geometry[klucz] * najmniejsza;
+  }
+  if (geometry.hole) {
+    out.hole = { ...geometry.hole, diameterMm: geometry.hole.diameterMm * najmniejsza };
+  }
+  return out;
 }
 
 /**
@@ -279,6 +355,22 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     }
     callParams.stlData = scaleGeometry(geometry, scale);
   }
+  // BRAMKA ODLEWNICZA. Stoi PRZED wycena, bo model, ktorego nie da sie odlac,
+  // nie ma ceny, tylko usterke do naprawienia. Czyta te sama geometrie, ktora
+  // wchodzi do kwoty, czyli juz po przeskalowaniu suwakiem.
+  let odlew = null;
+  if (calculator === "jewelry_casting") {
+    odlew = sprawdzModelDoOdlewu(callParams, callParams.stlData || null, safeLang);
+    if (odlew.blokady.length) {
+      const blad = new PricingError(
+        "casting_model_blocked",
+        odlew.blokady.map((b) => b.tekst[safeLang] || b.tekst.pl).join(" "),
+      );
+      blad.powody = odlew.blokady.map((b) => b.id);
+      throw blad;
+    }
+  }
+
   // Tak samo z bryla kreatora: masa decyduje o cenie, wiec nie moze pochodzic
   // z przegladarki. Kasujemy to, co przyszlo, i wstawiamy wlasny pomiar.
   delete callParams.ringGeometry;
@@ -363,6 +455,15 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     // Projekt 3D niesie limit poprawek w cenie. Zamowienie musi go zapamietac,
     // bo od niego zalezy, czy kolejna runda jest platna.
     revisionsIncluded: result.revisionsIncluded ?? null,
+    // Ostrzezenia i przeliczenie wymiaru jada z pozycja dalej, do podsumowania
+    // i do maila. Klient ma je zobaczyc PRZED zaplata, a pracownia po niej.
+    odlewZPliku: odlew && odlew.dotyczy
+      ? {
+        ostrzezenia: odlew.ostrzezenia.map((o) => ({ id: o.id, tekst: o.tekst[safeLang] || o.tekst.pl })),
+        przeliczenie: odlew.przeliczenie,
+        naddatekZewnetrznyMm: odlew.naddatekZewnetrznyMm,
+      }
+      : null,
   };
 }
 

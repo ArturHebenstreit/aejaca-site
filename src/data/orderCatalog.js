@@ -33,6 +33,8 @@ import {
   castingFinishesFor, CASTING_PLATINGS, castingPlatingAvailable,
   CASTING_ENGRAVINGS, castingEngravingAvailable,
 } from "../pricing/preciousMetalCasting.js";
+import { STANY_MODELU, KATEGORIE_WYROBU, kategoriaZOtworem } from "./castingSpec.js";
+import { CASTING_ALLOYS } from "./castingAlloys.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -158,6 +160,16 @@ const WARUNKI_WZORCA_POWIERZONEGO = {
       "This path always goes to an individual quote: an automatic amount is computed from the volume of a file, and we do not measure a physical pattern. Full terms in section 8b of the terms of service.",
       "Dieser Weg führt stets zu einer individuellen Kalkulation: Ein automatischer Betrag entsteht aus dem Volumen einer Datei, ein physisches Modell messen wir nicht. Vollständige Bedingungen in Abschnitt 8b der AGB."),
   ],
+};
+
+// PODPOWIEDZ POD SREDNICA OTWORU. Klient podaje wymiar GOTOWY, po szlifie,
+// nie wymiar z modelu, wiec zdanie pod polem musi to powtorzyc kazdemu, kto
+// nie doczytal etykiety. Odsylamy do miarki pierscionkowej z narzedzi
+// serwisu, bo to jest droga do sprawdzenia rozmiaru bez suwmiarki.
+const PODPOWIEDZ_OTWORU_MM = {
+  pl: "To wymiar otworu w wyrobie GOTOWYM, po szlifie, nie w pliku modelu. Nie znasz średnicy? Sprawdź ją miarką do pierścionków z narzędzi serwisu.",
+  en: "This is the hole diameter of the FINISHED piece, after grinding, not of the model file. Not sure of the size? Check it with the ring sizer in the site's tools.",
+  de: "Das ist der Lochdurchmesser des FERTIGEN Stücks nach dem Schliff, nicht der Modelldatei. Größe unbekannt? Prüfen Sie sie mit dem Ringmaßband in den Werkzeugen der Seite.",
 };
 
 // PROG TO RABAT, A NIE LICZBA SZTUK (decyzja wlasciciela 2026-09-10).
@@ -408,6 +420,93 @@ export const SERVICES = [
       // czyli najdrozsza decyzja calego zlecenia zgadywana za klienta.
       { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"),
         options: CASTING_METALS, bezWyboru: true },
+      // SZESC PYTAN NIZEJ MAJA SENS TYLKO PRZY WLASNYM PLIKU. Przy wzorcu
+      // powierzonym odlewamy z rzeczy, ktora juz mamy w reku, a przy pomysle
+      // klienta pliku jeszcze nie ma. Pytanie o stan pliku albo o srednice
+      // otworu w pliku, ktorego nie ma, byloby pytaniem bez odpowiedzi.
+      //
+      // CO ODLEWAMY ROZSTRZYGA, CZY OTWOR MA SENS. Zawieszka ma otwor na
+      // rapcie, ktorego nikt nie szlifuje do wymiaru, wiec pytanie o srednice
+      // przy zawieszce byloby pytaniem o nic (patrz `kategoriaZOtworem` w
+      // `castingSpec.js`). Bez wyboru wstepnego: kategoria wyrobu rozstrzyga,
+      // ktore z dalszych pytan sie w ogole pojawia, wiec podstawiona z gory
+      // odpowiedz ukrylaby albo pokazala pytania bez wiedzy klienta.
+      { key: "wyrobId", label: L("Co odlewamy", "What we are casting", "Was wir gießen"),
+        options: KATEGORIE_WYROBU, bezWyboru: true,
+        ukryjGdy: (v) => v.variantId !== "model_3d" },
+      // STAN PLIKU ROZSTRZYGA, CZY SKALUJEMY RAZ CZY DWA RAZY. Najdrozsza
+      // pomylka calej uslugi to PODWOJNA KOMPENSACJA: klient sam doliczyl
+      // skurcz, my doliczamy go drugi raz, wyrob wychodzi o dwa do czterech
+      // rozmiarow za duzy. Bez wyboru wstepnego (`bezWyboru`), bo podstawiona
+      // odpowiedz na to pytanie jest dokladnie tym samym, co jej brak (patrz
+      // `STANY_MODELU` w `castingSpec.js`).
+      { key: "modelStanId", label: L("Wymiary w pliku", "Dimensions in the file", "Maße in der Datei"),
+        options: STANY_MODELU, bezWyboru: true, widok: "opisowe",
+        uwaga: L(
+          "Model 1:1 jest tym, czego potrzebujemy: skurcz i naddatek dodajemy sami. Model przeskalowany o skurcz dwa razy wychodzi jako obrączka większa o dwa do czterech rozmiarów.",
+          "A 1:1 model is what we need: we add the shrinkage and the machining allowance ourselves. A model already scaled for shrinkage that gets scaled again comes out a ring two to four sizes too big.",
+          "Ein Modell 1:1 ist das, was wir brauchen: Schwund und Aufmaß ergänzen wir selbst. Ein bereits auf Schwund skaliertes Modell, das erneut skaliert wird, ergibt einen Ring, der zwei bis vier Größen zu groß ist."
+        ),
+        ukryjGdy: (v) => v.variantId !== "model_3d" },
+      // DLA JAKIEGO STOPU KLIENT SKALOWAL, NIE JAKI MNOZNIK WPISAL. Mnoznik
+      // bierzemy z wlasnej tabeli (`CASTING_ALLOYS`), wiec literowka w polu
+      // tekstowym nie ma jak wejsc do wyrobu (patrz `przeliczWymiar` w
+      // `castingSpec.js`). Widoczne tylko przy modelu juz skompensowanym:
+      // pytanie o stop odniesienia bez tego nie ma czego dotyczyc.
+      { key: "modelStopId", label: L(
+          "Dla jakiego stopu model jest powiększony", "Which alloy it was scaled for", "Für welche Legierung skaliert"
+        ),
+        optionsFrom: () => Object.entries(CASTING_ALLOYS).map(([id, a]) => ({ id, label: a.label })),
+        bezWyboru: true,
+        ukryjGdy: (v) => v.modelStanId !== "compensated" },
+      // SREDNICA OTWORU JEST LICZBA, NIE WARIANTEM Z LISTY. Trzydziesc
+      // rozmiarow do wyklikania to zla kontrolka pod wpisanie 17,25 mm.
+      // Widoczne tylko przy wyrobie, ktory ma otwor liczony i szlifowany
+      // (`kategoriaZOtworem`).
+      { key: "otworMm", typ: "liczba",
+        label: L("Średnica otworu w gotowym wyrobie", "Finished inner diameter", "Fertiger Innendurchmesser"),
+        jednostka: "mm", min: 12, max: 30, krok: 0.05,
+        podpowiedz: (v, lang) => PODPOWIEDZ_OTWORU_MM[lang] || PODPOWIEDZ_OTWORU_MM.en,
+        ukryjGdy: (v) => !kategoriaZOtworem(v.wyrobId) },
+      // OTWOR W PLIKU BYWA JUZ POMNIEJSZONY PRZEZ KLIENTA. Bez tego pytania
+      // naddatek na szlif odjelibysmy od otworu, ktory klient juz pomniejszyl
+      // sam, i otwor po odlewie wyszedlby za maly o kolejny naddatek (patrz
+      // `przeliczWymiar` w `castingSpec.js`).
+      { key: "otworWPlikuId", label: L("Otwór w pliku", "Hole in the file", "Loch in der Datei"),
+        options: [
+          { id: "asModelled", label: L("Otwór w wymiarze gotowym", "Hole at the finished size", "Loch im Fertigmaß"),
+            sub: L(
+              "Otwór w pliku ma być średnicą docelową. Naddatek na szlif odejmujemy sami.",
+              "The hole in the file is the target diameter. We subtract the grinding allowance ourselves.",
+              "Das Loch in der Datei entspricht dem Zielmaß. Das Schleifaufmaß ziehen wir selbst ab."
+            ) },
+          { id: "withAllowance", label: L("Otwór już pomniejszony o naddatek", "Hole already reduced by the allowance", "Loch bereits um das Aufmaß verkleinert"),
+            sub: L(
+              "Sam zmniejszyłeś otwór o naddatek na szlif. Doliczamy tylko skurcz stopu, bez odejmowania naddatku drugi raz.",
+              "You already reduced the hole by the grinding allowance. We only add the alloy shrinkage, without subtracting the allowance again.",
+              "Sie haben das Loch bereits um das Schleifaufmaß verkleinert. Wir rechnen nur den Legierungsschwund hinzu, ohne das Aufmaß erneut abzuziehen."
+            ) },
+        ],
+        ukryjGdy: (v) => !kategoriaZOtworem(v.wyrobId) },
+      // POWIERZCHNIA ZDOBIONA NIE DOSTAJE NADDATKU. Szlif, ktory rowna
+      // powierzchnie gladka, na powierzchni z tekstura, mlotkowaniem, grawerem
+      // albo reliefem zdarlby wzor, dla ktorego zlozono zamowienie (patrz
+      // `naddatekZewnetrzny` w `castingSpec.js`).
+      { key: "powierzchniaId", label: L("Powierzchnia", "Surface", "Oberfläche"),
+        options: [
+          { id: "gladka", label: L("Gładka, do polerowania", "Smooth, for polishing", "Glatt, zum Polieren") },
+          { id: "zdobiona", label: L(
+              "Zdobiona: tekstura, młotkowanie, grawer lub relief",
+              "Decorated: texture, hammering, engraving or relief",
+              "Verziert: Textur, Hammerschlag, Gravur oder Relief"
+            ) },
+        ],
+        uwaga: L(
+          "Na powierzchni zdobionej nie zostawiamy naddatku: szlif zabrałby wzór, dla którego złożono zamówienie.",
+          "We leave no allowance on a decorated surface: grinding would remove the pattern the order was placed for.",
+          "Auf einer verzierten Oberfläche lassen wir kein Aufmaß: Schleifen würde das Muster entfernen, für das die Bestellung aufgegeben wurde."
+        ),
+        ukryjGdy: (v) => v.variantId !== "model_3d" },
       // Lista poziomow zalezy od zrodla kruszcu: przy metalu AEJaCA nie wydajemy
       // odlewu z kanalami, bo ten metal wraca do przetopu (patrz komentarz przy
       // `castingFinishesFor`).
@@ -435,8 +534,15 @@ export const SERVICES = [
         ) },
       { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
-    // Bez `metalId`: to jedyne pole tej uslugi, ktore klient ma wskazac sam.
-    defaults: { variantId: "model_3d", materialSourceId: "aejaca", finishId: "clean", platingId: "none", engravingId: "none", qtyId: "1" },
+    // Bez `metalId`, `wyrobId`, `modelStanId`, `modelStopId` i `otworMm`: to
+    // pola, ktore klient ma wskazac albo podac sam, wiec podstawiona z gory
+    // wartosc znaczylaby ciche zgadywanie za niego (patrz komentarze przy
+    // tych polach powyzej).
+    defaults: {
+      variantId: "model_3d", materialSourceId: "aejaca", finishId: "clean",
+      otworWPlikuId: "asModelled", powierzchniaId: "gladka",
+      platingId: "none", engravingId: "none", qtyId: "1",
+    },
   },
   {
     id: "jewelry_plain",

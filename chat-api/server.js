@@ -3139,6 +3139,17 @@ app.post("/api/uploads", (req, res, next) => {
         volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
         bbox: geometry.bbox,
         triangleCount: geometry.triangleCount,
+        // JAKOSC SIATKI IDZIE DO PRZEGLADARKI, zeby klient zobaczyl usterke
+        // zaraz po wgraniu, a nie dopiero przy probie wyceny. Wiazacy jest i
+        // tak pomiar z bazy, ten sam, ktory tu odsylamy.
+        watertight: geometry.watertight,
+        boundaryEdges: geometry.boundaryEdges,
+        nonManifoldEdges: geometry.nonManifoldEdges,
+        reversedFaces: geometry.reversedFaces,
+        solids: geometry.solids,
+        thinnestMm: geometry.thinnestMm,
+        thicknessSkipped: geometry.thicknessSkipped,
+        hole: geometry.hole,
       },
     });
   } catch (e) {

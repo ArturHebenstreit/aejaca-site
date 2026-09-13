@@ -210,13 +210,13 @@ Nowa strona `/uslugi/odlew-z-pliku/` plus sekcja w istniejącej stronie usług.
 
 Struktura, w kolejności:
 
-1. **„Model do odlewu to nie to samo, co model do druku"** — akapit otwierający, bo to jest rzecz, której klient nie wie
-2. **„Podajesz wymiar gotowy, resztą zajmujemy się my"** — zasada nadrzędna, wyróżniona
-3. **Tabela minimalnych grubości** — z kolumną „minimum" i „bezpiecznie"
-4. **Tabela metali** ze skurczem i gęstością — przejrzystość buduje zaufanie w tej branży
+1. **„Model do odlewu to nie to samo, co model do druku"**: akapit otwierający, bo to jest rzecz, której klient nie wie
+2. **„Podajesz wymiar gotowy, resztą zajmujemy się my"**: zasada nadrzędna, wyróżniona
+3. **Tabela minimalnych grubości**: z kolumną „minimum" i „bezpiecznie"
+4. **Tabela metali** ze skurczem i gęstością, przejrzystość buduje zaufanie w tej branży
 5. **Czego nie musisz robić**: nie skalujesz, nie dodajesz wlewu, nie dodajesz naddatku
-6. **Wymagania pliku** — formaty, wodoszczelność, jednostki
-7. **Co dostajesz** — odlew, obróbka, poler, opcjonalnie cechowanie
+6. **Wymagania pliku**: formaty, wodoszczelność, jednostki
+7. **Co dostajesz**: odlew, obróbka, poler, opcjonalnie cechowanie
 8. **FAQ** z JSON-LD `FAQPage`, zgodnie z istniejącym wzorcem
 
 Trzy języki: PL, EN, DE, wzorem pozostałych stron. Wersja polska wiążąca.

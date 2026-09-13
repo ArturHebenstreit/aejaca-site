@@ -63,6 +63,15 @@ const EXTRA = [
   // Objetosc rosnie iloczynem osi, wiec dwie kopie tego wzoru rozjechalyby sie
   // przy pierwszej poprawce, a objawem bylaby cena wygladajaca poprawnie.
   { from: join(ROOT, "src", "utils", "dimScale.js"), name: "dimScale.js", source: "src/utils/dimScale.js" },
+  // PRZYJECIE MODELU DO ODLEWU: naddatki, minimalne grubosci i stan pliku.
+  // Serwer musi odrzucic dokladnie to, co ekran nazywa blokada, inaczej klient
+  // zobaczy komunikat i mimo to zlozy zamowienie, albo odwrotnie.
+  { from: join(ROOT, "src", "data", "castingSpec.js"), name: "castingSpec.js", source: "src/data/castingSpec.js" },
+  // ANALIZA SIATKI. Szczelnosc, liczba bryl, grubosc i srednica otworu licza
+  // sie z pliku, a plik jest w calosci tylko przy wgrywaniu: bajty ida na Dysk,
+  // w bazie zostaje sama geometria. Pomiar musi wiec biec NA SERWERZE i tym
+  // samym kodem, ktorym liczy go narzedzie drukowalnosci w przegladarce.
+  { from: join(ROOT, "src", "analysis", "printability.js"), name: "printability.js", source: "src/analysis/printability.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */

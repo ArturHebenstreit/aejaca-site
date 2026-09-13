@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-09-03 | Wersja: 6.6*
+*Wygenerowano: 2026-09-13 | Wersja: 6.7*
 
 ---
 
@@ -83,7 +83,7 @@ Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
 
 ### Kruszce, ktore wykonujemy
 
-Srebro 925 i 800, zloto 9k, 14k, 18k i 24k.
+Srebro 925 i 800, zloto 9k, 14k, 18k i 24k. Zlota czystego nie ODLEWAMY, choc wykonujemy z niego prace innymi technikami.
 
 **Platyny nie wykonujemy i nie naprawiamy**, bo warsztat nie ma palnika o odpowiedniej temperaturze, lutu platynowego ani osobnego oprzyrzadowania odlewniczego. Walcarka VEVOR tez sie do niej nie nadaje (sekcja 4).
 
@@ -271,8 +271,8 @@ Wysyłka: 24-48h
 - wariant 1: odlew z dostarczonego wzorca z wosku lub żywicy odlewniczej;
 - wariant 2: wydruk i odlew z przesłanego STL, OBJ, 3MF albo STEP;
 - wariant 3: projekt CAD, wydruk wzorca i odlew od pomysłu klienta;
-- kruszce: Ag 800/925 i Au 9k/14k/18k/24k, własne AEJaCA albo powierzone;
-- kolba odlewnicza: 80 mm średnicy i 90 mm głębokości (doprecyzowane 2026-09-03, wcześniej w kodzie stało 80 mm i limit wysokości wychodził o 10 mm za mały). To jedyna liczba wpisana z ręki; limit modelu liczy się z niej w `src/pricing/preciousMetalCasting.js`;
+- kruszce: Ag 800/925 i Au 9k/14k/18k, własne AEJaCA albo powierzone. Złota czystego nie odlewamy (decyzja 2026-09-10, `NIE_DO_ODLEWU`): jest za miękkie na wyrób użytkowy i inaczej zachowuje się przy zalewaniu;
+- kolba odlewnicza: RADIANCE3.5, 83 mm średnicy wewnętrznej i 100 mm głębokości (doprecyzowane 2026-09-07 z dokumentu procesu; wcześniej stało tu 80 x 90 mm z pamięci). Limit modelu liczy się z tych dwóch liczb w `src/pricing/preciousMetalCasting.js`, więc zmiana kolby nie wymaga szukania milimetrów wpisanych z ręki;
 - wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się po wybranej skali w kole 63 mm i 62 mm wysokości. Kolba RADIANCE3.5 (83 x 100 mm) jest walcem, więc liczy się przekątna podstawy modelu, a nie każda oś osobno: rzecz płaska i szeroka mieści się, rzecz długa i cienka mieści się położona. Koło to średnica minus 10 mm masy formierskiej przy ścianie z każdej strony, wysokość to głębokość minus 20 mm na stożek, kanał główny i guzik oraz minus 20 mm masy nad najwyższym punktem modelu, plus 2 mm z pochyłu przy układaniu;
 - zakres wykończenia ma pięć poziomów, każdy droższy od poprzedniego: surowy odlew z kanałami wlewowymi (0 PLN), surowy odlew z odciętymi kanałami (30 PLN), odcięte kanały wlewowe, czyli ślad zlicowany z powierzchnią (70 PLN), wyszlifowany (110 PLN), wykończenie jubilerskie, czyli szlifowanie i polerowanie (160 PLN);
 - karta usługi wisi w dwóch działach sklepu. W AEJaCA sTuDiO nazywa się „Odlew z metali szlachetnych", w AEJaCA Biżuteria „Odlew biżuterii". Adres jest jeden, więc nie powstaje druga strona z tym samym opisem ani drugi zestaw danych strukturalnych;
@@ -946,7 +946,7 @@ skali są wzięte ze sklepu (`ConfigControls`), razem z ostrzeżeniami o limicie
 kolby i o tym, że skalowanie zmienia grubość ścianek.
 
 **Warianty:** gotowy wzorzec (wosk lub żywica odlewnicza), model 3D, pomysł klienta.
-**Kruszec:** AEJaCA albo powierzony. Ag 800/925, Au 9k/14k/18k/24k.
+**Kruszec:** AEJaCA albo powierzony. Ag 800/925, Au 9k/14k/18k (bez złota czystego).
 **Wykończenie (od 2026-08-26 pięć poziomów):** surowy odlew z kanałami wlewowymi 0 PLN,
 surowy odlew z odciętymi kanałami 30 PLN, odcięte kanały wlewowe (ślad zlicowany) 70 PLN,
 wyszlifowany 110 PLN, wykończenie jubilerskie, czyli szlifowanie i polerowanie, 160 PLN.
@@ -979,6 +979,63 @@ trybach inaczej i wyglądało to na usterkę jednego z nich.
 wzorca i wykończenia, więc rdzeń przesuwa widełki o te dopłaty. Bez tego
 kalkulator pokazywałby zakres niższy od kwoty do zapłaty o stałe 120 do 280 zł,
 a w sklepie nie było tego widać, bo karta pokazuje wyłącznie `unitGrosze`.
+
+### 6.4c Model klienta do odlewu: sześć pytań i bramka serwerowa (od 2026-09-13)
+
+Wariant „Model 3D" przyjmował plik od 7 września 2026, ale nie pytał o sam model:
+tylko o kruszec, wykończenie i liczbę sztuk. Sześć rzeczy stoi teraz na tej
+ścieżce, jedno źródło w `src/data/castingSpec.js`, walidacja w
+`src/pricing/castingIntake.js`. Decyzja i uzasadnienie: ADR-0048.
+
+**1. Stan pliku (`STANY_MODELU`), bez wartości domyślnej.** „Wymiary gotowego
+wyrobu" (model 1:1, bez skurczu i bez naddatku, resztę dodaje AEJaCA) albo „Model
+już powiększony o skurcz" (klient wskazuje STOP, dla którego skalował; AEJaCA
+doskalowuje tylko różnicę między skurczem tego stopu a stopu zamówionego).
+**Klient nigdy nie podaje własnego mnożnika**, tylko nazwę stopu: mnożnik
+zawsze pochodzi z `castingAlloys.js`, więc literówka w polu tekstowym nie ma
+jak wejść do wyrobu. Klientowi pytającemu „czy mam sam przeskalować model" mówimy
+wprost: nie, wskazuje stop, dla którego projektował (albo że plik jest w
+wymiarze gotowym), a różnicę liczy AEJaCA.
+
+**2. Kategoria wyrobu (`KATEGORIE_WYROBU`).** Obrączka lub pierścionek, bransoleta
+sztywna, zawieszka/charms, kolczyki, co innego. Otwór dotyczy WYŁĄCZNIE
+obrączki/pierścionka i bransolety: zawieszka ma otwór na rapcie, którego nikt
+nie szlifuje do wymiaru, więc pytanie o jego rozmiar byłoby pytaniem o nic.
+
+**3. Średnica otworu w wyrobie GOTOWYM** (tylko obrączka/pierścionek, bransoleta).
+AEJaCA dolicza naddatek 0,15 mm na średnicy PRZED przeliczeniem skurczu, bo otwór
+szlifuje się zawsze po odlaniu (powierzchnia odlewu jest za szorstka na skórę),
+a szlif otwór POWIĘKSZA, więc model musi startować mniejszy od wymiaru
+docelowego. Klient zaznacza, czy ten naddatek jest już w jego pliku, żeby nie
+doliczyć go dwa razy.
+
+**4. Czy powierzchnia zewnętrzna jest zdobiona** (tekstura, młotkowanie, grawer,
+relief). Powierzchnia zdobiona dostaje naddatek ZERO, zawsze, bo szlif zetrze
+wzór, dla którego klient złożył zamówienie. Powierzchnia gładka dostaje naddatek
+0,10 mm na szlif zewnętrzny wyłącznie przy wykończeniu polerowanym/jubilerskim.
+
+**5-6. Wykończenie i kruszec**, oba pytane już wcześniej w ścieżce, zasilają ten
+sam rachunek naddatku i skurczu co pytania 1-4.
+
+**Bramka serwerowa, na geometrii z wgranego pliku.** Model musi być szczelny
+(bryła zamknięta) i JEDNA bryła: kilka przenikających się brył daje wnętrze
+niezdefiniowane, więc klient robi `Boolean Union` albo zamawia naprawę pliku.
+Obie rzeczy zatrzymują zamówienie, nie poprawiają się po cichu. Najcieńsza
+ścianka mierzona jest promieniem w głąb bryły: poniżej 0,45 mm odlew się nie
+wypełni i zamówienie się nie składa; między 0,45 a 1,0 mm AEJaCA odleje, ale bez
+obietnicy pełnego odwzorowania. Gdy siatka jest zbyt gęsta na automatyczny
+pomiar, bramka to mówi wprost i sprawdza grubość ręcznie przed odlewem. Przy
+obrączce/pierścionku i bransolecie otwór zmierzony w pliku porównuje się z
+rozmiarem zadeklarowanym przez klienta, po uwzględnieniu naddatku i skurczu:
+rozbieżność powyżej 0,2 mm zatrzymuje zamówienie, bo roztoczenie otworu zabiera
+grubość szyny i nie jest to poprawka robiona bez rozmowy z klientem
+(`PROG_ROZBIEZNOSCI_OTWORU_MM`).
+
+**Gdy klient pyta, czemu plik nie przechodzi:** nie zgadujemy przyczyny. Pytamy,
+jak odpowiedział na sześć pytań powyżej i czym plik faktycznie jest (bryła
+zamknięta? jedna bryła? dla jakiego stopu skalował), zanim nazwiemy powód.
+Konkretne blokady: plik nieszczelny, więcej niż jedna bryła, najcieńsza ścianka
+poniżej 0,45 mm, otwór rozbieżny z deklaracją o więcej niż 0,2 mm.
 
 ### 6.5 Kalkulator Kompensacji Skurczu (ShrinkageCalc)
 
