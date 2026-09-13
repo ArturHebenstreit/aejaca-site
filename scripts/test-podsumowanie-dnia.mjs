@@ -193,5 +193,48 @@ console.log("\n7. Kolejka i cron stoja tam, gdzie maja\n");
     "stany bez wplaty obejmuja bramke i przelew");
 }
 
+console.log("\n5. Nowe zapytanie nie ginie pod stosem starych\n");
+{
+  // ZDARZENIE, KTORE TO WYMUSILO (2026-09-10, zauwazone 13-go): zapytanie
+  // o odlew 50 zawieszek zapisalo sie w bazie, powiadomienie nie doszlo do
+  // n8n, a poranny raport go nie pokazal, bo lista idzie od NAJSTARSZYCH
+  // i konczy sie po pietnastu pozycjach. Bez odpowiedzi czekalo wtedy 27
+  // zapytan, wiec wszystko z wczoraj wypadalo poza raport.
+  const stare = Array.from({ length: 27 }, (_, i) => ({
+    id: 100 + i, ref: `WY2026080${i % 9}-STARE${i}`, zrodlo: "contact",
+    email: `ktos${i}@example.com`, opis: "stare zapytanie",
+    wiekDni: 30 + i, wiekGodzin: (30 + i) * 24, powiadomienieNieDoszlo: false,
+  }));
+  const swieze = {
+    id: 999, ref: "WY20260910-E12C31C4", zrodlo: "calculator",
+    email: "klient@example.com", opis: "odlew 50 zawieszek w srebrze 925",
+    wiekDni: 0, wiekGodzin: 6, powiadomienieNieDoszlo: true,
+  };
+  const { text } = tresc({ kolejka: [], bezWplaty: [], doWeryfikacji: [], zapytania: [...stare, swieze], wyceny: [] }, TERAZ);
+
+  sprawdz(text.includes("WY20260910-E12C31C4"),
+    "zapytanie sprzed szesciu godzin nie pojawia sie w raporcie, dokladnie tak jak 10 wrzesnia",
+    "nowe zapytanie jest w raporcie, mimo 27 starszych przed nim");
+  sprawdz(/NOWE ZAPYTANIA/.test(text),
+    "brak osobnej sekcji na zapytania z ostatniej doby",
+    "zapytania z ostatniej doby maja wlasna sekcje, przed lista ogolna");
+  sprawdz(text.indexOf("WY20260910-E12C31C4") < text.indexOf("ZAPYTANIA BEZ ODPOWIEDZI"),
+    "nowe zapytanie stoi pod lista ogolna, czyli tam, gdzie sie go nie czyta",
+    "nowe zapytanie stoi przed lista ogolna");
+  sprawdz(/POWIADOMIENIE NIE DOSZLO/.test(text),
+    "raport milczy o tym, ze powiadomienie nie doszlo, a to jest cala przyczyna tej wpadki",
+    "raport nazywa zapytanie, o ktorym nie powiadomiono");
+  sprawdz(/BEZ POWIADOMIENIA: 1/.test(text),
+    "naglowek nie liczy zapytan bez powiadomienia",
+    "naglowek podaje, ile zapytan nie doczekalo sie powiadomienia");
+
+  // Kontrola negatywna: bez awarii powiadomienia raport nie straszy.
+  const spokojny = tresc({ kolejka: [], bezWplaty: [], doWeryfikacji: [],
+    zapytania: [{ ...swieze, powiadomienieNieDoszlo: false }], wyceny: [] }, TERAZ).text;
+  sprawdz(!/POWIADOMIENIE NIE DOSZLO/.test(spokojny) && !/BEZ POWIADOMIENIA/.test(spokojny),
+    "raport zglasza awarie powiadomienia tam, gdzie jej nie bylo",
+    "przy sprawnym powiadomieniu raport o nim milczy");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nPoranne podsumowanie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

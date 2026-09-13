@@ -199,6 +199,13 @@ if (pool) {
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS upload_id BIGINT`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS quote_ref VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(30)`).catch(() => {});
+  // STAN POWIADOMIENIA. Zapis zapytania i powiadomienie pracowni to dwie
+  // osobne drogi: 10 wrzesnia 2026 zapytanie o odlew 50 zawieszek zapisalo sie
+  // w bazie, a powiadomienie nie doszlo do n8n i nikt sie o tym nie dowiedzial
+  // przez trzy dni. Bez tych dwoch kolumn nie da sie odroznic zapytania,
+  // o ktorym wiemy, od zapytania, ktore tylko lezy w bazie.
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS notified_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS notify_error TEXT`).catch(() => {});
   // Projekt 3D ma limit poprawek w cenie. Kolejne sa platne, wiec licznik
   // musi zyc przy zamowieniu, a doplata wisiec przy nim jako dziecko.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS revisions_included INTEGER`).catch(() => {});
@@ -1149,6 +1156,53 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
 
 // --- Contact form ---
 const CONTACT_N8N_URL = process.env.N8N_CONTACT_WEBHOOK_URL;
+
+/**
+ * Powiadomienie pracowni o nowym zgloszeniu, z ponowieniem.
+ *
+ * DLACZEGO TO NIE JEST ZWYKLY `fetch`. Do 13 wrzesnia 2026 powiadomienie bylo
+ * wysylane i zapominane: zadnego ponowienia, zadnego sladu, a nieudana proba
+ * konczyla sie jedna linijka w konsoli, ktorej nikt nie czyta. Klient widzial
+ * przy tym napis "wyslane". Jedno takie zgloszenie, o odlew 50 zawieszek,
+ * przelezalo trzy dni, zanim wlasciciel zobaczyl je przypadkiem w panelu.
+ *
+ * Trzy proby z rosnaca przerwa, bo najczestsza awaria jest chwilowa: n8n
+ * wstaje po wdrozeniu albo gubi jedno polaczenie. Zwraca `null`, gdy poszlo,
+ * albo powod niepowodzenia, ktory dopisujemy do zgloszenia i pokazujemy
+ * w porannym raporcie.
+ */
+async function wyslijPowiadomienie(url, body, { proby = 3, nazwa = "webhook" } = {}) {
+  let ostatni = "brak adresu webhooka";
+  if (!url) return ostatni;
+  for (let i = 0; i < proby; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 2000 * 2 ** (i - 1)));
+    try {
+      // Limit czasu, zeby proba nie wisiala w nieskonczonosc i nie blokowala
+      // pozostalych: bez niego "ponowienie" bylo tylko nazwa.
+      const odpowiedz = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (odpowiedz.ok) return null;
+      ostatni = `HTTP ${odpowiedz.status}`;
+    } catch (err) {
+      ostatni = err.message || String(err);
+    }
+    console.error(`[${nazwa}] proba ${i + 1} z ${proby} nieudana: ${ostatni}`);
+  }
+  return ostatni;
+}
+
+/** Zapisuje przy zgloszeniu, czy powiadomienie doszlo. Bez tego nie ma alarmu. */
+function zapiszStanPowiadomienia(leadId, blad) {
+  if (!pool || !leadId) return;
+  const zapytanie = blad
+    ? pool.query(`UPDATE leads SET notify_error = $1, notified_at = NULL WHERE id = $2`, [String(blad).slice(0, 300), leadId])
+    : pool.query(`UPDATE leads SET notified_at = NOW(), notify_error = NULL WHERE id = $1`, [leadId]);
+  zapytanie.catch((err) => console.error("[powiadomienie] zapis stanu:", err.message));
+}
 const contactLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "kontakt" });
 const checkContactRate = (ip) => contactLimit.check(ip);
 
@@ -1269,28 +1323,17 @@ app.post("/api/contact", (req, res, next) => {
         .catch(() => false)
     : Promise.resolve(false);
 
-  alreadyContacted.then(skipFollowup => {
-    if (CONTACT_N8N_URL) {
-      fetch(CONTACT_N8N_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, skip_followup: skipFollowup }),
-      }).then(r => {
-        if (!r.ok) console.error(`Contact webhook n8n ${r.status}`);
-      }).catch(err => {
-        console.error("Contact webhook error:", err.message);
-      });
-    }
-  });
+  // NUMER SPRAWY POWSTAJE PRZED POWIADOMIENIEM. Do 13 wrzesnia 2026 powstawal
+  // po nim, wiec mail do pracowni nie niosl numeru i wpisu w panelu nie dalo
+  // sie z nim polaczyc inaczej niz po adresie i godzinie.
+  const quoteRef = generateQuoteRef();
+  payload.quoteRef = quoteRef;
 
-  // Zapis zapytania. Pelna tresc, bez obcinania: to ona jest podstawa
-  // pozniejszej realizacji i jedynym zapisem tego, co obiecalismy.
-  if (pool) {
-    const quoteRef = generateQuoteRef();
-    // Kazdy plik zapisujemy osobno, zeby po pol roku dalo sie ustalic, co
-    // dokladnie klient przyslal. Do zapytania podpinamy pierwszy, bo kolumna
-    // jest jedna, a nazwy wszystkich ida do params_json.
-    Promise.all(
+  // ZAPIS NAJPIERW, POWIADOMIENIE POTEM. Zapis jest tym, co przetrwa restart
+  // kontenera, a powiadomienie moze sie nie udac i wtedy chcemy miec gdzie
+  // zapisac, ze sie nie udalo.
+  const zapisane = pool
+    ? Promise.all(
       zalaczniki.map((f) => storeQuoteAttachment({ name: f.originalname, mimeType: f.mimetype, buffer: f.buffer }, payload.lang, ip))
     ).then((ids) => ids.filter((x) => x != null)[0] ?? null).then((uploadId) =>
       pool.query(
@@ -1299,7 +1342,8 @@ app.post("/api/contact", (req, res, next) => {
         // kazdej stronie wejscia, bo laczy zgloszenia z wizytami wlasnie po tej
         // kolumnie, a wypelniala ja tylko droga z kalkulatora.
         `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status, session_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+         RETURNING id`,
         [payload.email, payload.lang, payload.source, "contact",
          `${payload.subject}\n${payload.message.slice(0, 400)}`,
          payload.message,
@@ -1310,8 +1354,16 @@ app.post("/api/contact", (req, res, next) => {
          }),
          uploadId, quoteRef, "new", payload.sessionId || null]
       )
-    ).catch(err => console.error("Lead save error:", err.message));
-  }
+    ).then((r) => r.rows[0]?.id ?? null)
+      .catch((err) => { console.error("Lead save error:", err.message); return null; })
+    : Promise.resolve(null);
+
+  // Powiadomienie idzie w tle, zeby klient nie czekal na ponowienia, ale jego
+  // wynik trafia do bazy, wiec cisza po awarii przestaje byc mozliwa.
+  Promise.all([alreadyContacted, zapisane]).then(([skipFollowup, leadId]) =>
+    wyslijPowiadomienie(CONTACT_N8N_URL, { ...payload, skip_followup: skipFollowup }, { nazwa: "kontakt" })
+      .then((blad) => zapiszStanPowiadomienia(leadId, blad))
+  );
 
   res.json({ ok: true });
 });
@@ -1362,20 +1414,6 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
         .catch(() => false)
     : Promise.resolve(false);
 
-  alreadyContactedQuote.then(skipFollowup => {
-    if (QUOTE_N8N_URL) {
-      fetch(QUOTE_N8N_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, skip_followup: skipFollowup }),
-      }).then(r => {
-        if (!r.ok) console.error(`Quote webhook n8n ${r.status}`);
-      }).catch(err => {
-        console.error("Quote webhook error:", err.message);
-      });
-    }
-  });
-
   if (pool) {
     const quoteSessionId = req.body?.sessionId || null;
     // Plik przychodzi w JSON jako base64. Rozpakowujemy go tutaj, zeby
@@ -1384,13 +1422,14 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
       ? { name: file.name, mimeType: file.type, buffer: Buffer.from(String(file.data).split(",").pop(), "base64") }
       : null;
 
-    storeQuoteAttachment(attachment, payload.lang, ip)
+    const zapisane = storeQuoteAttachment(attachment, payload.lang, ip)
       .then((uploadId) =>
         pool.query(
           `INSERT INTO leads (email, lang, calculator, source, params, description, params_json,
              price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount,
              upload_id, quote_ref, status, session_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+           RETURNING id`,
           [payload.email, payload.lang, payload.calculator, "quote",
            payload.params,
            // Pelny opis od klienta, bez limitu 1000 znakow z podsumowania.
@@ -1402,7 +1441,17 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
            uploadId, quoteRef, "new", quoteSessionId]
         )
       )
-      .catch((err) => console.error("Quote save error:", err.message));
+      .then((r) => r.rows[0]?.id ?? null)
+      .catch((err) => { console.error("Quote save error:", err.message); return null; });
+
+    // TA SAMA REGULA CO PRZY ZAPYTANIU Z FORMULARZA: zapis pierwszy,
+    // powiadomienie z ponowieniem, a jego wynik zapisany przy zgloszeniu.
+    // Zapisana wycena bez powiadomienia wygladala dokladnie tak samo jak
+    // wycena, o ktorej wiemy, i to jest jedyna roznica, ktora tu naprawiamy.
+    Promise.all([alreadyContactedQuote, zapisane]).then(([skipFollowup, leadId]) =>
+      wyslijPowiadomienie(QUOTE_N8N_URL, { ...payload, skip_followup: skipFollowup }, { nazwa: "wycena" })
+        .then((blad) => zapiszStanPowiadomienia(leadId, blad))
+    );
   }
 
   res.json({ ok: true });
