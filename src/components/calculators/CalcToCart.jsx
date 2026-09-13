@@ -103,6 +103,11 @@ const UI = {
     needPackTextHint: "Wybrane jest pudełko z grawerem, więc wpisz, co ma się na nim znaleźć.",
     svgBlocked: "Wgrany plik wektorowy wyceniamy ręcznie, bo liczy się realna długość ścieżki. Usuń plik, żeby kupić po polu z listy, albo wyślij do wyceny.",
     manualBlocked: "Tę konfigurację wycenia człowiek: kamienie, sploty łańcuszków i metal powierzony przez klienta zależą od rzeczy, których nie widać w parametrach. Odpowiadamy w 24 godziny.",
+    castingAckLabel: "Przyjmuję do wiadomości uwagi do tego modelu, wypisane wyżej, i wiem, że powtórka odlewu z tego powodu jest po stronie zamawiającego.",
+    castingAckNote: "Zapiszemy to przy zamówieniu i powtórzymy w mailu potwierdzającym.",
+    castingAckRequired: "Zaznacz potwierdzenie uwag do modelu, żeby dodać do koszyka.",
+    needCastingAck: "Uwagi do modelu odlewu",
+    needCastingAckHint: "Zaznacz potwierdzenie uwag do modelu, wypisanych przy wyniku wyceny.",
   },
   en: {
     binding: "Binding price",
@@ -170,6 +175,11 @@ const UI = {
     needPackTextHint: "You chose the engraved box, so tell us what goes on it.",
     svgBlocked: "An uploaded vector file is quoted by hand, because the real path length decides the price. Remove the file to buy by the listed area, or request a quote.",
     manualBlocked: "This configuration is quoted by a person: stones, chain weaves and customer-supplied metal depend on things the parameters do not capture. We reply within 24 hours.",
+    castingAckLabel: "I acknowledge the notes on this model listed above, and I understand that a repeat casting for this reason is at the customer's cost.",
+    castingAckNote: "We record this with the order and repeat it in the confirmation email.",
+    castingAckRequired: "Confirm the notes on the model to add this to the cart.",
+    needCastingAck: "Notes on the casting model",
+    needCastingAckHint: "Confirm the notes on the model, listed next to the price.",
   },
   de: {
     binding: "Verbindlicher Preis",
@@ -237,6 +247,11 @@ const UI = {
     needPackTextHint: "Sie haben die gravierte Schachtel gewählt, bitte geben Sie den Text an.",
     svgBlocked: "Eine hochgeladene Vektordatei kalkulieren wir manuell, denn die tatsächliche Pfadlänge entscheidet. Entfernen Sie die Datei, um nach gelisteter Fläche zu kaufen, oder fordern Sie ein Angebot an.",
     manualBlocked: "Diese Konfiguration kalkuliert ein Mensch: Steine, Kettengeflechte und beigestelltes Metall hängen von Dingen ab, die in den Parametern nicht stehen. Wir antworten binnen 24 Stunden.",
+    castingAckLabel: "Ich nehme die oben aufgeführten Hinweise zu diesem Modell zur Kenntnis und weiß, dass ein wiederholter Guss aus diesem Grund zu Lasten des Auftraggebers geht.",
+    castingAckNote: "Wir halten das mit der Bestellung fest und wiederholen es in der Bestätigungsmail.",
+    castingAckRequired: "Bestätigen Sie die Hinweise zum Modell, um in den Warenkorb zu legen.",
+    needCastingAck: "Hinweise zum Gussmodell",
+    needCastingAckHint: "Bestätigen Sie die Hinweise zum Modell, die neben dem Preis stehen.",
   },
 };
 
@@ -312,6 +327,12 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // co zmienic: kazda proba wygladala tak samo.
   const [errorMsg, setErrorMsg] = useState(null);
   const [added, setAdded] = useState(false);
+  // POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ. `price.odlewZPliku.ostrzezenia`
+  // przychodzi z serwera, z tej samej geometrii, ktora wystawila kwote. Bez
+  // zaznaczenia tego pola serwer i tak odmowi przyjecia zamowienia (patrz
+  // `castingAcknowledgement` w chat-api/orders.js), wiec przycisk tutaj nie
+  // moze obiecac czegos, czego kasa nie przyjmie.
+  const [castingAck, setCastingAck] = useState(false);
 
   const [description, setDescription] = useState("");
   const [engraving, setEngraving] = useState("");
@@ -560,6 +581,9 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   }, [fetchPrice]);
 
   useEffect(() => setAdded(false), [paramsKey, uploadToken, packagingId, packEngraving, lidBackText]);
+  // Nowy plik albo nowe ustawienia znacza nowe ostrzezenia: stare pokwitowanie
+  // nie moze zostac zaznaczone przy tresci, ktorej klient jeszcze nie widzial.
+  useEffect(() => setCastingAck(false), [paramsKey, uploadToken]);
 
 
   // Panel akcji musi wiedziec, ze zakup jest niemozliwy, inaczej kafelek
@@ -699,6 +723,11 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const substrateGap = brakPodloza({ calculator, params });
   const substrateOk = !substrateGap;
 
+  // OSTRZEZENIA BRAMKI ODLEWNICZEJ. Puste tylko wtedy, gdy kalkulator nie jest
+  // odlewem albo model naprawde ich nie ma; w obu przypadkach pokwitowanie
+  // nie jest potrzebne i nie blokuje niczego.
+  const castingWarnings = price?.odlewZPliku?.ostrzezenia || [];
+  const castingAckOk = !castingWarnings.length || castingAck;
 
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
@@ -706,7 +735,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // Bez podstawy nie ma kwoty wiazacej, wiec nie ma czego wlozyc do koszyka.
   // Ta sama regula odmawia po stronie serwera, wiec przycisk nie moze obiecac
   // czegos, czego kasa nie przyjmie.
-  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && packEngravingOk && binding && !gatedShape && !hold && !modelError;
+  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && packEngravingOk && binding && castingAckOk && !gatedShape && !hold && !modelError;
 
 
 
@@ -731,6 +760,13 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   function addToCart() {
     if (!price || !ready) return;
+    // ZNACZNIK POKWITOWANIA JEDZIE Z POZYCJA, jako podpowiedz dla serwera.
+    // Sam boolean nie jest dowodem: serwer liczy wlasna liste ostrzezen z
+    // geometrii w bazie i to ona, nie ta ponizej, trafia ostatecznie do
+    // zamowienia (patrz `castingAcknowledgement` w chat-api/orders.js).
+    const paramsDoKoszyka = castingWarnings.length
+      ? { ...paramsZPodstawa, odlewPokwitowanie: true }
+      : paramsZPodstawa;
     cart.add({
       kind: "service",
       calculator,
@@ -740,7 +776,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       // PODSTAWA JEDZIE RAZEM Z POZYCJA. Bez niej kasa odrzucilaby wlasna
       // kwote, bo sprawdza to samo, co sprawdzil ekran: czy kwota wynika
       // z pomiaru albo z wpisanych wymiarow, czy z przedzialu.
-      params: paramsZPodstawa,
+      params: paramsDoKoszyka,
       geometry,
       scale,
       fileName: file?.name || null,
@@ -777,7 +813,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
         serviceId,
         title: t(card.title, lang),
         image: card.image,
-        params: paramsZPodstawa,
+        params: paramsDoKoszyka,
         geometry: model.geometry || null,
         scale: 1,
         fileName: model.name,
@@ -1023,6 +1059,26 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             </>
           )}
 
+          {/* POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ. Uwagi do modelu
+              pokazuje juz ekran wyzej (blok przeliczenia i ostrzezenia z
+              serwera); tutaj jest tylko potwierdzenie, ze klient je widzial,
+              zanim doda pozycje do koszyka. */}
+          {castingWarnings.length > 0 && (
+            <div className="mb-3 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={castingAck}
+                  onChange={(e) => setCastingAck(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 shrink-0 accent-amber-400"
+                />
+                <span className="text-white text-xs leading-relaxed">{u.castingAckLabel}</span>
+              </label>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-2">{u.castingAckNote}</p>
+              {!castingAck && <p className="text-amber-300 text-xs mt-2">{u.castingAckRequired}</p>}
+            </div>
+          )}
+
           {!ready && !engravingOver && (
             <BlockedReasons
               title={u.blockedTitle}
@@ -1043,6 +1099,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
                 // wiersza, wiec lista przyczyn twierdzila, ze wszystko gra,
                 // a przycisk pozostawal wygaszony bez podania powodu.
                 ...(modelError ? [{ ok: false, label: u.needModel, hint: u.needModelHint }] : []),
+                ...(castingWarnings.length ? [{ ok: castingAckOk, label: u.needCastingAck, hint: u.needCastingAckHint }] : []),
               ]}
             />
           )}
@@ -1093,6 +1150,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               : !descriptionOk ? u.missingDescription
               : wantsEngraving && !engravingOk ? u.missingEngraving
               : !substrateOk ? u.missingSubstrate
+              : !castingAckOk ? u.castingAckRequired
               : u.missingSomething}
           </button>
 

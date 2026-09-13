@@ -36,6 +36,7 @@ import { CASTING_ALLOYS } from "../src/data/castingAlloys.js";
 import { sprawdzModelDoOdlewu, wierszePrzeliczenia } from "../src/pricing/castingIntake.js";
 import { missingCastingParams } from "../src/pricing/preciousMetalCasting.js";
 import { analyzeSolids, analyzeAxialHole, analyzeTopology } from "../src/analysis/printability.js";
+import { priceItem, castingAcknowledgement } from "../chat-api/orders.js";
 
 let bledy = 0;
 function sekcja(nazwa) { console.log(`\n${nazwa}`); }
@@ -338,6 +339,98 @@ test("siatka z wyrwanym trojkatem jest nieszczelna", () => {
   const pelna = kostka([0, 0, 0], 10);
   assert.equal(analyzeTopology(pelna).isWatertight, true);
   assert.equal(analyzeTopology(pelna.slice(0, -1)).isWatertight, false);
+});
+
+// ============================================================
+sekcja("7. Pokwitowanie ostrzezen bramki odlewniczej przy zamowieniu");
+
+// Decyzja wlasciciela z 2026-09-13: gdy bramka ostrzegla, a klient mimo to
+// zamowil, powtorka nieudanego odlewu idzie na jego koszt. Zeby ten podzial
+// mial jakakolwiek moc, `castingAcknowledgement` (chat-api/orders.js) musi
+// sprawdzac liste ostrzezen POLICZONA TUTAJ przez `priceItem`, na geometrii
+// z bazy, a nie liste, ktora przyslala przegladarka.
+//
+// `wyrobId: "pendant"` unika pytania o srednice otworu (kategoriaZOtworem
+// zwraca dla zawieszki false), zeby geometria z duza objetoscia byla jedynym
+// ostrzezeniem w wyniku, bez szumu z innych regul bramki.
+const CASTING_PARAMS = {
+  variantId: "model_3d",
+  materialSourceId: "aejaca",
+  metalId: "silver",
+  finishId: "polished",
+  wyrobId: "pendant",
+  modelStanId: "finished",
+  qtyId: "1",
+};
+
+// Ta sama geometria co w sekcji 3, tylko z objetoscia powyzej progu
+// OBJETOSC_DO_SPRAWDZENIA_CM3: to jedyne, czego trzeba, zeby dostac
+// ostrzezenie "duza_objetosc" bez zadnej blokady.
+const CASTING_GEOMETRY = {
+  volumeCm3: 14,
+  bbox: { x: 2.0, y: 2.0, z: 0.6 },
+  surfaceAreaCm2: 8,
+  triangleCount: 5000,
+  watertight: true,
+  boundaryEdges: 0,
+  nonManifoldEdges: 0,
+  reversedFaces: 0,
+  solids: 1,
+  thinnestMm: 1.6,
+};
+
+const itemZOstrzezeniem = priceItem({
+  calculator: "jewelry_casting",
+  params: CASTING_PARAMS,
+  lang: "pl",
+  geometry: CASTING_GEOMETRY,
+});
+
+test("wycena z duza objetoscia niesie ostrzezenie, bez blokady", () => {
+  const ostrzezenia = itemZOstrzezeniem.odlewZPliku?.ostrzezenia || [];
+  assert.ok(ostrzezenia.some((o) => o.id === "duza_objetosc"), JSON.stringify(ostrzezenia));
+});
+
+test("pozycja z ostrzezeniem i bez pokwitowania jest odrzucana", () => {
+  const wynik = castingAcknowledgement(itemZOstrzezeniem, {});
+  assert.equal(wynik.ok, false);
+  assert.ok(wynik.ostrzezenia.some((o) => o.id === "duza_objetosc"));
+});
+
+test("pokwitowanie musi byc dokladnie `true`, nie kazda prawdziwa wartosc", () => {
+  // Klient moze przyslac cokolwiek: string "false" jest w JavaScripcie
+  // prawdziwy, a napis od klienta nie moze zastapic scisle sprawdzonej flagi.
+  assert.equal(castingAcknowledgement(itemZOstrzezeniem, { odlewPokwitowanie: "false" }).ok, false);
+  assert.equal(castingAcknowledgement(itemZOstrzezeniem, { odlewPokwitowanie: 1 }).ok, false);
+});
+
+test("ta sama pozycja z pokwitowaniem przechodzi i niesie liste ostrzezen", () => {
+  const wynik = castingAcknowledgement(itemZOstrzezeniem, { odlewPokwitowanie: true });
+  assert.equal(wynik.ok, true);
+  assert.ok(wynik.ostrzezenia.length > 0);
+  assert.ok(wynik.ostrzezenia.some((o) => o.id === "duza_objetosc" && typeof o.tekst === "string" && o.tekst.length > 0));
+});
+
+test("pozycja bez ostrzezen nie wymaga pokwitowania", () => {
+  const itemBezOstrzezenia = priceItem({
+    calculator: "jewelry_casting",
+    params: CASTING_PARAMS,
+    lang: "pl",
+    geometry: { ...CASTING_GEOMETRY, volumeCm3: 0.4 },
+  });
+  assert.equal(itemBezOstrzezenia.odlewZPliku?.ostrzezenia?.length ?? 0, 0);
+  const wynik = castingAcknowledgement(itemBezOstrzezenia, {});
+  assert.equal(wynik.ok, true);
+  assert.deepEqual(wynik.ostrzezenia, []);
+});
+
+test("kalkulator inny niz odlew nie ma czego pokwitowac", () => {
+  // `item.odlewZPliku` istnieje tylko dla `jewelry_casting`; kazdy inny
+  // kalkulator ma to pole `null`, a pokwitowanie ma sie zachowac tak samo,
+  // jak przy odlewie bez ostrzezen.
+  const wynik = castingAcknowledgement({ odlewZPliku: null }, {});
+  assert.equal(wynik.ok, true);
+  assert.deepEqual(wynik.ostrzezenia, []);
 });
 
 console.log(bledy === 0

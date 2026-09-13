@@ -123,18 +123,38 @@ przy 33 tysiacach.
   10 wrzesnia 2026 (`NIE_DO_ODLEWU`). Poprawione w `llms.txt`, `context.js`
   i Brand Reference; zloto 24k zostaje tam, gdzie dotyczy innych technik.
 
-## Do rozstrzygniecia przez wlasciciela
+## Rozstrzygniete przez wlasciciela 2026-09-13, druga tura
 
-1. Czy srebro 800 ma dostac wlasny wiersz w tabeli skurczu. Dzis bierze
-   wspolczynnik srebra 925, co daje 0,017 mm bledu na obraczce 17 mm, przy
-   tolerancji 0,2 mm. Wpisanie zmyslonej liczby byloby gorsze, ale pomiar
-   wlasnego odlewu zamknalby sprawe.
-2. Minimum sciany 0,45 mm dla cudzego modelu. Jest to nasza granica dla
-   wlasnej geometrii, prowadzonej wlewem. Wyzsza wartosc (0,8 mm z briefu)
-   odrzucalaby czesc poprawnych zlecen, nizsza grozi niewypelnieniem.
-3. Otwarte punkty z rozdzialu 10 briefu, w szczegolnosci polityka przy
-   nieudanym odlewie z winy modelu. Bez zapisu w regulaminie ta usluga nie
-   powinna ruszyc szerzej.
+Pelne uzasadnienia: ADR-0048, rozdzial "Cztery rozstrzygniecia".
+
+1. **Minimum sciany zostaje 0,45 mm.** Model miedzy 0,45 a 1,0 mm przechodzi
+   z ostrzezeniem i decyduje klient.
+2. **Nieudany odlew z winy modelu: rozstrzyga ostrzezenie.** Ostrzeglismy i
+   klient pokwitowal, to jego koszt. Nie ostrzeglismy, to nasz. Wdrozone:
+   pokwitowanie przy kasie, serwer zapisuje przy pozycji SWOJA liste ostrzezen,
+   regulamin sekcja 13 dostal dwa ustepy w trzech jezykach.
+3. **Srebro 800 ma wlasny wspolczynnik 1,017** z literatury odlewniczej.
+   Rekomendacja brzmiala inaczej i jest to w kodzie opisane: liczba nie
+   pochodzi z pomiaru naszej probki. Pomiar zamknalby sprawe.
+4. **Nastepna w kolejce byla strona uslugi**, przed skladnikami ceny i przed
+   przeliczeniem w mailu.
+
+## Nadal do rozstrzygniecia
+
+1. Pomiar wlasnej probki srebra 800, zeby 1,017 przestalo byc liczba z cudzej
+   receptury stopu.
+2. Cechowanie w Urzedzie Probierczym: w cenie czy opcja platna.
+3. Minimalna wartosc zamowienia przy odlewie w zlocie.
+4. Naprawa pliku jako osobna platna usluga i jej cena.
+5. Status ADR-0048. Stoi `draft`, bo status ustala wlasciciel.
+
+## Uwaga o historii commitow
+
+`chat-api/orders.js` z funkcja `castingAcknowledgement` wszedl do commita
+`d7ec05d`, ktorego opis mowi o srebrze 800 i o regulaminie. Powod: `git add -A`
+wykonany w chwili, gdy rownolegly agent pisal ten plik. Kod jest kompletny i
+przechodzi sprawdziany, myli tylko opis commita. Wniosek na przyszlosc: przy
+pracy rownoleglej commitujemy sciezki wprost, nigdy `-A`.
 
 ## Jak sprawdzic
 
