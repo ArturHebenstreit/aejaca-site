@@ -285,13 +285,49 @@ function StepBar({ step, labels, nazwa }) {
 }
 
 function OptionRow({ field, value, onChange, lang }) {
+  // POLE UKRYTE PRZEZ WLASNA LOGIKE NIE MA SIE RENDEROWAC. Ten sam warunek,
+  // ktory czyta `polaWidoczne` w `PolaUslugi.jsx` (sklep i kalkulator), musi
+  // dzialac tez tutaj: inaczej ten sam katalog rysuje dwa rozne ekrany, np.
+  // pole otworu widoczne przy zawieszce, dla ktorej nie ma sensu.
+  if (field.ukryjGdy && field.ukryjGdy(value)) return null;
+
+  const etykieta = t(field.label, lang);
+
+  // POLE LICZBOWE: klient wpisuje wartosc, nie wybiera ja z listy kafelkow,
+  // wiec dostaje zwykly `<input type="number">` z jednostka za polem.
+  if (field.typ === "liczba") {
+    const current = value[field.key];
+    return (
+      <div className="mb-5">
+        <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{etykieta}</div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            aria-label={etykieta}
+            min={field.min}
+            max={field.max}
+            step={field.krok}
+            value={current ?? ""}
+            onChange={(e) => {
+              const surowy = e.target.value;
+              onChange(field.key, surowy === "" ? "" : Number(surowy));
+            }}
+            className="w-28 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] text-white text-sm outline-none focus:border-blue-400/60 transition-colors"
+          />
+          {field.jednostka && <span className="text-xs text-neutral-400">{field.jednostka}</span>}
+        </div>
+      </div>
+    );
+  }
+
   const options = field.optionsFrom ? field.optionsFrom(value) : field.options;
   const current = value[field.key];
   const isMulti = field.multi;
 
   return (
     <div className="mb-5">
-      <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(field.label, lang)}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{etykieta}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => {
           const active = isMulti ? (current || []).includes(o.id) : current === o.id;

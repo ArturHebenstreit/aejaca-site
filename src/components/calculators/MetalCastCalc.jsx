@@ -17,8 +17,10 @@
 // regul: powloke galwaniczna napisalismy przez to dwa razy. Zostaje tu tylko
 // to, czego katalog nie opisuje: pole modelu, suwak skali i wynik.
 import { useState, useMemo, lazy, Suspense } from "react";
+import { AlertTriangle } from "lucide-react";
 import { FORMATY_MODELU } from "../../shop/paczkaModeli.js";
 import { t, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
+import { sprawdzModelDoOdlewu, wierszePrzeliczenia } from "../../pricing/castingIntake.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 // PROGI ILOSCI IDA Z JUBILERKI, nie ze sTuDiO. Odlew liczy `calcNew`, ktore
 // zna wylacznie `QTY_TIERS` ("1", "2-5", "6-10", "10+"). Progi studyjne
@@ -87,10 +89,80 @@ const L = {
 /** Opis uslugi wspolny ze sklepem: stad biora sie pytania i ich kolejnosc. */
 const USLUGA = getService("precious_metal_casting");
 
+// ============================================================
+// ODLEW Z PLIKU: rachunek przeliczenia wymiaru, tu liczony lokalnie
+// ============================================================
+// Kwota wiazaca i pomiar pliku ida przez `CalcToCart` nizej, wiec ten
+// kalkulator nie ma dostepu do zmierzonej geometrii. Rachunek przeliczenia
+// otworu NIE zalezy od geometrii, tylko od wyboru klienta (kruszec, srednica,
+// stan pliku), wiec liczymy go ta sama funkcja co serwer, wolana z geometria
+// `null`. Wynik jest identyczny z tym, co pokaze /api/price. Ostrzezenie
+// "nie udalo sie zmierzyc otworu" zalezy wylacznie od geometrii i przy `null`
+// zapalaloby sie zawsze, nawet po wgraniu poprawnego pliku, wiec je odsiewamy.
+const ODLEW_LABELS = {
+  pl: { lead: "Podajesz wymiar gotowego wyrobu, a tu pokazujemy, co z niego faktycznie wydrukujemy.",
+    blokada: "Tego modelu nie odlejemy w tej postaci" },
+  en: { lead: "You give the finished dimension, and here we show what we will actually print from it.",
+    blokada: "We cannot cast this model as it stands" },
+  de: { lead: "Sie geben das Fertigmaß an, hier zeigen wir, was wir daraus tatsächlich drucken.",
+    blokada: "Dieses Modell können wir so nicht gießen" },
+};
+
+function OdlewZPlikuInfo({ odlew, lang, blokada = null }) {
+  const ol = ODLEW_LABELS[lang] || ODLEW_LABELS.pl;
+  if (!odlew && !blokada) return null;
+  const wiersze = odlew?.przeliczenie ? wierszePrzeliczenia(odlew.przeliczenie, lang) : [];
+  const ostrzezenia = odlew?.ostrzezenia || [];
+  if (!wiersze.length && !ostrzezenia.length && !blokada) return null;
+  return (
+    <div className="mt-4 space-y-3">
+      {blokada && (
+        <div className="rounded-2xl border border-rose-400/30 bg-rose-500/5 p-4">
+          <p className="text-rose-300 text-xs font-semibold leading-relaxed">{ol.blokada}</p>
+          <p className="text-rose-300 text-xs leading-relaxed mt-1">{blokada}</p>
+        </div>
+      )}
+      {wiersze.length > 0 && (
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-neutral-400 text-xs leading-relaxed mb-3">{ol.lead}</p>
+          <div className="space-y-1.5">
+            {wiersze.map((w, i) => (
+              <div
+                key={i}
+                className={`flex items-baseline justify-between gap-4 text-xs ${
+                  w.wynik ? "text-white font-semibold pt-1.5 mt-1 border-t border-white/10" : "text-neutral-400"
+                }`}
+              >
+                <span>{w.etykieta}</span>
+                <span className="tabular-nums shrink-0">{w.wartosc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {ostrzezenia.length > 0 && (
+        <div className="rounded-2xl border border-amber-400/25 bg-amber-500/5 p-4">
+          <ul className="space-y-1.5">
+            {ostrzezenia.map((o) => (
+              <li key={o.id} className="flex gap-2 text-amber-300 text-xs leading-relaxed">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{o.tekst}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MetalCastCalc({ lang = "pl" }) {
   const l = L[lang] || L.en;
   const { rates } = useMarketRates();
   const [bindingGrosze, setBindingGrosze] = useState(null);
+  // Ustalenia bramki odlewniczej wracaja z serwera razem z cena. Sa wiazace,
+  // bo licza sie ze ZMIERZONEGO pliku, a nie z samych wyborow klienta.
+  const [odpowiedz, setOdpowiedz] = useState(null);
 
   const [params, setParams] = useState(() => ({ ...USLUGA.defaults }));
   // Wybor spoza listy przystawiamy w RENDERZE, a nie efektem: efekt dorysowuje
@@ -173,6 +245,25 @@ export default function MetalCastCalc({ lang = "pl" }) {
     () => calculate({ variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId, qty, stlData: scaledStlData }, lang, rates),
     [variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId, qty, scaledStlData, lang, rates],
   );
+
+  // Rachunek przeliczenia i ostrzezenie o innym stopie kompensacji, liczone
+  // ta sama funkcja co serwer, bez zmierzonego pliku (patrz komentarz przy
+  // definicji `OdlewZPlikuInfo` wyzej). `stan` jest nowym obiektem w kazdym
+  // renderze, wiec liczymy to bez `useMemo`: sam rachunek jest bez kosztu.
+  const odlewLokalnie = sprawdzModelDoOdlewu(stan, null, lang);
+  // Odpowiedz serwera WYGRYWA, bo widziala plik. Rachunek lokalny sluzy
+  // wylacznie do tego, zeby blok przeliczenia pojawil sie od razu po podaniu
+  // wymiaru, zanim zapytanie o cene wroci.
+  const odlewInfo = odpowiedz?.odlewZPliku
+    || (odlewLokalnie.dotyczy
+      ? {
+        przeliczenie: odlewLokalnie.przeliczenie,
+        ostrzezenia: odlewLokalnie.ostrzezenia
+          .filter((o) => o.id !== "otwor_niezmierzony")
+          .map((o) => ({ id: o.id, tekst: t(o.tekst, lang) })),
+      }
+      : null);
+  const blokadaOdlewu = odpowiedz?.bladKod === "casting_model_blocked" ? odpowiedz.bladTekst : null;
 
   const paramsSummary = [
     t(CASTING_VARIANTS.find((v) => v.id === variantId)?.label, lang),
@@ -273,18 +364,24 @@ export default function MetalCastCalc({ lang = "pl" }) {
             {l.massNote(result.finalMassG.toFixed(2), result.requiredMassG.toFixed(2))}
           </p>
         )}
+        <OdlewZPlikuInfo odlew={odlewInfo} lang={lang} blokada={blokadaOdlewu} />
         <NextStepPanel
           lang={lang}
           techLabel={t(TECH_LABEL, lang)}
           paramsSummary={paramsSummary}
           result={result}
           cart={
+            // Do serwera idzie CALY `stan`, a nie wyliczanka pol. Lista
+            // wypisana z reki zgubila szesc pytan o model dodanych 13 wrzesnia
+            // 2026: serwer ich nie widzial i odsylal "parametry niekompletne"
+            // przy formularzu wypelnionym do konca.
             <CalcToCart
               embedded
               onBinding={setBindingGrosze}
+              onOdpowiedz={setOdpowiedz}
               calculator="jewelry_casting"
               serviceId="precious_metal_casting"
-              params={{ variantId, materialSourceId, metalId, finishId, platingId, engravingId, qtyId }}
+              params={stan}
               qty={qty}
               file={file}
               triangles={mesh?.triangles || null}

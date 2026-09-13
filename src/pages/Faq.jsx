@@ -97,6 +97,7 @@ const STRONY = {
     "/toolsjewelry/metal-pricing/": "Wycena kruszcu",
     "/toolstudio/printability/": "Sprawdzenie modelu do druku",
     "/toolstudio/shrinkage/": "Skurcz odlewniczy",
+    "/uslugi/odlew-z-pliku/": "Odlew z pliku",
     "/toolstudio/resin-settings/": "Ustawienia druku z żywicy",
   },
   en: {
@@ -107,6 +108,7 @@ const STRONY = {
     "/toolsjewelry/metal-pricing/": "Metal value calculator",
     "/toolstudio/printability/": "Printability check",
     "/toolstudio/shrinkage/": "Casting shrinkage",
+    "/uslugi/odlew-z-pliku/": "Casting from a file",
     "/toolstudio/resin-settings/": "Resin print settings",
   },
   de: {
@@ -117,6 +119,7 @@ const STRONY = {
     "/toolsjewelry/metal-pricing/": "Metallwert-Rechner",
     "/toolstudio/printability/": "Druckbarkeitsprüfung",
     "/toolstudio/shrinkage/": "Gussschwindung",
+    "/uslugi/odlew-z-pliku/": "Guss aus Datei",
     "/toolstudio/resin-settings/": "Harzdruck-Einstellungen",
   },
 };

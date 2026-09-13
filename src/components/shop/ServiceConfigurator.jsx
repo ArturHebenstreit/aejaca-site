@@ -10,10 +10,11 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
 import { Link } from "../../i18n/nav.jsx";
 import { claimHandoff } from "../../data/calcHandoff.js";
-import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight, X } from "lucide-react";
+import { ShoppingCart, Check, Loader2, AlertTriangle, XCircle, ArrowRight, X } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
+import { wierszePrzeliczenia } from "../../pricing/castingIntake.js";
 import { LIMIT_PACZKI, FORMATY_MODELU, podzielPaczke, komunikatPaczki, wgrajModel, wycenModel, idModelu } from "../../shop/paczkaModeli.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
 import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
@@ -117,6 +118,11 @@ const UI = {
     paczkaOdrzucony: "Tego pliku nie wyceniliśmy. Usuń go albo wgraj w innym formacie.",
     paczkaUsun: "Usuń model z paczki",
     paczkaPelna: "Paczka jest pełna. Dodaj ją do koszyka, potem wgraj kolejną.",
+    castingAckLabel: "Przyjmuję do wiadomości uwagi do tego modelu, wypisane wyżej, i wiem, że powtórka odlewu z tego powodu jest po stronie zamawiającego.",
+    castingAckNote: "Zapiszemy to przy zamówieniu i powtórzymy w mailu potwierdzającym.",
+    castingAckRequired: "Zaznacz potwierdzenie uwag do modelu, żeby dodać do koszyka.",
+    needCastingAck: "Uwagi do modelu odlewu",
+    needCastingAckHint: "Zaznacz potwierdzenie uwag do modelu, wypisanych przy wyniku wyceny.",
   },
   en: {
     configure: "Configure and add to cart",
@@ -193,6 +199,11 @@ const UI = {
     paczkaOdrzucony: "We could not price this file. Remove it or upload it in another format.",
     paczkaUsun: "Remove model from the batch",
     paczkaPelna: "The batch is full. Add it to the cart, then upload the next one.",
+    castingAckLabel: "I acknowledge the notes on this model listed above, and I understand that a repeat casting for this reason is at the customer's cost.",
+    castingAckNote: "We record this with the order and repeat it in the confirmation email.",
+    castingAckRequired: "Confirm the notes on the model to add this to the cart.",
+    needCastingAck: "Notes on the casting model",
+    needCastingAckHint: "Confirm the notes on the model, listed next to the price.",
   },
   de: {
     configure: "Konfigurieren und in den Warenkorb",
@@ -269,11 +280,71 @@ const UI = {
     paczkaOdrzucony: "Diese Datei konnte nicht kalkuliert werden. Entfernen Sie sie oder laden Sie ein anderes Format hoch.",
     paczkaUsun: "Modell aus dem Paket entfernen",
     paczkaPelna: "Das Paket ist voll. Legen Sie es in den Warenkorb, dann laden Sie das nächste hoch.",
+    castingAckLabel: "Ich nehme die oben aufgeführten Hinweise zu diesem Modell zur Kenntnis und weiß, dass ein wiederholter Guss aus diesem Grund zu Lasten des Auftraggebers geht.",
+    castingAckNote: "Wir halten das mit der Bestellung fest und wiederholen es in der Bestätigungsmail.",
+    castingAckRequired: "Bestätigen Sie die Hinweise zum Modell, um in den Warenkorb zu legen.",
+    needCastingAck: "Hinweise zum Gussmodell",
+    needCastingAckHint: "Bestätigen Sie die Hinweise zum Modell, die neben dem Preis stehen.",
   },
 };
 
 
 /** Pola, ktore lepiej czytaja sie jako suwak niz jako kafelki */
+
+// ============================================================
+// ODLEW Z PLIKU: przeliczenie wymiaru i ostrzezenia z bramki serwera
+// ============================================================
+// `item.odlewZPliku` przychodzi wylacznie z /api/price, bo tylko serwer
+// zmierzyl plik. Rachunek czytamy z `wierszePrzeliczenia`, zeby kolejnosc
+// dzialan i etykiety byly te same, co w mailu i w podsumowaniu zamowienia.
+// Ostrzezenia sa juz w jezyku klienta, wiec nie tlumaczymy ich drugi raz.
+const ODLEW_LABELS = {
+  pl: { lead: "Podajesz wymiar gotowego wyrobu, a tu pokazujemy, co z niego faktycznie wydrukujemy." },
+  en: { lead: "You give the finished dimension, and here we show what we will actually print from it." },
+  de: { lead: "Sie geben das Fertigmaß an, hier zeigen wir, was wir daraus tatsächlich drucken." },
+};
+
+function OdlewZPlikuInfo({ odlew, lang }) {
+  const ol = ODLEW_LABELS[lang] || ODLEW_LABELS.pl;
+  if (!odlew) return null;
+  const wiersze = odlew.przeliczenie ? wierszePrzeliczenia(odlew.przeliczenie, lang) : [];
+  const ostrzezenia = odlew.ostrzezenia || [];
+  if (!wiersze.length && !ostrzezenia.length) return null;
+  return (
+    <div className="mt-4 space-y-3">
+      {wiersze.length > 0 && (
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-neutral-400 text-xs leading-relaxed mb-3">{ol.lead}</p>
+          <div className="space-y-1.5">
+            {wiersze.map((w, i) => (
+              <div
+                key={i}
+                className={`flex items-baseline justify-between gap-4 text-xs ${
+                  w.wynik ? "text-white font-semibold pt-1.5 mt-1 border-t border-white/10" : "text-neutral-400"
+                }`}
+              >
+                <span>{w.etykieta}</span>
+                <span className="tabular-nums shrink-0">{w.wartosc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {ostrzezenia.length > 0 && (
+        <div className="rounded-2xl border border-amber-400/25 bg-amber-500/5 p-4">
+          <ul className="space-y-1.5">
+            {ostrzezenia.map((o) => (
+              <li key={o.id} className="flex gap-2 text-amber-300 text-xs leading-relaxed">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{o.tekst}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ServiceConfigurator({ card, lang, accent = "blue", onPriceChange }) {
   const { money } = useMoney();
@@ -340,6 +411,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [added, setAdded] = useState(false);
+  // POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ. `price.odlewZPliku.ostrzezenia`
+  // przychodzi z serwera, z geometrii ktora wystawila kwote. Bez zaznaczenia
+  // tego pola serwer i tak odmowi zamowienia (patrz `castingAcknowledgement`
+  // w chat-api/orders.js), wiec przycisk tutaj nie moze obiecac czegos,
+  // czego kasa nie przyjmie.
+  const [castingAck, setCastingAck] = useState(false);
 
   const reqId = useRef(0);
   // Podglad rysuje sie z lokalnego odczytu, wiec zrzut bywa gotowy, zanim
@@ -401,6 +478,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   }, [fetchPrice]);
 
   useEffect(() => setAdded(false), [params, file, scale, packagingId, engraving, packEngraving, lidBackText, description, qty]);
+  // Nowy plik albo nowe ustawienia znacza nowe ostrzezenia: stare pokwitowanie
+  // nie moze zostac zaznaczone przy tresci, ktorej klient jeszcze nie widzial.
+  useEffect(() => setCastingAck(false), [params, file, scale]);
 
   // Wysylka miniatury czeka na identyfikator uploadu i idzie dokladnie raz.
   useEffect(() => {
@@ -521,10 +601,15 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   // pilnuje pozostalych.
   const substrateGap = brakPodloza({ calculator: service.calculator, params });
 
+  // OSTRZEZENIA BRAMKI ODLEWNICZEJ. Puste, gdy usluga nie jest odlewem albo
+  // model naprawde ich nie ma; w obu przypadkach pokwitowanie nie blokuje niczego.
+  const castingWarnings = price?.odlewZPliku?.ostrzezenia || [];
+  const castingAckOk = !castingWarnings.length || castingAck;
+
   // Plik odrzucony przez serwer zostaje w polu, zeby bylo widac, o ktory chodzi,
   // ale zamowic go nie mozna: wycena poszlaby wtedy z samego rozmiaru, a klient
   // bylby przekonany, ze kupuje wydruk swojego modelu.
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && binding
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && binding && castingAckOk
     && !substrateGap && !needsHumanQuote && !castingFileMissing && !printHold && !fileError;
 
   // PACZKA MA SENS TAM, GDZIE CENA BIERZE SIE Z PLIKU, i dopiero gdy model
@@ -777,13 +862,22 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
 
   function addToCart() {
     if (!price || !ready) return;
+    // ZNACZNIK POKWITOWANIA JEDZIE Z POZYCJA, jako podpowiedz dla serwera.
+    // Sam boolean nie jest dowodem: serwer liczy wlasna liste ostrzezen z
+    // geometrii w bazie, i to ona, nie ta ponizej, trafia ostatecznie do
+    // zamowienia (patrz `castingAcknowledgement` w chat-api/orders.js).
+    const paramsDoKoszyka = {
+      ...params, ...(service.fixed || {}), ...podstawaZReki,
+      ...(printability ? { printability } : {}),
+      ...(castingWarnings.length ? { odlewPokwitowanie: true } : {}),
+    };
     cart.add({
       kind: "service",
       calculator: service.calculator,
       serviceId: card.id,
       title: t(card.title, lang),
       image: card.image,
-      params: { ...params, ...(service.fixed || {}), ...podstawaZReki, ...(printability ? { printability } : {}) },
+      params: paramsDoKoszyka,
       geometry,
       scale,
       fileName: file?.name || null,
@@ -820,7 +914,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
         serviceId: card.id,
         title: t(card.title, lang),
         image: card.image,
-        params: { ...params, ...(service.fixed || {}), ...podstawaZReki, ...(printability ? { printability } : {}) },
+        params: paramsDoKoszyka,
         geometry: model.geometry || null,
         scale: 1,
         fileName: model.name,
@@ -1131,7 +1225,26 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
           </div>
         )}
 
-        {error && (
+        {/* BLOKADA ODLEWU MA WLASNY TON. Zwykly blad wyceny (needs_quote,
+            too_large_for_casting, ...) zostaje bursztynowy, bo prowadzi do
+            kontaktu. `casting_model_blocked` mowi o wadzie PLIKU, ktora
+            klient moze sam poprawic, wiec dostaje ton rozowy, ten sam co
+            blokada w `PrintabilityGate`. */}
+        {error && error.code === "casting_model_blocked" && (
+          <div className="rounded-xl border border-rose-400/30 bg-rose-500/5 p-4 mb-4">
+            <div className="flex gap-2.5">
+              <XCircle className="w-4 h-4 text-rose-300 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-rose-300 text-xs leading-relaxed mb-2">{error.message}</p>
+                <Link to="/contact/" className="inline-flex items-center gap-1.5 text-rose-300 hover:text-rose-200 text-xs">
+                  {u.toQuote} <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && error.code !== "casting_model_blocked" && (
           <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-4">
             <div className="flex gap-2.5">
               <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -1194,6 +1307,29 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
               </div>
             )}
 
+            {/* Rachunek przeliczenia wymiaru i ostrzezenia z bramki odlewniczej,
+                widoczne zawsze, gdy serwer je odesle razem z cena. */}
+            <OdlewZPlikuInfo odlew={price.odlewZPliku} lang={lang} />
+
+            {/* POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ. Uwagi do modelu
+                pokazuje juz blok wyzej; tutaj jest tylko potwierdzenie, ze
+                klient je widzial, zanim doda pozycje do koszyka. */}
+            {castingWarnings.length > 0 && (
+              <div className="mb-3 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={castingAck}
+                    onChange={(e) => setCastingAck(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 shrink-0 accent-amber-400"
+                  />
+                  <span className="text-white text-xs leading-relaxed">{u.castingAckLabel}</span>
+                </label>
+                <p className="text-neutral-500 text-xs leading-relaxed mt-2">{u.castingAckNote}</p>
+                {!castingAck && <p className="text-amber-300 text-xs mt-2">{u.castingAckRequired}</p>}
+              </div>
+            )}
+
             {/* Najpierw droga, potem powod: formularz podstawy stoi nad lista
                 przeszkod, zeby klient nie musial szukac, gdzie wpisac wymiary. */}
             {!binding && !needsHumanQuote && missing.length > 0 && (
@@ -1226,6 +1362,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                 ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.materialNoteHint }] : []),
                   ...(wantsEngraving || pack?.personalizable
                     ? [{ ok: jewelryEngravingOk && packEngravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
+                  ...(castingWarnings.length ? [{ ok: castingAckOk, label: u.needCastingAck, hint: u.needCastingAckHint }] : []),
                 ]}
               />
             )}
@@ -1267,7 +1404,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
               }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-              {added ? u.added : !ready ? (printHold ? u.printHold : !binding ? u.missingBasis : !descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
+              {added ? u.added : !ready ? (printHold ? u.printHold : !binding ? u.missingBasis : !descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : !castingAckOk ? u.castingAckRequired : u.missingEngraving) : u.addToCart}
             </button>
             )}
 

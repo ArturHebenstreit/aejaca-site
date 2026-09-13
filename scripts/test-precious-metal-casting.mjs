@@ -124,18 +124,38 @@ for (const opcja of CASTING_FINISHES) {
 
 // KOMUNIKAT O BRAKACH MA NAZYWAC BRAKI. Kontrola negatywna nizej pilnuje, ze
 // nie zadamy pliku tam, gdzie wycena i tak idzie do czlowieka.
+// Od 13 wrzesnia 2026 sciezka z plikiem pyta takze o rodzaj wyrobu i o stan
+// pliku (wymiary gotowe czy juz powiekszone o skurcz). Oba pytania sa
+// obowiazkowe i celowo bez wartosci domyslnej: podstawiona odpowiedz o skurcz
+// znaczy tyle samo, co jej brak, a kosztuje kruszec, kolbe i dobe pieca.
+// Decyzja: ADR-0048.
 assert.deepEqual(
   missingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver" }),
-  ["finishId", "stlData"],
+  ["finishId", "stlData", "wyrobId", "modelStanId"],
 );
 assert.deepEqual(missingCastingParams({ variantId: "ready_pattern", materialSourceId: "aejaca", metalId: "silver", finishId: "raw" }), []);
 for (const jezyk of ["pl", "en", "de"]) {
   const zdanie = describeMissingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw" }, jezyk);
   assert.match(zdanie, /STL/, `komunikat o brakach w ${jezyk} nie mowi, jaki plik wgrac`);
 }
+// Komplet dla zawieszki: bez otworu na palec nie pytamy o jego srednice.
 assert.equal(
-  describeMissingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw", stlData: { volumeCm3: 1, bbox: { x: 1, y: 1, z: 1 } } }, "pl"),
+  describeMissingCastingParams({
+    variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw",
+    wyrobId: "pendant", modelStanId: "finished",
+    stlData: { volumeCm3: 1, bbox: { x: 1, y: 1, z: 1 } },
+  }, "pl"),
   null,
+);
+// Obraczka bez podanej srednicy otworu nie ma ceny: naddatek na szlif liczy
+// sie od wymiaru docelowego, wiec bez niego nie ma czego policzyc.
+assert.deepEqual(
+  missingCastingParams({
+    variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw",
+    wyrobId: "ring", modelStanId: "finished",
+    stlData: { volumeCm3: 1, bbox: { x: 1, y: 1, z: 1 } },
+  }),
+  ["otworMm"],
 );
 
 const base = { metalId: "silver", finishId: "clean", qtyId: "1" };

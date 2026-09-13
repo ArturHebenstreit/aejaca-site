@@ -10,7 +10,7 @@ import { getSystemPrompt, detectHotLead } from "./context.js";
 import { NARZEDZIA, wykonajNarzedzie } from "./narzedziaAsystenta.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { oznaczWatek } from "./watkiPoczty.js";
-import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
+import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS, castingAcknowledgement } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { zrodloWizyty, jezykZeSciezki, toRobot } from "./zrodlaRuchu.js";
@@ -3139,6 +3139,17 @@ app.post("/api/uploads", (req, res, next) => {
         volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
         bbox: geometry.bbox,
         triangleCount: geometry.triangleCount,
+        // JAKOSC SIATKI IDZIE DO PRZEGLADARKI, zeby klient zobaczyl usterke
+        // zaraz po wgraniu, a nie dopiero przy probie wyceny. Wiazacy jest i
+        // tak pomiar z bazy, ten sam, ktory tu odsylamy.
+        watertight: geometry.watertight,
+        boundaryEdges: geometry.boundaryEdges,
+        nonManifoldEdges: geometry.nonManifoldEdges,
+        reversedFaces: geometry.reversedFaces,
+        solids: geometry.solids,
+        thinnestMm: geometry.thinnestMm,
+        thicknessSkipped: geometry.thicknessSkipped,
+        hole: geometry.hole,
       },
     });
   } catch (e) {
@@ -3926,6 +3937,22 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         });
       }
 
+      // POKWITOWANIE OSTRZEZEN BRAMKI ODLEWNICZEJ.
+      //
+      // Sprawdzamy TUTAJ, na `item.odlewZPliku` policzonym wyzej przez `priceItem`
+      // z geometrii z bazy, a nie na liscie z przegladarki: przegladarka jest
+      // o jedno `fetch` od podmiany, a ten zapis ma sluzyc za dowod w sporze
+      // o to, kto placi za powtorke nieudanego odlewu (decyzja 2026-09-13).
+      const pokwitowanie = castingAcknowledgement(item, raw.params);
+      if (!pokwitowanie.ok) {
+        logOdmowyZamowienia("casting_warning_not_acknowledged", raw.calculator);
+        return res.status(400).json({
+          error: "Model do odlewu ma uwagi, ktore trzeba potwierdzic przed zlozeniem zamowienia."
+            + " Wroc do kalkulatora, przeczytaj uwagi do modelu i zaznacz pokwitowanie.",
+          code: "casting_warning_not_acknowledged",
+        });
+      }
+
       // PODLOZE USLUGI LASEROWEJ.
       //
       // Grawer na przedmiocie klienta, na jego materiale i na naszym materiale
@@ -3972,7 +3999,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         packagingText,
         packagingTextBack,
         description,
-        params: raw.params,
+        // ZAPIS POKWITOWANIA NADPISUJE FLAGE Z PRZEGLADARKI. Klient przyslal
+        // sam boolean, tu wchodzi na jego miejsce liczba dowodowa: lista
+        // ostrzezen POLICZONA TUTAJ (patrz `castingAcknowledgement` wyzej)
+        // razem ze znacznikiem, ze klient je przyjal. To ta wersja idzie do
+        // bazy i do maila, wiec spor o powtorke odlewu rozstrzyga sie z niej,
+        // a nie z tego, co klient mogl podmienic o jedno `fetch` wczesniej.
+        params: pokwitowanie.ostrzezenia.length
+          ? { ...raw.params, odlewPokwitowanie: { potwierdzone: true, ostrzezenia: pokwitowanie.ostrzezenia } }
+          : raw.params,
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
         uploadToken: raw.uploadToken || null,

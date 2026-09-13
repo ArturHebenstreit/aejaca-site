@@ -111,7 +111,15 @@ console.log("5. Kalkulator dodaje osobna pozycje na kazdy model");
     "i tylko tam, gdzie cena bierze sie z pliku");
   ok(/multiple/.test(kasa), "pole przyjmuje kilka plikow naraz");
   // Ustawienia sa wspolne: pozycja z paczki jedzie z tymi samymi parametrami.
-  ok(/params: paramsZPodstawa,[\s\S]{0,400}uploadToken: model\.token/.test(kasa),
+  //
+  // Od 13 wrzesnia 2026 nie jest to juz `paramsZPodstawa` WPROST, bo przy
+  // odlewie dochodzi znacznik pokwitowania ostrzezen. Sprawdzamy wiec dwie
+  // rzeczy osobno: ze parametry koszyka wychodza z parametrow formularza, i ze
+  // pozycja z paczki bierze dokladnie te same, co pozycja glowna. Sam napis
+  // `paramsZPodstawa` obok `uploadToken` przestal byc dowodem na cokolwiek.
+  ok(/const paramsDoKoszyka = [\s\S]{0,300}paramsZPodstawa/.test(kasa),
+    "parametry do koszyka wychodza z parametrow formularza");
+  ok(/params: paramsDoKoszyka,[\s\S]{0,400}uploadToken: model\.token/.test(kasa),
     "model z paczki dziedziczy ustawienia z formularza");
 }
 

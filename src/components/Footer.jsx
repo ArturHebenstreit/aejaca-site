@@ -186,6 +186,11 @@ export default function Footer() {
                 <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
                 <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
                 <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>
+                {/* Strona uslugi odlewu z pliku. W stopce, bo wymagania modelu
+                    maja trafic do klienta PRZED kreatorem, a nie po wgraniu
+                    pliku: ze stopki jest do niej jedno klikniecie z kazdej
+                    strony serwisu. */}
+                <Link to="/uslugi/odlew-z-pliku/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.footer.odlewZPliku}</Link>
                 {/* Strony lokalne. W stopce, bo pojawia sie na kazdej stronie,
                     co daje im glebokosc 1 klikniecia zamiast 2 przez /studio/. */}
                 <Link to="/druk-3d-warszawa/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dWarsaw}</Link>

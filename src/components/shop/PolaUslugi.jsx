@@ -65,6 +65,9 @@ export function poprawkiWyboru(service, params, opcje = {}) {
   const zmiany = {};
   for (const f of polaWidoczne(service, params, opcje)) {
     if (f.multi) continue;
+    // POLE LICZBOWE NIE MA WARIANTOW DO PRZYSTAWIENIA. Klient wpisuje liczbe,
+    // wiec nie ma tu "wyboru spoza listy", a `warianty[0]` nie istnieje.
+    if (f.typ === "liczba") continue;
     const warianty = wariantyPola(f, params);
     if (!warianty?.length) continue;
     if (warianty.some((o) => o.id === params[f.key])) continue;
@@ -142,8 +145,77 @@ function WyborWielu({ f, warianty, params, setParam, lang, accent }) {
   );
 }
 
+/**
+ * Pole liczbowe: jedyna kontrolka tej listy, w ktorej klient wpisuje wartosc,
+ * a nie wybiera ja z listy. Otwor obraczki ma 30 rozmiarow, kazdy w dowolnym
+ * miejscu miedzy 12 a 30 mm, a klient podaje 17,25 mm: lista kafelkow byla
+ * tu zla kontrolka, wiec zamiast niej stoi zwykle `<input type="number">`.
+ *
+ * WARTOSC POZA `min`/`max` NIE JEST POPRAWIANA ZA KLIENTA. Pole tylko
+ * oznacza sie widocznie (`aria-invalid` plus czerwona ramka) i podpisuje
+ * zdaniem z `f.podpowiedz`, jesli pole je ma. Ciche przyciecie wartosci
+ * zmienialoby zamowienie bez wiedzy klienta.
+ */
+function PoleLiczbowe({ f, params, setParam, lang, accent, wyglad }) {
+  const wartosc = params[f.key];
+  const pusty = wartosc === "" || wartosc == null;
+  const pozaZakresem = !pusty
+    && ((f.min != null && wartosc < f.min) || (f.max != null && wartosc > f.max));
+  const etykieta = t(f.label, lang);
+  const podpis = f.podpowiedz ? f.podpowiedz(params, lang) : null;
+  const ring = pozaZakresem
+    ? "border-red-400/60 focus:border-red-400/80"
+    : accent === "amber"
+      ? "border-white/10 focus:border-amber-400/60"
+      : "border-white/10 focus:border-blue-400/60";
+
+  const pole = (
+    <div>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          inputMode="decimal"
+          aria-label={etykieta}
+          aria-invalid={pozaZakresem || undefined}
+          min={f.min}
+          max={f.max}
+          step={f.krok}
+          value={wartosc ?? ""}
+          onChange={(e) => {
+            const surowy = e.target.value;
+            setParam(f.key, surowy === "" ? "" : Number(surowy));
+          }}
+          className={`w-28 px-3 py-2 rounded-lg border bg-white/[0.03] text-white text-sm outline-none transition-colors ${ring}`}
+        />
+        {f.jednostka && <span className="text-xs text-neutral-400">{f.jednostka}</span>}
+      </div>
+      {podpis && (
+        <p className={`text-xs mt-1.5 leading-snug ${pozaZakresem ? "text-red-300" : "text-neutral-400"}`}>{podpis}</p>
+      )}
+    </div>
+  );
+
+  // W SKORZE SKLEPU KONTROLKA RYSUJE WLASNA ETYKIETE, tak jak `TileGroup` i
+  // `StepSlider`: pole bez `widok` nie dostaje etykiety od zewnetrznego
+  // wrappera (`polaWidoczne`/`wlasnaEtykieta` w eksporcie domyslnym). W skorze
+  // kalkulatora etykiete rysuje juz karta (`CalcCard`), wiec tu jej nie
+  // powtarzamy.
+  if (wyglad === "kalkulator") return pole;
+  return (
+    <div className="mb-6">
+      <Etykieta>{etykieta}</Etykieta>
+      {pole}
+    </div>
+  );
+}
+
 /** Sama kontrolka pola, bez etykiety i bez kartki. */
 function Kontrolka({ f, warianty: surowe, params, setParam, lang, accent, wyglad }) {
+  // POLE LICZBOWE JEST ROZPOZNAWANE PRZED WSZYSTKIM INNYM: nie ma wariantow
+  // (`surowe` jest tu `undefined`), wiec dalsze galezie, ktore czytaja liste
+  // wariantow, nie mialyby czego przetworzyc.
+  if (f.typ === "liczba") return <PoleLiczbowe {...{ f, params, setParam, lang, accent, wyglad }} />;
+
   // PODPIS POD WARIANTEM LICZY SIE Z JEZYKIEM, wiec nie moze powstac w
   // `optionsFrom`, ktore jezyka nie widzi. Stad osobne `podpis(wariant, lang)`:
   // dopisek o doplacie ma byc w zlotowkach po polsku i w euro poza Polska,

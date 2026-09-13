@@ -63,6 +63,7 @@ import ResinSettingsPage from "./pages/ResinSettingsPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import B2B from "./pages/B2B.jsx";
 import LocalPrint3D from "./pages/LocalPrint3D.jsx";
+import OdlewZPliku from "./pages/OdlewZPliku.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 // Ta sama lista tras co w `main.jsx`, tylko ze stronami importowanymi
@@ -75,7 +76,7 @@ const KOMPONENTY = {
   AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
   PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
   LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
-  Privacy, Reviews, B2B, LocalPrint3D, NotFound,
+  Privacy, Reviews, B2B, LocalPrint3D, OdlewZPliku, NotFound,
 };
 
 function galazJezyka(lang) {

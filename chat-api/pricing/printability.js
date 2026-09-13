@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/analysis/printability.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // ANALIZA DRUKOWALNOSCI MODELU
 // ============================================================

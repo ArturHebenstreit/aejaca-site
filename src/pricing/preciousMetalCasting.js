@@ -1,6 +1,8 @@
 import { calcNew } from "./jewelry.js";
 import { PLATING, ENGRAVING_OPTIONS, engravingPricePLN, normalizeEngravingId } from "./jewelryConfig.js";
 import { fmtCost } from "./config.js";
+import { STANY_MODELU, KATEGORIE_WYROBU, kategoriaZOtworem } from "../data/castingSpec.js";
+import { CASTING_ALLOYS } from "../data/castingAlloys.js";
 
 export const PRECIOUS_METAL_CASTING_BUILD = "1.009";
 
@@ -229,6 +231,34 @@ const CASTING_REQUIRED = [
   { id: "stlData", ma: (p) => Boolean(p.stlData?.volumeCm3 && p.stlData?.bbox),
     dotyczy: (p) => p.variantId === "model_3d" && p.materialSourceId === "aejaca",
     label: L("pliku modelu 3D (STL, OBJ, 3MF, STEP), z którego mierzymy objętość", "the 3D model file (STL, OBJ, 3MF, STEP) we measure the volume from", "die 3D-Datei (STL, OBJ, 3MF, STEP), aus der wir das Volumen messen") },
+
+  // PYTANIA O MODEL KLIENTA. Stoja tutaj, a nie w bramce `castingIntake.js`,
+  // bo brak odpowiedzi to jest brak parametru, a nie usterka pliku, i ma sie
+  // czytac tym samym zdaniem, co brak kruszcu. Bramka odlewnicza zajmuje sie
+  // tym, czego klient nie poprawi odpowiedzia: szczelnoscia, grubascia,
+  // liczba bryl i zgodnoscia otworu z podanym rozmiarem.
+  //
+  // Wszystkie dotycza wylacznie sciezki z plikiem: przy wzorcu powierzonym
+  // i przy pomysle klienta nie ma pliku, o ktorego skale mozna by pytac.
+  { id: "wyrobId", ma: (p) => KATEGORIE_WYROBU.some((v) => v.id === p.wyrobId),
+    dotyczy: (p) => p.variantId === "model_3d",
+    label: L("rodzaju wyrobu (od tego zależy naddatek na szlif otworu)", "the kind of piece (it decides the allowance for the inner grind)", "der Art des Stücks (davon hängt das Aufmaß für den Innenschliff ab)") },
+
+  // NAJDROZSZE PYTANIE CALEJ USLUGI. Model przeskalowany o skurcz dwa razy
+  // daje obraczke wieksza o dwa do czterech rozmiarow, czyli strate kruszcu,
+  // kolby i doby pieca. Odpowiedzi nie wolno podstawic za klienta, dlatego
+  // pole nie ma wartosci domyslnej i stoi tu jako brak.
+  { id: "modelStanId", ma: (p) => STANY_MODELU.some((v) => v.id === p.modelStanId),
+    dotyczy: (p) => p.variantId === "model_3d",
+    label: L("informacji, czy plik jest w wymiarach gotowych, czy już powiększony o skurcz", "whether the file carries finished dimensions or is already scaled for shrinkage", "ob die Datei Fertigmaße trägt oder bereits auf Schwund skaliert ist") },
+
+  { id: "modelStopId", ma: (p) => Boolean(CASTING_ALLOYS[p.modelStopId]),
+    dotyczy: (p) => p.variantId === "model_3d" && p.modelStanId === "compensated",
+    label: L("stopu, dla którego model został powiększony", "the alloy the model was scaled for", "der Legierung, für die das Modell skaliert wurde") },
+
+  { id: "otworMm", ma: (p) => Number(p.otworMm) > 0,
+    dotyczy: (p) => p.variantId === "model_3d" && kategoriaZOtworem(p.wyrobId),
+    label: L("średnicy otworu w gotowym wyrobie", "the finished inner diameter", "des fertigen Innendurchmessers") },
 ];
 
 /** Identyfikatory pol, ktorych brakuje do policzenia kwoty wiazacej. */
