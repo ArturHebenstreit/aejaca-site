@@ -4,7 +4,7 @@ status: review
 author: Claude Code
 branch: claude/serwis-development-skills-3vuba9
 base_commit: f4826ad
-last_commit: uzupelnione po pushu
+last_commit: 4456aa1
 updated: 2026-09-13
 ---
 
@@ -53,6 +53,8 @@ bez nowej strony uslugi i bez zmian w cenniku.
 | `src/pages/Order.jsx` | `ukryjGdy` i pole liczbowe w uproszczonym renderze |
 | `src/pricing/preciousMetalCasting.js` | cztery nowe pozycje na liscie brakow |
 | `scripts/test-casting-intake.mjs` | 33 sprawdziany, w lancuchu `npm run build` |
+| `src/components/calculators/CalcToCart.jsx` | `onOdpowiedz`: ustalenia bramki i kod bledu wychodza z zapytania o cene |
+| `src/components/calculators/MetalCastCalc.jsx`, `src/components/shop/ServiceConfigurator.jsx` | blok przeliczenia, ostrzezenia, odmowa w tonie rozowym |
 
 ## Jak to dziala
 
@@ -108,6 +110,18 @@ przy 33 tysiacach.
   jest glowne.
 - **Przeliczenie w mailu.** Jedzie z pozycja w `item.odlewZPliku`, ale szablon
   maila jeszcze go nie rysuje.
+
+## Znalezione przy okazji i naprawione
+
+- **Kalkulator studyjny wysylal do serwera wyliczanke pol**, a nie caly stan
+  formularza. Szesc nowych pytan nie dojechaloby wiec do wyceny i klient
+  dostawalby "parametry niekompletne" przy formularzu wypelnionym do konca.
+  Teraz idzie `stan` w calosci.
+- **`llms.txt` obiecywal kolbe 80 x 90 mm i limit 42 x 42 x 65 mm**, czyli
+  wymiary sprzed 7 wrzesnia 2026. Poprawione na 83 x 100 mm i Ø63 x 62 mm.
+- **Trzy dokumenty oferowaly odlew ze zlota czystego**, ktorego nie odlewamy od
+  10 wrzesnia 2026 (`NIE_DO_ODLEWU`). Poprawione w `llms.txt`, `context.js`
+  i Brand Reference; zloto 24k zostaje tam, gdzie dotyczy innych technik.
 
 ## Do rozstrzygniecia przez wlasciciela
 
