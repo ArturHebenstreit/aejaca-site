@@ -264,7 +264,7 @@ const fmtKwota = (n) => n.toFixed(2).replace(".", ",");
  * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
  *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
  */
-export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, onUnavailable = null, hold = false, embedded = false }) {
+export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, onOdpowiedz = null, onUnavailable = null, hold = false, embedded = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const { rates } = useMarketRates();
@@ -621,6 +621,21 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       uwaga: u.note,
     });
   }, [onBinding, blocked, price, qty, lineGrosze, packGrosze, u, showEur, plnPerEur]);
+
+  // USTALENIA Z BRAMKI ODLEWNICZEJ IDA OSOBNYM KANALEM. `onBinding` niesie
+  // wylacznie gotowe napisy o kwocie i milczy, gdy kwoty nie ma, a wlasnie
+  // wtedy jest najwiecej do powiedzenia: model nieszczelny albo otwor
+  // niezgodny z podanym rozmiarem to jest ODMOWA z powodem, nie brak ceny.
+  // Bez tego kanalu kalkulator studyjny pokazywalby blok przeliczenia
+  // policzony u siebie, a o usterce pliku nie wiedzialby nic.
+  useEffect(() => {
+    if (!onOdpowiedz) return;
+    onOdpowiedz({
+      odlewZPliku: price?.odlewZPliku || null,
+      bladKod: error || null,
+      bladTekst: errorMsg || null,
+    });
+  }, [onOdpowiedz, price, error, errorMsg]);
 
   if (!card) return null;
 

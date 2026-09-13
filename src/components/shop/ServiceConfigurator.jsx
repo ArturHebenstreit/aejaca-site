@@ -10,10 +10,11 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
 import { Link } from "../../i18n/nav.jsx";
 import { claimHandoff } from "../../data/calcHandoff.js";
-import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight, X } from "lucide-react";
+import { ShoppingCart, Check, Loader2, AlertTriangle, XCircle, ArrowRight, X } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
+import { wierszePrzeliczenia } from "../../pricing/castingIntake.js";
 import { LIMIT_PACZKI, FORMATY_MODELU, podzielPaczke, komunikatPaczki, wgrajModel, wycenModel, idModelu } from "../../shop/paczkaModeli.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
 import { TileGroup, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
@@ -274,6 +275,61 @@ const UI = {
 
 
 /** Pola, ktore lepiej czytaja sie jako suwak niz jako kafelki */
+
+// ============================================================
+// ODLEW Z PLIKU: przeliczenie wymiaru i ostrzezenia z bramki serwera
+// ============================================================
+// `item.odlewZPliku` przychodzi wylacznie z /api/price, bo tylko serwer
+// zmierzyl plik. Rachunek czytamy z `wierszePrzeliczenia`, zeby kolejnosc
+// dzialan i etykiety byly te same, co w mailu i w podsumowaniu zamowienia.
+// Ostrzezenia sa juz w jezyku klienta, wiec nie tlumaczymy ich drugi raz.
+const ODLEW_LABELS = {
+  pl: { lead: "Podajesz wymiar gotowego wyrobu, a tu pokazujemy, co z niego faktycznie wydrukujemy." },
+  en: { lead: "You give the finished dimension, and here we show what we will actually print from it." },
+  de: { lead: "Sie geben das Fertigmaß an, hier zeigen wir, was wir daraus tatsächlich drucken." },
+};
+
+function OdlewZPlikuInfo({ odlew, lang }) {
+  const ol = ODLEW_LABELS[lang] || ODLEW_LABELS.pl;
+  if (!odlew) return null;
+  const wiersze = odlew.przeliczenie ? wierszePrzeliczenia(odlew.przeliczenie, lang) : [];
+  const ostrzezenia = odlew.ostrzezenia || [];
+  if (!wiersze.length && !ostrzezenia.length) return null;
+  return (
+    <div className="mt-4 space-y-3">
+      {wiersze.length > 0 && (
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-neutral-400 text-xs leading-relaxed mb-3">{ol.lead}</p>
+          <div className="space-y-1.5">
+            {wiersze.map((w, i) => (
+              <div
+                key={i}
+                className={`flex items-baseline justify-between gap-4 text-xs ${
+                  w.wynik ? "text-white font-semibold pt-1.5 mt-1 border-t border-white/10" : "text-neutral-400"
+                }`}
+              >
+                <span>{w.etykieta}</span>
+                <span className="tabular-nums shrink-0">{w.wartosc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {ostrzezenia.length > 0 && (
+        <div className="rounded-2xl border border-amber-400/25 bg-amber-500/5 p-4">
+          <ul className="space-y-1.5">
+            {ostrzezenia.map((o) => (
+              <li key={o.id} className="flex gap-2 text-amber-300 text-xs leading-relaxed">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{o.tekst}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ServiceConfigurator({ card, lang, accent = "blue", onPriceChange }) {
   const { money } = useMoney();
@@ -1131,7 +1187,26 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
           </div>
         )}
 
-        {error && (
+        {/* BLOKADA ODLEWU MA WLASNY TON. Zwykly blad wyceny (needs_quote,
+            too_large_for_casting, ...) zostaje bursztynowy, bo prowadzi do
+            kontaktu. `casting_model_blocked` mowi o wadzie PLIKU, ktora
+            klient moze sam poprawic, wiec dostaje ton rozowy, ten sam co
+            blokada w `PrintabilityGate`. */}
+        {error && error.code === "casting_model_blocked" && (
+          <div className="rounded-xl border border-rose-400/30 bg-rose-500/5 p-4 mb-4">
+            <div className="flex gap-2.5">
+              <XCircle className="w-4 h-4 text-rose-300 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-rose-300 text-xs leading-relaxed mb-2">{error.message}</p>
+                <Link to="/contact/" className="inline-flex items-center gap-1.5 text-rose-300 hover:text-rose-200 text-xs">
+                  {u.toQuote} <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && error.code !== "casting_model_blocked" && (
           <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-4">
             <div className="flex gap-2.5">
               <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -1193,6 +1268,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                 )}
               </div>
             )}
+
+            {/* Rachunek przeliczenia wymiaru i ostrzezenia z bramki odlewniczej,
+                widoczne zawsze, gdy serwer je odesle razem z cena. */}
+            <OdlewZPlikuInfo odlew={price.odlewZPliku} lang={lang} />
 
             {/* Najpierw droga, potem powod: formularz podstawy stoi nad lista
                 przeszkod, zeby klient nie musial szukac, gdzie wpisac wymiary. */}

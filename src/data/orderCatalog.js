@@ -482,7 +482,7 @@ export const SERVICES = [
             ) },
           { id: "withAllowance", label: L("Otwór już pomniejszony o naddatek", "Hole already reduced by the allowance", "Loch bereits um das Aufmaß verkleinert"),
             sub: L(
-              "Sam zmniejszyłeś otwór o naddatek na szlif. Doliczamy tylko skurcz stopu, bez odejmowania naddatku drugi raz.",
+              "Otwór w pliku jest już pomniejszony o naddatek na szlif. Doliczamy tylko skurcz stopu, bez odejmowania naddatku drugi raz.",
               "You already reduced the hole by the grinding allowance. We only add the alloy shrinkage, without subtracting the allowance again.",
               "Sie haben das Loch bereits um das Schleifaufmaß verkleinert. Wir rechnen nur den Legierungsschwund hinzu, ohne das Aufmaß erneut abzuziehen."
             ) },

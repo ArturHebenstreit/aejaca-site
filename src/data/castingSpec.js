@@ -44,7 +44,7 @@ export const STANY_MODELU = [
     id: "compensated",
     label: L("Model już powiększony o skurcz", "Already scaled for shrinkage", "Bereits auf Schwund skaliert"),
     sub: L(
-      "Wskaż stop, dla którego skalowałeś. Doskalujemy tylko różnicę.",
+      "Wskaż stop, dla którego model był skalowany. Doskalujemy tylko różnicę.",
       "Tell us which alloy you scaled for. We only add the difference.",
       "Nennen Sie die Legierung, für die skaliert wurde. Wir ergänzen nur die Differenz."
     ),

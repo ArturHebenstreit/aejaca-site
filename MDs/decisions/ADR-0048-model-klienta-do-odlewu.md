@@ -1,10 +1,16 @@
 ---
-adr: 0048
-tytul: Model klienta do odlewu deklaruje swoj stan, a skurcz liczymy z roznicy
 status: draft
-data: 2026-09-13
-autor: Claude Code
-dotyczy: src/data/castingSpec.js, src/pricing/castingIntake.js, src/analysis/printability.js, chat-api/orders.js, src/data/orderCatalog.js
+owner: Artur
+date: 2026-09-13
+deciders: Artur
+supersedes: null
+related:
+  - src/data/castingSpec.js
+  - src/pricing/castingIntake.js
+  - src/pricing/preciousMetalCasting.js
+  - src/analysis/printability.js
+  - src/data/orderCatalog.js
+  - chat-api/orders.js
 ---
 
 # ADR-0048: model klienta do odlewu deklaruje swoj stan
