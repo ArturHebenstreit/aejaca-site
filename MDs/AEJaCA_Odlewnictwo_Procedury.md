@@ -1,6 +1,6 @@
 # AEJaCA - Procedury odlewnicze: masa formierska, wypalanie, odlew
 
-*Wersja 1.1 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
+*Wersja 1.2 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
 
 > **Miejsce w repozytorium.** Ten dokument jest źródłem prawdy o procesie odlewniczym:
 > parametry sprzętu, masa formierska, krzywe wypalania, temperatury, wsad i studzenie.
@@ -10,7 +10,7 @@
 > i `src/pricing/preciousMetalCasting.js`. Rozjazd między tym dokumentem a kodem jest
 > błędem po jednej ze stron i trzeba go rozstrzygnąć, a nie zostawić.
 
-> **Status wartości.** Pozycje oznaczone **[POTWIERDZONE]** pochodzą z udanego cyklu lost-PLA wykonanego w warsztacie. Pozycje **[KARTA]** pochodzą z dokumentacji producenta. Pozycje **[DO WERYFIKACJI]** to wartości wyprowadzone lub szacowane, wymagające pomiaru przy pierwszym użyciu. Nie awansować wartości między kategoriami bez pomiaru.
+> **Status wartości.** Pozycje oznaczone **[POTWIERDZONE]** pochodzą z udanego cyklu wykonanego w warsztacie. Do 13 września 2026 był to wyłącznie cykl lost-PLA; od 14 września doszedł cykl lost-resin w srebrze (krzywa D, rozdz. 3.4). Przy wartości potwierdzonej zapisujemy, KTÓRY cykl ją potwierdził, bo krzywej nie wolno przenosić między materiałem wzorca a stopem. Pozycje **[KARTA]** pochodzą z dokumentacji producenta. Pozycje **[DO WERYFIKACJI]** to wartości wyprowadzone lub szacowane, wymagające pomiaru przy pierwszym użyciu. Pozycje **[ŹRÓDŁO ZEWNĘTRZNE]** pochodzą z cudzej dokumentacji technologicznej: są opisem czyjejś sprawdzonej praktyki, a nie naszej, i awansują na [POTWIERDZONE] dopiero po przejechaniu u nas. Nie awansować wartości między kategoriami bez pomiaru.
 
 ---
 
@@ -114,6 +114,8 @@ Funkcje: degassing masy formierskiej, vacuum casting, wspomaganie komory Resiner
 | **Lost-PLA** | **40:100** [POTWIERDZONE] | 610 g proszku + 244 ml wody |
 | **Lost-resin (BlueCast)** | **38:100** [KARTA] | 625 g proszku + 237 ml wody |
 
+**Nazewnictwo.** "BlueCast X-One" i "X-One V2" to w tym dokumencie ta sama żywica (potwierdzenie właściciela, 14 września 2026). Dwie nazwy jednego materiału mylą przy krzywej wypalania, bo krzywa zależy właśnie od materiału wzorca, więc w tekście trzymamy się zapisu "X-One V2".
+
 Uzasadnienie różnicy: PLA nie wytapia się, tylko mięknie i rozpycha formę. Rzadsza masa jest tam świadomym wyborem, bo daje bardziej porowatą formę z możliwością oddania gazów. Żywice BlueCast zawierają niskotopliwy polimer woskowy, wypływają w niskiej temperaturze i nie rozpychają formy, więc wraca się do proporcji katalogowej producenta, która daje mocniejszą formę.
 
 **Przelicznik roboczy:** ok. 1,22 g proszku na 1 ml objętości formy przy 40:100; ok. 1,19 g/ml przy 38:100. [DO WERYFIKACJI przy kolejnych zalaniach]
@@ -206,13 +208,13 @@ Sloty 2-3 (odwodnienie gipsu) są wspólne dla wszystkich wariantów, bo zależ�
 | PLA | Au 585 | **A** (3.1) | [POTWIERDZONE - działa] |
 | PLA | Ag 925 | **B** (3.2) | [DO WERYFIKACJI] |
 | Żywica X-One V2 | Au 585 | **C** (3.3) | [DO WERYFIKACJI] |
-| Żywica X-One V2 | Ag 925 | **D** (3.4) | [DO WERYFIKACJI] |
+| Żywica X-One V2 | Ag 925 | **D** (3.4) | **[POTWIERDZONE - działa]** |
 
 ---
 
 ### 3.1 KRZYWA A: Lost-PLA + Au 585 [POTWIERDZONE - działa]
 
-Kolba 83 x 100 mm, VEVOR KD-Z6652B. **To jest krzywa referencyjna, z której wyprowadzono pozostałe.**
+Kolba 83 x 100 mm, VEVOR KD-Z6652B. **To jest krzywa referencyjna, z której wyprowadzono pozostałe.** Od 14 września 2026 nie jest już jedyną sprawdzoną: krzywa D (rozdz. 3.4) ma własne potwierdzenie z warsztatu i nie jest już wartością wyprowadzoną.
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -272,9 +274,9 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 
 ---
 
-### 3.4 KRZYWA D: Lost-resin X-One V2 + Ag 925 [DO WERYFIKACJI]
+### 3.4 KRZYWA D: Lost-resin X-One V2 + Ag 925 [POTWIERDZONE - działa]
 
-**Krzywa docelowa dla bieżących projektów srebrnych.**
+**Krzywa docelowa dla bieżących projektów srebrnych, przejechana w warsztacie i potwierdzona 14 września 2026 na żywicy BlueCast X-One V2.** Do tego dnia była wyprowadzona z krzywej A i oznaczona jako niesprawdzona. Wartości nie wymagały poprawki: zadziałały takie, jak stały w tabeli.
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -291,6 +293,9 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 **Uzasadnienie slotu 1:** X-One zawiera niskotopliwy polimer woskowy, który ma się wytopić i wypłynąć, nie tylko zmięknąć. To odpowiednik dewaxu, którego przy PLA nie ma. Przy 150°C część zostaje w formie i idzie do spalenia w slocie 4, zwiększając ilość popiołu.
 
 **Uzasadnienie plateau 690°C:** maksymalne oddalenie od granicy rozkładu spoiwa (730°C) przy zachowaniu marginesu nad temperaturą pełnego wypalenia X-One (650°C).
+
+**Rampy między slotami są niesterowane i nie zajmują czasu timera.** Nie programuje się ich i nie ma ich w tabeli: w VEVOR KD-Z6652B odliczanie startuje dopiero po osiągnięciu zadanej temperatury, więc każdy z dziewięciu slotów to pełne 60 minut przy temperaturze docelowej, a piec dochodzi do niej z pełną mocą. Pełny opis mechaniki sterownika: rozdz. 1.2. Zapisane tutaj, bo krzywą programuje się z tej tabeli, a nie z rozdziału o sprzęcie.
+
 
 ---
 
@@ -367,13 +372,27 @@ Ag 925 ma likwidus ok. 900°C. Potrzebne przegrzanie 80-120°C ponad tę wartoś
 
 ---
 
-## 5. TOPIENIE SREBRA - PROCEDURA
+## 5. TOPIENIE I STOPOWANIE - PROCEDURA
+
+### 5.0 Trzy czynności, których nie wolno mylić
+
+**Pod słowem "topienie" kryją się trzy różne roboty, o przeciwnych regułach. Zanim sięgniesz po którąkolwiek procedurę niżej, nazwij, którą z nich wykonujesz.**
+
+| Czynność | Co jest we wsadzie | Kolejność | Mieszanie |
+|---|---|---|---|
+| **Stopowanie** | metal czysty (999) plus ligatura | **metal szlachetny pierwszy, ligatura dopiero po jego pełnym stopieniu** | **tak, obowiązkowo** |
+| **Przetop na granulat** | gotowy stop (odzysk, wlewy, guziki) | wszystko razem | krótkie |
+| **Topienie do odlewu** | granulat gotowego stopu | wszystko razem | **nie** |
+
+Sprzeczność między "miedź dodaj, gdy srebro jest płynne" a "cały granulat do tygla" jest pozorna: pierwsze zdanie opisuje stopowanie, drugie topienie do odlewu. Oba są prawdziwe, dopóki wiadomo, o której czynności mowa.
+
+**Stopowanie i odlewanie to DWIE OSOBNE SESJE. [ŹRÓDŁO ZEWNĘTRZNE]** Najpierw robi się granulat albo sztabkę o jednorodnym składzie, a dopiero potem używa jej jako wsadu odlewniczego. Bezpośrednie stopienie mieszanki metalu czystego z ligaturą i zalanie jej od razu do formy daje niejednorodny skład, większe straty i pustki. Praktycznie: stop i granuluj dzień wcześniej, odlewaj z granulatu.
 
 ### 5.1 Kluczowa różnica względem złota
 
 **Przy srebrze NIE topi się z wyprzedzeniem.** Ciekłe srebro pochłania tlen z powietrza, do ok. dwudziestokrotności własnej objętości, i oddaje go gwałtownie przy krzepnięciu. Skutek: porowatość gazowa i "plucie" na powierzchni odlewu. Im krócej srebro stoi stopione, tym lepszy odlew.
 
-### 5.2 Harmonogram, liczony wstecz od momentu lania
+### 5.2 Topienie do odlewu: harmonogram, liczony wstecz od momentu lania
 
 | Przed laniem | Czynność |
 |---|---|
@@ -384,9 +403,9 @@ Ag 925 ma likwidus ok. 900°C. Potrzebne przegrzanie 80-120°C ponad tę wartoś
 | -5 do -3 min | Srebro płynne, kontrola wzrokowa |
 | **0** | Wyjmij kolbę, odwróć wlotem do góry, lej |
 
-**Boraks:** ok. 1/4 łyżeczki na 25-30 g wsadu. Ma powstać cienki szklisty film, nie kożuch. Nadmiar wpłynie do formy i da wtrącenia. Sypać od razu na wsad, nie po stopieniu.
+**Boraks:** ok. 1/4 łyżeczki na 25-30 g wsadu. Ma powstać cienki szklisty film, nie kożuch. Nadmiar wpłynie do formy i da wtrącenia. Sypać, gdy metal zbliża się do stopienia, a nie po stopieniu. Wsad wrzucony do rozgrzanego tygla dochodzi do topnienia w kilkadziesiąt sekund, a boraks topi się przy 740°C, czyli przed srebrem, więc szczypta rzucona od razu i tak spłynie. Moment pierwszych oznak topnienia jest jednak precyzyjniejszy i tak opisuje go dokumentacja technologiczna [ŹRÓDŁO ZEWNĘTRZNE].
 
-**Nie mieszać.** Mieszanie zaciąga tlen i rozbija warstwę osłonową.
+**Nie mieszać. Dotyczy WYŁĄCZNIE topienia do odlewu**, czyli tej procedury. Mieszanie zaciąga tlen i rozbija warstwę osłonową. Przy stopowaniu (rozdz. 5.5) mieszanie jest obowiązkowe i ta reguła go nie znosi.
 
 ### 5.3 Kontrola wzrokowa przed laniem
 
@@ -408,6 +427,59 @@ Ostatnie 15-20 min okna zostawić jako rezerwę na drugie podejście.
 
 **Od wyjęcia kolby do zalania: 30-60 sekund.** Wszystko nieprzygotowane wcześniej zostanie pominięte.
 
+### 5.5 Stopowanie z metalu czystego i ligatury [ŹRÓDŁO ZEWNĘTRZNE]
+
+Źródło: chińskie kompendium technologii odlewnictwa jubilerskiego wydane przez firmę Sobling, producenta OEM. Opisuje procedurę dla złota 18K, osobno dla palnika i dla pieca indukcyjnego, w obu przypadkach z tą samą kolejnością.
+
+**Reguła nadrzędna: metal czysty pierwszy, ligatura dopiero po jego stopieniu. Bez wyjątków.**
+
+**Palnik:**
+
+1. Płomień na czyste złoto.
+2. Gdy zaczyna się topić, posyp boraksem.
+3. Grzej do pełnego stopienia.
+4. Odsuń płomień i dodaj ligaturę do stopionego czystego złota.
+5. Grzej płomieniem neutralnym, posyp boraksem.
+6. Mieszaj pałeczką kwarcową aż do pełnego rozpuszczenia i jednorodności.
+
+**Piec indukcyjny:** ligaturę dodaje się, gdy czyste złoto jest całkowicie ciekłe. Po jej rozpuszczeniu obniża się temperaturę (źródło podaje 1050°C dla 18K), przetrzymuje 1-2 minuty i dokładnie miesza.
+
+**Kryterium gotowości:** powierzchnia ma być jasna jak lustro.
+
+**Dwie poprawki wobec tego, co stało w tym dokumencie wcześniej:**
+
+- **Boraks nie leci na zimny wsad, tylko przy pierwszych oznakach topnienia.** Poprawione także w rozdz. 5.2.
+- **Po dodaniu ligatury jest krótkie przetrzymanie z mieszaniem, nie natychmiastowe lanie.** Wcześniejsza rada "lej niezwłocznie" brała się z obawy o wypalanie cynku z ligatury. Przy STOPOWANIU ta obawa przegrywa z inną: niedomieszana ligatura daje segregację składu, czyli lokalnie zaniżoną próbę, której nie widać bez XRF. Ubytek cynku jest odwracalny doborem ligatury, zaniżona próba w gotowym wyrobie nie jest.
+
+**Temperatury nie przenosimy ze źródła.** Podane 1050°C dotyczy 18K. Dla naszych stopów obowiązuje rozdz. 4.2, ta sama zasada co przy krzywych wypalania: liczba wyprowadzona dla jednego stopu nie opisuje drugiego.
+
+### 5.6 Wsad przykładowy: 585 z czystego złota i odzysku
+
+| Składnik | Masa | Złoto czyste w składniku |
+|---|---|---|
+| Au 999 | 15,00 g | 15,000 g |
+| Odzysk Au 585 | 2,61 g | 1,527 g |
+| Ligatura | 10,62 g | 0 g |
+| **Razem** | **28,23 g** | **16,527 g** |
+
+Próba wychodząca: 16,527 / 28,23 = **0,5854**, czyli minimalnie powyżej 585. Rachunek sprawdzony 14 września 2026. Nadmiar po właściwej stronie jest zamierzony: próba zaniżona dyskwalifikuje wyrób, zawyżona o cztery dziesięciotysięczne nie szkodzi niczemu.
+
+**Kolejność:**
+
+1. Zaszkliw tygiel boraksem, jeśli nowy: obracaj tygiel szczypcami, aż na ściance powstanie jednolita glazura.
+2. Rozgrzej pusty tygiel.
+3. Włóż złoto 999 i kawałek 585.
+4. Gdy zaczyna się topić, posyp boraksem.
+5. Grzej do pełnego stopienia.
+6. Dodaj ligaturę, dosyp boraksu.
+7. Mieszaj prętem 1-2 minuty, aż ligatura całkowicie zniknie.
+8. Sprawdź powierzchnię: ma być jasna jak lustro.
+9. Lej w zakresie 1000-1050°C (rozdz. 4.2).
+
+**To nie jest ten sam wsad, co w rozdz. 6.** Tutaj liczy się SKŁAD stopu, czyli ile czystego złota i ile ligatury, żeby wyszła próba. Rozdz. 6 liczy MASĘ potrzebną do zalania konkretnej formy. Pierwsze robi się raz na partię granulatu, drugie przed każdym odlewem.
+
+**Punkt 7 jest ważniejszy, niż wygląda.** To jedyny krok, którego pominięcie nie daje żadnego widocznego objawu przy tyglu, a wychodzi dopiero na gotowym wyrobie, przy cechowaniu albo u klienta.
+
 ---
 
 ## 6. WSAD - KALKULACJA
@@ -421,6 +493,8 @@ zapas procesowy  = 12% (zgar, resztka w tyglu)
 ```
 
 Gęstości: Ag 925 = 10,36 g/cm³; Au 585 = 13,1 g/cm³.
+
+> **ROZJAZD DO ROZSTRZYGNIĘCIA (znalezione 14 września 2026).** Gęstość złota 585 ma w repozytorium trzy zapisy: 13,10 w `src/data/castingAlloys.js` (liczy z niej masę generator pierścionków i kalkulator skurczu), 13,07 w `src/pricing/preciousMetalCasting.js` (liczy z niej wycena odlewu) i 13,1 w tym akapicie. Ten sam wyrób waży więc inaczej w zależności od tego, który kalkulator go liczy, o 0,23 %, czyli 0,04 g na pierścionku 16 g. Nagłówek tego dokumentu mówi, że rozjazd między dokumentem a kodem jest błędem po jednej ze stron i trzeba go rozstrzygnąć, a nie zostawić. Rozstrzygnięcie należy do właściciela, bo dotyka kwoty płaconej przez klienta: albo jedna liczba w obu plikach, albo jawne uzasadnienie, dlaczego wycena liczy inaczej niż generator.
 
 **Przykład [POTWIERDZONE 2026-09]:**
 
