@@ -11,24 +11,23 @@
 // spoza src/pricing.
 
 import { t, fmtCost, orderQty, tierDiscount } from "./config.js";
+import { masaZWymiarow } from "./jewelryScope.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
   engravingPricePLN, normalizeEngravingId,
   metalPricePerG,
-  GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
+  GEMSTONES, STONE_SIZES, STONE_CUTS, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
   CHAIN_WEAVES, CHAIN_CLASPS, CHAIN_DEFAULT_LENGTH,
+  METAL_DENSITY,
 } from "./jewelryConfig.js";
 
 
-// Density (g/cm3) by metal type key
-export const METAL_DENSITY = {
-  gold: 19.3,      // approximated as 24k; purity scaling handled implicitly
-  silver: 10.5,
-  platinum: 21.4,
-};
+// Gestosc kruszcu mieszka w `jewelryConfig.js` razem z reszta danych o metalu.
+// Zostaje tu wylacznie jako nazwa, ktora importuje polowa serwisu.
+export { METAL_DENSITY };
 
 export const LBL = {
   pl: {
@@ -143,9 +142,14 @@ function wierszGraweru(engravingId, doplataPLN, l, lang) {
 export const resolveMetalPricePerG = metalPricePerG;
 
 // ---- NEW CREATION CALCULATOR ----
-export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  stoneRows, qtyId, qty: sztuk, engravingId,
-  clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones, internalOptions) {
+// PARAMETRY WCHODZA W CALOSCI, a nie rozebrane w naglowku. Masa liczy sie
+// z wymiarow wyrobu, a te stoja w parametrach pod wlasnymi kluczami
+// (`wymWidth`, `wymWallThickness`, ...), wiec rozbior w naglowku gubilby
+// dokladnie te czesc zlecenia, ktora o cenie decyduje najmocniej.
+export function calcNew(params, lang, rates, gemstones, internalOptions) {
+  const { lineId, typeId, metalId, weightId, methodId, platingId,
+    stoneRows, qtyId, qty: sztuk, engravingId,
+    clientSuppliesMetal, overrideWeightG } = params || {};
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -160,10 +164,35 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
 
   // Metal cost - use live rates when available, fall back to static config
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
-  // Use geometric weight override if provided (from WeightEngine), else fall back to baseWeight × mul
+
+  // MASA IDZIE Z WYMIAROW, A STALA KATALOGOWA JEST OSTATNIA DESKA.
+  //
+  // Do 14 wrzesnia 2026 bylo odwrotnie: `baseWeight * mul`, czyli wisiorek
+  // zawsze 4 g, niezaleznie od tego, czy ma 15 czy 45 mm. Wisiorek
+  // 30 x 20 x 4 mm w srebrze wazy okolo 14 g. Kalkulator liczyl to poprawnie
+  // i pokazywal na ekranie, ale do koszyka i na serwer jechaly same parametry
+  // katalogowe, wiec ZAMOWIENIE wyceniala stala, a EKRAN geometria: ta sama
+  // pozycja miala dwie ceny i tansza z nich byla ta wiazaca.
+  //
+  // Kolejnosc jest wiec taka: masa PODANA przez wywolujacego wygrywa zawsze
+  // (odlew z pliku klienta zna ja z pomiaru bryly), a przy jej braku liczymy
+  // z wymiarow i bierzemy WIEKSZA z dwoch: z wymiarow albo z katalogu.
+  //
+  // Wieksza, bo obie liczby sa przyblizeniem i tylko jedna strona tego bledu
+  // jest grozna. Wspolczynniki wypelnienia w katalogu bryl opisuja wyroby
+  // azurowe i wezone (obraczka "standard" to 0,78 walca), wiec dla obraczki
+  // LITEJ zaniżają mase o kilkanascie procent, a przy zlocie kilkanascie
+  // procent masy to kilkaset zlotych z naszej kieszeni na kazdej sztuce.
+  // Kwote wiazaca trzeba dotrzymac, wiec nie zgadujemy w dol.
+  // Do rozstrzygniecia przez wlasciciela: czy wspolczynniki dla obraczki,
+  // pierscionka i sygnetu maja wynosic 1,0, skoro tam liczymy juz bryle
+  // pierscienia, a nie prostopadloscian opisujacy wyrob.
+  const density = METAL_DENSITY[metal.metal] ?? 10.5;
+  const masaZParametrow = masaZWymiarow(params, density, weightId);
+  const masaKatalogowa = jType.baseWeight * weight.mul;
   const weightG = (overrideWeightG != null && overrideWeightG > 0)
     ? overrideWeightG
-    : jType.baseWeight * weight.mul;
+    : (masaZParametrow != null ? Math.max(masaZParametrow, masaKatalogowa) : masaKatalogowa);
   const metalCost = clientSuppliesMetal ? 0 : weightG * plnPerG * metal.purity;
 
   // Labor cost (weight affects labor - lighter pieces need less finishing)
@@ -190,6 +219,16 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     const stoneSize = STONE_SIZES.find(s => s.id === row.stoneSizeId);
     if (!stoneSize || stoneSize.custom) continue;
 
+    // Brak cutId oznacza szlif brylantowy: pozycje zapisane przed 14 wrzesnia
+    // 2026 (kosze, oferty, zamowienia) nie znaly tego pola i maja liczyc sie
+    // dokladnie tak samo jak dotad.
+    // SZLIF SPOZA LISTY LICZY SIE JAK BRYLANTOWY, a nie znika razem
+    // z kamieniem. Pominiecie wiersza oddawalo wyrob z kamieniem w cenie
+    // samego kruszcu, a parametry przychodza z przegladarki, wiec doprowadzic
+    // do tego bylo latwiej, niz sie wydaje.
+    const cut = STONE_CUTS.find(c => c.id === (row.cutId || "brilliant")) || STONE_CUTS[0];
+    if (cut.custom) return { type: "custom" };
+
     const count = Math.max(1, parseInt(row.count) || 1);
 
     // Quality multiplier
@@ -207,7 +246,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     const cert = CERTIFICATIONS.find(c => c.id === row.certId);
     const certMul = cert?.mul ?? 1.0;
 
-    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * certMul;
+    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * certMul * cut.priceMul;
 
     // Only add gem purchase cost if NOT supplied by client
     if (row.suppliedBy !== "client") {
@@ -217,7 +256,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     // Setting cost always applies (regardless of who supplies the stone).
     // Per-stone rate tapers with count - micro-pavé is far cheaper per stone than a solitaire.
     const perStone = stoneSize.ct >= 0.3 ? 110 : (count <= 3 ? 55 : count <= 10 ? 35 : 22);
-    settingCost += count * perStone;
+    settingCost += count * perStone * cut.settingMul;
   }
 
   // Plating
@@ -240,6 +279,11 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   return {
     type: "calculated", ...pricing, qty, discount: rabat,
     tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
+    // MASA, PO KTOREJ POLICZYLISMY KRUSZEC. Wychodzi z wyceny, zeby karta
+    // wymiarow pokazywala te sama liczbe, ktora placi klient: do 14 wrzesnia
+    // 2026 karta pokazywala mase z geometrii, a cena szla ze stalej
+    // katalogowej i nikt nie mial jak zauwazyc, ze to dwie rozne liczby.
+    weightG,
     breakdown: [
       { label: `${l.metalCost} (${weightG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) },
       { label: l.laborCost, value: fmtCost(laborCost, lang) },

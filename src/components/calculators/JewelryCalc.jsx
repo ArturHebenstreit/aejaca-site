@@ -21,16 +21,17 @@ import {
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS,
   CHAIN_WEAVES, CHAIN_CLASPS, CHAIN_DEFAULT_LENGTH,
   NECKLACE_LENGTHS_WOMEN, NECKLACE_LENGTHS_MEN, BRACELET_LENGTHS,
-  CHAIN_SVG_Y_WOMEN, CHAIN_SVG_Y_MEN,
+  CHAIN_SVG_Y_WOMEN, CHAIN_SVG_Y_MEN, isChainType,
 } from "./jewelryConfig.js";
+import { FORMA_WYROBU, kluczWymiaru, wymagaWycenyCzlowieka } from "../../pricing/jewelryScope.js";
 import { getProductType } from "./jewelry/productConfig.js";
-import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
+import { BRUTTO_FACTOR } from "./jewelry/WeightEngine.js";
 import DimensionInputs from "./jewelry/DimensionInputs.jsx";
 import WeightDisplay from "./jewelry/WeightDisplay.jsx";
 import StoneComposer from "./jewelry/StoneComposer.jsx";
 
 import {
-  METAL_DENSITY, resolveMetalPricePerG, calcNew, calcChain, calcRenovation, calcRepair,
+  resolveMetalPricePerG, calcNew, calcChain, calcRenovation, calcRepair,
   LBL,
 } from "../../pricing/jewelry.js";
 import Obraz from "../Obraz.jsx";
@@ -39,33 +40,9 @@ import Obraz from "../Obraz.jsx";
 export { calcNew, calcChain, calcRenovation, calcRepair };
 
 
-// Map JEWELRY_TYPES ids → PRODUCT_TYPES ids (for dimension engine)
-const TYPE_TO_FORM = {
-  // woman line
-  ring:       "ring",
-  bracelet:   "bracelet",
-  pendant:    "pendant",
-  earrings:   "earrings",
-  brooch:     "brooch",
-  necklace:   null,    // no geometry model for chains/necklaces
-  // men line
-  signet:     "signet",
-  medallion:  "pendant", // closest model
-  bracelet_m: "bracelet",
-  cufflinks:  null,
-  tie_clip:   null,
-  chain_m:    null,
-  // pet line
-  tag:        "pendant",
-  charm:      "pendant",
-  pin:        null,
-  // wedding rings
-  wedding_ring_w: "wedding_ring",
-  wedding_ring_m: "wedding_ring",
-};
-
-const CHAIN_TYPES = new Set(["chain_m", "bracelet_m", "necklace"]);
-const isChainType = (id) => CHAIN_TYPES.has(id);
+// Rodzaj wyrobu przelozony na bryle (`FORMA_WYROBU`) i lista rodzajow
+// lancuchowych (`isChainType`) stoja w rdzeniu cenowym, bo czyta je takze
+// serwer, kiedy rozstrzyga o kwocie wiazacej.
 const isNecklaceChain = (id) => id === "chain_m" || id === "necklace";
 
 // ---- CHAIN BODY SILHOUETTE (SVG) ----
@@ -240,6 +217,16 @@ export default function JewelryCalc({ lang = "pl" }) {
   // "Rendered fewer hooks than expected" i gasil caly kalkulator po kliknieciu
   // lancuszka. Dlatego poprawka jest CZYSTA: `stan` to jedyne zrodlo odczytu,
   // a stan wewnetrzny doganiany jest przy nastepnym wyborze klienta.
+  // KARTA WYMIAROW ZOSTAJE WLASNA. Katalog pyta o wymiary polami liczbowymi,
+  // bo karta uslugi w sklepie nie ma nic lepszego, ale tutaj stoi tabela
+  // rozmiarow z czterema systemami i podglad masy, wiec te same pytania
+  // narysowane drugi raz bylyby pytaniem o to samo dwa razy.
+  const uslugaBezWymiarow = useMemo(() => {
+    const u = USLUGI[serviceId];
+    if (!u?.fields?.some((f) => f.wymiar)) return u;
+    return { ...u, fields: u.fields.filter((f) => !f.wymiar) };
+  }, [serviceId]);
+
   const poprawki = poprawkiWyboru(USLUGI[serviceId], zestawy[serviceId]);
   const params = poprawki ? { ...zestawy[serviceId], ...poprawki } : zestawy[serviceId];
 
@@ -256,20 +243,45 @@ export default function JewelryCalc({ lang = "pl" }) {
   const { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId } = paramsRepair;
 
   // Geometry + client supply - productForm is derived from typeId (no separate selection needed)
-  const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
-  const [dimensions, setDimensions] = useState({});     // fieldId: value
-  // Reset dimensions whenever the jewelry type changes - populate defaults immediately
-  useEffect(() => {
-    if (!productForm) { setDimensions({}); return; }
+  const productForm = useMemo(() => FORMA_WYROBU[typeId] ?? null, [typeId]);
+
+  // WYMIARY SA CZESCIA ZAMOWIENIA, A NIE STANEM KARTY.
+  //
+  // Do 14 wrzesnia 2026 stoja w osobnym `useState` obok parametrow. Kalkulator
+  // liczyl z nich mase i pokazywal ja na ekranie, ale do koszyka szly same
+  // parametry katalogowe, wiec zamowienie wyceniala stala katalogowa: ekran
+  // i kasa mialy dwie rozne ceny tej samej pozycji. Teraz kazdy wymiar ma
+  // swoj klucz w parametrach (`wymWidth`, `wymWallThickness`, ...), ten sam,
+  // o ktory pyta karta uslugi w sklepie, wiec obie drogi skladaja identyczna
+  // pozycje, a serwer liczy dokladnie to, co widac na ekranie.
+  const dimensions = useMemo(() => {
+    if (!productForm) return {};
     const pt = getProductType(productForm);
-    if (!pt) { setDimensions({}); return; }
-    const defaults = {};
+    if (!pt) return {};
+    const out = {};
     for (const field of pt.fields) {
-      if (field.default !== undefined) {
-        defaults[field.id] = field.default;
-      }
+      const wartosc = paramsNew[kluczWymiaru(field.id)];
+      if (wartosc !== undefined && wartosc !== null && wartosc !== "") out[field.id] = wartosc;
+      else if (field.default !== undefined) out[field.id] = field.default;
     }
-    setDimensions(defaults);
+    return out;
+  }, [productForm, paramsNew]);
+
+  // Zmiana rodzaju wyrobu zaczyna wymiary od nowa: pierscionek i wisiorek
+  // dziela nazwe "szerokosc", ale nie znaczy ona tego samego, wiec liczba
+  // z poprzedniej bryly byla tu zaszloscia, a nie odpowiedzia klienta.
+  useEffect(() => {
+    const pt = productForm ? getProductType(productForm) : null;
+    setParamsNew((p) => {
+      const nast = { ...p };
+      for (const klucz of Object.keys(nast)) {
+        if (klucz.startsWith("wym")) delete nast[klucz];
+      }
+      for (const field of pt?.fields || []) {
+        if (field.default !== undefined) nast[kluczWymiaru(field.id)] = field.default;
+      }
+      return nast;
+    });
   }, [productForm]);
   useEffect(() => {
     setChainLengthMm(CHAIN_DEFAULT_LENGTH[typeId] ?? 450);
@@ -285,22 +297,21 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [weaveModal, setWeaveModal] = useState(null);
   // Stone rows - up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
-    { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
+    { rowId: "row0", gemId: "none", stoneSizeId: "small", cutId: "brilliant", count: 1, suppliedBy: "studio",
       clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
   ]);
 
 
   const types = JEWELRY_TYPES[lineId] || [];
 
-  // Live geometric weight from WeightEngine (when productForm + dimensions are set)
-  const weightResult = useMemo(() => {
-    if (!productForm) return null;
-    const selectedMetal = METALS.find(m => m.id === metalId);
-    const density = METAL_DENSITY[selectedMetal?.metal] ?? 10.5;
-    const result = computeWeight(productForm, dimensions, density, weightId);
-    if (!result || typeof result.nettoG !== "number" || typeof result.bruttoG !== "number") return null;
-    return result;
-  }, [productForm, dimensions, metalId, weightId]);
+  // ZESTAW PARAMETROW POZYCJI W CALOSCI. Kamienie i kruszec powierzony stoja
+  // w osobnym stanie, bo maja wlasne kontrolki, ale dla wyceny i dla bramki
+  // sa czescia tego samego zlecenia. Bez nich serwer nie mial jak zobaczyc,
+  // ze pozycja ma kamienie, i przyjmowal ja jak gladka bryle.
+  const paramsPelne = useMemo(
+    () => ({ ...params, qtyId, stoneRows, clientSuppliesMetal }),
+    [params, qtyId, stoneRows, clientSuppliesMetal],
+  );
 
   const result = useMemo(() => {
     if (serviceId === "new") {
@@ -309,20 +320,28 @@ export default function JewelryCalc({ lang = "pl" }) {
           chainLengthMm, chainWidthMm,
           clientSuppliesMetal, qtyId, qty, calcMode, stockMassG }, lang, rates);
       }
-      return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        stoneRows, qtyId, qty, engravingId,
-        clientSuppliesMetal,
-        overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
+      // BEZ `overrideWeightG`: mase liczy juz wycena, z wymiarow siedzacych
+      // w parametrach, i bierze wieksza z dwoch (z wymiarow albo katalogowa).
+      // Podanie jej tutaj omijaloby ten wybor i ekran znowu pokazywalby inna
+      // liczbe niz kasa.
+      return calcNew({ ...paramsPelne, qty }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId, qty }, lang);
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId, qty }, lang);
-  }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
+  }, [serviceId, paramsPelne, qty, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
     stoneRows, qtyId, weaveId, claspId, chainLengthMm, chainWidthMm,
-    clientSuppliesMetal, weightResult, calcMode, stockMassG,
+    clientSuppliesMetal, calcMode, stockMassG,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
+
+  // MASA NA KARCIE WYMIAROW TO MASA, PO KTOREJ LICZY SIE CENA. Karta liczyla
+  // ja dotad sama, wlasnym wywolaniem silnika mas, i przy obraczce pokazywala
+  // co innego niz rozpiska ceny pod spodem. Jedna liczba, jedno zrodlo.
+  const masaWyceny = serviceId === "new" && !isChainType(typeId) && typeof result?.weightG === "number"
+    ? result.weightG
+    : null;
 
   let stepNum = 1;
   const step = () => String.fromCodePoint(0x2460 + stepNum++ - 1);
@@ -367,16 +386,16 @@ export default function JewelryCalc({ lang = "pl" }) {
       weaveId, claspId, chainLengthMm, chainWidthMm, calcMode, stockMassG,
       renoJewType, renoServices, repairJewType, repairId]);
 
-  // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly. Kamienie,
-  // lancuszki i metal powierzony przez klienta wymagaja oceny czlowieka.
-  const cartBlocked = serviceId === "new" && (
-    methodId !== "cast" ||
-    // Lista kamieni ma zawsze co najmniej jeden wiersz, domyslnie ustawiony
-    // na "bez kamienia", wiec liczy sie tresc, nie dlugosc.
-    stoneRows.some((r) => r.gemId && r.gemId !== "none") ||
-    isChainType(typeId) ||
-    clientSuppliesMetal
-  );
+  // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly z naszego
+  // projektu. Kamienie, lancuszki, robota reczna, kruszec powierzony, wlasny
+  // projekt klienta i cechy, ktorych cennik nie liczy (azur, trzecia oprawa,
+  // dwa wykonczenia), ida do czlowieka.
+  //
+  // LISTE WARUNKOW CZYTA TERAZ JEDEN KOD (`jewelryScope.js`), ten sam, ktorym
+  // odmawia serwer. Do 14 wrzesnia 2026 kazda z trzech drog miala wlasna:
+  // kalkulator, karta uslugi w sklepie i koszyk, a serwer nie mial zadnej,
+  // wiec zamowienie zlozone z pominieciem formularza przechodzilo w calosci.
+  const cartBlocked = serviceId === "new" && wymagaWycenyCzlowieka(paramsPelne);
 
   // ============================================================
   // NARZEDZIA, KTORE NIE SA PYTANIAMI Z KATALOGU
@@ -564,15 +583,15 @@ export default function JewelryCalc({ lang = "pl" }) {
                   <DimensionInputs
                     productTypeId={productForm}
                     values={dimensions}
-                    onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
+                    onChange={(id, val) => setParam(kluczWymiaru(id), val)}
                     lang={lang}
                   />
 
                   {/* Live weight display */}
-                  {weightResult && (
+                  {masaWyceny != null && (
                     <WeightDisplay
-                      nettoG={weightResult.nettoG}
-                      bruttoG={weightResult.bruttoG}
+                      nettoG={masaWyceny}
+                      bruttoG={masaWyceny * BRUTTO_FACTOR}
                       metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
                       lang={lang}
                       clientSuppliesMetal={clientSuppliesMetal}
@@ -787,7 +806,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       </CalcCard>
 
       <PolaUslugi
-        service={USLUGI[serviceId]}
+        service={uslugaBezWymiarow}
         params={{ ...params, qtyId }}
         setParam={setParam}
         lang={lang}
@@ -876,11 +895,12 @@ export default function JewelryCalc({ lang = "pl" }) {
             calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
             serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
             params={
-              // POZYCJA NIESIE TO, O CO PYTALISMY, czyli caly zestaw z katalogu.
-              // Wypisywanie pol z reki gubilo te dodane pozniej: `complexityId`
-              // pojawil sie na ekranie, a bramka ksztaltu w koszyku go nie
-              // widziala, wiec zlozony wyrob przechodzil tu, a w sklepie nie.
-              { ...params, qtyId }
+              // POZYCJA NIESIE TO, O CO PYTALISMY, czyli caly zestaw z katalogu
+              // razem z wymiarami, kamieniami i kruszcem powierzonym.
+              // Wypisywanie pol z reki gubilo te dodane pozniej: bramka
+              // w koszyku ich nie widziala, wiec wyrob przechodzil tu,
+              // a w sklepie nie.
+              serviceId === "new" ? paramsPelne : { ...params, qtyId }
             }
             qty={qty}
             blocked={cartBlocked}

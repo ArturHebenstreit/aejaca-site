@@ -317,6 +317,12 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   const callParams = { ...params };
   // Cokolwiek klient przyslal jako geometrie, nadpisujemy wlasnym odczytem pliku.
   delete callParams.stlData;
+  // MASA WYROBU NIE PRZYCHODZI Z PRZEGLADARKI. `calcNew` przyjmuje gotowa mase
+  // (`overrideWeightG`), bo korzysta z tego odlew z pliku klienta, gdzie liczy
+  // ja serwer z bryly. Przepuszczona z zapytania byla droga do zamowienia
+  // pierscionka ze zlota po cenie jednego grama: wycena wziela by liczbe
+  // podana przez zamawiajacego. Mase liczymy tu sami, z wymiarow w parametrach.
+  delete callParams.overrideWeightG;
   // WYMIARY WPISANE Z REKI licza sie tak samo jak zmierzony plik, tylko jako
   // gorna granica: bryle o tych gabarytach wyceniamy jak pelna. Dzieki temu
   // klient bez modelu ma podstawe do kwoty wiazacej, a nie przedzial, i nie

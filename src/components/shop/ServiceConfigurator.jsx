@@ -26,6 +26,7 @@ import { maxScaleForBBox } from "../../pricing/print3d.js";
 import { maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
 import MaterialNotice from "../MaterialNotice.jsx";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../../data/laserSubstrate.js";
+import { wymagaWycenyCzlowieka, zakresWyrobu, opisPowodow } from "../../pricing/jewelryScope.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -85,8 +86,6 @@ const UI = {
     toQuote: "Wyślij do wyceny",
     showDetails: "Pokaż szczegóły kalkulacji",
     hideDetails: "Ukryj szczegóły",
-    gateComplex: "Kształt z ornamentem, ażurem albo formą rzeźbiarską wyceniamy indywidualnie. Nakład pracy przy takiej bryle nie wynika z masy ani z metody, więc kwota z automatu byłaby zgadywaniem.",
-    gateHandmade: "Wykonanie ręczne wyceniamy indywidualnie. Wiążącą cenę podajemy przy odlewie, bo tam czas pracy jest powtarzalny.",
     gateCasting: "Wzorzec fizyczny, realizację od pomysłu oraz materiał powierzony wyceniamy po sprawdzeniu. Automatyczna cena jest dostępna dla przesłanego modelu 3D i kruszcu AEJaCA.",
     needCastingFile: "Wgraj model 3D, aby zmierzyć objętość, sprawdzić limit odlewni i policzyć cenę.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
@@ -166,8 +165,6 @@ const UI = {
     toQuote: "Request a quote",
     showDetails: "Show the breakdown",
     hideDetails: "Hide the breakdown",
-    gateComplex: "An ornamented, openwork or sculptural shape is quoted individually. The work involved does not follow from mass or method, so an automatic price would be guesswork.",
-    gateHandmade: "Hand fabrication is quoted individually. We commit to a price for casting, where the working time is repeatable.",
     gateCasting: "A physical pattern, an idea-only job and customer-supplied metal are quoted after inspection. Automatic pricing is available for an uploaded 3D model and AEJaCA metal.",
     needCastingFile: "Upload the 3D model so we can measure volume, check the casting limit and calculate the price.",
     fileOptional: "Without a file, pick a size from the list below",
@@ -247,8 +244,6 @@ const UI = {
     toQuote: "Angebot anfordern",
     showDetails: "Kalkulation anzeigen",
     hideDetails: "Kalkulation ausblenden",
-    gateComplex: "Eine ornamentierte, durchbrochene oder skulpturale Form kalkulieren wir individuell. Der Aufwand ergibt sich weder aus Masse noch aus Methode, ein automatischer Preis wäre geraten.",
-    gateHandmade: "Handanfertigung kalkulieren wir individuell. Verbindlich wird der Preis beim Guss, wo die Arbeitszeit reproduzierbar ist.",
     gateCasting: "Ein physisches Modell, eine Umsetzung nur nach Idee und beigestelltes Metall kalkulieren wir nach Prüfung. Automatische Preise gelten für ein hochgeladenes 3D-Modell mit AEJaCA-Metall.",
     needCastingFile: "3D-Modell hochladen, damit Volumen, Gussgrenze und Preis geprüft werden können.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
@@ -575,20 +570,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   );
   const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
 
-  // Wiazaca cena bizuterii ma pokrycie tylko przy odlewie prostej bryly.
-  // Reszta to praca, ktorej nie widac w parametrach.
-  // Bramka dotyczy WYLACZNIE bizuterii. Przy projekcie 3D zlozonosc jest
-  // progiem cenowym: podnosi kwote i pozwala zlecic prace, a nie zatrzymuje
-  // klienta. Oba pola nazywaja sie complexityId, wiec bez tego warunku
-  // projekt sredni i rzezbiarski byly nie do kupienia.
-  const gateComplex = service.calculator === "jewelry_new"
-    && params.complexityId != null && params.complexityId !== "simple";
-  const gateHandmade = service.calculator === "jewelry_new" && params.methodId != null && params.methodId !== "cast";
+  // Wiazaca cena bizuterii ma pokrycie tylko przy odlewie prostej bryly
+  // z naszego projektu. Reszta to praca, ktorej nie widac w parametrach.
+  // Bramka dotyczy WYLACZNIE bizuterii na zamowienie i liczy ja ten sam kod,
+  // ktorym odmawia serwer (`jewelryScope.js`). Przy projekcie 3D zlozonosc
+  // jest progiem cenowym: podnosi kwote i pozwala zlecic prace, a nie
+  // zatrzymuje klienta, wiec tamtego kalkulatora ta bramka nie dotyczy.
+  const gateJewelry = service.calculator === "jewelry_new" && wymagaWycenyCzlowieka(params);
   const gateCasting = service.calculator === "jewelry_casting"
     && (params.variantId !== "model_3d" || params.materialSourceId !== "aejaca");
   const castingFileMissing = service.calculator === "jewelry_casting"
     && params.variantId === "model_3d" && !uploadToken;
-  const needsHumanQuote = gateComplex || gateHandmade || gateCasting;
+  const needsHumanQuote = gateJewelry || gateCasting;
 
   const overLimit = jewelryOver || packOver;
   // Pokwitowanie ujawnionej wady pliku wstrzymuje dodanie do koszyka tak samo,
@@ -1369,9 +1362,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
 
             {needsHumanQuote && (
               <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-3">
-                <p className="text-amber-300/90 text-xs leading-relaxed mb-2">
-                  {gateCasting ? u.gateCasting : gateComplex ? u.gateComplex : u.gateHandmade}
-                </p>
+                {/* POWOD PODAJEMY WPROST I W LICZBIE MNOGIEJ. Jedno zdanie dla
+                    wszystkich przypadkow bylo zgadywanka: klient z wlasnym
+                    projektem czytal o wykonaniu recznym, ktorego nie wybieral. */}
+                {gateCasting ? (
+                  <p className="text-amber-300/90 text-xs leading-relaxed mb-2">{u.gateCasting}</p>
+                ) : (
+                  <ul className="text-amber-300/90 text-xs leading-relaxed mb-2 space-y-1">
+                    {opisPowodow(zakresWyrobu(params).powody, lang).map((zdanie) => (
+                      <li key={zdanie}>{zdanie}</li>
+                    ))}
+                  </ul>
+                )}
                 <Link to="/contact/" className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">
                   {u.toQuote} <ArrowRight className="w-3.5 h-3.5" />
                 </Link>

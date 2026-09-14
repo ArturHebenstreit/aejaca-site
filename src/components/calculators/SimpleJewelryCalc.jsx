@@ -347,15 +347,19 @@ function cartTargetFor(resolved) {
   if (resolved.flow === "renovation") return { calculator: "jewelry_renovation", serviceId: "jewelry_renovation" };
   if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
   if (resolved.flow === "new") {
-    const p = resolved.params || {};
-    // Wiazaca cena tylko przy odlewie: przy wykonaniu recznym czas pracy
-    // zalezy od rzeczy, ktorych szybka wycena nie pyta.
-    if (p.methodId && p.methodId !== "cast") return null;
-    // mapGem zwraca gemId: "none" przy wyborze "bez kamienia", wiec sama
-    // obecnosc pola nic nie znaczy.
-    const hasStone = Boolean(p.gemId && p.gemId !== "none")
-      || Boolean(p.stoneRows?.some((r) => r.gemId && r.gemId !== "none"));
-    return hasStone ? null : { calculator: "jewelry_new", serviceId: "jewelry_plain" };
+    // SZYBKA WYCENA NOWEGO WYROBU NIE IDZIE JUZ DO KOSZYKA (14 wrzesnia 2026).
+    //
+    // Pyta o piec rzeczy i zadna z nich nie mowi, jaki ten wyrob ma byc duzy,
+    // czyj jest projekt ani co w nim siedzi. Masa szla wiec ze stalej
+    // katalogowej: wisiorek zawsze 4 g, niezaleznie od tego, czy ma 15 czy
+    // 45 mm. Kwota wiazaca z pieciu pytan jest dokladnie tym, co kazalo nam
+    // wycenic zapytanie z Niemiec na 684 EUR zamiast na 1100.
+    //
+    // Zostaje szacunek z widelkami i przejscie do pelnego kalkulatora albo do
+    // zapytania, czyli ta sama droga, ktora do tej pory dostawal wyrob
+    // z kamieniem. Pelny kalkulator pyta o wymiary i wtedy cena wiazaca
+    // powstaje bez zgadywania.
+    return null;
   }
   return null;
 }

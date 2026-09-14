@@ -14,6 +14,22 @@ export const METAL_PRICES = {
   platinum: { plnPerG: 268, symbol: "Pt" },
 };
 
+// Gestosc kruszcu (g/cm3) po rodzaju metalu. Zloto liczy sie jak 24k, bo
+// czystosc wchodzi do ceny osobno. Stoi tu, a nie przy wycenie, bo jest
+// wlasciwoscia materialu i korzysta z niej takze silnik mas i bramka zakresu
+// wyrobu; import z `jewelry.js` robilby z tego kolo.
+export const METAL_DENSITY = {
+  gold: 19.3,
+  silver: 10.5,
+  platinum: 21.4,
+};
+
+/** Gestosc dla wybranego kruszcu z listy `METALS`, ze srebrem jako zapasem. */
+export function gestoscKruszcu(metalId) {
+  const metal = METALS.find((m) => m.id === metalId);
+  return METAL_DENSITY[metal?.metal] ?? METAL_DENSITY.silver;
+}
+
 export const EUR_PLN = 4.28;
 // Polish jeweler market convention: raw material (metal + stone) carries only a
 // modest handling markup, while the workshop margin lives on labor/services.
@@ -248,6 +264,28 @@ export const GEMSTONES = [
   { id: "onyx",      label: { pl: "Onyks", en: "Onyx", de: "Onyx" }, basePLN: 30, precious: false, hasGrades: false, img: "/img/calc/gems/onyx.webp" },
   { id: "tiger_eye", label: { pl: "Tygrysie oko", en: "Tiger eye", de: "Tigerauge" }, basePLN: 20, precious: false, hasGrades: false, img: "/img/calc/gems/tiger_eye.webp" },
   { id: "custom_gem",label: { pl: "Inny kamień", en: "Other stone", de: "Anderer Stein" }, basePLN: null, precious: false, hasGrades: false, custom: true },
+];
+
+// --- STONE CUTS ---
+// Liczby przyjete 14 wrzesnia 2026 jako punkt wyjscia z praktyki rynkowej
+// (kaboszon tnie sie z surowca nizszej klasy niz kamien fasetowany na ta
+// sama pozycje, a oprawa zamknieta pod kaboszon to wiecej roboty niz cztery
+// krapy pod szlif brylantowy). Nie pochodza z naszego pomiaru ani z naszej
+// faktury i czekaja na potwierdzenie przez wlasciciela.
+export const STONE_CUTS = [
+  { id: "brilliant", label: { pl: "Brylantowy / fasetowany", en: "Brilliant / faceted", de: "Brillant / facettiert" },
+    desc: { pl: "Wiele płaskich faset odbija światło ostro, osadzenie w krapach albo w zamkniętej oprawie", en: "Many flat facets reflect light sharply, set in prongs or a bezel", de: "Viele flache Facetten reflektieren das Licht scharf, Fassung in Krappen oder Zarge" },
+    priceMul: 1.0, settingMul: 1.0 },
+  { id: "step", label: { pl: "Schodkowy (szmaragdowy)", en: "Step (emerald) cut", de: "Treppenschliff (Smaragd)" },
+    desc: { pl: "Prostokątne stopnie faset, wymaga precyzyjnej oprawy narożników", en: "Rectangular stepped facets, needs precise corner setting", de: "Rechteckige Stufenfacetten, erfordert präzise Eckfassung" },
+    priceMul: 1.0, settingMul: 1.15 },
+  { id: "rose", label: { pl: "Rozetka", en: "Rose cut", de: "Rosenschliff" },
+    desc: { pl: "Płaska podstawa i kopulasty wierzch z fasetami, delikatny, stonowany blask", en: "Flat base with a domed faceted top, soft glimmering sparkle", de: "Flache Unterseite mit facettierter Kuppel, sanftes Funkeln" },
+    priceMul: 0.75, settingMul: 1.10 },
+  { id: "cabochon", label: { pl: "Kaboszon", en: "Cabochon", de: "Cabochon" },
+    desc: { pl: "Gładko wypolerowana kopułka bez faset, osadzenie w zamkniętej oprawie", en: "Smoothly polished dome without facets, set in a closed bezel", de: "Glatt polierte Kuppel ohne Facetten, Fassung in geschlossener Zarge" },
+    priceMul: 0.5, settingMul: 1.25 },
+  { id: "custom_cut", label: { pl: "Inny szlif", en: "Other cut", de: "Anderer Schliff" }, custom: true },
 ];
 
 // --- STONE SIZE categories ---

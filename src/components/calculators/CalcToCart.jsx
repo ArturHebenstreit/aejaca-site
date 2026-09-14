@@ -21,6 +21,7 @@ import { JobDescription, AttachmentList, BlockedReasons, DeclaredSpec, TileGroup
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS, engravingLimitFor } from "../../pricing/packaging.js";
 import { brakPodloza } from "../../data/laserSubstrate.js";
+import { wymagaWycenyCzlowieka } from "../../pricing/jewelryScope.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import SaveQuote from "./SaveQuote.jsx";
 import { t } from "../../pricing/config.js";
@@ -706,10 +707,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
   // inna robota niz ta, ktora wlasnie wyceniono.
-  // Bramka zlozonosci dotyczy wylacznie bizuterii. Projekt 3D uzywa tego
-  // samego klucza, ale tam zlozonosc jest progiem cenowym, nie blokada.
-  const gatedShape = calculator === "jewelry_new"
-    && Boolean(params?.complexityId && params.complexityId !== "simple");
+  // Bramka zakresu dotyczy wylacznie bizuterii na zamowienie. Liczy ja ten sam
+  // kod, ktorym odmawia serwer (`jewelryScope.js`), wiec przycisk gasnie
+  // dokladnie wtedy, kiedy kasa i tak by tej pozycji nie przyjela.
+  const gatedShape = calculator === "jewelry_new" && wymagaWycenyCzlowieka(params || {});
   const wantsEngraving = Boolean(params?.engravingId && params.engravingId !== "none");
   // Limit zalezy od wariantu: "Grafika lub dluzszy tekst" kosztuje dwa razy
   // tyle co inicjaly, wiec musi przyjac dluzszy tekst. Patrz `engravingLimitFor`.

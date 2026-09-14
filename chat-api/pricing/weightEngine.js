@@ -32,11 +32,17 @@ function resolveRingInnerDiameter(params) {
   return EU_RING_SIZES[Number(ringSizeParam)] ?? 17.2;
 }
 
-function calcRingWeight(params, metalDensity, weightId) {
+// OBRACZKA LICZY SIE TYM SAMYM WZOREM CO PIERSCIONEK, ale wlasnymi
+// wspolczynnikami wypelnienia: jest wezsza i bardziej lita, wiec ma je
+// w katalogu bryl osobno. Do 14 wrzesnia 2026 `calcWeight` nie znal jej wcale
+// i oddawal zero gramow, a wywolujacy odczytywal zero jako "nie ma pomiaru"
+// i cicho wracal do stalej katalogowej. Dwa pytania o rozmiar i szerokosc
+// stalyby wiec na ekranie bez zadnego wplywu na cene.
+function calcRingWeight(params, metalDensity, weightId, typId = "ring") {
   const innerDiameterMm = resolveRingInnerDiameter(params);
   const wallThickness = Number(params.wallThickness);
   const width = Number(params.width);
-  const fillFactor = getFillFactor("ring", params, weightId);
+  const fillFactor = getFillFactor(typId, params, weightId);
 
   const r_out = innerDiameterMm / 2 + wallThickness;
   const r_in = innerDiameterMm / 2;
@@ -112,6 +118,8 @@ export function calcWeight(productTypeId, params, metalDensity, weightId = null)
   switch (productTypeId) {
     case "ring":
       return calcRingWeight(params, metalDensity, weightId);
+    case "wedding_ring":
+      return calcRingWeight(params, metalDensity, weightId, "wedding_ring");
     case "signet":
       return calcSignetWeight(params, metalDensity, weightId);
     case "pendant":

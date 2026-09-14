@@ -48,6 +48,21 @@ function etykietaOpcji(pole, wartosc, params, lang) {
   const opcje = pole?.options?.length
     ? pole.options
     : (typeof pole?.optionsFrom === "function" ? pole.optionsFrom(params || {}) || [] : []);
+  // WYBOR WIELOKROTNY TO TABLICA IDENTYFIKATOROW. Bez tej galezi potwierdzenie
+  // pokazywalo "clean,polish" zamiast nazw uslug: `String(tablica)` sklada
+  // identyfikatory przecinkami i wyglada na poprawne zdanie, ktorym nie jest.
+  if (Array.isArray(wartosc)) {
+    const nazwy = wartosc
+      .map((id) => opcje.find((o) => String(o.id) === String(id)))
+      .filter(Boolean)
+      .map((o) => t(o.label, lang));
+    return nazwy.length ? nazwy.join(", ") : null;
+  }
+  // ROZMIAR PALCA PRZYCHODZI JAKO PARA "system i wartosc", bo klient wybiera
+  // go z tabeli EU, US, UK albo JP. `String` oddawalby tu "[object Object]".
+  if (wartosc && typeof wartosc === "object" && wartosc.system) {
+    return wartosc.system === "mm" ? `${wartosc.value} mm` : `${wartosc.system} ${wartosc.value}`;
+  }
   const trafiona = opcje.find((o) => String(o.id) === String(wartosc));
   return trafiona ? t(trafiona.label, lang) : null;
 }
@@ -73,12 +88,16 @@ export function describeParams(pozycja, lang = "pl") {
   for (const pole of service?.fields || []) {
     const wartosc = params[pole.key];
     if (wartosc == null || wartosc === "" || TECHNICZNE.has(pole.key)) continue;
+    if (Array.isArray(wartosc) && wartosc.length === 0) continue;
     wypisane.add(pole.key);
     const etykieta = t(pole.label, lang);
     // Podloze ma wlasna liste w `laserSubstrate.js`, a nie w polach uslugi,
     // gdy pozycja przyszla z szybkiej wyceny.
+    // Pole liczbowe nie ma listy wariantow, wiec dopisujemy mu jednostke:
+    // "5" i "5 mm" to przy wymiarze wyrobu dwie rozne informacje.
     const wartoscTekst = etykietaOpcji(pole, wartosc, params, lang)
       || (pole.key === "podloze" ? t(SUBSTRATES.find((s) => s.id === wartosc)?.label, lang) : null)
+      || (pole.typ === "liczba" && pole.jednostka ? `${wartosc} ${pole.jednostka}` : null)
       || String(wartosc);
     wynik.push({ label: etykieta, value: wartoscTekst });
   }
