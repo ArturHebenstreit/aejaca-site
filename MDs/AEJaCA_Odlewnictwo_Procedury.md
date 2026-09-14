@@ -114,6 +114,8 @@ Funkcje: degassing masy formierskiej, vacuum casting, wspomaganie komory Resiner
 | **Lost-PLA** | **40:100** [POTWIERDZONE] | 610 g proszku + 244 ml wody |
 | **Lost-resin (BlueCast)** | **38:100** [KARTA] | 625 g proszku + 237 ml wody |
 
+**Nazewnictwo.** "BlueCast X-One" i "X-One V2" to w tym dokumencie ta sama żywica (potwierdzenie właściciela, 14 września 2026). Dwie nazwy jednego materiału mylą przy krzywej wypalania, bo krzywa zależy właśnie od materiału wzorca, więc w tekście trzymamy się zapisu "X-One V2".
+
 Uzasadnienie różnicy: PLA nie wytapia się, tylko mięknie i rozpycha formę. Rzadsza masa jest tam świadomym wyborem, bo daje bardziej porowatą formę z możliwością oddania gazów. Żywice BlueCast zawierają niskotopliwy polimer woskowy, wypływają w niskiej temperaturze i nie rozpychają formy, więc wraca się do proporcji katalogowej producenta, która daje mocniejszą formę.
 
 **Przelicznik roboczy:** ok. 1,22 g proszku na 1 ml objętości formy przy 40:100; ok. 1,19 g/ml przy 38:100. [DO WERYFIKACJI przy kolejnych zalaniach]
@@ -272,9 +274,9 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 
 ---
 
-### 3.4 KRZYWA D: Lost-resin X-One + Ag 925 [POTWIERDZONE - działa]
+### 3.4 KRZYWA D: Lost-resin X-One V2 + Ag 925 [POTWIERDZONE - działa]
 
-**Krzywa docelowa dla bieżących projektów srebrnych, przejechana w warsztacie i potwierdzona 14 września 2026 na żywicy BlueCast X-One.** Do tego dnia była wyprowadzona z krzywej A i oznaczona jako niesprawdzona. Wartości nie wymagały poprawki: zadziałały takie, jak stały w tabeli.
+**Krzywa docelowa dla bieżących projektów srebrnych, przejechana w warsztacie i potwierdzona 14 września 2026 na żywicy BlueCast X-One V2.** Do tego dnia była wyprowadzona z krzywej A i oznaczona jako niesprawdzona. Wartości nie wymagały poprawki: zadziałały takie, jak stały w tabeli.
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -294,7 +296,6 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 
 **Rampy między slotami są niesterowane i nie zajmują czasu timera.** Nie programuje się ich i nie ma ich w tabeli: w VEVOR KD-Z6652B odliczanie startuje dopiero po osiągnięciu zadanej temperatury, więc każdy z dziewięciu slotów to pełne 60 minut przy temperaturze docelowej, a piec dochodzi do niej z pełną mocą. Pełny opis mechaniki sterownika: rozdz. 1.2. Zapisane tutaj, bo krzywą programuje się z tej tabeli, a nie z rozdziału o sprzęcie.
 
-**Nazwa żywicy do doprecyzowania.** Właściciel potwierdził cykl na "BlueCast X-One", a dokument od początku pisał "X-One V2". Jeżeli to są dwie różne rewizje, potwierdzenie dotyczy tej, która naprawdę przeszła przez piec, i trzeba tu wpisać jej pełną nazwę. Reszta dokumentu mówi "X-One V2" i zostaje bez zmian do czasu rozstrzygnięcia.
 
 ---
 
