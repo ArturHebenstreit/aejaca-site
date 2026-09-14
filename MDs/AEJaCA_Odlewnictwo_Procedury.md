@@ -1,6 +1,6 @@
 # AEJaCA - Procedury odlewnicze: masa formierska, wypalanie, odlew
 
-*Wersja 1.1 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
+*Wersja 1.2 | wrzesień 2026 | dokument towarzyszący `AEJaCA_Inwentarz_Sprzet_Procesy.md`, rozdz. 4*
 
 > **Miejsce w repozytorium.** Ten dokument jest źródłem prawdy o procesie odlewniczym:
 > parametry sprzętu, masa formierska, krzywe wypalania, temperatury, wsad i studzenie.
@@ -10,7 +10,7 @@
 > i `src/pricing/preciousMetalCasting.js`. Rozjazd między tym dokumentem a kodem jest
 > błędem po jednej ze stron i trzeba go rozstrzygnąć, a nie zostawić.
 
-> **Status wartości.** Pozycje oznaczone **[POTWIERDZONE]** pochodzą z udanego cyklu lost-PLA wykonanego w warsztacie. Pozycje **[KARTA]** pochodzą z dokumentacji producenta. Pozycje **[DO WERYFIKACJI]** to wartości wyprowadzone lub szacowane, wymagające pomiaru przy pierwszym użyciu. Nie awansować wartości między kategoriami bez pomiaru.
+> **Status wartości.** Pozycje oznaczone **[POTWIERDZONE]** pochodzą z udanego cyklu wykonanego w warsztacie. Do 13 września 2026 był to wyłącznie cykl lost-PLA; od 14 września doszedł cykl lost-resin w srebrze (krzywa D, rozdz. 3.4). Przy wartości potwierdzonej zapisujemy, KTÓRY cykl ją potwierdził, bo krzywej nie wolno przenosić między materiałem wzorca a stopem. Pozycje **[KARTA]** pochodzą z dokumentacji producenta. Pozycje **[DO WERYFIKACJI]** to wartości wyprowadzone lub szacowane, wymagające pomiaru przy pierwszym użyciu. Nie awansować wartości między kategoriami bez pomiaru.
 
 ---
 
@@ -206,13 +206,13 @@ Sloty 2-3 (odwodnienie gipsu) są wspólne dla wszystkich wariantów, bo zależ�
 | PLA | Au 585 | **A** (3.1) | [POTWIERDZONE - działa] |
 | PLA | Ag 925 | **B** (3.2) | [DO WERYFIKACJI] |
 | Żywica X-One V2 | Au 585 | **C** (3.3) | [DO WERYFIKACJI] |
-| Żywica X-One V2 | Ag 925 | **D** (3.4) | [DO WERYFIKACJI] |
+| Żywica X-One V2 | Ag 925 | **D** (3.4) | **[POTWIERDZONE - działa]** |
 
 ---
 
 ### 3.1 KRZYWA A: Lost-PLA + Au 585 [POTWIERDZONE - działa]
 
-Kolba 83 x 100 mm, VEVOR KD-Z6652B. **To jest krzywa referencyjna, z której wyprowadzono pozostałe.**
+Kolba 83 x 100 mm, VEVOR KD-Z6652B. **To jest krzywa referencyjna, z której wyprowadzono pozostałe.** Od 14 września 2026 nie jest już jedyną sprawdzoną: krzywa D (rozdz. 3.4) ma własne potwierdzenie z warsztatu i nie jest już wartością wyprowadzoną.
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -272,9 +272,9 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 
 ---
 
-### 3.4 KRZYWA D: Lost-resin X-One V2 + Ag 925 [DO WERYFIKACJI]
+### 3.4 KRZYWA D: Lost-resin X-One + Ag 925 [POTWIERDZONE - działa]
 
-**Krzywa docelowa dla bieżących projektów srebrnych.**
+**Krzywa docelowa dla bieżących projektów srebrnych, przejechana w warsztacie i potwierdzona 14 września 2026 na żywicy BlueCast X-One.** Do tego dnia była wyprowadzona z krzywej A i oznaczona jako niesprawdzona. Wartości nie wymagały poprawki: zadziałały takie, jak stały w tabeli.
 
 | Slot | Temp | Timer | Faza |
 |---|---|---|---|
@@ -291,6 +291,10 @@ Plateau obniżone z 720 na 700°C, bo przy wzorcu żywicznym wyższa temperatura
 **Uzasadnienie slotu 1:** X-One zawiera niskotopliwy polimer woskowy, który ma się wytopić i wypłynąć, nie tylko zmięknąć. To odpowiednik dewaxu, którego przy PLA nie ma. Przy 150°C część zostaje w formie i idzie do spalenia w slocie 4, zwiększając ilość popiołu.
 
 **Uzasadnienie plateau 690°C:** maksymalne oddalenie od granicy rozkładu spoiwa (730°C) przy zachowaniu marginesu nad temperaturą pełnego wypalenia X-One (650°C).
+
+**Rampy między slotami są niesterowane i nie zajmują czasu timera.** Nie programuje się ich i nie ma ich w tabeli: w VEVOR KD-Z6652B odliczanie startuje dopiero po osiągnięciu zadanej temperatury, więc każdy z dziewięciu slotów to pełne 60 minut przy temperaturze docelowej, a piec dochodzi do niej z pełną mocą. Pełny opis mechaniki sterownika: rozdz. 1.2. Zapisane tutaj, bo krzywą programuje się z tej tabeli, a nie z rozdziału o sprzęcie.
+
+**Nazwa żywicy do doprecyzowania.** Właściciel potwierdził cykl na "BlueCast X-One", a dokument od początku pisał "X-One V2". Jeżeli to są dwie różne rewizje, potwierdzenie dotyczy tej, która naprawdę przeszła przez piec, i trzeba tu wpisać jej pełną nazwę. Reszta dokumentu mówi "X-One V2" i zostaje bez zmian do czasu rozstrzygnięcia.
 
 ---
 
