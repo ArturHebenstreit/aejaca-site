@@ -476,6 +476,8 @@ Próba wychodząca: 16,527 / 28,23 = **0,5854**, czyli minimalnie powyżej 585. 
 8. Sprawdź powierzchnię: ma być jasna jak lustro.
 9. Lej w zakresie 1000-1050°C (rozdz. 4.2).
 
+**To nie jest ten sam wsad, co w rozdz. 6.** Tutaj liczy się SKŁAD stopu, czyli ile czystego złota i ile ligatury, żeby wyszła próba. Rozdz. 6 liczy MASĘ potrzebną do zalania konkretnej formy. Pierwsze robi się raz na partię granulatu, drugie przed każdym odlewem.
+
 **Punkt 7 jest ważniejszy, niż wygląda.** To jedyny krok, którego pominięcie nie daje żadnego widocznego objawu przy tyglu, a wychodzi dopiero na gotowym wyrobie, przy cechowaniu albo u klienta.
 
 ---
@@ -491,6 +493,8 @@ zapas procesowy  = 12% (zgar, resztka w tyglu)
 ```
 
 Gęstości: Ag 925 = 10,36 g/cm³; Au 585 = 13,1 g/cm³.
+
+> **ROZJAZD DO ROZSTRZYGNIĘCIA (znalezione 14 września 2026).** Gęstość złota 585 ma w repozytorium trzy zapisy: 13,10 w `src/data/castingAlloys.js` (liczy z niej masę generator pierścionków i kalkulator skurczu), 13,07 w `src/pricing/preciousMetalCasting.js` (liczy z niej wycena odlewu) i 13,1 w tym akapicie. Ten sam wyrób waży więc inaczej w zależności od tego, który kalkulator go liczy, o 0,23 %, czyli 0,04 g na pierścionku 16 g. Nagłówek tego dokumentu mówi, że rozjazd między dokumentem a kodem jest błędem po jednej ze stron i trzeba go rozstrzygnąć, a nie zostawić. Rozstrzygnięcie należy do właściciela, bo dotyka kwoty płaconej przez klienta: albo jedna liczba w obu plikach, albo jawne uzasadnienie, dlaczego wycena liczy inaczej niż generator.
 
 **Przykład [POTWIERDZONE 2026-09]:**
 
