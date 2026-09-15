@@ -18,7 +18,7 @@ import {
 import { RESIN_TYPES, RESIN_SEGMENTS } from "./resins.js";
 import {
   QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
-  SHAPE_COMPLEXITY, isChainType,
+  isChainType,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
   ENGRAVING_FREE_ABOVE_PLN, normalizeEngravingId, metaleDlaMetody, zamiennikDoOdlewu,
 } from "../pricing/jewelryConfig.js";
@@ -33,10 +33,47 @@ import {
   castingFinishesFor, CASTING_PLATINGS, castingPlatingAvailable,
   CASTING_ENGRAVINGS, castingEngravingAvailable,
 } from "../pricing/preciousMetalCasting.js";
+import { PROJEKT_WYROBU, CECHY_WYROBU, polaWymiarow, kluczWymiaru } from "../pricing/jewelryScope.js";
 import { STANY_MODELU, KATEGORIE_WYROBU, kategoriaZOtworem } from "./castingSpec.js";
 import { CASTING_ALLOYS } from "./castingAlloys.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
+
+// ------------------------------------------------------------
+// WYMIARY WYROBU NA ZAMOWIENIE
+// ------------------------------------------------------------
+// Z nich liczy sie masa kruszcu, a z masy cena, wiec sa pytaniem cennikowym,
+// a nie ozdoba formularza. Kazde pole pokazuje sie tylko przy tym rodzaju
+// wyrobu, ktory je ma: lista idzie z katalogu bryl (`polaWymiarow`), a nie
+// z drugiego spisu tutaj.
+//
+// Kalkulator jubilerski tych pol NIE RYSUJE, bo ma wlasna karte wymiarow
+// z tabelami rozmiarow i suwakami. Rozpoznaje je po znaczniku `wymiar` i
+// pisze do tych samych kluczy, wiec obie drogi skladaja identyczna pozycje.
+const POLE_WYMIARU = (id, etykieta, { min, max, krok, podpowiedz = null }) => ({
+  key: kluczWymiaru(id), typ: "liczba", wymiar: true,
+  label: etykieta, jednostka: "mm", min, max, krok,
+  ...(podpowiedz ? { podpowiedz: (v, lang) => podpowiedz[lang] || podpowiedz.en } : {}),
+  ukryjGdy: (v) => !polaWymiarow(v.typeId).includes(id),
+});
+
+const PODPOWIEDZ_ROZMIARU = {
+  pl: "Średnica wewnętrzna. Rozmiar EU 54 to 17,2 mm, EU 60 to 19,1 mm.",
+  en: "Inner diameter. EU size 54 is 17.2 mm, EU 60 is 19.1 mm.",
+  de: "Innendurchmesser. EU 54 entspricht 17,2 mm, EU 60 entspricht 19,1 mm.",
+};
+
+const POLA_WYMIAROW_WYROBU = [
+  POLE_WYMIARU("ringSize", L("Rozmiar (średnica wewnętrzna)", "Size (inner diameter)", "Größe (Innendurchmesser)"),
+    { min: 12, max: 26, krok: 0.1, podpowiedz: PODPOWIEDZ_ROZMIARU }),
+  POLE_WYMIARU("length", L("Długość", "Length", "Länge"), { min: 50, max: 250, krok: 1 }),
+  POLE_WYMIARU("height", L("Wysokość", "Height", "Höhe"), { min: 5, max: 100, krok: 1 }),
+  POLE_WYMIARU("width", L("Szerokość", "Width", "Breite"), { min: 2, max: 80, krok: 0.5 }),
+  POLE_WYMIARU("thickness", L("Grubość", "Thickness", "Stärke"), { min: 1, max: 20, krok: 0.5 }),
+  POLE_WYMIARU("wallThickness", L("Grubość ścianki", "Wall thickness", "Wandstärke"), { min: 0.5, max: 4, krok: 0.1 }),
+  POLE_WYMIARU("faceWidth", L("Szerokość oczka", "Face width", "Kopfbreite"), { min: 8, max: 28, krok: 1 }),
+  POLE_WYMIARU("faceHeight", L("Wysokość oczka", "Face height", "Kopfhöhe"), { min: 8, max: 25, krok: 1 }),
+];
 
 /** Zdjecia segmentow zywicy. Naleza do pola, wiec ogladaja je obie drogi. */
 const ZDJECIA_SEGMENTOW_ZYWIC = {
@@ -561,6 +598,14 @@ export const SERVICES = [
       { key: "typeId", label: L("Rodzaj", "Type", "Art"), widok: "kafelki",
         kolumny: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
         optionsFrom: (v) => JEWELRY_TYPES[v.lineId] || JEWELRY_TYPES.woman },
+      // CZYJ TO PROJEKT. Pytanie rozstrzyga o tym, czy wolno nam podac kwote
+      // wiazaca, wiec nie ma wartosci domyslnej: podstawiony "nasz katalog"
+      // znaczylby, ze przyjmujemy za klienta zalozenie, ktore w jego przypadku
+      // bywa nieprawdziwe. Decyzja wlasciciela 2026-09-14, po zapytaniu
+      // z wlasnym renderem wycenionym jak wyrob katalogowy.
+      { key: "projektId", label: L("Czyj to projekt", "Whose design is it", "Wessen Entwurf"),
+        options: PROJEKT_WYROBU, bezWyboru: true, widok: "opisowe" },
+      ...POLA_WYMIAROW_WYROBU,
       // ZLOTA 999 NIE MA PRZY METODZIE "ODLEW" (decyzja wlasciciela 2026-09-10).
       // Lista metali obsluguje takze robote reczna, gdzie 999 bywa uzasadnione,
       // wiec wyklucza je METODA, a nie sama lista. `zamiennik` istnieje po to,
@@ -585,10 +630,22 @@ export const SERVICES = [
       // W walucie jezyka: polski czyta zlotowki, reszta euro.
       { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS,
         podpis: podpisGraweru, zamiennik: normalizeEngravingId, uwaga: UWAGA_PROGU_GRAWERU },
-      { key: "complexityId", label: L("Złożoność kształtu", "Shape complexity", "Formkomplexität"), options: SHAPE_COMPLEXITY },
+      // CO JEST W TYM WYROBIE. Zastapilo pytanie o "zlozonosc ksztaltu"
+      // (`complexityId`), ktore miescilo azur i filigran w jednym slowie
+      // "zlozony", a o trzeciej oprawie i o drugim wykonczeniu powierzchni
+      // nie mowilo nic. Klient zaznaczal "prosty" w najlepszej wierze i
+      // dostawal cene wyrobu, ktorego nikt tak nie wycenia.
+      // `complexityId` zostaje przy projekcie CAD, gdzie jest progiem cenowym,
+      // a nie bramka. Decyzja wlasciciela 2026-09-14.
+      { key: "cechyWyrobu", label: L("Co jest w tym wyrobie", "What this piece contains", "Was dieses Stück enthält"),
+        options: CECHY_WYROBU, multi: true },
       { key: "qtyId", label: ETYKIETA_RABATU, options: QTY_TIERS },
     ],
-    defaults: { lineId: "woman", typeId: "ring", metalId: "silver", weightId: "standard", methodId: "cast", platingId: "none", engravingId: "none", complexityId: "simple", qtyId: "1", gemId: "none", stoneCount: 0, certId: "none" },
+    // Bez `projektId` i bez `cechyWyrobu`: obie odpowiedzi rozstrzygaja o kwocie
+    // wiazacej, wiec maja pochodzic od klienta. Wymiary zaczynaja od bryly
+    // pierscionka, czyli od rodzaju domyslnego; po zmianie rodzaju pola pustych
+    // wymiarow czekaja na wpisanie i do tego czasu cena jest szacunkiem.
+    defaults: { lineId: "woman", typeId: "ring", metalId: "silver", weightId: "standard", methodId: "cast", platingId: "none", engravingId: "none", qtyId: "1", gemId: "none", stoneCount: 0, certId: "none", wymRingSize: 17.2, wymWidth: 5, wymWallThickness: 1.5 },
     fixed: { gemId: "none", stoneCount: 0, certId: "none" },
   },
   {

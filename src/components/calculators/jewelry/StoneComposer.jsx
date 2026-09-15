@@ -12,6 +12,7 @@ import { t } from "../calcShared.jsx";
 import { useTheme } from "../../../i18n/ThemeContext.jsx";
 import {
   STONE_SIZES,
+  STONE_CUTS,
   DIAMOND_CLARITY,
   DIAMOND_COLOR,
   GEM_QUALITY,
@@ -175,6 +176,32 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
             </div>
           </div>
 
+          {/* Cut - always shown for configured stones incl. custom */}
+          <div>
+            <div className="text-xs text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
+              {{ pl: "Szlif", en: "Cut", de: "Schliff" }[lang]}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {STONE_CUTS.map(c => {
+                const active = (row.cutId || "brilliant") === c.id;
+                return (
+                  <button key={c.id} onClick={() => update({ cutId: c.id })}
+                    className={`px-2.5 py-1 rounded-lg border text-xs transition-all ${active ? activePill : inactivePill} ${c.custom ? "border-dashed" : ""}`}>
+                    {t(c.label, lang)}
+                  </button>
+                );
+              })}
+            </div>
+            {(() => {
+              const selectedCut = STONE_CUTS.find(c => c.id === (row.cutId || "brilliant"));
+              return selectedCut?.desc ? (
+                <p className="text-xs text-neutral-500 [data-theme='light']:text-neutral-500 mt-1.5 leading-relaxed">
+                  {t(selectedCut.desc, lang)}
+                </p>
+              ) : null;
+            })()}
+          </div>
+
           {/* Count - always shown for configured stones incl. custom */}
           <div>
             <div className="text-xs text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
@@ -318,6 +345,7 @@ export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) 
       rowId: `row${Date.now()}`,
       gemId: "none",
       stoneSizeId: "small",
+      cutId: "brilliant",
       count: 1,
       suppliedBy: "studio",
       clarityId: "VS",

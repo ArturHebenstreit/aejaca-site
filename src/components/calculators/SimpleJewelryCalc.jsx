@@ -10,9 +10,10 @@ import {
   Award, ShieldCheck, ZapOff,
   Droplet, Scissors, Key, Sparkles as SparkleAlt,
   Hash, Users, Factory,
-  Lightbulb,
+  Lightbulb, ArrowRight,
 } from "lucide-react";
 import { ResultHeader, ResultDisplay, NextStepPanel, t } from "./calcShared.jsx";
+import { przekazanieDoZaawansowanego } from "../../data/przekazanieTrybu.js";
 import CalcToCart from "./CalcToCart.jsx";
 import { calcNew, calcRenovation, calcRepair } from "./JewelryCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
@@ -347,15 +348,19 @@ function cartTargetFor(resolved) {
   if (resolved.flow === "renovation") return { calculator: "jewelry_renovation", serviceId: "jewelry_renovation" };
   if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
   if (resolved.flow === "new") {
-    const p = resolved.params || {};
-    // Wiazaca cena tylko przy odlewie: przy wykonaniu recznym czas pracy
-    // zalezy od rzeczy, ktorych szybka wycena nie pyta.
-    if (p.methodId && p.methodId !== "cast") return null;
-    // mapGem zwraca gemId: "none" przy wyborze "bez kamienia", wiec sama
-    // obecnosc pola nic nie znaczy.
-    const hasStone = Boolean(p.gemId && p.gemId !== "none")
-      || Boolean(p.stoneRows?.some((r) => r.gemId && r.gemId !== "none"));
-    return hasStone ? null : { calculator: "jewelry_new", serviceId: "jewelry_plain" };
+    // SZYBKA WYCENA NOWEGO WYROBU NIE IDZIE JUZ DO KOSZYKA (14 wrzesnia 2026).
+    //
+    // Pyta o piec rzeczy i zadna z nich nie mowi, jaki ten wyrob ma byc duzy,
+    // czyj jest projekt ani co w nim siedzi. Masa szla wiec ze stalej
+    // katalogowej: wisiorek zawsze 4 g, niezaleznie od tego, czy ma 15 czy
+    // 45 mm. Kwota wiazaca z pieciu pytan jest dokladnie tym, co kazalo nam
+    // wycenic zapytanie z Niemiec na 684 EUR zamiast na 1100.
+    //
+    // Zostaje szacunek z widelkami i przejscie do pelnego kalkulatora albo do
+    // zapytania, czyli ta sama droga, ktora do tej pory dostawal wyrob
+    // z kamieniem. Pelny kalkulator pyta o wymiary i wtedy cena wiazaca
+    // powstaje bez zgadywania.
+    return null;
   }
   return null;
 }
@@ -393,6 +398,10 @@ const LBL = {
     summary:   "Podsumowanie",
     pickAll:   "Odpowiedz na wszystkie pytania",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
+    switchButton: "Uzupełnij wymiary i wyceń",
+    switchButtonUslugi: "Przejdź do pełnej wyceny",
+    switchCarry: "Odpowiedzi z tego ekranu przenosimy, dopowiadasz tylko wymiary.",
+    switchCarryUslugi: "Odpowiedzi z tego ekranu przenosimy, w pełnym trybie doprecyzujesz zakres.",
     note: 'Tryb Szybkiej Wyceny dobiera próbę kruszcu, metodę i parametry kamienia automatycznie - dla pełnej kontroli użyj trybu zaawansowanego.',
   },
   en: {
@@ -407,6 +416,10 @@ const LBL = {
     summary:   "Summary",
     pickAll:   "Answer all questions",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
+    switchButton: "Add dimensions and price it",
+    switchButtonUslugi: "Go to the full calculator",
+    switchCarry: "We carry these answers over, you only add the dimensions.",
+    switchCarryUslugi: "We carry these answers over, the full mode narrows down the scope.",
     note: 'Quick Quote mode picks metal purity, method and stone parameters automatically - for full control use the advanced mode.',
   },
   de: {
@@ -421,6 +434,10 @@ const LBL = {
     summary:   "Zusammenfassung",
     pickAll:   "Beantworten Sie alle Fragen",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
+    switchButton: "Maße ergänzen und kalkulieren",
+    switchButtonUslugi: "Zur vollständigen Kalkulation",
+    switchCarry: "Diese Antworten nehmen wir mit, Sie ergänzen nur die Maße.",
+    switchCarryUslugi: "Diese Antworten nehmen wir mit, im vollen Modus präzisieren Sie den Umfang.",
     note: 'Der Schnellkalkulationsmodus wählt Feingehalt, Methode und Steinparameter automatisch - für volle Kontrolle verwenden Sie den erweiterten Modus.',
   },
 };
@@ -509,7 +526,7 @@ function SimpleCard({ stepNum, label, children }) {
   );
 }
 
-export default function SimpleJewelryCalc({ lang = "pl" }) {
+export default function SimpleJewelryCalc({ lang = "pl", onTrybZaawansowany = null }) {
   const l = LBL[lang] || LBL.en;
 
   // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
@@ -534,6 +551,9 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
   const resolved = useMemo(() => resolveJewelryParams(state), [service, piece, metal, gemCategory, renoScope, repairIssue, quality, quantity]);
   const result = useMemo(() => runCalc(resolved, lang), [resolved, lang]);
   const cartTarget = useMemo(() => cartTargetFor(resolved), [resolved]);
+  // Co z tego ekranu da sie przeniesc do trybu zaawansowanego. `null` znaczy,
+  // ze nie ma czego albo nie ma dokad (bizuteria na sznurku).
+  const przekazanie = useMemo(() => przekazanieDoZaawansowanego(resolved), [resolved]);
 
   const isNew    = service === "new";
   const isReno   = service === "renovation";
@@ -618,9 +638,35 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-violet-400/30 bg-gradient-to-br from-violet-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
-        <div className="mt-4 pt-3 border-t border-violet-400/10 text-xs text-violet-300 italic text-center">
-          {l.switchHint}
-        </div>
+        {/* PRZEJSCIE DO TRYBU ZAAWANSOWANEGO JEST PRZYCISKIEM, NIE ZDANIEM.
+            Napis mowi, CO klient ma zrobic dalej, a nie dokad idzie: dwa
+            centymetry nizej stoi "Wyslij do precyzyjnej wyceny", wiec
+            "dokladna wycena" i "precyzyjna wycena" obok siebie byly by dwoma
+            nazwami na dwie zupelnie rozne drogi. Przy renowacji i naprawie
+            wymiarow nie ma, wiec napis jest tam inny.
+            Wczesniej stalo tu samo zdanie "przelacz u gory": klient musial
+            wrocic na gore strony, a po przelaczeniu zaczynal od pustego
+            formularza. Teraz odpowiedzi jada razem z nim. Zdanie zostaje dla
+            wyrobow, ktorych tryb zaawansowany nie zna (sznurek, gumka). */}
+        {onTrybZaawansowany && przekazanie ? (
+          <div className="mt-4 pt-3 border-t border-violet-400/10 text-center">
+            <button
+              type="button"
+              onClick={() => onTrybZaawansowany(przekazanie)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-amber-400/40 bg-amber-400/10 text-amber-300 text-sm font-semibold hover:bg-amber-400/20 hover:border-amber-400/60 transition-colors"
+            >
+              {przekazanie.serviceId === "new" ? l.switchButton : l.switchButtonUslugi}
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+            <p className="mt-2 text-xs text-violet-300 leading-relaxed">
+              {przekazanie.serviceId === "new" ? l.switchCarry : l.switchCarryUslugi}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 pt-3 border-t border-violet-400/10 text-xs text-violet-300 italic text-center">
+            {l.switchHint}
+          </div>
+        )}
         <NextStepPanel
           lang={lang}
           techLabel={

@@ -8,6 +8,7 @@
 import { useId, useRef } from "react";
 import { Upload, X, Check, Loader2, CircleAlert } from "lucide-react";
 import { t } from "../../pricing/config.js";
+import { POWOD_TEKST } from "../../pricing/jewelryScope.js";
 
 /** Kafelki wariantow. Zaznaczenie jest widoczne kolorem i znaczkiem. */
 export function TileGroup({ label, options, value, onChange, lang, accent = "blue", columns = 3 }) {
@@ -704,8 +705,22 @@ export function DeclaredSpec({ missing = [], value = {}, onChange, lang = "pl", 
   const pole = value.declaredFieldMm || {};
   const ustaw = (klucz, dane) => onChange({ ...value, [klucz]: dane });
 
+  // BIZUTERIA NA ZAMOWIENIE ODPOWIADA POLAMI WYZEJ, a nie tutaj: czyj projekt,
+  // co jest w wyrobie i jakie ma wymiary to pytania z formularza uslugi.
+  // Zostaje wiec zdanie o tym, czego brakuje, zeby klient wiedzial, gdzie
+  // wrocic. Bez niego ramka rysowala sie pusta i mowila tyle co nic.
+  const powodyWyrobu = missing.filter((k) => POWOD_TEKST[k]);
+
   return (
     <div className="mb-5 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4">
+      {powodyWyrobu.length > 0 && (
+        <ul className="space-y-1 text-xs text-neutral-300 leading-relaxed">
+          {powodyWyrobu.map((k) => (
+            <li key={k}>{POWOD_TEKST[k][lang] || POWOD_TEKST[k].en}</li>
+          ))}
+        </ul>
+      )}
+
       {missing.includes("model") && (
         <div className="mb-3">
           <div className="text-xs uppercase tracking-wide text-amber-200 mb-2">{l.model}</div>

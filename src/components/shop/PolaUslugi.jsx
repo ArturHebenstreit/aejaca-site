@@ -138,6 +138,10 @@ function WyborWielu({ f, warianty, params, setParam, lang, accent }) {
           >
             {on && <Check className="w-3.5 h-3.5 absolute top-2 right-2" />}
             <span className="pr-4 block leading-snug">{t(o.label, lang)}</span>
+            {/* Objasnienie stoi przy wariancie, bo przy pytaniu o zawartosc
+                wyrobu roznica miedzy "azur" a "dwa wykonczenia" decyduje
+                o tym, czy cena w ogole powstanie. Sama nazwa za malo mowi. */}
+            {o.desc && <span className="pr-4 block leading-snug text-neutral-400 mt-1">{t(o.desc, lang)}</span>}
           </button>
         );
       })}

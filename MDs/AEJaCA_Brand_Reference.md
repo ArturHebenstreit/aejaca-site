@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-09-13 | Wersja: 6.7*
+*Wygenerowano: 2026-09-14 | Wersja: 6.8*
 
 ---
 
@@ -1067,6 +1067,45 @@ Wzór: ID wewnętrzna = EU / pi; wymiar wzorca = ID x czynnik_stopu
 **Stawka robocizny:** 48 PLN / 10 cm łańcucha (modyfikowana przez złożoność splotu 1.0-2.2x)
 
 **Kursy walut:** live NBP (PLN) + LBMA (ceny metali), fallback EUR/PLN = 4.28
+
+### 6.6b Biżuteria na zamówienie: kiedy podajemy cenę wiążącą (od 2026-09-14)
+
+Powód: zapytanie z Niemiec z 13 września 2026. Wisiorek z kamieniem, własny
+render klienta, prośba o kaboszon albo rozetkę, trzy oprawy, dwa wykończenia
+powierzchni. Kalkulator podał 684 do 901 EUR za sztukę przy robocie wartej
+1100 do 1450 EUR. Decyzja: ADR-0049.
+
+Cena wiążąca dla nowego wyrobu wymaga **trzech odpowiedzi**, w kalkulatorze
+i na karcie usługi w sklepie tak samo:
+
+1. **Czyj to projekt** (`projektId`): nasz z katalogu albo własny klienta.
+   Bez wartości domyślnej. Własny projekt zawsze idzie do wyceny człowieka.
+2. **Co jest w tym wyrobie** (`cechyWyrobu`, wybór wielokrotny): ażur lub
+   filigran, więcej niż dwie oprawy, dwa wykończenia powierzchni, elementy
+   ruchome, albo „nic z poniższych". Każda z czterech pierwszych pozycji
+   kieruje do wyceny człowieka. Pominięcie pytania zostawia szacunek.
+   Zastąpiło pole `complexityId`, które zostaje przy projekcie CAD.
+3. **Wymiary gotowego wyrobu**: z nich liczy się masa kruszcu. Pierścionek
+   i obrączka: średnica wewnętrzna, szerokość, grubość ścianki. Sygnet
+   dodatkowo oczko. Wisiorek, broszka, kolczyki: wysokość, szerokość,
+   grubość. Bransoleta: długość zamiast wysokości. Wymiar poza zakresem
+   katalogu brył też kieruje do wyceny człowieka.
+
+Zawsze wycena człowieka: kamień w wyrobie, łańcuszek, wykonanie ręczne,
+kruszec powierzony.
+
+**Masa liczy się z wymiarów, ale nigdy nie schodzi poniżej stałej
+katalogowej.** Wisiorek 30 x 20 x 4 mm w srebrze waży około 14 g, a stała
+mówiła 4 g. Przy obrączce jest odwrotnie (geometria wychodzi lżejsza od
+stałej), więc bierzemy większą z dwóch liczb: kwotę wiążącą trzeba dotrzymać.
+
+**Szlif kamienia** jest osobnym polem (`cutId`): brylantowy, schodkowy,
+rozetka, kaboszon, inny. Wpływa na cenę kamienia i na koszt osadzenia.
+Mnożniki są punktem wyjścia z praktyki rynkowej i czekają na potwierdzenie.
+
+**Szybka wycena biżuterii nie prowadzi już do koszyka przy nowym wyrobie**,
+bo nie pyta o wymiary. Daje widełki i kieruje do pełnego kalkulatora albo do
+zapytania.
 
 ---
 

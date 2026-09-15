@@ -33,6 +33,8 @@
 // bo tej samej reguly musi pilnowac przegladarka (zeby wyjasnic, czego brakuje)
 // i serwer (zeby odmowic przyjecia zamowienia, gdy formularz zostanie ominiety).
 
+import { zakresWyrobu } from "./jewelryScope.js";
+
 /** Czego brakuje do kwoty wiazacej. Widok tlumaczy te klucze na zdania. */
 export const BRAK = {
   MODEL: "model",         // zmierzony model 3D albo wpisane wymiary bryly
@@ -59,9 +61,16 @@ const Z_OBJETOSCI = new Set(["epoxy"]);
  * Kalkulatory, w ktorych to MY ustalamy wyrob, wiec parametry sa specyfikacja.
  * Nie ma tu nic do zgadniecia: masa wynika z linii, rodzaju i masywnosci,
  * a naprawa i renowacja dotycza czynnosci, nie wielkosci.
+ *
+ * BIZUTERII NA ZAMOWIENIE JUZ TU NIE MA (14 wrzesnia 2026). Stala tu przez
+ * pomylke co do wlasnej reguly: parametry sa specyfikacja tylko wtedy, gdy
+ * opisuja wyrob w calosci, a `jewelry_new` nie pytalo ani o to, czyj jest
+ * ksztalt, ani o wymiary, z ktorych bierze sie masa. Zapytanie z 13 wrzesnia
+ * 2026 dostalo wiec kwote 684 do 901 EUR za robote warta 1100 do 1450 EUR.
+ * Ma teraz wlasna bramke: `jewelryScope.js`.
  */
 const Z_PARAMETROW = new Set([
-  "jewelry_new", "jewelry_chain", "jewelry_renovation", "jewelry_repair",
+  "jewelry_chain", "jewelry_renovation", "jewelry_repair",
   "cad_design", "jewelry_ring_config",
 ]);
 
@@ -94,6 +103,17 @@ export function bindingBasis({ calculator, params = {}, geometry = null, fromQuo
 
   if (Z_PARAMETROW.has(kalk)) {
     return { binding: true, missing: [], basis: { kind: "params" } };
+  }
+
+  // BIZUTERIA NA ZAMOWIENIE: parametry sa specyfikacja dopiero, gdy sa pelne.
+  // Brakujaca odpowiedz odsylamy do formularza, a prace, ktorej cennik nie
+  // liczy (azur, trzecia oprawa, wlasny projekt klienta), do czlowieka.
+  if (kalk === "jewelry_new") {
+    const zakres = zakresWyrobu(params);
+    if (zakres.wiazaca) {
+      return { binding: true, missing: [], basis: { kind: "params_wymiary", masaG: zakres.masaG } };
+    }
+    return { binding: false, missing: zakres.braki, basis: null, powody: zakres.powody };
   }
 
   if (Z_MODELU.has(kalk)) {
