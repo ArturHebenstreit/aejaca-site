@@ -533,6 +533,45 @@ Gęstości: Ag 925 = 10,36 g/cm³; Au 585 = 13,1 g/cm³.
 
 ---
 
+## 7A. PODCIŚNIENIE: CZAS TRZYMANIA I ZAPOWIETRZANIE
+
+**[DO WERYFIKACJI]** - podejrzewane źródło wad na obrączkach Au 585, wrzesień 2026.
+
+### 7A.1 Procedura
+
+| Krok | Czynność |
+|---|---|
+| 1 | Podciśnienie stabilne **przed** laniem, nie włączane w trakcie |
+| 2 | Lanie |
+| 3 | Utrzymanie podciśnienia **30-60 s** po zalaniu |
+| 4 | Wyłączenie pompy |
+| 5 | Zapowietrzanie **5-10 s**, stopniowo, nie jednym ruchem |
+| 6 | Kolba szczypcami na cegłę szamotową |
+| 7 | Quench wg rozdz. 8 (przy ok. 17 g w kolbie 83 x 100 mm: 12-15 min od zalania) |
+
+Zawór DMJ-0001 nie ma regulacji przepływu, więc zapowietrzanie robi się ręką: uchylić go odrobinę i przytrzymać. **Syk ma trwać kilka sekund, a nie być pojedynczym trzaskiem.**
+
+Czasu quenchu nie powtarzamy tutaj liczbą, bo pełna tabela stanów guzika, test dźwiękowy i zasady samego zanurzenia stoją w rozdz. 8. Dwie liczby na jedno zjawisko w dwóch rozdziałach rozjeżdżają się przy pierwszej poprawce.
+
+### 7A.2 Dlaczego akurat to jest podejrzane
+
+Rozumowanie, nie pomiar. Oba kroki dotyczą tych samych kilkudziesięciu sekund, w których metal jest jeszcze plastyczny:
+
+- **Za krótkie trzymanie podciśnienia.** Różnica ciśnień jest tym, co dociska stop w cienkie przekroje i zasila front krzepnięcia, kiedy metal się kurczy. Wyłączenie pompy przy płynnym guziku odbiera to zasilanie dokładnie wtedy, gdy jest potrzebne.
+- **Gwałtowne zapowietrzenie.** Masa formierska jest porowata, a kolba perforowana (rozdz. 2.3), więc skok ciśnienia nie zatrzymuje się na ściance: przechodzi przez formę do metalu, który jeszcze nie zastygł.
+
+Jedno i drugie daje wady widoczne dopiero po odcięciu drzewa i obróbce, czyli najpóźniej jak się da.
+
+### 7A.3 Co ma rozstrzygnąć najbliższy odlew
+
+Ten rozdział wychodzi z **[DO WERYFIKACJI]** dopiero wtedy, gdy zapiszemy jedno i drugie:
+
+- [ ] **Nazwa wady**, której to dotyczy: `(do wpisania po oględzinach obrączek z września 2026)`. Bez niej nie da się powiedzieć, czy poprawka zadziałała, bo nie wiadomo, co miało zniknąć.
+- [ ] **Zapis z przebiegu:** czy podciśnienie było stabilne przed laniem, ile sekund trzymane po zalaniu, ile sekund trwało zapowietrzanie.
+- [ ] **Zdjęcie wady** z poprzedniego odlewu i z nowego, tej samej partii wyrobów, do porównania.
+
+---
+
 ## 8. STUDZENIE I ROZFORMOWANIE
 
 | Od zalania | Stan |
@@ -543,6 +582,8 @@ Gęstości: Ag 925 = 10,36 g/cm³; Au 585 = 13,1 g/cm³.
 | >30 min | Za późno, gips twardnieje i trudniej schodzi |
 
 Przy odlewie ok. 17 g w kolbie 83 x 100 mm celować w **12-15 min**.
+
+Pierwsze sekundy tej tabeli opisuje rozdz. 7A: kolba jest wtedy jeszcze pod podciśnieniem, a zegar studzenia liczy się od zalania, nie od postawienia kolby na cegle.
 
 **Test dźwiękowy:** dotknąć kolbę od góry czymś metalowym. Póki guzik jest miękki, dźwięk jest głuchy. Po zakrzepnięciu robi się dzwoniący.
 
@@ -721,6 +762,7 @@ Protokół: ta sama forma dwuczęściowa, obrzeże 8-10 mm, stożkowy wlew, otwo
 - [ ] Zmierzona liczba cykli formy silikonowej przy epoksydzie
 - [ ] Procedura odgazowania epoksydu w DMJ-0001: czas, poziom próżni
 - [ ] Ocena, czy potrzebny garnek ciśnieniowy (2-3 bar) do epoksydu; obecnie brak w warsztacie
+- [ ] **Nazwa wady na obrączkach Au 585 z września 2026** i zapis z przebiegu, który rozstrzygnie rozdz. 7A (czas trzymania podciśnienia i sposób zapowietrzania)
 
 ---
 
