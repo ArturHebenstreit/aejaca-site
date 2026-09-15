@@ -1,7 +1,7 @@
 // ============================================================
 // JEWELRY ESTIMATOR - AEJaCA Jewelry
 // ============================================================
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { sciezkaJezyka } from "../../routes.js";
 import { t, fmtCost, Chips, CalcCard, HeroCards, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
@@ -144,7 +144,7 @@ const USLUGI = {
   repair: getService("jewelry_repair"),
 };
 
-export default function JewelryCalc({ lang = "pl" }) {
+export default function JewelryCalc({ lang = "pl", przeniesione = null }) {
   const l = LBL[lang] || LBL.en;
   const { rates } = useMarketRates();
   const gemPrices = useGemPrices(); // null=loading, map otherwise
@@ -300,6 +300,27 @@ export default function JewelryCalc({ lang = "pl" }) {
     { rowId: "row0", gemId: "none", stoneSizeId: "small", cutId: "brilliant", count: 1, suppliedBy: "studio",
       clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
   ]);
+
+  // ODPOWIEDZI PRZYNIESIONE Z SZYBKIEJ WYCENY. Przyjmujemy je raz, po
+  // zamontowaniu, i tylko wtedy, gdy przyszla NOWA paczka: klient moze
+  // wrocic do szybkiej wyceny, zmienic odpowiedzi i przyjsc drugi raz, a
+  // porownanie po tozsamosci obiektu odroznia to od zwyklego przerysowania.
+  // Nadpisujemy tylko te pola, ktore szybka wycena naprawde zna, wiec
+  // wymiary i pytania o zakres wyrobu zostaja do uzupelnienia tutaj.
+  const przyjeteOdpowiedzi = useRef(null);
+  useEffect(() => {
+    if (!przeniesione || przyjeteOdpowiedzi.current === przeniesione) return;
+    przyjeteOdpowiedzi.current = przeniesione;
+    const zapis = { new: setParamsNew, renovation: setParamsReno, repair: setParamsRepair }[przeniesione.serviceId];
+    if (!zapis) return;
+    setServiceId(przeniesione.serviceId);
+    zapis((p) => ({ ...p, ...przeniesione.params }));
+    if (przeniesione.stoneRows) setStoneRows(przeniesione.stoneRows);
+    // Naklad rzadzi liczba sztuk, a prog wynika z niej, wiec przeliczamy
+    // w te strone: wpisany sam `qtyId` zostalby nadpisany przy najblizszym
+    // renderze, bo tam prog liczy sie z `qty`.
+    if (przeniesione.qtyId) setQty(qtyForTier(przeniesione.qtyId, QTY_TIERS));
+  }, [przeniesione]);
 
 
   const types = JEWELRY_TYPES[lineId] || [];

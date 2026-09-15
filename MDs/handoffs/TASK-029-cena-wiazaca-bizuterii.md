@@ -119,9 +119,11 @@ i w 390 px.
 2. **Mnozniki szlifow** (kaboszon 0,5 na kamieniu i 1,25 na osadzeniu,
    rozetka 0,75 i 1,10, schodkowy 1,0 i 1,15): potwierdzic albo poprawic
    wlasnymi liczbami.
-3. **Szybka wycena bez koszyka przy nowym wyrobie**: to jest utrata jednej
-   drogi sprzedazy, wynikajaca wprost z polecenia. Gdyby miala wrocic,
-   musialaby zapytac o wymiary.
+3. ~~Szybka wycena bez koszyka przy nowym wyrobie~~: wlasciciel wybral
+   2026-09-15, ze zostaje bez koszyka, a strate lagodzi przeniesienie
+   odpowiedzi do trybu zaawansowanego. Wdrozone tego samego dnia:
+   `src/data/przekazanieTrybu.js`, przycisk pod kwota w szybkiej wycenie,
+   sprawdzian `scripts/test-przekazanie-trybu.mjs`.
 4. ~~Status ADR-0049~~: zatwierdzony przez wlasciciela 2026-09-15, status `accepted`.
 
 ## Jak sprawdzic

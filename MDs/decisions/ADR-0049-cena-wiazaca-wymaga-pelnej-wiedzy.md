@@ -119,7 +119,10 @@ do zamowienia zlota po masie podanej przez zamawiajacego.
   przy nowym wyrobie. Pyta o piec rzeczy i zadna z nich nie mowi, jaki ten
   wyrob ma byc duzy. Zostaje szacunek i przejscie do pelnego kalkulatora albo
   do zapytania, czyli ta sama droga, ktora do tej pory dostawal wyrob
-  z kamieniem.
+  z kamieniem. Od 15 wrzesnia 2026 to przejscie NIESIE ODPOWIEDZI (przycisk
+  pod kwota, `src/data/przekazanieTrybu.js`): klient dopowiada same wymiary,
+  a nie caly formularz od nowa. Bez tego odebranie koszyka szybkiej wycenie
+  byloby samym odjeciem, bo droga obok zaczynala sie od pustej strony.
 - Karta uslugi w sklepie ma osiem nowych pol liczbowych, z ktorych naraz widac
   najwyzej piec: kazde pokazuje sie tylko przy tej bryle, ktora je ma.
 - Wycena wisiorka z wymiarami rosnie, bo dotad liczyla 4 g kruszcu zamiast

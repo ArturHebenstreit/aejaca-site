@@ -63,6 +63,11 @@ export default function JewelryEstimator() {
   // adres. Kosztem jest jedna klatka stanu domyslnego.
   const [mode, setMode] = useState("simple");
   const [linkPrzyjety, setLinkPrzyjety] = useState(false);
+  // ODPOWIEDZI ZABRANE Z SZYBKIEJ WYCENY. Trzymamy je tutaj, bo to jedyne
+  // miejsce, ktore widzi oba tryby. Tozsamosc obiektu jest znacznikiem: tryb
+  // zaawansowany przyjmuje kazda NOWA paczke, wiec klient moze wrocic,
+  // poprawic odpowiedzi i przyjsc drugi raz.
+  const [przeniesione, setPrzeniesione] = useState(null);
   useEffect(() => {
     if (!deepLinked || linkPrzyjety) return;
     setMode("advanced");
@@ -70,6 +75,16 @@ export default function JewelryEstimator() {
   }, [deepLinked, linkPrzyjety]);
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
+
+  // Klient klika przycisk na dole szybkiej wyceny, a formularz zaawansowany
+  // zaczyna sie na gorze tej sekcji, wiec sama zamiana trybu zostawilaby go
+  // w polowie ekranu, przy pytaniach, ktorych juz nie ma.
+  const przejdzDoZaawansowanego = (dane) => {
+    setPrzeniesione(dane);
+    setMode("advanced");
+    trackCalc("jewelry", "mode", "advanced_z_szybkiej");
+    document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const isSimple = mode === "simple";
   const accentClass = isSimple ? "text-violet-300" : "text-amber-400";
@@ -121,14 +136,14 @@ export default function JewelryEstimator() {
         {/* SIMPLE MODE */}
         {isSimple && (
           <div className="rounded-2xl p-5 sm:p-6 border border-violet-400/10 bg-violet-400/[0.02]">
-            <SimpleJewelryCalc lang={lang} />
+            <SimpleJewelryCalc lang={lang} onTrybZaawansowany={przejdzDoZaawansowanego} />
           </div>
         )}
 
         {/* ADVANCED MODE */}
         {!isSimple && (
           <div className="glass-amber rounded-2xl p-5 sm:p-6">
-            <JewelryCalc lang={lang} />
+            <JewelryCalc lang={lang} przeniesione={przeniesione} />
           </div>
         )}
 
