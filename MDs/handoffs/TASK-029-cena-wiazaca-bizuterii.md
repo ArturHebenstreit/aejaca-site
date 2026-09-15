@@ -122,7 +122,7 @@ i w 390 px.
 3. **Szybka wycena bez koszyka przy nowym wyrobie**: to jest utrata jednej
    drogi sprzedazy, wynikajaca wprost z polecenia. Gdyby miala wrocic,
    musialaby zapytac o wymiary.
-4. **Status ADR-0049.** Stoi `draft`.
+4. ~~Status ADR-0049~~: zatwierdzony przez wlasciciela 2026-09-15, status `accepted`.
 
 ## Jak sprawdzic
 

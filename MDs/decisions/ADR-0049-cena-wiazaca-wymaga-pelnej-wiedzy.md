@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 owner: Artur
 date: 2026-09-14
 deciders: Artur
